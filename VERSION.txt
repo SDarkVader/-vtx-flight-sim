@@ -1,0 +1,3 @@
+VTX cloud-flight-test starter 0.1.0
+Source P0-V4 immutable version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2
+Status: REFERENCE_ONLY / CALIBRATION_BLOCKED

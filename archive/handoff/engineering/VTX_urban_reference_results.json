@@ -1,0 +1,6014 @@
+{
+  "study": "VTX P0-V4 urban reference trajectory, planar kinematics",
+  "date": "2026-10-31",
+  "status": "REFERENCE TRAJECTORY ONLY \u2014 NOT CLOSED-LOOP AEROSPACE STABILITY",
+  "limits": {
+    "max_lateral_acceleration_mps2": 0.8,
+    "max_longitudinal_acceleration_mps2": 0.8,
+    "max_resultant_jerk_mps3": 0.4,
+    "max_total_acceleration_when_overlapping_axes_mps2": 0.8,
+    "gravity_mps2": 9.80665
+  },
+  "limitations": [
+    "CG and inertia tensor have not been identified from component masses",
+    "No measured rotor thrust-vs-pitch/tilt/rpm response or efficiency",
+    "No real actuator dynamics, motor torque limits or feedback control",
+    "No drag, wind, gear torque reaction, gyroscopic forces or cabin vibration",
+    "The vehicle exactly tracks the reference curve by construction",
+    "Acceleration-jerk assumptions are screening criteria from road transport research, not VTX certification"
+  ],
+  "references": [
+    "de Winkel et al. Applied Ergonomics (2023) DOI:10.1016/j.apergo.2022.103881",
+    "VeriCAV (2021) Assessing Occupant Comfort final report"
+  ],
+  "scenarios": [
+    {
+      "speed_mph": 10.0,
+      "speed_mps": 4.4704,
+      "start": {
+        "time_s": 7.587999999999999,
+        "distance_m": 16.960697599999996,
+        "ramp_s": 2.0,
+        "plateau_s": 3.587999999999999,
+        "max_acceleration_mps2": 0.8,
+        "max_jerk_mps3": 0.4
+      },
+      "turn_90_degrees": {
+        "time_s": 12.793647628132781,
+        "distance_travelled_m": 57.19272235680478,
+        "steady_radius_m": 24.980595199999993,
+        "turn_entry_duration_s": 4.016037754002899,
+        "steady_corner_duration_s": 4.761572120126982,
+        "steady_heading_rate_degps": 10.253360685948879,
+        "final_heading_deg": 90.00000000000614,
+        "turn_dx_m": 34.175880595749064,
+        "turn_dy_m": 34.17588059573563,
+        "peak_total_jerk_mps3": 0.3752713265943067,
+        "peak_lateral_acceleration_mps2": 0.8,
+        "max_cabin_lean_deg": 4.6637076865344955,
+        "max_cabin_lean_rate_degps": 2.1785887264004358,
+        "trace_100ms": [
+          {
+            "t_s": 0.0,
+            "x_m": 0.0,
+            "y_m": 0.0,
+            "yaw_deg": 0.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 0.0,
+            "cabin_lean_deg": 0.0
+          },
+          {
+            "t_s": 0.005,
+            "x_m": 0.022352,
+            "y_m": 0.0,
+            "yaw_deg": 0.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 2e-06,
+            "cabin_lean_deg": 0.0
+          },
+          {
+            "t_s": 0.105,
+            "x_m": 0.469392,
+            "y_m": 0.0,
+            "yaw_deg": 4.7e-05,
+            "lateral_acceleration_mps2": 0.000128,
+            "jerk_mps3": 0.003697,
+            "cabin_lean_deg": 0.000748
+          },
+          {
+            "t_s": 0.205,
+            "x_m": 0.916432,
+            "y_m": 2e-06,
+            "yaw_deg": 0.000657,
+            "lateral_acceleration_mps2": 0.00095,
+            "jerk_mps3": 0.0137,
+            "cabin_lean_deg": 0.005548
+          },
+          {
+            "t_s": 0.305,
+            "x_m": 1.363472,
+            "y_m": 1.5e-05,
+            "yaw_deg": 0.00312,
+            "lateral_acceleration_mps2": 0.003044,
+            "jerk_mps3": 0.02899,
+            "cabin_lean_deg": 0.017786
+          },
+          {
+            "t_s": 0.405,
+            "x_m": 1.810512,
+            "y_m": 6.1e-05,
+            "yaw_deg": 0.009401,
+            "lateral_acceleration_mps2": 0.006891,
+            "jerk_mps3": 0.048598,
+            "cabin_lean_deg": 0.040264
+          },
+          {
+            "t_s": 0.505,
+            "x_m": 2.257552,
+            "y_m": 0.000178,
+            "yaw_deg": 0.022016,
+            "lateral_acceleration_mps2": 0.012877,
+            "jerk_mps3": 0.071612,
+            "cabin_lean_deg": 0.075236
+          },
+          {
+            "t_s": 0.605,
+            "x_m": 2.704592,
+            "y_m": 0.000428,
+            "yaw_deg": 0.043915,
+            "lateral_acceleration_mps2": 0.021299,
+            "jerk_mps3": 0.097173,
+            "cabin_lean_deg": 0.124438
+          },
+          {
+            "t_s": 0.705,
+            "x_m": 3.151632,
+            "y_m": 0.000896,
+            "yaw_deg": 0.078371,
+            "lateral_acceleration_mps2": 0.03237,
+            "jerk_mps3": 0.12448,
+            "cabin_lean_deg": 0.189122
+          },
+          {
+            "t_s": 0.805,
+            "x_m": 3.598671,
+            "y_m": 0.001693,
+            "yaw_deg": 0.128882,
+            "lateral_acceleration_mps2": 0.046228,
+            "jerk_mps3": 0.152785,
+            "cabin_lean_deg": 0.270086
+          },
+          {
+            "t_s": 0.905,
+            "x_m": 4.045709,
+            "y_m": 0.002959,
+            "yaw_deg": 0.199069,
+            "lateral_acceleration_mps2": 0.062937,
+            "jerk_mps3": 0.181397,
+            "cabin_lean_deg": 0.367707
+          },
+          {
+            "t_s": 1.005,
+            "x_m": 4.492745,
+            "y_m": 0.00486,
+            "yaw_deg": 0.292593,
+            "lateral_acceleration_mps2": 0.082496,
+            "jerk_mps3": 0.209679,
+            "cabin_lean_deg": 0.481973
+          },
+          {
+            "t_s": 1.105,
+            "x_m": 4.939777,
+            "y_m": 0.007595,
+            "yaw_deg": 0.413069,
+            "lateral_acceleration_mps2": 0.104841,
+            "jerk_mps3": 0.237052,
+            "cabin_lean_deg": 0.612516
+          },
+          {
+            "t_s": 1.205,
+            "x_m": 5.3868,
+            "y_m": 0.011385,
+            "yaw_deg": 0.563996,
+            "lateral_acceleration_mps2": 0.129856,
+            "jerk_mps3": 0.262992,
+            "cabin_lean_deg": 0.758642
+          },
+          {
+            "t_s": 1.305,
+            "x_m": 5.833811,
+            "y_m": 0.016483,
+            "yaw_deg": 0.748686,
+            "lateral_acceleration_mps2": 0.15737,
+            "jerk_mps3": 0.287032,
+            "cabin_lean_deg": 0.919365
+          },
+          {
+            "t_s": 1.405,
+            "x_m": 6.280801,
+            "y_m": 0.023164,
+            "yaw_deg": 0.970206,
+            "lateral_acceleration_mps2": 0.187174,
+            "jerk_mps3": 0.308763,
+            "cabin_lean_deg": 1.093437
+          },
+          {
+            "t_s": 1.505,
+            "x_m": 6.727759,
+            "y_m": 0.031725,
+            "yaw_deg": 1.231323,
+            "lateral_acceleration_mps2": 0.219013,
+            "jerk_mps3": 0.327835,
+            "cabin_lean_deg": 1.279383
+          },
+          {
+            "t_s": 1.605,
+            "x_m": 7.174668,
+            "y_m": 0.042486,
+            "yaw_deg": 1.534458,
+            "lateral_acceleration_mps2": 0.252605,
+            "jerk_mps3": 0.343954,
+            "cabin_lean_deg": 1.475532
+          },
+          {
+            "t_s": 1.705,
+            "x_m": 7.62151,
+            "y_m": 0.055782,
+            "yaw_deg": 1.881651,
+            "lateral_acceleration_mps2": 0.287637,
+            "jerk_mps3": 0.35689,
+            "cabin_lean_deg": 1.680049
+          },
+          {
+            "t_s": 1.805,
+            "x_m": 8.068256,
+            "y_m": 0.071962,
+            "yaw_deg": 2.274522,
+            "lateral_acceleration_mps2": 0.323773,
+            "jerk_mps3": 0.366469,
+            "cabin_lean_deg": 1.890969
+          },
+          {
+            "t_s": 1.905,
+            "x_m": 8.514873,
+            "y_m": 0.091387,
+            "yaw_deg": 2.714252,
+            "lateral_acceleration_mps2": 0.360661,
+            "jerk_mps3": 0.37258,
+            "cabin_lean_deg": 2.106228
+          },
+          {
+            "t_s": 2.005,
+            "x_m": 8.961318,
+            "y_m": 0.114424,
+            "yaw_deg": 3.201562,
+            "lateral_acceleration_mps2": 0.397939,
+            "jerk_mps3": 0.375173,
+            "cabin_lean_deg": 2.323699
+          },
+          {
+            "t_s": 2.105,
+            "x_m": 9.407539,
+            "y_m": 0.141444,
+            "yaw_deg": 3.736703,
+            "lateral_acceleration_mps2": 0.435237,
+            "jerk_mps3": 0.374257,
+            "cabin_lean_deg": 2.541223
+          },
+          {
+            "t_s": 2.205,
+            "x_m": 9.853475,
+            "y_m": 0.172816,
+            "yaw_deg": 4.319452,
+            "lateral_acceleration_mps2": 0.472186,
+            "jerk_mps3": 0.369906,
+            "cabin_lean_deg": 2.756639
+          },
+          {
+            "t_s": 2.305,
+            "x_m": 10.299053,
+            "y_m": 0.208904,
+            "yaw_deg": 4.949117,
+            "lateral_acceleration_mps2": 0.508423,
+            "jerk_mps3": 0.362254,
+            "cabin_lean_deg": 2.967824
+          },
+          {
+            "t_s": 2.405,
+            "x_m": 10.744192,
+            "y_m": 0.250066,
+            "yaw_deg": 5.624544,
+            "lateral_acceleration_mps2": 0.543593,
+            "jerk_mps3": 0.3515,
+            "cabin_lean_deg": 3.172717
+          },
+          {
+            "t_s": 2.505,
+            "x_m": 11.188795,
+            "y_m": 0.296645,
+            "yaw_deg": 6.344138,
+            "lateral_acceleration_mps2": 0.577359,
+            "jerk_mps3": 0.337907,
+            "cabin_lean_deg": 3.369357
+          },
+          {
+            "t_s": 2.605,
+            "x_m": 11.63276,
+            "y_m": 0.348968,
+            "yaw_deg": 7.105885,
+            "lateral_acceleration_mps2": 0.609407,
+            "jerk_mps3": 0.321806,
+            "cabin_lean_deg": 3.555915
+          },
+          {
+            "t_s": 2.705,
+            "x_m": 12.075968,
+            "y_m": 0.407345,
+            "yaw_deg": 7.907386,
+            "lateral_acceleration_mps2": 0.639448,
+            "jerk_mps3": 0.3036,
+            "cabin_lean_deg": 3.730722
+          },
+          {
+            "t_s": 2.805,
+            "x_m": 12.518295,
+            "y_m": 0.47206,
+            "yaw_deg": 8.745892,
+            "lateral_acceleration_mps2": 0.667227,
+            "jerk_mps3": 0.283766,
+            "cabin_lean_deg": 3.892302
+          },
+          {
+            "t_s": 2.905,
+            "x_m": 12.959606,
+            "y_m": 0.543374,
+            "yaw_deg": 9.618355,
+            "lateral_acceleration_mps2": 0.692526,
+            "jerk_mps3": 0.262869,
+            "cabin_lean_deg": 4.039408
+          },
+          {
+            "t_s": 3.005,
+            "x_m": 13.399758,
+            "y_m": 0.62152,
+            "yaw_deg": 10.521473,
+            "lateral_acceleration_mps2": 0.715173,
+            "jerk_mps3": 0.241563,
+            "cabin_lean_deg": 4.171045
+          },
+          {
+            "t_s": 3.105,
+            "x_m": 13.838603,
+            "y_m": 0.7067,
+            "yaw_deg": 11.45176,
+            "lateral_acceleration_mps2": 0.735043,
+            "jerk_mps3": 0.220598,
+            "cabin_lean_deg": 4.286508
+          },
+          {
+            "t_s": 3.205,
+            "x_m": 14.275987,
+            "y_m": 0.799085,
+            "yaw_deg": 12.405604,
+            "lateral_acceleration_mps2": 0.752068,
+            "jerk_mps3": 0.200811,
+            "cabin_lean_deg": 4.385408
+          },
+          {
+            "t_s": 3.305,
+            "x_m": 14.711755,
+            "y_m": 0.898817,
+            "yaw_deg": 13.379345,
+            "lateral_acceleration_mps2": 0.766239,
+            "jerk_mps3": 0.183092,
+            "cabin_lean_deg": 4.467708
+          },
+          {
+            "t_s": 3.405,
+            "x_m": 15.145749,
+            "y_m": 1.006004,
+            "yaw_deg": 14.369356,
+            "lateral_acceleration_mps2": 0.777613,
+            "jerk_mps3": 0.168283,
+            "cabin_lean_deg": 4.533749
+          },
+          {
+            "t_s": 3.505,
+            "x_m": 15.577812,
+            "y_m": 1.120724,
+            "yaw_deg": 15.372131,
+            "lateral_acceleration_mps2": 0.786317,
+            "jerk_mps3": 0.157013,
+            "cabin_lean_deg": 4.584286
+          },
+          {
+            "t_s": 3.605,
+            "x_m": 16.007792,
+            "y_m": 1.243025,
+            "yaw_deg": 16.384379,
+            "lateral_acceleration_mps2": 0.792559,
+            "jerk_mps3": 0.149478,
+            "cabin_lean_deg": 4.620518
+          },
+          {
+            "t_s": 3.705,
+            "x_m": 16.435535,
+            "y_m": 1.372929,
+            "yaw_deg": 17.403128,
+            "lateral_acceleration_mps2": 0.796625,
+            "jerk_mps3": 0.145295,
+            "cabin_lean_deg": 4.644119
+          },
+          {
+            "t_s": 3.805,
+            "x_m": 16.860896,
+            "y_m": 1.510433,
+            "yaw_deg": 18.425832,
+            "lateral_acceleration_mps2": 0.798891,
+            "jerk_mps3": 0.143569,
+            "cabin_lean_deg": 4.657273
+          },
+          {
+            "t_s": 3.905,
+            "x_m": 17.283732,
+            "y_m": 1.655516,
+            "yaw_deg": 19.45049,
+            "lateral_acceleration_mps2": 0.799827,
+            "jerk_mps3": 0.143173,
+            "cabin_lean_deg": 4.662703
+          },
+          {
+            "t_s": 4.005,
+            "x_m": 17.703905,
+            "y_m": 1.80814,
+            "yaw_deg": 20.475768,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663706
+          },
+          {
+            "t_s": 4.105,
+            "x_m": 18.12128,
+            "y_m": 1.968259,
+            "yaw_deg": 21.501104,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.205,
+            "x_m": 18.535722,
+            "y_m": 2.13582,
+            "yaw_deg": 22.52644,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.305,
+            "x_m": 18.9471,
+            "y_m": 2.310771,
+            "yaw_deg": 23.551776,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.405,
+            "x_m": 19.355281,
+            "y_m": 2.493056,
+            "yaw_deg": 24.577112,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.505,
+            "x_m": 19.760135,
+            "y_m": 2.682615,
+            "yaw_deg": 25.602448,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.605,
+            "x_m": 20.161532,
+            "y_m": 2.879389,
+            "yaw_deg": 26.627784,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.705,
+            "x_m": 20.559343,
+            "y_m": 3.083314,
+            "yaw_deg": 27.65312,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.805,
+            "x_m": 20.953442,
+            "y_m": 3.294325,
+            "yaw_deg": 28.678456,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.905,
+            "x_m": 21.343702,
+            "y_m": 3.512354,
+            "yaw_deg": 29.703792,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.005,
+            "x_m": 21.729997,
+            "y_m": 3.737332,
+            "yaw_deg": 30.729128,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.105,
+            "x_m": 22.112205,
+            "y_m": 3.969187,
+            "yaw_deg": 31.754464,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.205,
+            "x_m": 22.490203,
+            "y_m": 4.207844,
+            "yaw_deg": 32.779801,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.305,
+            "x_m": 22.86387,
+            "y_m": 4.453226,
+            "yaw_deg": 33.805137,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.405,
+            "x_m": 23.233086,
+            "y_m": 4.705257,
+            "yaw_deg": 34.830473,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.505,
+            "x_m": 23.597732,
+            "y_m": 4.963853,
+            "yaw_deg": 35.855809,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.605,
+            "x_m": 23.957693,
+            "y_m": 5.228934,
+            "yaw_deg": 36.881145,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.705,
+            "x_m": 24.312853,
+            "y_m": 5.500413,
+            "yaw_deg": 37.906481,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.805,
+            "x_m": 24.663098,
+            "y_m": 5.778204,
+            "yaw_deg": 38.931817,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.905,
+            "x_m": 25.008315,
+            "y_m": 6.062219,
+            "yaw_deg": 39.957153,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.005,
+            "x_m": 25.348396,
+            "y_m": 6.352365,
+            "yaw_deg": 40.982489,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.105,
+            "x_m": 25.683229,
+            "y_m": 6.64855,
+            "yaw_deg": 42.007825,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.205,
+            "x_m": 26.012709,
+            "y_m": 6.95068,
+            "yaw_deg": 43.033161,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.305,
+            "x_m": 26.33673,
+            "y_m": 7.258657,
+            "yaw_deg": 44.058497,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.405,
+            "x_m": 26.655188,
+            "y_m": 7.572383,
+            "yaw_deg": 45.083833,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.505,
+            "x_m": 26.967981,
+            "y_m": 7.891758,
+            "yaw_deg": 46.109169,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.605,
+            "x_m": 27.275009,
+            "y_m": 8.216678,
+            "yaw_deg": 47.134506,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.705,
+            "x_m": 27.576173,
+            "y_m": 8.547041,
+            "yaw_deg": 48.159842,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.805,
+            "x_m": 27.871377,
+            "y_m": 8.88274,
+            "yaw_deg": 49.185178,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.905,
+            "x_m": 28.160527,
+            "y_m": 9.223668,
+            "yaw_deg": 50.210514,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.005,
+            "x_m": 28.44353,
+            "y_m": 9.569716,
+            "yaw_deg": 51.23585,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.105,
+            "x_m": 28.720295,
+            "y_m": 9.920772,
+            "yaw_deg": 52.261186,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.205,
+            "x_m": 28.990734,
+            "y_m": 10.276724,
+            "yaw_deg": 53.286522,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.305,
+            "x_m": 29.25476,
+            "y_m": 10.637459,
+            "yaw_deg": 54.311858,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.405,
+            "x_m": 29.512288,
+            "y_m": 11.002861,
+            "yaw_deg": 55.337194,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.505,
+            "x_m": 29.763237,
+            "y_m": 11.372813,
+            "yaw_deg": 56.36253,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.605,
+            "x_m": 30.007525,
+            "y_m": 11.747196,
+            "yaw_deg": 57.387866,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.705,
+            "x_m": 30.245075,
+            "y_m": 12.125891,
+            "yaw_deg": 58.413202,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.805,
+            "x_m": 30.47581,
+            "y_m": 12.508775,
+            "yaw_deg": 59.438538,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.905,
+            "x_m": 30.699657,
+            "y_m": 12.895728,
+            "yaw_deg": 60.463874,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.005,
+            "x_m": 30.916543,
+            "y_m": 13.286624,
+            "yaw_deg": 61.48921,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.105,
+            "x_m": 31.1264,
+            "y_m": 13.681338,
+            "yaw_deg": 62.514547,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.205,
+            "x_m": 31.32916,
+            "y_m": 14.079745,
+            "yaw_deg": 63.539883,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.305,
+            "x_m": 31.524758,
+            "y_m": 14.481716,
+            "yaw_deg": 64.565219,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.405,
+            "x_m": 31.713132,
+            "y_m": 14.887123,
+            "yaw_deg": 65.590555,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.505,
+            "x_m": 31.894221,
+            "y_m": 15.295836,
+            "yaw_deg": 66.615891,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.605,
+            "x_m": 32.067967,
+            "y_m": 15.707724,
+            "yaw_deg": 67.641227,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.705,
+            "x_m": 32.234315,
+            "y_m": 16.122655,
+            "yaw_deg": 68.666563,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.143164,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.805,
+            "x_m": 32.393212,
+            "y_m": 16.540496,
+            "yaw_deg": 69.691899,
+            "lateral_acceleration_mps2": 0.799998,
+            "jerk_mps3": 0.143163,
+            "cabin_lean_deg": 4.663697
+          },
+          {
+            "t_s": 8.905,
+            "x_m": 32.544606,
+            "y_m": 16.961114,
+            "yaw_deg": 70.717135,
+            "lateral_acceleration_mps2": 0.79977,
+            "jerk_mps3": 0.143185,
+            "cabin_lean_deg": 4.662376
+          },
+          {
+            "t_s": 9.005,
+            "x_m": 32.688452,
+            "y_m": 17.384372,
+            "yaw_deg": 71.741584,
+            "lateral_acceleration_mps2": 0.798711,
+            "jerk_mps3": 0.143677,
+            "cabin_lean_deg": 4.656224
+          },
+          {
+            "t_s": 9.105,
+            "x_m": 32.824715,
+            "y_m": 17.810133,
+            "yaw_deg": 72.763794,
+            "lateral_acceleration_mps2": 0.796262,
+            "jerk_mps3": 0.145626,
+            "cabin_lean_deg": 4.642011
+          },
+          {
+            "t_s": 9.205,
+            "x_m": 32.953375,
+            "y_m": 18.238252,
+            "yaw_deg": 73.781666,
+            "lateral_acceleration_mps2": 0.791966,
+            "jerk_mps3": 0.150152,
+            "cabin_lean_deg": 4.617076
+          },
+          {
+            "t_s": 9.305,
+            "x_m": 33.074434,
+            "y_m": 18.668582,
+            "yaw_deg": 74.792578,
+            "lateral_acceleration_mps2": 0.785458,
+            "jerk_mps3": 0.158104,
+            "cabin_lean_deg": 4.579295
+          },
+          {
+            "t_s": 9.405,
+            "x_m": 33.187918,
+            "y_m": 19.100972,
+            "yaw_deg": 75.793498,
+            "lateral_acceleration_mps2": 0.776459,
+            "jerk_mps3": 0.169795,
+            "cabin_lean_deg": 4.52705
+          },
+          {
+            "t_s": 9.505,
+            "x_m": 33.293879,
+            "y_m": 19.535267,
+            "yaw_deg": 76.781093,
+            "lateral_acceleration_mps2": 0.764773,
+            "jerk_mps3": 0.184972,
+            "cabin_lean_deg": 4.459193
+          },
+          {
+            "t_s": 9.605,
+            "x_m": 33.392402,
+            "y_m": 19.97131,
+            "yaw_deg": 77.75183,
+            "lateral_acceleration_mps2": 0.75028,
+            "jerk_mps3": 0.20297,
+            "cabin_lean_deg": 4.375019
+          },
+          {
+            "t_s": 9.705,
+            "x_m": 33.483599,
+            "y_m": 20.408944,
+            "yaw_deg": 78.702072,
+            "lateral_acceleration_mps2": 0.73293,
+            "jerk_mps3": 0.222935,
+            "cabin_lean_deg": 4.274229
+          },
+          {
+            "t_s": 9.805,
+            "x_m": 33.567615,
+            "y_m": 20.848013,
+            "yaw_deg": 79.628161,
+            "lateral_acceleration_mps2": 0.71274,
+            "jerk_mps3": 0.243979,
+            "cabin_lean_deg": 4.156905
+          },
+          {
+            "t_s": 9.905,
+            "x_m": 33.644629,
+            "y_m": 21.288364,
+            "yaw_deg": 80.526501,
+            "lateral_acceleration_mps2": 0.689785,
+            "jerk_mps3": 0.265275,
+            "cabin_lean_deg": 4.02347
+          },
+          {
+            "t_s": 10.005,
+            "x_m": 33.714848,
+            "y_m": 21.729851,
+            "yaw_deg": 81.39363,
+            "lateral_acceleration_mps2": 0.664194,
+            "jerk_mps3": 0.286083,
+            "cabin_lean_deg": 3.874666
+          },
+          {
+            "t_s": 10.105,
+            "x_m": 33.778508,
+            "y_m": 22.172331,
+            "yaw_deg": 82.226286,
+            "lateral_acceleration_mps2": 0.636147,
+            "jerk_mps3": 0.305758,
+            "cabin_lean_deg": 3.711517
+          },
+          {
+            "t_s": 10.205,
+            "x_m": 33.835874,
+            "y_m": 22.615671,
+            "yaw_deg": 83.021466,
+            "lateral_acceleration_mps2": 0.605865,
+            "jerk_mps3": 0.323748,
+            "cabin_lean_deg": 3.535298
+          },
+          {
+            "t_s": 10.305,
+            "x_m": 33.887237,
+            "y_m": 23.059748,
+            "yaw_deg": 83.776474,
+            "lateral_acceleration_mps2": 0.573607,
+            "jerk_mps3": 0.339583,
+            "cabin_lean_deg": 3.347508
+          },
+          {
+            "t_s": 10.405,
+            "x_m": 33.932907,
+            "y_m": 23.504446,
+            "yaw_deg": 84.488973,
+            "lateral_acceleration_mps2": 0.539664,
+            "jerk_mps3": 0.352869,
+            "cabin_lean_deg": 3.149836
+          },
+          {
+            "t_s": 10.505,
+            "x_m": 33.973215,
+            "y_m": 23.949662,
+            "yaw_deg": 85.157014,
+            "lateral_acceleration_mps2": 0.504356,
+            "jerk_mps3": 0.363283,
+            "cabin_lean_deg": 2.944128
+          },
+          {
+            "t_s": 10.605,
+            "x_m": 34.008508,
+            "y_m": 24.395305,
+            "yaw_deg": 85.779074,
+            "lateral_acceleration_mps2": 0.468021,
+            "jerk_mps3": 0.370569,
+            "cabin_lean_deg": 2.732358
+          },
+          {
+            "t_s": 10.705,
+            "x_m": 34.039143,
+            "y_m": 24.841292,
+            "yaw_deg": 86.354073,
+            "lateral_acceleration_mps2": 0.431013,
+            "jerk_mps3": 0.374536,
+            "cabin_lean_deg": 2.516595
+          },
+          {
+            "t_s": 10.805,
+            "x_m": 34.065486,
+            "y_m": 25.287553,
+            "yaw_deg": 86.881395,
+            "lateral_acceleration_mps2": 0.393699,
+            "jerk_mps3": 0.375056,
+            "cabin_lean_deg": 2.298968
+          },
+          {
+            "t_s": 10.905,
+            "x_m": 34.087907,
+            "y_m": 25.73403,
+            "yaw_deg": 87.360895,
+            "lateral_acceleration_mps2": 0.356447,
+            "jerk_mps3": 0.372063,
+            "cabin_lean_deg": 2.081639
+          },
+          {
+            "t_s": 11.005,
+            "x_m": 34.106777,
+            "y_m": 26.18067,
+            "yaw_deg": 87.7929,
+            "lateral_acceleration_mps2": 0.319626,
+            "jerk_mps3": 0.365555,
+            "cabin_lean_deg": 1.866767
+          },
+          {
+            "t_s": 11.105,
+            "x_m": 34.122461,
+            "y_m": 26.627434,
+            "yaw_deg": 88.178209,
+            "lateral_acceleration_mps2": 0.283598,
+            "jerk_mps3": 0.355588,
+            "cabin_lean_deg": 1.656471
+          },
+          {
+            "t_s": 11.205,
+            "x_m": 34.135318,
+            "y_m": 27.074288,
+            "yaw_deg": 88.518075,
+            "lateral_acceleration_mps2": 0.248713,
+            "jerk_mps3": 0.342281,
+            "cabin_lean_deg": 1.452808
+          },
+          {
+            "t_s": 11.305,
+            "x_m": 34.145697,
+            "y_m": 27.521207,
+            "yaw_deg": 88.81419,
+            "lateral_acceleration_mps2": 0.215305,
+            "jerk_mps3": 0.325813,
+            "cabin_lean_deg": 1.257728
+          },
+          {
+            "t_s": 11.405,
+            "x_m": 34.15393,
+            "y_m": 27.968171,
+            "yaw_deg": 89.068656,
+            "lateral_acceleration_mps2": 0.183683,
+            "jerk_mps3": 0.306424,
+            "cabin_lean_deg": 1.073049
+          },
+          {
+            "t_s": 11.505,
+            "x_m": 34.160332,
+            "y_m": 28.415165,
+            "yaw_deg": 89.283956,
+            "lateral_acceleration_mps2": 0.154127,
+            "jerk_mps3": 0.284412,
+            "cabin_lean_deg": 0.900422
+          },
+          {
+            "t_s": 11.605,
+            "x_m": 34.165198,
+            "y_m": 28.862178,
+            "yaw_deg": 89.462908,
+            "lateral_acceleration_mps2": 0.126886,
+            "jerk_mps3": 0.260135,
+            "cabin_lean_deg": 0.741298
+          },
+          {
+            "t_s": 11.705,
+            "x_m": 34.168799,
+            "y_m": 29.309204,
+            "yaw_deg": 89.608624,
+            "lateral_acceleration_mps2": 0.102168,
+            "jerk_mps3": 0.234008,
+            "cabin_lean_deg": 0.596897
+          },
+          {
+            "t_s": 11.805,
+            "x_m": 34.171383,
+            "y_m": 29.756236,
+            "yaw_deg": 89.724449,
+            "lateral_acceleration_mps2": 0.080133,
+            "jerk_mps3": 0.206504,
+            "cabin_lean_deg": 0.468172
+          },
+          {
+            "t_s": 11.905,
+            "x_m": 34.173168,
+            "y_m": 30.203273,
+            "yaw_deg": 89.813907,
+            "lateral_acceleration_mps2": 0.060896,
+            "jerk_mps3": 0.178154,
+            "cabin_lean_deg": 0.355784
+          },
+          {
+            "t_s": 12.005,
+            "x_m": 34.174346,
+            "y_m": 30.650311,
+            "yaw_deg": 89.880627,
+            "lateral_acceleration_mps2": 0.044512,
+            "jerk_mps3": 0.149544,
+            "cabin_lean_deg": 0.26006
+          },
+          {
+            "t_s": 12.105,
+            "x_m": 34.17508,
+            "y_m": 31.097351,
+            "yaw_deg": 89.928266,
+            "lateral_acceleration_mps2": 0.030975,
+            "jerk_mps3": 0.121316,
+            "cabin_lean_deg": 0.180971
+          },
+          {
+            "t_s": 12.205,
+            "x_m": 34.175505,
+            "y_m": 31.54439,
+            "yaw_deg": 89.960435,
+            "lateral_acceleration_mps2": 0.020213,
+            "jerk_mps3": 0.094169,
+            "cabin_lean_deg": 0.118093
+          },
+          {
+            "t_s": 12.305,
+            "x_m": 34.175729,
+            "y_m": 31.99143,
+            "yaw_deg": 89.980599,
+            "lateral_acceleration_mps2": 0.01208,
+            "jerk_mps3": 0.068855,
+            "cabin_lean_deg": 0.070578
+          },
+          {
+            "t_s": 12.405,
+            "x_m": 34.175831,
+            "y_m": 32.43847,
+            "yaw_deg": 89.991986,
+            "lateral_acceleration_mps2": 0.006354,
+            "jerk_mps3": 0.046184,
+            "cabin_lean_deg": 0.037121
+          },
+          {
+            "t_s": 12.505,
+            "x_m": 34.175869,
+            "y_m": 32.88551,
+            "yaw_deg": 89.997484,
+            "lateral_acceleration_mps2": 0.002726,
+            "jerk_mps3": 0.027019,
+            "cabin_lean_deg": 0.015928
+          },
+          {
+            "t_s": 12.605,
+            "x_m": 34.175879,
+            "y_m": 33.33255,
+            "yaw_deg": 89.999527,
+            "lateral_acceleration_mps2": 0.000802,
+            "jerk_mps3": 0.01228,
+            "cabin_lean_deg": 0.004687
+          },
+          {
+            "t_s": 12.705,
+            "x_m": 34.175881,
+            "y_m": 33.77959,
+            "yaw_deg": 89.999976,
+            "lateral_acceleration_mps2": 9e-05,
+            "jerk_mps3": 0.00294,
+            "cabin_lean_deg": 0.000528
+          },
+          {
+            "t_s": 12.793648,
+            "x_m": 34.175881,
+            "y_m": 34.175881,
+            "yaw_deg": 90.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 1e-06,
+            "cabin_lean_deg": 0.0
+          }
+        ]
+      },
+      "brake": {
+        "time_s": 7.587999999999999,
+        "distance_m": 16.960697599999996,
+        "ramp_s": 2.0,
+        "plateau_s": 3.587999999999999,
+        "max_acceleration_mps2": 0.8,
+        "max_jerk_mps3": 0.4
+      },
+      "route_total_time_s": 27.969647628132783,
+      "route_length_m": 91.11411755680479,
+      "destination_m": {
+        "x": 51.13657819574906,
+        "y": 51.13657819573562,
+        "height": "not modelled"
+      },
+      "vertical_acceleration_mps2": 0.0,
+      "reference_altitude_error_m": 0.0
+    },
+    {
+      "speed_mph": 20.0,
+      "speed_mps": 8.9408,
+      "start": {
+        "time_s": 13.175999999999998,
+        "distance_m": 58.90199039999999,
+        "ramp_s": 2.0,
+        "plateau_s": 9.175999999999998,
+        "max_acceleration_mps2": 0.8,
+        "max_jerk_mps3": 0.4
+      },
+      "turn_90_degrees": {
+        "time_s": 21.366748194122437,
+        "distance_travelled_m": 191.03582225400987,
+        "steady_radius_m": 99.92238079999997,
+        "turn_entry_duration_s": 3.811528445862673,
+        "steady_corner_duration_s": 13.743691302397089,
+        "steady_heading_rate_degps": 5.126680342974439,
+        "final_heading_deg": 90.00000000000388,
+        "turn_dx_m": 117.1640594474705,
+        "turn_dy_m": 117.16405944745199,
+        "peak_total_jerk_mps3": 0.3939525536311096,
+        "peak_lateral_acceleration_mps2": 0.8,
+        "max_cabin_lean_deg": 4.6637076865344955,
+        "max_cabin_lean_rate_degps": 2.2954835603104526,
+        "trace_100ms": [
+          {
+            "t_s": 0.0,
+            "x_m": 0.0,
+            "y_m": 0.0,
+            "yaw_deg": 0.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 0.0,
+            "cabin_lean_deg": 0.0
+          },
+          {
+            "t_s": 0.005,
+            "x_m": 0.044704,
+            "y_m": 0.0,
+            "yaw_deg": 0.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 3e-06,
+            "cabin_lean_deg": 0.0
+          },
+          {
+            "t_s": 0.105,
+            "x_m": 0.938784,
+            "y_m": 0.0,
+            "yaw_deg": 2.7e-05,
+            "lateral_acceleration_mps2": 0.000149,
+            "jerk_mps3": 0.004312,
+            "cabin_lean_deg": 0.000873
+          },
+          {
+            "t_s": 0.205,
+            "x_m": 1.832864,
+            "y_m": 2e-06,
+            "yaw_deg": 0.000383,
+            "lateral_acceleration_mps2": 0.001106,
+            "jerk_mps3": 0.015935,
+            "cabin_lean_deg": 0.006463
+          },
+          {
+            "t_s": 0.305,
+            "x_m": 2.726944,
+            "y_m": 1.8e-05,
+            "yaw_deg": 0.001816,
+            "lateral_acceleration_mps2": 0.003538,
+            "jerk_mps3": 0.033616,
+            "cabin_lean_deg": 0.020672
+          },
+          {
+            "t_s": 0.405,
+            "x_m": 3.621024,
+            "y_m": 7.1e-05,
+            "yaw_deg": 0.005461,
+            "lateral_acceleration_mps2": 0.007992,
+            "jerk_mps3": 0.056171,
+            "cabin_lean_deg": 0.046691
+          },
+          {
+            "t_s": 0.505,
+            "x_m": 4.515104,
+            "y_m": 0.000207,
+            "yaw_deg": 0.012765,
+            "lateral_acceleration_mps2": 0.014898,
+            "jerk_mps3": 0.082488,
+            "cabin_lean_deg": 0.08704
+          },
+          {
+            "t_s": 0.605,
+            "x_m": 5.409184,
+            "y_m": 0.000497,
+            "yaw_deg": 0.025415,
+            "lateral_acceleration_mps2": 0.02458,
+            "jerk_mps3": 0.111526,
+            "cabin_lean_deg": 0.143608
+          },
+          {
+            "t_s": 0.705,
+            "x_m": 6.303264,
+            "y_m": 0.001038,
+            "yaw_deg": 0.045269,
+            "lateral_acceleration_mps2": 0.037261,
+            "jerk_mps3": 0.142317,
+            "cabin_lean_deg": 0.217699
+          },
+          {
+            "t_s": 0.805,
+            "x_m": 7.197343,
+            "y_m": 0.001957,
+            "yaw_deg": 0.074298,
+            "lateral_acceleration_mps2": 0.053072,
+            "jerk_mps3": 0.173964,
+            "cabin_lean_deg": 0.31007
+          },
+          {
+            "t_s": 0.905,
+            "x_m": 8.091422,
+            "y_m": 0.003415,
+            "yaw_deg": 0.114526,
+            "lateral_acceleration_mps2": 0.072055,
+            "jerk_mps3": 0.20564,
+            "cabin_lean_deg": 0.420976
+          },
+          {
+            "t_s": 1.005,
+            "x_m": 8.985499,
+            "y_m": 0.005601,
+            "yaw_deg": 0.167978,
+            "lateral_acceleration_mps2": 0.094175,
+            "jerk_mps3": 0.236592,
+            "cabin_lean_deg": 0.550206
+          },
+          {
+            "t_s": 1.105,
+            "x_m": 9.879574,
+            "y_m": 0.008736,
+            "yaw_deg": 0.236633,
+            "lateral_acceleration_mps2": 0.119326,
+            "jerk_mps3": 0.266138,
+            "cabin_lean_deg": 0.697132
+          },
+          {
+            "t_s": 1.205,
+            "x_m": 10.773643,
+            "y_m": 0.013075,
+            "yaw_deg": 0.322378,
+            "lateral_acceleration_mps2": 0.147335,
+            "jerk_mps3": 0.293669,
+            "cabin_lean_deg": 0.860744
+          },
+          {
+            "t_s": 1.305,
+            "x_m": 11.667704,
+            "y_m": 0.018896,
+            "yaw_deg": 0.42697,
+            "lateral_acceleration_mps2": 0.177972,
+            "jerk_mps3": 0.318646,
+            "cabin_lean_deg": 1.039696
+          },
+          {
+            "t_s": 1.405,
+            "x_m": 12.561752,
+            "y_m": 0.026506,
+            "yaw_deg": 0.552002,
+            "lateral_acceleration_mps2": 0.210959,
+            "jerk_mps3": 0.340605,
+            "cabin_lean_deg": 1.232347
+          },
+          {
+            "t_s": 1.505,
+            "x_m": 13.455778,
+            "y_m": 0.036237,
+            "yaw_deg": 0.698873,
+            "lateral_acceleration_mps2": 0.245972,
+            "jerk_mps3": 0.359153,
+            "cabin_lean_deg": 1.4368
+          },
+          {
+            "t_s": 1.605,
+            "x_m": 14.349775,
+            "y_m": 0.048437,
+            "yaw_deg": 0.868762,
+            "lateral_acceleration_mps2": 0.282652,
+            "jerk_mps3": 0.373971,
+            "cabin_lean_deg": 1.650949
+          },
+          {
+            "t_s": 1.705,
+            "x_m": 15.243728,
+            "y_m": 0.063474,
+            "yaw_deg": 1.062609,
+            "lateral_acceleration_mps2": 0.320611,
+            "jerk_mps3": 0.384812,
+            "cabin_lean_deg": 1.872519
+          },
+          {
+            "t_s": 1.805,
+            "x_m": 16.137621,
+            "y_m": 0.081727,
+            "yaw_deg": 1.281096,
+            "lateral_acceleration_mps2": 0.359441,
+            "jerk_mps3": 0.391502,
+            "cabin_lean_deg": 2.099108
+          },
+          {
+            "t_s": 1.905,
+            "x_m": 17.031433,
+            "y_m": 0.103583,
+            "yaw_deg": 1.52464,
+            "lateral_acceleration_mps2": 0.398715,
+            "jerk_mps3": 0.393942,
+            "cabin_lean_deg": 2.32823
+          },
+          {
+            "t_s": 2.005,
+            "x_m": 17.925139,
+            "y_m": 0.129435,
+            "yaw_deg": 1.79338,
+            "lateral_acceleration_mps2": 0.438004,
+            "jerk_mps3": 0.392105,
+            "cabin_lean_deg": 2.55736
+          },
+          {
+            "t_s": 2.105,
+            "x_m": 18.818706,
+            "y_m": 0.159674,
+            "yaw_deg": 2.08718,
+            "lateral_acceleration_mps2": 0.476876,
+            "jerk_mps3": 0.386039,
+            "cabin_lean_deg": 2.783974
+          },
+          {
+            "t_s": 2.205,
+            "x_m": 19.712099,
+            "y_m": 0.194688,
+            "yaw_deg": 2.405629,
+            "lateral_acceleration_mps2": 0.514905,
+            "jerk_mps3": 0.375864,
+            "cabin_lean_deg": 3.005592
+          },
+          {
+            "t_s": 2.305,
+            "x_m": 20.605275,
+            "y_m": 0.234855,
+            "yaw_deg": 2.748048,
+            "lateral_acceleration_mps2": 0.55168,
+            "jerk_mps3": 0.361777,
+            "cabin_lean_deg": 3.219822
+          },
+          {
+            "t_s": 2.405,
+            "x_m": 21.498186,
+            "y_m": 0.280539,
+            "yaw_deg": 3.113501,
+            "lateral_acceleration_mps2": 0.586813,
+            "jerk_mps3": 0.344049,
+            "cabin_lean_deg": 3.424399
+          },
+          {
+            "t_s": 2.505,
+            "x_m": 22.390776,
+            "y_m": 0.33209,
+            "yaw_deg": 3.500814,
+            "lateral_acceleration_mps2": 0.619943,
+            "jerk_mps3": 0.323029,
+            "cabin_lean_deg": 3.617228
+          },
+          {
+            "t_s": 2.605,
+            "x_m": 23.282988,
+            "y_m": 0.389835,
+            "yaw_deg": 3.908589,
+            "lateral_acceleration_mps2": 0.650743,
+            "jerk_mps3": 0.299146,
+            "cabin_lean_deg": 3.796427
+          },
+          {
+            "t_s": 2.705,
+            "x_m": 24.174755,
+            "y_m": 0.454077,
+            "yaw_deg": 4.335237,
+            "lateral_acceleration_mps2": 0.678931,
+            "jerk_mps3": 0.272912,
+            "cabin_lean_deg": 3.960363
+          },
+          {
+            "t_s": 2.805,
+            "x_m": 25.066008,
+            "y_m": 0.525093,
+            "yaw_deg": 4.779003,
+            "lateral_acceleration_mps2": 0.704274,
+            "jerk_mps3": 0.244934,
+            "cabin_lean_deg": 4.107698
+          },
+          {
+            "t_s": 2.905,
+            "x_m": 25.956673,
+            "y_m": 0.603131,
+            "yaw_deg": 5.238001,
+            "lateral_acceleration_mps2": 0.726596,
+            "jerk_mps3": 0.215921,
+            "cabin_lean_deg": 4.237426
+          },
+          {
+            "t_s": 3.005,
+            "x_m": 26.846675,
+            "y_m": 0.688406,
+            "yaw_deg": 5.710254,
+            "lateral_acceleration_mps2": 0.745786,
+            "jerk_mps3": 0.186707,
+            "cabin_lean_deg": 4.348915
+          },
+          {
+            "t_s": 3.105,
+            "x_m": 27.735934,
+            "y_m": 0.781105,
+            "yaw_deg": 6.193737,
+            "lateral_acceleration_mps2": 0.761803,
+            "jerk_mps3": 0.158288,
+            "cabin_lean_deg": 4.441947
+          },
+          {
+            "t_s": 3.205,
+            "x_m": 28.62437,
+            "y_m": 0.881377,
+            "yaw_deg": 6.686426,
+            "lateral_acceleration_mps2": 0.774686,
+            "jerk_mps3": 0.131857,
+            "cabin_lean_deg": 4.516755
+          },
+          {
+            "t_s": 3.305,
+            "x_m": 29.511904,
+            "y_m": 0.989345,
+            "yaw_deg": 7.186349,
+            "lateral_acceleration_mps2": 0.784558,
+            "jerk_mps3": 0.108849,
+            "cabin_lean_deg": 4.574072
+          },
+          {
+            "t_s": 3.405,
+            "x_m": 30.398457,
+            "y_m": 1.105096,
+            "yaw_deg": 7.691644,
+            "lateral_acceleration_mps2": 0.791636,
+            "jerk_mps3": 0.090842,
+            "cabin_lean_deg": 4.615163
+          },
+          {
+            "t_s": 3.505,
+            "x_m": 31.28395,
+            "y_m": 1.228691,
+            "yaw_deg": 8.200622,
+            "lateral_acceleration_mps2": 0.796238,
+            "jerk_mps3": 0.079056,
+            "cabin_lean_deg": 4.641873
+          },
+          {
+            "t_s": 3.605,
+            "x_m": 32.168307,
+            "y_m": 1.360166,
+            "yaw_deg": 8.711833,
+            "lateral_acceleration_mps2": 0.798787,
+            "jerk_mps3": 0.073343,
+            "cabin_lean_deg": 4.656666
+          },
+          {
+            "t_s": 3.705,
+            "x_m": 33.051455,
+            "y_m": 1.499536,
+            "yaw_deg": 9.224135,
+            "lateral_acceleration_mps2": 0.799821,
+            "jerk_mps3": 0.071715,
+            "cabin_lean_deg": 4.662667
+          },
+          {
+            "t_s": 3.805,
+            "x_m": 33.933321,
+            "y_m": 1.646801,
+            "yaw_deg": 9.736775,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663707
+          },
+          {
+            "t_s": 3.905,
+            "x_m": 34.813833,
+            "y_m": 1.80195,
+            "yaw_deg": 10.249443,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.005,
+            "x_m": 35.692923,
+            "y_m": 1.964971,
+            "yaw_deg": 10.762111,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.105,
+            "x_m": 36.570518,
+            "y_m": 2.135851,
+            "yaw_deg": 11.274779,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.205,
+            "x_m": 37.446549,
+            "y_m": 2.314577,
+            "yaw_deg": 11.787447,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.305,
+            "x_m": 38.320946,
+            "y_m": 2.501135,
+            "yaw_deg": 12.300115,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.405,
+            "x_m": 39.193639,
+            "y_m": 2.695508,
+            "yaw_deg": 12.812783,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.505,
+            "x_m": 40.064557,
+            "y_m": 2.897682,
+            "yaw_deg": 13.325451,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.605,
+            "x_m": 40.933632,
+            "y_m": 3.107641,
+            "yaw_deg": 13.838119,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.705,
+            "x_m": 41.800794,
+            "y_m": 3.325368,
+            "yaw_deg": 14.350787,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.805,
+            "x_m": 42.665972,
+            "y_m": 3.550845,
+            "yaw_deg": 14.863455,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.905,
+            "x_m": 43.529099,
+            "y_m": 3.784054,
+            "yaw_deg": 15.376123,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.005,
+            "x_m": 44.390104,
+            "y_m": 4.024977,
+            "yaw_deg": 15.888791,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.105,
+            "x_m": 45.248919,
+            "y_m": 4.273594,
+            "yaw_deg": 16.401459,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.205,
+            "x_m": 46.105475,
+            "y_m": 4.529886,
+            "yaw_deg": 16.914127,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.305,
+            "x_m": 46.959704,
+            "y_m": 4.793831,
+            "yaw_deg": 17.426795,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.405,
+            "x_m": 47.811536,
+            "y_m": 5.065409,
+            "yaw_deg": 17.939463,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.505,
+            "x_m": 48.660905,
+            "y_m": 5.344598,
+            "yaw_deg": 18.452131,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.605,
+            "x_m": 49.507742,
+            "y_m": 5.631376,
+            "yaw_deg": 18.964799,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.705,
+            "x_m": 50.351978,
+            "y_m": 5.92572,
+            "yaw_deg": 19.477467,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.805,
+            "x_m": 51.193547,
+            "y_m": 6.227605,
+            "yaw_deg": 19.990135,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.905,
+            "x_m": 52.032382,
+            "y_m": 6.537009,
+            "yaw_deg": 20.502803,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.005,
+            "x_m": 52.868414,
+            "y_m": 6.853906,
+            "yaw_deg": 21.015471,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.105,
+            "x_m": 53.701578,
+            "y_m": 7.17827,
+            "yaw_deg": 21.52814,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.205,
+            "x_m": 54.531805,
+            "y_m": 7.510077,
+            "yaw_deg": 22.040808,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.305,
+            "x_m": 55.359031,
+            "y_m": 7.849299,
+            "yaw_deg": 22.553476,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.405,
+            "x_m": 56.183188,
+            "y_m": 8.195909,
+            "yaw_deg": 23.066144,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.505,
+            "x_m": 57.004211,
+            "y_m": 8.549879,
+            "yaw_deg": 23.578812,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.605,
+            "x_m": 57.822034,
+            "y_m": 8.911181,
+            "yaw_deg": 24.09148,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.705,
+            "x_m": 58.636592,
+            "y_m": 9.279787,
+            "yaw_deg": 24.604148,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.805,
+            "x_m": 59.447818,
+            "y_m": 9.655666,
+            "yaw_deg": 25.116816,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.905,
+            "x_m": 60.255649,
+            "y_m": 10.038788,
+            "yaw_deg": 25.629484,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.005,
+            "x_m": 61.06002,
+            "y_m": 10.429123,
+            "yaw_deg": 26.142152,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.105,
+            "x_m": 61.860866,
+            "y_m": 10.82664,
+            "yaw_deg": 26.65482,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.205,
+            "x_m": 62.658123,
+            "y_m": 11.231307,
+            "yaw_deg": 27.167488,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.305,
+            "x_m": 63.451727,
+            "y_m": 11.643091,
+            "yaw_deg": 27.680156,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.405,
+            "x_m": 64.241615,
+            "y_m": 12.06196,
+            "yaw_deg": 28.192824,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.505,
+            "x_m": 65.027723,
+            "y_m": 12.487879,
+            "yaw_deg": 28.705492,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.605,
+            "x_m": 65.809989,
+            "y_m": 12.920815,
+            "yaw_deg": 29.21816,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.705,
+            "x_m": 66.58835,
+            "y_m": 13.360733,
+            "yaw_deg": 29.730828,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.805,
+            "x_m": 67.362744,
+            "y_m": 13.807598,
+            "yaw_deg": 30.243496,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.905,
+            "x_m": 68.133108,
+            "y_m": 14.261374,
+            "yaw_deg": 30.756164,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.005,
+            "x_m": 68.899381,
+            "y_m": 14.722025,
+            "yaw_deg": 31.268832,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.105,
+            "x_m": 69.661502,
+            "y_m": 15.189514,
+            "yaw_deg": 31.7815,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.205,
+            "x_m": 70.419409,
+            "y_m": 15.663803,
+            "yaw_deg": 32.294168,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.305,
+            "x_m": 71.173042,
+            "y_m": 16.144855,
+            "yaw_deg": 32.806836,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.405,
+            "x_m": 71.922341,
+            "y_m": 16.63263,
+            "yaw_deg": 33.319504,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.505,
+            "x_m": 72.667245,
+            "y_m": 17.127091,
+            "yaw_deg": 33.832172,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.605,
+            "x_m": 73.407696,
+            "y_m": 17.628197,
+            "yaw_deg": 34.34484,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.705,
+            "x_m": 74.143633,
+            "y_m": 18.135908,
+            "yaw_deg": 34.857508,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.805,
+            "x_m": 74.874997,
+            "y_m": 18.650184,
+            "yaw_deg": 35.370176,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.905,
+            "x_m": 75.601731,
+            "y_m": 19.170983,
+            "yaw_deg": 35.882844,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.005,
+            "x_m": 76.323776,
+            "y_m": 19.698264,
+            "yaw_deg": 36.395513,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.105,
+            "x_m": 77.041074,
+            "y_m": 20.231984,
+            "yaw_deg": 36.908181,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.205,
+            "x_m": 77.753568,
+            "y_m": 20.772101,
+            "yaw_deg": 37.420849,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.305,
+            "x_m": 78.4612,
+            "y_m": 21.318571,
+            "yaw_deg": 37.933517,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.405,
+            "x_m": 79.163915,
+            "y_m": 21.871352,
+            "yaw_deg": 38.446185,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.505,
+            "x_m": 79.861655,
+            "y_m": 22.430397,
+            "yaw_deg": 38.958853,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.605,
+            "x_m": 80.554365,
+            "y_m": 22.995664,
+            "yaw_deg": 39.471521,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.705,
+            "x_m": 81.24199,
+            "y_m": 23.567106,
+            "yaw_deg": 39.984189,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.805,
+            "x_m": 81.924474,
+            "y_m": 24.144678,
+            "yaw_deg": 40.496857,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.905,
+            "x_m": 82.601763,
+            "y_m": 24.728333,
+            "yaw_deg": 41.009525,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.005,
+            "x_m": 83.273803,
+            "y_m": 25.318025,
+            "yaw_deg": 41.522193,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.105,
+            "x_m": 83.940539,
+            "y_m": 25.913706,
+            "yaw_deg": 42.034861,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.205,
+            "x_m": 84.601918,
+            "y_m": 26.51533,
+            "yaw_deg": 42.547529,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.305,
+            "x_m": 85.257889,
+            "y_m": 27.122847,
+            "yaw_deg": 43.060197,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.405,
+            "x_m": 85.908396,
+            "y_m": 27.736209,
+            "yaw_deg": 43.572865,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.505,
+            "x_m": 86.55339,
+            "y_m": 28.355367,
+            "yaw_deg": 44.085533,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.605,
+            "x_m": 87.192818,
+            "y_m": 28.980272,
+            "yaw_deg": 44.598201,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.705,
+            "x_m": 87.826629,
+            "y_m": 29.610872,
+            "yaw_deg": 45.110869,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.805,
+            "x_m": 88.454772,
+            "y_m": 30.247119,
+            "yaw_deg": 45.623537,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.905,
+            "x_m": 89.077198,
+            "y_m": 30.888961,
+            "yaw_deg": 46.136205,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.005,
+            "x_m": 89.693855,
+            "y_m": 31.536346,
+            "yaw_deg": 46.648873,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.105,
+            "x_m": 90.304695,
+            "y_m": 32.189223,
+            "yaw_deg": 47.161541,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.205,
+            "x_m": 90.909669,
+            "y_m": 32.847539,
+            "yaw_deg": 47.674209,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.305,
+            "x_m": 91.508728,
+            "y_m": 33.511242,
+            "yaw_deg": 48.186877,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.405,
+            "x_m": 92.101825,
+            "y_m": 34.180278,
+            "yaw_deg": 48.699545,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.505,
+            "x_m": 92.688912,
+            "y_m": 34.854595,
+            "yaw_deg": 49.212213,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.605,
+            "x_m": 93.269941,
+            "y_m": 35.534138,
+            "yaw_deg": 49.724881,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.705,
+            "x_m": 93.844867,
+            "y_m": 36.218852,
+            "yaw_deg": 50.237549,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.805,
+            "x_m": 94.413644,
+            "y_m": 36.908683,
+            "yaw_deg": 50.750217,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.905,
+            "x_m": 94.976226,
+            "y_m": 37.603576,
+            "yaw_deg": 51.262886,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.005,
+            "x_m": 95.532567,
+            "y_m": 38.303474,
+            "yaw_deg": 51.775554,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.105,
+            "x_m": 96.082623,
+            "y_m": 39.008323,
+            "yaw_deg": 52.288222,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.205,
+            "x_m": 96.626351,
+            "y_m": 39.718065,
+            "yaw_deg": 52.80089,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.305,
+            "x_m": 97.163707,
+            "y_m": 40.432644,
+            "yaw_deg": 53.313558,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.405,
+            "x_m": 97.694647,
+            "y_m": 41.152002,
+            "yaw_deg": 53.826226,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.505,
+            "x_m": 98.21913,
+            "y_m": 41.876082,
+            "yaw_deg": 54.338894,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.605,
+            "x_m": 98.737112,
+            "y_m": 42.604826,
+            "yaw_deg": 54.851562,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.705,
+            "x_m": 99.248554,
+            "y_m": 43.338175,
+            "yaw_deg": 55.36423,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.805,
+            "x_m": 99.753413,
+            "y_m": 44.076071,
+            "yaw_deg": 55.876898,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.905,
+            "x_m": 100.251649,
+            "y_m": 44.818455,
+            "yaw_deg": 56.389566,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.005,
+            "x_m": 100.743224,
+            "y_m": 45.565268,
+            "yaw_deg": 56.902234,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.105,
+            "x_m": 101.228096,
+            "y_m": 46.316449,
+            "yaw_deg": 57.414902,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.205,
+            "x_m": 101.706227,
+            "y_m": 47.071938,
+            "yaw_deg": 57.92757,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.305,
+            "x_m": 102.17758,
+            "y_m": 47.831675,
+            "yaw_deg": 58.440238,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.405,
+            "x_m": 102.642116,
+            "y_m": 48.595599,
+            "yaw_deg": 58.952906,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.505,
+            "x_m": 103.099797,
+            "y_m": 49.363649,
+            "yaw_deg": 59.465574,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.605,
+            "x_m": 103.550589,
+            "y_m": 50.135764,
+            "yaw_deg": 59.978242,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.705,
+            "x_m": 103.994454,
+            "y_m": 50.911881,
+            "yaw_deg": 60.49091,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.805,
+            "x_m": 104.431356,
+            "y_m": 51.691939,
+            "yaw_deg": 61.003578,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.905,
+            "x_m": 104.861261,
+            "y_m": 52.475874,
+            "yaw_deg": 61.516246,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.005,
+            "x_m": 105.284135,
+            "y_m": 53.263625,
+            "yaw_deg": 62.028914,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.105,
+            "x_m": 105.699944,
+            "y_m": 54.055128,
+            "yaw_deg": 62.541582,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.205,
+            "x_m": 106.108653,
+            "y_m": 54.85032,
+            "yaw_deg": 63.05425,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.305,
+            "x_m": 106.510232,
+            "y_m": 55.649137,
+            "yaw_deg": 63.566918,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.405,
+            "x_m": 106.904646,
+            "y_m": 56.451515,
+            "yaw_deg": 64.079586,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.505,
+            "x_m": 107.291866,
+            "y_m": 57.257391,
+            "yaw_deg": 64.592254,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.605,
+            "x_m": 107.671859,
+            "y_m": 58.066698,
+            "yaw_deg": 65.104922,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.705,
+            "x_m": 108.044596,
+            "y_m": 58.879373,
+            "yaw_deg": 65.61759,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.805,
+            "x_m": 108.410046,
+            "y_m": 59.695351,
+            "yaw_deg": 66.130258,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.905,
+            "x_m": 108.768181,
+            "y_m": 60.514566,
+            "yaw_deg": 66.642927,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.005,
+            "x_m": 109.118971,
+            "y_m": 61.336953,
+            "yaw_deg": 67.155595,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.105,
+            "x_m": 109.462389,
+            "y_m": 62.162446,
+            "yaw_deg": 67.668263,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.205,
+            "x_m": 109.798406,
+            "y_m": 62.990978,
+            "yaw_deg": 68.180931,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.305,
+            "x_m": 110.126997,
+            "y_m": 63.822484,
+            "yaw_deg": 68.693599,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.405,
+            "x_m": 110.448135,
+            "y_m": 64.656896,
+            "yaw_deg": 69.206267,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.505,
+            "x_m": 110.761794,
+            "y_m": 65.494149,
+            "yaw_deg": 69.718935,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.605,
+            "x_m": 111.067949,
+            "y_m": 66.334174,
+            "yaw_deg": 70.231603,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.705,
+            "x_m": 111.366576,
+            "y_m": 67.176905,
+            "yaw_deg": 70.744271,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.805,
+            "x_m": 111.65765,
+            "y_m": 68.022275,
+            "yaw_deg": 71.256939,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.905,
+            "x_m": 111.941148,
+            "y_m": 68.870215,
+            "yaw_deg": 71.769607,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.005,
+            "x_m": 112.217048,
+            "y_m": 69.720658,
+            "yaw_deg": 72.282275,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.105,
+            "x_m": 112.485328,
+            "y_m": 70.573535,
+            "yaw_deg": 72.794943,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.205,
+            "x_m": 112.745965,
+            "y_m": 71.428779,
+            "yaw_deg": 73.307611,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.305,
+            "x_m": 112.99894,
+            "y_m": 72.28632,
+            "yaw_deg": 73.820279,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.405,
+            "x_m": 113.244231,
+            "y_m": 73.146091,
+            "yaw_deg": 74.332947,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.505,
+            "x_m": 113.48182,
+            "y_m": 74.008022,
+            "yaw_deg": 74.845615,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.605,
+            "x_m": 113.711687,
+            "y_m": 74.872045,
+            "yaw_deg": 75.358283,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.705,
+            "x_m": 113.933814,
+            "y_m": 75.738089,
+            "yaw_deg": 75.870951,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.805,
+            "x_m": 114.148183,
+            "y_m": 76.606087,
+            "yaw_deg": 76.383619,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.905,
+            "x_m": 114.354777,
+            "y_m": 77.475968,
+            "yaw_deg": 76.896287,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.005,
+            "x_m": 114.55358,
+            "y_m": 78.347662,
+            "yaw_deg": 77.408955,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.105,
+            "x_m": 114.744574,
+            "y_m": 79.221101,
+            "yaw_deg": 77.921623,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.205,
+            "x_m": 114.927746,
+            "y_m": 80.096213,
+            "yaw_deg": 78.434291,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.305,
+            "x_m": 115.103081,
+            "y_m": 80.97293,
+            "yaw_deg": 78.946959,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.405,
+            "x_m": 115.270564,
+            "y_m": 81.85118,
+            "yaw_deg": 79.459627,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.505,
+            "x_m": 115.430181,
+            "y_m": 82.730893,
+            "yaw_deg": 79.972295,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.071582,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.605,
+            "x_m": 115.581922,
+            "y_m": 83.612,
+            "yaw_deg": 80.484962,
+            "lateral_acceleration_mps2": 0.799985,
+            "jerk_mps3": 0.071586,
+            "cabin_lean_deg": 4.663621
+          },
+          {
+            "t_s": 17.705,
+            "x_m": 115.725772,
+            "y_m": 84.494429,
+            "yaw_deg": 80.99752,
+            "lateral_acceleration_mps2": 0.799565,
+            "jerk_mps3": 0.07203,
+            "cabin_lean_deg": 4.661182
+          },
+          {
+            "t_s": 17.805,
+            "x_m": 115.861727,
+            "y_m": 85.378108,
+            "yaw_deg": 81.509468,
+            "lateral_acceleration_mps2": 0.798023,
+            "jerk_mps3": 0.074904,
+            "cabin_lean_deg": 4.65223
+          },
+          {
+            "t_s": 17.905,
+            "x_m": 115.989791,
+            "y_m": 86.262966,
+            "yaw_deg": 82.019873,
+            "lateral_acceleration_mps2": 0.794746,
+            "jerk_mps3": 0.082797,
+            "cabin_lean_deg": 4.633211
+          },
+          {
+            "t_s": 18.005,
+            "x_m": 116.109988,
+            "y_m": 87.148927,
+            "yaw_deg": 82.527452,
+            "lateral_acceleration_mps2": 0.789241,
+            "jerk_mps3": 0.097043,
+            "cabin_lean_deg": 4.601257
+          },
+          {
+            "t_s": 18.105,
+            "x_m": 116.222363,
+            "y_m": 88.035914,
+            "yaw_deg": 83.030642,
+            "lateral_acceleration_mps2": 0.781125,
+            "jerk_mps3": 0.117145,
+            "cabin_lean_deg": 4.554145
+          },
+          {
+            "t_s": 18.205,
+            "x_m": 116.32699,
+            "y_m": 88.923848,
+            "yaw_deg": 83.527672,
+            "lateral_acceleration_mps2": 0.770122,
+            "jerk_mps3": 0.141646,
+            "cabin_lean_deg": 4.490257
+          },
+          {
+            "t_s": 18.305,
+            "x_m": 116.42397,
+            "y_m": 89.81265,
+            "yaw_deg": 84.016626,
+            "lateral_acceleration_mps2": 0.75605,
+            "jerk_mps3": 0.168994,
+            "cabin_lean_deg": 4.408536
+          },
+          {
+            "t_s": 18.405,
+            "x_m": 116.513437,
+            "y_m": 90.70224,
+            "yaw_deg": 84.495502,
+            "lateral_acceleration_mps2": 0.73882,
+            "jerk_mps3": 0.197846,
+            "cabin_lean_deg": 4.308446
+          },
+          {
+            "t_s": 18.505,
+            "x_m": 116.595558,
+            "y_m": 91.592538,
+            "yaw_deg": 84.962268,
+            "lateral_acceleration_mps2": 0.718423,
+            "jerk_mps3": 0.227091,
+            "cabin_lean_deg": 4.189931
+          },
+          {
+            "t_s": 18.605,
+            "x_m": 116.67053,
+            "y_m": 92.483467,
+            "yaw_deg": 85.414916,
+            "lateral_acceleration_mps2": 0.694928,
+            "jerk_mps3": 0.2558,
+            "cabin_lean_deg": 4.053372
+          },
+          {
+            "t_s": 18.705,
+            "x_m": 116.738584,
+            "y_m": 93.374951,
+            "yaw_deg": 85.851503,
+            "lateral_acceleration_mps2": 0.668473,
+            "jerk_mps3": 0.283188,
+            "cabin_lean_deg": 3.899549
+          },
+          {
+            "t_s": 18.805,
+            "x_m": 116.799981,
+            "y_m": 94.266918,
+            "yaw_deg": 86.270195,
+            "lateral_acceleration_mps2": 0.639255,
+            "jerk_mps3": 0.308589,
+            "cabin_lean_deg": 3.7296
+          },
+          {
+            "t_s": 18.905,
+            "x_m": 116.855008,
+            "y_m": 95.159302,
+            "yaw_deg": 86.669304,
+            "lateral_acceleration_mps2": 0.607528,
+            "jerk_mps3": 0.331433,
+            "cabin_lean_deg": 3.54498
+          },
+          {
+            "t_s": 19.005,
+            "x_m": 116.90398,
+            "y_m": 96.052038,
+            "yaw_deg": 87.047321,
+            "lateral_acceleration_mps2": 0.573592,
+            "jerk_mps3": 0.35124,
+            "cabin_lean_deg": 3.347422
+          },
+          {
+            "t_s": 19.105,
+            "x_m": 116.947234,
+            "y_m": 96.94507,
+            "yaw_deg": 87.402942,
+            "lateral_acceleration_mps2": 0.537786,
+            "jerk_mps3": 0.367612,
+            "cabin_lean_deg": 3.138895
+          },
+          {
+            "t_s": 19.205,
+            "x_m": 116.985126,
+            "y_m": 97.838345,
+            "yaw_deg": 87.735094,
+            "lateral_acceleration_mps2": 0.500484,
+            "jerk_mps3": 0.38023,
+            "cabin_lean_deg": 2.921564
+          },
+          {
+            "t_s": 19.305,
+            "x_m": 117.018027,
+            "y_m": 98.731818,
+            "yaw_deg": 88.042949,
+            "lateral_acceleration_mps2": 0.462083,
+            "jerk_mps3": 0.388853,
+            "cabin_lean_deg": 2.697746
+          },
+          {
+            "t_s": 19.405,
+            "x_m": 117.046321,
+            "y_m": 99.62545,
+            "yaw_deg": 88.325945,
+            "lateral_acceleration_mps2": 0.423002,
+            "jerk_mps3": 0.393312,
+            "cabin_lean_deg": 2.469874
+          },
+          {
+            "t_s": 19.505,
+            "x_m": 117.070397,
+            "y_m": 100.519205,
+            "yaw_deg": 88.583787,
+            "lateral_acceleration_mps2": 0.383667,
+            "jerk_mps3": 0.393514,
+            "cabin_lean_deg": 2.240448
+          },
+          {
+            "t_s": 19.605,
+            "x_m": 117.090647,
+            "y_m": 101.413055,
+            "yaw_deg": 88.81646,
+            "lateral_acceleration_mps2": 0.344512,
+            "jerk_mps3": 0.389441,
+            "cabin_lean_deg": 2.011998
+          },
+          {
+            "t_s": 19.705,
+            "x_m": 117.107461,
+            "y_m": 102.306976,
+            "yaw_deg": 89.024223,
+            "lateral_acceleration_mps2": 0.305966,
+            "jerk_mps3": 0.381147,
+            "cabin_lean_deg": 1.787039
+          },
+          {
+            "t_s": 19.805,
+            "x_m": 117.121225,
+            "y_m": 103.20095,
+            "yaw_deg": 89.207609,
+            "lateral_acceleration_mps2": 0.268448,
+            "jerk_mps3": 0.368761,
+            "cabin_lean_deg": 1.56803
+          },
+          {
+            "t_s": 19.905,
+            "x_m": 117.132313,
+            "y_m": 104.094961,
+            "yaw_deg": 89.367413,
+            "lateral_acceleration_mps2": 0.232362,
+            "jerk_mps3": 0.352483,
+            "cabin_lean_deg": 1.357329
+          },
+          {
+            "t_s": 20.005,
+            "x_m": 117.141085,
+            "y_m": 104.988997,
+            "yaw_deg": 89.50468,
+            "lateral_acceleration_mps2": 0.198083,
+            "jerk_mps3": 0.332589,
+            "cabin_lean_deg": 1.157153
+          },
+          {
+            "t_s": 20.105,
+            "x_m": 117.147882,
+            "y_m": 105.883051,
+            "yaw_deg": 89.620687,
+            "lateral_acceleration_mps2": 0.165959,
+            "jerk_mps3": 0.309425,
+            "cabin_lean_deg": 0.969531
+          },
+          {
+            "t_s": 20.205,
+            "x_m": 117.153026,
+            "y_m": 106.777117,
+            "yaw_deg": 89.716921,
+            "lateral_acceleration_mps2": 0.136297,
+            "jerk_mps3": 0.283412,
+            "cabin_lean_deg": 0.796267
+          },
+          {
+            "t_s": 20.305,
+            "x_m": 117.156811,
+            "y_m": 107.671188,
+            "yaw_deg": 89.79505,
+            "lateral_acceleration_mps2": 0.109357,
+            "jerk_mps3": 0.255043,
+            "cabin_lean_deg": 0.638897
+          },
+          {
+            "t_s": 20.405,
+            "x_m": 117.159507,
+            "y_m": 108.565264,
+            "yaw_deg": 89.856892,
+            "lateral_acceleration_mps2": 0.085349,
+            "jerk_mps3": 0.224883,
+            "cabin_lean_deg": 0.49864
+          },
+          {
+            "t_s": 20.505,
+            "x_m": 117.161352,
+            "y_m": 109.459342,
+            "yaw_deg": 89.904378,
+            "lateral_acceleration_mps2": 0.064419,
+            "jerk_mps3": 0.193569,
+            "cabin_lean_deg": 0.376367
+          },
+          {
+            "t_s": 20.605,
+            "x_m": 117.162556,
+            "y_m": 110.353422,
+            "yaw_deg": 89.939513,
+            "lateral_acceleration_mps2": 0.04665,
+            "jerk_mps3": 0.161812,
+            "cabin_lean_deg": 0.272551
+          },
+          {
+            "t_s": 20.705,
+            "x_m": 117.163294,
+            "y_m": 111.247501,
+            "yaw_deg": 89.964327,
+            "lateral_acceleration_mps2": 0.032046,
+            "jerk_mps3": 0.130391,
+            "cabin_lean_deg": 0.187229
+          },
+          {
+            "t_s": 20.805,
+            "x_m": 117.163712,
+            "y_m": 112.141581,
+            "yaw_deg": 89.980828,
+            "lateral_acceleration_mps2": 0.020532,
+            "jerk_mps3": 0.10016,
+            "cabin_lean_deg": 0.119959
+          },
+          {
+            "t_s": 20.905,
+            "x_m": 117.163926,
+            "y_m": 113.035661,
+            "yaw_deg": 89.990946,
+            "lateral_acceleration_mps2": 0.011943,
+            "jerk_mps3": 0.072044,
+            "cabin_lean_deg": 0.06978
+          },
+          {
+            "t_s": 21.005,
+            "x_m": 117.164019,
+            "y_m": 113.929741,
+            "yaw_deg": 89.996474,
+            "lateral_acceleration_mps2": 0.006019,
+            "jerk_mps3": 0.04704,
+            "cabin_lean_deg": 0.035169
+          },
+          {
+            "t_s": 21.105,
+            "x_m": 117.164051,
+            "y_m": 114.823821,
+            "yaw_deg": 89.999001,
+            "lateral_acceleration_mps2": 0.002396,
+            "jerk_mps3": 0.026214,
+            "cabin_lean_deg": 0.014
+          },
+          {
+            "t_s": 21.205,
+            "x_m": 117.164059,
+            "y_m": 115.717901,
+            "yaw_deg": 89.99985,
+            "lateral_acceleration_mps2": 0.0006,
+            "jerk_mps3": 0.010707,
+            "cabin_lean_deg": 0.003503
+          },
+          {
+            "t_s": 21.305,
+            "x_m": 117.164059,
+            "y_m": 116.611981,
+            "yaw_deg": 89.999997,
+            "lateral_acceleration_mps2": 3.7e-05,
+            "jerk_mps3": 0.001729,
+            "cabin_lean_deg": 0.000218
+          },
+          {
+            "t_s": 21.366748,
+            "x_m": 117.164059,
+            "y_m": 117.164059,
+            "yaw_deg": 90.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 0.0,
+            "cabin_lean_deg": 0.0
+          }
+        ]
+      },
+      "brake": {
+        "time_s": 13.175999999999998,
+        "distance_m": 58.90199039999999,
+        "ramp_s": 2.0,
+        "plateau_s": 9.175999999999998,
+        "max_acceleration_mps2": 0.8,
+        "max_jerk_mps3": 0.4
+      },
+      "route_total_time_s": 47.71874819412244,
+      "route_length_m": 308.83980305400985,
+      "destination_m": {
+        "x": 176.06604984747048,
+        "y": 176.06604984745198,
+        "height": "not modelled"
+      },
+      "vertical_acceleration_mps2": 0.0,
+      "reference_altitude_error_m": 0.0
+    },
+    {
+      "speed_mph": 30.0,
+      "speed_mps": 13.4112,
+      "start": {
+        "time_s": 18.764,
+        "distance_m": 125.82387839999998,
+        "ramp_s": 2.0,
+        "plateau_s": 14.764,
+        "max_acceleration_mps2": 0.8,
+        "max_jerk_mps3": 0.4
+      },
+      "turn_90_degrees": {
+        "time_s": 30.10980531179923,
+        "distance_travelled_m": 403.80862099760185,
+        "steady_radius_m": 224.82535679999998,
+        "turn_entry_duration_s": 3.7769756894095896,
+        "steady_corner_duration_s": 22.555853932980053,
+        "steady_heading_rate_degps": 3.4177868953162927,
+        "final_heading_deg": 89.99999999999507,
+        "turn_dx_m": 250.3528723377672,
+        "turn_dy_m": 250.3528723377361,
+        "peak_total_jerk_mps3": 0.39732178612684865,
+        "peak_lateral_acceleration_mps2": 0.8,
+        "max_cabin_lean_deg": 4.6637076865344955,
+        "max_cabin_lean_rate_degps": 2.31647937252358,
+        "trace_100ms": [
+          {
+            "t_s": 0.0,
+            "x_m": 0.0,
+            "y_m": 0.0,
+            "yaw_deg": 0.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 0.0,
+            "cabin_lean_deg": 0.0
+          },
+          {
+            "t_s": 0.005,
+            "x_m": 0.067056,
+            "y_m": 0.0,
+            "yaw_deg": 0.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 3e-06,
+            "cabin_lean_deg": 0.0
+          },
+          {
+            "t_s": 0.105,
+            "x_m": 1.408176,
+            "y_m": 0.0,
+            "yaw_deg": 1.9e-05,
+            "lateral_acceleration_mps2": 0.000153,
+            "jerk_mps3": 0.004429,
+            "cabin_lean_deg": 0.000897
+          },
+          {
+            "t_s": 0.205,
+            "x_m": 2.749296,
+            "y_m": 3e-06,
+            "yaw_deg": 0.000262,
+            "lateral_acceleration_mps2": 0.001136,
+            "jerk_mps3": 0.016359,
+            "cabin_lean_deg": 0.006636
+          },
+          {
+            "t_s": 0.305,
+            "x_m": 4.090416,
+            "y_m": 1.8e-05,
+            "yaw_deg": 0.001243,
+            "lateral_acceleration_mps2": 0.003632,
+            "jerk_mps3": 0.034492,
+            "cabin_lean_deg": 0.02122
+          },
+          {
+            "t_s": 0.405,
+            "x_m": 5.431536,
+            "y_m": 7.2e-05,
+            "yaw_deg": 0.003737,
+            "lateral_acceleration_mps2": 0.0082,
+            "jerk_mps3": 0.057602,
+            "cabin_lean_deg": 0.04791
+          },
+          {
+            "t_s": 0.505,
+            "x_m": 6.772656,
+            "y_m": 0.000212,
+            "yaw_deg": 0.008732,
+            "lateral_acceleration_mps2": 0.01528,
+            "jerk_mps3": 0.084537,
+            "cabin_lean_deg": 0.089273
+          },
+          {
+            "t_s": 0.605,
+            "x_m": 8.113776,
+            "y_m": 0.00051,
+            "yaw_deg": 0.01738,
+            "lateral_acceleration_mps2": 0.025199,
+            "jerk_mps3": 0.114222,
+            "cabin_lean_deg": 0.147226
+          },
+          {
+            "t_s": 0.705,
+            "x_m": 9.454896,
+            "y_m": 0.001065,
+            "yaw_deg": 0.030946,
+            "lateral_acceleration_mps2": 0.038182,
+            "jerk_mps3": 0.145655,
+            "cabin_lean_deg": 0.223081
+          },
+          {
+            "t_s": 0.805,
+            "x_m": 10.796016,
+            "y_m": 0.002007,
+            "yaw_deg": 0.050771,
+            "lateral_acceleration_mps2": 0.054357,
+            "jerk_mps3": 0.17791,
+            "cabin_lean_deg": 0.317582
+          },
+          {
+            "t_s": 0.905,
+            "x_m": 12.137135,
+            "y_m": 0.003501,
+            "yaw_deg": 0.078232,
+            "lateral_acceleration_mps2": 0.073763,
+            "jerk_mps3": 0.210137,
+            "cabin_lean_deg": 0.430957
+          },
+          {
+            "t_s": 1.005,
+            "x_m": 13.478253,
+            "y_m": 0.00574,
+            "yaw_deg": 0.114702,
+            "lateral_acceleration_mps2": 0.096358,
+            "jerk_mps3": 0.241559,
+            "cabin_lean_deg": 0.562956
+          },
+          {
+            "t_s": 1.105,
+            "x_m": 14.819369,
+            "y_m": 0.008951,
+            "yaw_deg": 0.161519,
+            "lateral_acceleration_mps2": 0.122025,
+            "jerk_mps3": 0.271474,
+            "cabin_lean_deg": 0.712897
+          },
+          {
+            "t_s": 1.205,
+            "x_m": 16.160481,
+            "y_m": 0.013392,
+            "yaw_deg": 0.219957,
+            "lateral_acceleration_mps2": 0.150581,
+            "jerk_mps3": 0.299257,
+            "cabin_lean_deg": 0.879707
+          },
+          {
+            "t_s": 1.305,
+            "x_m": 17.501588,
+            "y_m": 0.019348,
+            "yaw_deg": 0.291198,
+            "lateral_acceleration_mps2": 0.181785,
+            "jerk_mps3": 0.324358,
+            "cabin_lean_deg": 1.061968
+          },
+          {
+            "t_s": 1.405,
+            "x_m": 18.842685,
+            "y_m": 0.027133,
+            "yaw_deg": 0.37631,
+            "lateral_acceleration_mps2": 0.215345,
+            "jerk_mps3": 0.346301,
+            "cabin_lean_deg": 1.257962
+          },
+          {
+            "t_s": 1.505,
+            "x_m": 20.183768,
+            "y_m": 0.037081,
+            "yaw_deg": 0.476225,
+            "lateral_acceleration_mps2": 0.250923,
+            "jerk_mps3": 0.364685,
+            "cabin_lean_deg": 1.46571
+          },
+          {
+            "t_s": 1.605,
+            "x_m": 21.52483,
+            "y_m": 0.049548,
+            "yaw_deg": 0.591723,
+            "lateral_acceleration_mps2": 0.288146,
+            "jerk_mps3": 0.379187,
+            "cabin_lean_deg": 1.683024
+          },
+          {
+            "t_s": 1.705,
+            "x_m": 22.865862,
+            "y_m": 0.064908,
+            "yaw_deg": 0.723417,
+            "lateral_acceleration_mps2": 0.326612,
+            "jerk_mps3": 0.389558,
+            "cabin_lean_deg": 1.907542
+          },
+          {
+            "t_s": 1.805,
+            "x_m": 24.206852,
+            "y_m": 0.083543,
+            "yaw_deg": 0.871743,
+            "lateral_acceleration_mps2": 0.365898,
+            "jerk_mps3": 0.395624,
+            "cabin_lean_deg": 2.136782
+          },
+          {
+            "t_s": 1.905,
+            "x_m": 25.547786,
+            "y_m": 0.105848,
+            "yaw_deg": 1.036955,
+            "lateral_acceleration_mps2": 0.405565,
+            "jerk_mps3": 0.397289,
+            "cabin_lean_deg": 2.368179
+          },
+          {
+            "t_s": 2.005,
+            "x_m": 26.888646,
+            "y_m": 0.132217,
+            "yaw_deg": 1.219115,
+            "lateral_acceleration_mps2": 0.445169,
+            "jerk_mps3": 0.39453,
+            "cabin_lean_deg": 2.599136
+          },
+          {
+            "t_s": 2.105,
+            "x_m": 28.229411,
+            "y_m": 0.163046,
+            "yaw_deg": 1.418097,
+            "lateral_acceleration_mps2": 0.484269,
+            "jerk_mps3": 0.387403,
+            "cabin_lean_deg": 2.827064
+          },
+          {
+            "t_s": 2.205,
+            "x_m": 29.570056,
+            "y_m": 0.198725,
+            "yaw_deg": 1.633587,
+            "lateral_acceleration_mps2": 0.522428,
+            "jerk_mps3": 0.376037,
+            "cabin_lean_deg": 3.049427
+          },
+          {
+            "t_s": 2.305,
+            "x_m": 30.910551,
+            "y_m": 0.239635,
+            "yaw_deg": 1.865091,
+            "lateral_acceleration_mps2": 0.55923,
+            "jerk_mps3": 0.360641,
+            "cabin_lean_deg": 3.26379
+          },
+          {
+            "t_s": 2.405,
+            "x_m": 32.250863,
+            "y_m": 0.286142,
+            "yaw_deg": 2.111937,
+            "lateral_acceleration_mps2": 0.594278,
+            "jerk_mps3": 0.341497,
+            "cabin_lean_deg": 3.467857
+          },
+          {
+            "t_s": 2.505,
+            "x_m": 33.590956,
+            "y_m": 0.338594,
+            "yaw_deg": 2.373294,
+            "lateral_acceleration_mps2": 0.62721,
+            "jerk_mps3": 0.318967,
+            "cabin_lean_deg": 3.65952
+          },
+          {
+            "t_s": 2.605,
+            "x_m": 34.930788,
+            "y_m": 0.397319,
+            "yaw_deg": 2.648184,
+            "lateral_acceleration_mps2": 0.6577,
+            "jerk_mps3": 0.293493,
+            "cabin_lean_deg": 3.836897
+          },
+          {
+            "t_s": 2.705,
+            "x_m": 36.270316,
+            "y_m": 0.462618,
+            "yaw_deg": 2.935498,
+            "lateral_acceleration_mps2": 0.685469,
+            "jerk_mps3": 0.265599,
+            "cabin_lean_deg": 3.998378
+          },
+          {
+            "t_s": 2.805,
+            "x_m": 37.609492,
+            "y_m": 0.534767,
+            "yaw_deg": 3.234021,
+            "lateral_acceleration_mps2": 0.71029,
+            "jerk_mps3": 0.235894,
+            "cabin_lean_deg": 4.142668
+          },
+          {
+            "t_s": 2.905,
+            "x_m": 38.948268,
+            "y_m": 0.614012,
+            "yaw_deg": 3.542456,
+            "lateral_acceleration_mps2": 0.732,
+            "jerk_mps3": 0.205084,
+            "cabin_lean_deg": 4.268825
+          },
+          {
+            "t_s": 3.005,
+            "x_m": 40.28659,
+            "y_m": 0.700564,
+            "yaw_deg": 3.859448,
+            "lateral_acceleration_mps2": 0.750501,
+            "jerk_mps3": 0.173984,
+            "cabin_lean_deg": 4.376306
+          },
+          {
+            "t_s": 3.105,
+            "x_m": 41.624407,
+            "y_m": 0.794606,
+            "yaw_deg": 4.183619,
+            "lateral_acceleration_mps2": 0.765774,
+            "jerk_mps3": 0.143546,
+            "cabin_lean_deg": 4.465009
+          },
+          {
+            "t_s": 3.205,
+            "x_m": 42.961665,
+            "y_m": 0.896286,
+            "yaw_deg": 4.513602,
+            "lateral_acceleration_mps2": 0.777882,
+            "jerk_mps3": 0.114913,
+            "cabin_lean_deg": 4.535313
+          },
+          {
+            "t_s": 3.305,
+            "x_m": 44.298311,
+            "y_m": 1.005721,
+            "yaw_deg": 4.848075,
+            "lateral_acceleration_mps2": 0.786979,
+            "jerk_mps3": 0.0895,
+            "cabin_lean_deg": 4.588124
+          },
+          {
+            "t_s": 3.405,
+            "x_m": 45.634291,
+            "y_m": 1.122996,
+            "yaw_deg": 5.185804,
+            "lateral_acceleration_mps2": 0.793317,
+            "jerk_mps3": 0.069078,
+            "cabin_lean_deg": 4.624915
+          },
+          {
+            "t_s": 3.505,
+            "x_m": 46.969555,
+            "y_m": 1.248172,
+            "yaw_deg": 5.525688,
+            "lateral_acceleration_mps2": 0.797255,
+            "jerk_mps3": 0.055488,
+            "cabin_lean_deg": 4.647774
+          },
+          {
+            "t_s": 3.605,
+            "x_m": 48.304051,
+            "y_m": 1.381283,
+            "yaw_deg": 5.866804,
+            "lateral_acceleration_mps2": 0.799265,
+            "jerk_mps3": 0.049205,
+            "cabin_lean_deg": 4.659442
+          },
+          {
+            "t_s": 3.705,
+            "x_m": 49.63773,
+            "y_m": 1.522343,
+            "yaw_deg": 6.208456,
+            "lateral_acceleration_mps2": 0.79994,
+            "jerk_mps3": 0.047773,
+            "cabin_lean_deg": 4.663362
+          },
+          {
+            "t_s": 3.805,
+            "x_m": 50.970543,
+            "y_m": 1.671356,
+            "yaw_deg": 6.55023,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 3.905,
+            "x_m": 52.302445,
+            "y_m": 1.828316,
+            "yaw_deg": 6.892009,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.005,
+            "x_m": 53.633386,
+            "y_m": 1.993218,
+            "yaw_deg": 7.233788,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.105,
+            "x_m": 54.96332,
+            "y_m": 2.166057,
+            "yaw_deg": 7.575566,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.205,
+            "x_m": 56.292199,
+            "y_m": 2.346826,
+            "yaw_deg": 7.917345,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.305,
+            "x_m": 57.619977,
+            "y_m": 2.535518,
+            "yaw_deg": 8.259124,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.405,
+            "x_m": 58.946605,
+            "y_m": 2.732128,
+            "yaw_deg": 8.600902,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.505,
+            "x_m": 60.272037,
+            "y_m": 2.936647,
+            "yaw_deg": 8.942681,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.605,
+            "x_m": 61.596225,
+            "y_m": 3.149069,
+            "yaw_deg": 9.28446,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.705,
+            "x_m": 62.919122,
+            "y_m": 3.369387,
+            "yaw_deg": 9.626238,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.805,
+            "x_m": 64.240682,
+            "y_m": 3.597592,
+            "yaw_deg": 9.968017,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 4.905,
+            "x_m": 65.560857,
+            "y_m": 3.833676,
+            "yaw_deg": 10.309796,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.005,
+            "x_m": 66.8796,
+            "y_m": 4.07763,
+            "yaw_deg": 10.651574,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.105,
+            "x_m": 68.196865,
+            "y_m": 4.329447,
+            "yaw_deg": 10.993353,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.205,
+            "x_m": 69.512604,
+            "y_m": 4.589118,
+            "yaw_deg": 11.335132,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.305,
+            "x_m": 70.82677,
+            "y_m": 4.856632,
+            "yaw_deg": 11.67691,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.405,
+            "x_m": 72.139318,
+            "y_m": 5.13198,
+            "yaw_deg": 12.018689,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.505,
+            "x_m": 73.450199,
+            "y_m": 5.415153,
+            "yaw_deg": 12.360468,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.605,
+            "x_m": 74.759368,
+            "y_m": 5.706141,
+            "yaw_deg": 12.702247,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.705,
+            "x_m": 76.066778,
+            "y_m": 6.004932,
+            "yaw_deg": 13.044025,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.805,
+            "x_m": 77.372383,
+            "y_m": 6.311518,
+            "yaw_deg": 13.385804,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 5.905,
+            "x_m": 78.676135,
+            "y_m": 6.625886,
+            "yaw_deg": 13.727583,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.005,
+            "x_m": 79.977989,
+            "y_m": 6.948025,
+            "yaw_deg": 14.069361,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.105,
+            "x_m": 81.277898,
+            "y_m": 7.277925,
+            "yaw_deg": 14.41114,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.205,
+            "x_m": 82.575816,
+            "y_m": 7.615572,
+            "yaw_deg": 14.752919,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.305,
+            "x_m": 83.871697,
+            "y_m": 7.960956,
+            "yaw_deg": 15.094697,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.405,
+            "x_m": 85.165495,
+            "y_m": 8.314064,
+            "yaw_deg": 15.436476,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.505,
+            "x_m": 86.457163,
+            "y_m": 8.674883,
+            "yaw_deg": 15.778255,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.605,
+            "x_m": 87.746656,
+            "y_m": 9.043401,
+            "yaw_deg": 16.120033,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.705,
+            "x_m": 89.033928,
+            "y_m": 9.419604,
+            "yaw_deg": 16.461812,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.805,
+            "x_m": 90.318933,
+            "y_m": 9.80348,
+            "yaw_deg": 16.803591,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 6.905,
+            "x_m": 91.601625,
+            "y_m": 10.195013,
+            "yaw_deg": 17.14537,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.005,
+            "x_m": 92.881959,
+            "y_m": 10.594192,
+            "yaw_deg": 17.487148,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.105,
+            "x_m": 94.159888,
+            "y_m": 11.001,
+            "yaw_deg": 17.828927,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.205,
+            "x_m": 95.435369,
+            "y_m": 11.415424,
+            "yaw_deg": 18.170706,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.305,
+            "x_m": 96.708354,
+            "y_m": 11.837449,
+            "yaw_deg": 18.512484,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.405,
+            "x_m": 97.9788,
+            "y_m": 12.267061,
+            "yaw_deg": 18.854263,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.505,
+            "x_m": 99.24666,
+            "y_m": 12.704242,
+            "yaw_deg": 19.196042,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.605,
+            "x_m": 100.51189,
+            "y_m": 13.14898,
+            "yaw_deg": 19.53782,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.705,
+            "x_m": 101.774444,
+            "y_m": 13.601256,
+            "yaw_deg": 19.879599,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.805,
+            "x_m": 103.034278,
+            "y_m": 14.061056,
+            "yaw_deg": 20.221378,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 7.905,
+            "x_m": 104.291347,
+            "y_m": 14.528362,
+            "yaw_deg": 20.563156,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.005,
+            "x_m": 105.545606,
+            "y_m": 15.003159,
+            "yaw_deg": 20.904935,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.105,
+            "x_m": 106.79701,
+            "y_m": 15.485429,
+            "yaw_deg": 21.246714,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.205,
+            "x_m": 108.045516,
+            "y_m": 15.975156,
+            "yaw_deg": 21.588492,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.305,
+            "x_m": 109.291078,
+            "y_m": 16.472321,
+            "yaw_deg": 21.930271,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.405,
+            "x_m": 110.533652,
+            "y_m": 16.976907,
+            "yaw_deg": 22.27205,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.505,
+            "x_m": 111.773194,
+            "y_m": 17.488897,
+            "yaw_deg": 22.613829,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.605,
+            "x_m": 113.009659,
+            "y_m": 18.008271,
+            "yaw_deg": 22.955607,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.705,
+            "x_m": 114.243005,
+            "y_m": 18.535012,
+            "yaw_deg": 23.297386,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.805,
+            "x_m": 115.473187,
+            "y_m": 19.0691,
+            "yaw_deg": 23.639165,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 8.905,
+            "x_m": 116.700161,
+            "y_m": 19.610518,
+            "yaw_deg": 23.980943,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.005,
+            "x_m": 117.923883,
+            "y_m": 20.159244,
+            "yaw_deg": 24.322722,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.105,
+            "x_m": 119.144311,
+            "y_m": 20.715261,
+            "yaw_deg": 24.664501,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.205,
+            "x_m": 120.3614,
+            "y_m": 21.278547,
+            "yaw_deg": 25.006279,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.305,
+            "x_m": 121.575107,
+            "y_m": 21.849084,
+            "yaw_deg": 25.348058,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.405,
+            "x_m": 122.785389,
+            "y_m": 22.42685,
+            "yaw_deg": 25.689837,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.505,
+            "x_m": 123.992204,
+            "y_m": 23.011826,
+            "yaw_deg": 26.031615,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.605,
+            "x_m": 125.195507,
+            "y_m": 23.60399,
+            "yaw_deg": 26.373394,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.705,
+            "x_m": 126.395257,
+            "y_m": 24.203322,
+            "yaw_deg": 26.715173,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.805,
+            "x_m": 127.59141,
+            "y_m": 24.809799,
+            "yaw_deg": 27.056952,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 9.905,
+            "x_m": 128.783925,
+            "y_m": 25.423401,
+            "yaw_deg": 27.39873,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.005,
+            "x_m": 129.972757,
+            "y_m": 26.044105,
+            "yaw_deg": 27.740509,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.105,
+            "x_m": 131.157867,
+            "y_m": 26.67189,
+            "yaw_deg": 28.082288,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.205,
+            "x_m": 132.33921,
+            "y_m": 27.306733,
+            "yaw_deg": 28.424066,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.305,
+            "x_m": 133.516745,
+            "y_m": 27.948612,
+            "yaw_deg": 28.765845,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.405,
+            "x_m": 134.690431,
+            "y_m": 28.597503,
+            "yaw_deg": 29.107624,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.505,
+            "x_m": 135.860224,
+            "y_m": 29.253384,
+            "yaw_deg": 29.449402,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.605,
+            "x_m": 137.026085,
+            "y_m": 29.916231,
+            "yaw_deg": 29.791181,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.705,
+            "x_m": 138.187971,
+            "y_m": 30.586021,
+            "yaw_deg": 30.13296,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.805,
+            "x_m": 139.345841,
+            "y_m": 31.26273,
+            "yaw_deg": 30.474738,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 10.905,
+            "x_m": 140.499654,
+            "y_m": 31.946334,
+            "yaw_deg": 30.816517,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.005,
+            "x_m": 141.649368,
+            "y_m": 32.636808,
+            "yaw_deg": 31.158296,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.105,
+            "x_m": 142.794943,
+            "y_m": 33.334128,
+            "yaw_deg": 31.500074,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.205,
+            "x_m": 143.936338,
+            "y_m": 34.038269,
+            "yaw_deg": 31.841853,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.305,
+            "x_m": 145.073513,
+            "y_m": 34.749206,
+            "yaw_deg": 32.183632,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.405,
+            "x_m": 146.206426,
+            "y_m": 35.466914,
+            "yaw_deg": 32.525411,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.505,
+            "x_m": 147.335038,
+            "y_m": 36.191367,
+            "yaw_deg": 32.867189,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.605,
+            "x_m": 148.459309,
+            "y_m": 36.92254,
+            "yaw_deg": 33.208968,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.705,
+            "x_m": 149.579198,
+            "y_m": 37.660406,
+            "yaw_deg": 33.550747,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.805,
+            "x_m": 150.694665,
+            "y_m": 38.404939,
+            "yaw_deg": 33.892525,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 11.905,
+            "x_m": 151.805672,
+            "y_m": 39.156113,
+            "yaw_deg": 34.234304,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.005,
+            "x_m": 152.912178,
+            "y_m": 39.913901,
+            "yaw_deg": 34.576083,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.105,
+            "x_m": 154.014143,
+            "y_m": 40.678275,
+            "yaw_deg": 34.917861,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.205,
+            "x_m": 155.11153,
+            "y_m": 41.44921,
+            "yaw_deg": 35.25964,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.305,
+            "x_m": 156.204299,
+            "y_m": 42.226677,
+            "yaw_deg": 35.601419,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.405,
+            "x_m": 157.29241,
+            "y_m": 43.010648,
+            "yaw_deg": 35.943197,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.505,
+            "x_m": 158.375825,
+            "y_m": 43.801096,
+            "yaw_deg": 36.284976,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.605,
+            "x_m": 159.454507,
+            "y_m": 44.597993,
+            "yaw_deg": 36.626755,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.705,
+            "x_m": 160.528415,
+            "y_m": 45.40131,
+            "yaw_deg": 36.968533,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.805,
+            "x_m": 161.597512,
+            "y_m": 46.211019,
+            "yaw_deg": 37.310312,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 12.905,
+            "x_m": 162.66176,
+            "y_m": 47.027091,
+            "yaw_deg": 37.652091,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.005,
+            "x_m": 163.721122,
+            "y_m": 47.849497,
+            "yaw_deg": 37.99387,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.105,
+            "x_m": 164.775558,
+            "y_m": 48.678207,
+            "yaw_deg": 38.335648,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.205,
+            "x_m": 165.825033,
+            "y_m": 49.513192,
+            "yaw_deg": 38.677427,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.305,
+            "x_m": 166.869508,
+            "y_m": 50.354423,
+            "yaw_deg": 39.019206,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.405,
+            "x_m": 167.908947,
+            "y_m": 51.201869,
+            "yaw_deg": 39.360984,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.505,
+            "x_m": 168.943312,
+            "y_m": 52.055501,
+            "yaw_deg": 39.702763,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.605,
+            "x_m": 169.972566,
+            "y_m": 52.915287,
+            "yaw_deg": 40.044542,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.705,
+            "x_m": 170.996674,
+            "y_m": 53.781198,
+            "yaw_deg": 40.38632,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.805,
+            "x_m": 172.015598,
+            "y_m": 54.653202,
+            "yaw_deg": 40.728099,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 13.905,
+            "x_m": 173.029302,
+            "y_m": 55.531269,
+            "yaw_deg": 41.069878,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.005,
+            "x_m": 174.03775,
+            "y_m": 56.415367,
+            "yaw_deg": 41.411656,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.105,
+            "x_m": 175.040907,
+            "y_m": 57.305465,
+            "yaw_deg": 41.753435,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.205,
+            "x_m": 176.038736,
+            "y_m": 58.201531,
+            "yaw_deg": 42.095214,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.305,
+            "x_m": 177.031203,
+            "y_m": 59.103533,
+            "yaw_deg": 42.436993,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.405,
+            "x_m": 178.018271,
+            "y_m": 60.01144,
+            "yaw_deg": 42.778771,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.505,
+            "x_m": 178.999906,
+            "y_m": 60.925218,
+            "yaw_deg": 43.12055,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.605,
+            "x_m": 179.976072,
+            "y_m": 61.844835,
+            "yaw_deg": 43.462329,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.705,
+            "x_m": 180.946736,
+            "y_m": 62.770259,
+            "yaw_deg": 43.804107,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.805,
+            "x_m": 181.911862,
+            "y_m": 63.701457,
+            "yaw_deg": 44.145886,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 14.905,
+            "x_m": 182.871416,
+            "y_m": 64.638395,
+            "yaw_deg": 44.487665,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.005,
+            "x_m": 183.825364,
+            "y_m": 65.581041,
+            "yaw_deg": 44.829443,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.105,
+            "x_m": 184.773672,
+            "y_m": 66.52936,
+            "yaw_deg": 45.171222,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.205,
+            "x_m": 185.716307,
+            "y_m": 67.483319,
+            "yaw_deg": 45.513001,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.305,
+            "x_m": 186.653234,
+            "y_m": 68.442884,
+            "yaw_deg": 45.854779,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.405,
+            "x_m": 187.58442,
+            "y_m": 69.408021,
+            "yaw_deg": 46.196558,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.505,
+            "x_m": 188.509833,
+            "y_m": 70.378695,
+            "yaw_deg": 46.538337,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.605,
+            "x_m": 189.429439,
+            "y_m": 71.354873,
+            "yaw_deg": 46.880115,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.705,
+            "x_m": 190.343206,
+            "y_m": 72.336518,
+            "yaw_deg": 47.221894,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.805,
+            "x_m": 191.251101,
+            "y_m": 73.323597,
+            "yaw_deg": 47.563673,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 15.905,
+            "x_m": 192.153092,
+            "y_m": 74.316074,
+            "yaw_deg": 47.905452,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.005,
+            "x_m": 193.049146,
+            "y_m": 75.313913,
+            "yaw_deg": 48.24723,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.105,
+            "x_m": 193.939232,
+            "y_m": 76.31708,
+            "yaw_deg": 48.589009,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.205,
+            "x_m": 194.823319,
+            "y_m": 77.325539,
+            "yaw_deg": 48.930788,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.305,
+            "x_m": 195.701374,
+            "y_m": 78.339253,
+            "yaw_deg": 49.272566,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.405,
+            "x_m": 196.573366,
+            "y_m": 79.358187,
+            "yaw_deg": 49.614345,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.505,
+            "x_m": 197.439265,
+            "y_m": 80.382305,
+            "yaw_deg": 49.956124,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.605,
+            "x_m": 198.299039,
+            "y_m": 81.411569,
+            "yaw_deg": 50.297902,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.705,
+            "x_m": 199.152659,
+            "y_m": 82.445944,
+            "yaw_deg": 50.639681,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.805,
+            "x_m": 200.000093,
+            "y_m": 83.485393,
+            "yaw_deg": 50.98146,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 16.905,
+            "x_m": 200.841312,
+            "y_m": 84.529878,
+            "yaw_deg": 51.323238,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.005,
+            "x_m": 201.676285,
+            "y_m": 85.579362,
+            "yaw_deg": 51.665017,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.105,
+            "x_m": 202.504983,
+            "y_m": 86.633808,
+            "yaw_deg": 52.006796,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.205,
+            "x_m": 203.327376,
+            "y_m": 87.693179,
+            "yaw_deg": 52.348575,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.305,
+            "x_m": 204.143436,
+            "y_m": 88.757437,
+            "yaw_deg": 52.690353,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.405,
+            "x_m": 204.953132,
+            "y_m": 89.826544,
+            "yaw_deg": 53.032132,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.505,
+            "x_m": 205.756437,
+            "y_m": 90.900461,
+            "yaw_deg": 53.373911,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.605,
+            "x_m": 206.553321,
+            "y_m": 91.979152,
+            "yaw_deg": 53.715689,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.705,
+            "x_m": 207.343757,
+            "y_m": 93.062576,
+            "yaw_deg": 54.057468,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.805,
+            "x_m": 208.127716,
+            "y_m": 94.150697,
+            "yaw_deg": 54.399247,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 17.905,
+            "x_m": 208.90517,
+            "y_m": 95.243474,
+            "yaw_deg": 54.741025,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.005,
+            "x_m": 209.676092,
+            "y_m": 96.34087,
+            "yaw_deg": 55.082804,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.105,
+            "x_m": 210.440453,
+            "y_m": 97.442845,
+            "yaw_deg": 55.424583,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.205,
+            "x_m": 211.198228,
+            "y_m": 98.549359,
+            "yaw_deg": 55.766361,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.305,
+            "x_m": 211.949389,
+            "y_m": 99.660375,
+            "yaw_deg": 56.10814,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.405,
+            "x_m": 212.693909,
+            "y_m": 100.775851,
+            "yaw_deg": 56.449919,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.505,
+            "x_m": 213.431762,
+            "y_m": 101.895748,
+            "yaw_deg": 56.791697,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.605,
+            "x_m": 214.162922,
+            "y_m": 103.020027,
+            "yaw_deg": 57.133476,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.705,
+            "x_m": 214.887362,
+            "y_m": 104.148648,
+            "yaw_deg": 57.475255,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.805,
+            "x_m": 215.605057,
+            "y_m": 105.28157,
+            "yaw_deg": 57.817034,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 18.905,
+            "x_m": 216.315981,
+            "y_m": 106.418752,
+            "yaw_deg": 58.158812,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.005,
+            "x_m": 217.020109,
+            "y_m": 107.560156,
+            "yaw_deg": 58.500591,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.105,
+            "x_m": 217.717415,
+            "y_m": 108.705739,
+            "yaw_deg": 58.84237,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.205,
+            "x_m": 218.407876,
+            "y_m": 109.855461,
+            "yaw_deg": 59.184148,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.305,
+            "x_m": 219.091466,
+            "y_m": 111.009282,
+            "yaw_deg": 59.525927,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.405,
+            "x_m": 219.768162,
+            "y_m": 112.167159,
+            "yaw_deg": 59.867706,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.505,
+            "x_m": 220.437938,
+            "y_m": 113.329053,
+            "yaw_deg": 60.209484,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.605,
+            "x_m": 221.100772,
+            "y_m": 114.494921,
+            "yaw_deg": 60.551263,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.705,
+            "x_m": 221.756639,
+            "y_m": 115.664723,
+            "yaw_deg": 60.893042,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.805,
+            "x_m": 222.405517,
+            "y_m": 116.838416,
+            "yaw_deg": 61.23482,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 19.905,
+            "x_m": 223.047382,
+            "y_m": 118.015959,
+            "yaw_deg": 61.576599,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.005,
+            "x_m": 223.682211,
+            "y_m": 119.197309,
+            "yaw_deg": 61.918378,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.105,
+            "x_m": 224.309983,
+            "y_m": 120.382426,
+            "yaw_deg": 62.260157,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.205,
+            "x_m": 224.930673,
+            "y_m": 121.571266,
+            "yaw_deg": 62.601935,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.305,
+            "x_m": 225.544261,
+            "y_m": 122.763787,
+            "yaw_deg": 62.943714,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.405,
+            "x_m": 226.150725,
+            "y_m": 123.959948,
+            "yaw_deg": 63.285493,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.505,
+            "x_m": 226.750042,
+            "y_m": 125.159704,
+            "yaw_deg": 63.627271,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.605,
+            "x_m": 227.342192,
+            "y_m": 126.363015,
+            "yaw_deg": 63.96905,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.705,
+            "x_m": 227.927154,
+            "y_m": 127.569836,
+            "yaw_deg": 64.310829,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.805,
+            "x_m": 228.504906,
+            "y_m": 128.780125,
+            "yaw_deg": 64.652607,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 20.905,
+            "x_m": 229.075429,
+            "y_m": 129.993839,
+            "yaw_deg": 64.994386,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.005,
+            "x_m": 229.638701,
+            "y_m": 131.210934,
+            "yaw_deg": 65.336165,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.105,
+            "x_m": 230.194703,
+            "y_m": 132.431368,
+            "yaw_deg": 65.677943,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.205,
+            "x_m": 230.743416,
+            "y_m": 133.655097,
+            "yaw_deg": 66.019722,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.305,
+            "x_m": 231.284819,
+            "y_m": 134.882077,
+            "yaw_deg": 66.361501,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.405,
+            "x_m": 231.818893,
+            "y_m": 136.112265,
+            "yaw_deg": 66.703279,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.505,
+            "x_m": 232.345619,
+            "y_m": 137.345617,
+            "yaw_deg": 67.045058,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.605,
+            "x_m": 232.864979,
+            "y_m": 138.582089,
+            "yaw_deg": 67.386837,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.705,
+            "x_m": 233.376955,
+            "y_m": 139.821637,
+            "yaw_deg": 67.728616,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.805,
+            "x_m": 233.881526,
+            "y_m": 141.064217,
+            "yaw_deg": 68.070394,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 21.905,
+            "x_m": 234.378677,
+            "y_m": 142.309784,
+            "yaw_deg": 68.412173,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.005,
+            "x_m": 234.868389,
+            "y_m": 143.558296,
+            "yaw_deg": 68.753952,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.105,
+            "x_m": 235.350645,
+            "y_m": 144.809705,
+            "yaw_deg": 69.09573,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.205,
+            "x_m": 235.825427,
+            "y_m": 146.06397,
+            "yaw_deg": 69.437509,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.305,
+            "x_m": 236.292719,
+            "y_m": 147.321044,
+            "yaw_deg": 69.779288,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.405,
+            "x_m": 236.752504,
+            "y_m": 148.580884,
+            "yaw_deg": 70.121066,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.505,
+            "x_m": 237.204766,
+            "y_m": 149.843443,
+            "yaw_deg": 70.462845,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.605,
+            "x_m": 237.649488,
+            "y_m": 151.108678,
+            "yaw_deg": 70.804624,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.705,
+            "x_m": 238.086656,
+            "y_m": 152.376543,
+            "yaw_deg": 71.146402,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.805,
+            "x_m": 238.516252,
+            "y_m": 153.646994,
+            "yaw_deg": 71.488181,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 22.905,
+            "x_m": 238.938262,
+            "y_m": 154.919984,
+            "yaw_deg": 71.82996,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.005,
+            "x_m": 239.352672,
+            "y_m": 156.19547,
+            "yaw_deg": 72.171739,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.105,
+            "x_m": 239.759465,
+            "y_m": 157.473404,
+            "yaw_deg": 72.513517,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.205,
+            "x_m": 240.158629,
+            "y_m": 158.753742,
+            "yaw_deg": 72.855296,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.305,
+            "x_m": 240.550147,
+            "y_m": 160.036439,
+            "yaw_deg": 73.197075,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.405,
+            "x_m": 240.934008,
+            "y_m": 161.321448,
+            "yaw_deg": 73.538853,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.505,
+            "x_m": 241.310196,
+            "y_m": 162.608724,
+            "yaw_deg": 73.880632,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.605,
+            "x_m": 241.678699,
+            "y_m": 163.898222,
+            "yaw_deg": 74.222411,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.705,
+            "x_m": 242.039503,
+            "y_m": 165.189894,
+            "yaw_deg": 74.564189,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.805,
+            "x_m": 242.392596,
+            "y_m": 166.483696,
+            "yaw_deg": 74.905968,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 23.905,
+            "x_m": 242.737965,
+            "y_m": 167.779581,
+            "yaw_deg": 75.247747,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.005,
+            "x_m": 243.075598,
+            "y_m": 169.077503,
+            "yaw_deg": 75.589525,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.105,
+            "x_m": 243.405482,
+            "y_m": 170.377416,
+            "yaw_deg": 75.931304,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.205,
+            "x_m": 243.727606,
+            "y_m": 171.679274,
+            "yaw_deg": 76.273083,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.305,
+            "x_m": 244.041959,
+            "y_m": 172.98303,
+            "yaw_deg": 76.614861,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.405,
+            "x_m": 244.348529,
+            "y_m": 174.288638,
+            "yaw_deg": 76.95664,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.505,
+            "x_m": 244.647306,
+            "y_m": 175.596051,
+            "yaw_deg": 77.298419,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.605,
+            "x_m": 244.938278,
+            "y_m": 176.905224,
+            "yaw_deg": 77.640198,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.705,
+            "x_m": 245.221436,
+            "y_m": 178.216109,
+            "yaw_deg": 77.981976,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.805,
+            "x_m": 245.496769,
+            "y_m": 179.528659,
+            "yaw_deg": 78.323755,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 24.905,
+            "x_m": 245.764268,
+            "y_m": 180.842829,
+            "yaw_deg": 78.665534,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.005,
+            "x_m": 246.023923,
+            "y_m": 182.158571,
+            "yaw_deg": 79.007312,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.105,
+            "x_m": 246.275724,
+            "y_m": 183.475838,
+            "yaw_deg": 79.349091,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.205,
+            "x_m": 246.519664,
+            "y_m": 184.794584,
+            "yaw_deg": 79.69087,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.305,
+            "x_m": 246.755733,
+            "y_m": 186.114762,
+            "yaw_deg": 80.032648,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.405,
+            "x_m": 246.983922,
+            "y_m": 187.436324,
+            "yaw_deg": 80.374427,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.505,
+            "x_m": 247.204224,
+            "y_m": 188.759224,
+            "yaw_deg": 80.716206,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.605,
+            "x_m": 247.416631,
+            "y_m": 190.083415,
+            "yaw_deg": 81.057984,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.705,
+            "x_m": 247.621135,
+            "y_m": 191.408849,
+            "yaw_deg": 81.399763,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.805,
+            "x_m": 247.817729,
+            "y_m": 192.73548,
+            "yaw_deg": 81.741542,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 25.905,
+            "x_m": 248.006406,
+            "y_m": 194.063259,
+            "yaw_deg": 82.083321,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 26.005,
+            "x_m": 248.18716,
+            "y_m": 195.392141,
+            "yaw_deg": 82.425099,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 26.105,
+            "x_m": 248.359983,
+            "y_m": 196.722076,
+            "yaw_deg": 82.766878,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 26.205,
+            "x_m": 248.52487,
+            "y_m": 198.05302,
+            "yaw_deg": 83.108657,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 26.305,
+            "x_m": 248.681815,
+            "y_m": 199.384923,
+            "yaw_deg": 83.450435,
+            "lateral_acceleration_mps2": 0.8,
+            "jerk_mps3": 0.047721,
+            "cabin_lean_deg": 4.663708
+          },
+          {
+            "t_s": 26.405,
+            "x_m": 248.830811,
+            "y_m": 200.717738,
+            "yaw_deg": 83.79221,
+            "lateral_acceleration_mps2": 0.799951,
+            "jerk_mps3": 0.047761,
+            "cabin_lean_deg": 4.663424
+          },
+          {
+            "t_s": 26.505,
+            "x_m": 248.971856,
+            "y_m": 202.051419,
+            "yaw_deg": 84.133861,
+            "lateral_acceleration_mps2": 0.799323,
+            "jerk_mps3": 0.049055,
+            "cabin_lean_deg": 4.659777
+          },
+          {
+            "t_s": 26.605,
+            "x_m": 249.104951,
+            "y_m": 203.385916,
+            "yaw_deg": 84.474975,
+            "lateral_acceleration_mps2": 0.797391,
+            "jerk_mps3": 0.055027,
+            "cabin_lean_deg": 4.648566
+          },
+          {
+            "t_s": 26.705,
+            "x_m": 249.230112,
+            "y_m": 204.721181,
+            "yaw_deg": 84.814856,
+            "lateral_acceleration_mps2": 0.793557,
+            "jerk_mps3": 0.068256,
+            "cabin_lean_deg": 4.626313
+          },
+          {
+            "t_s": 26.805,
+            "x_m": 249.347372,
+            "y_m": 206.057163,
+            "yaw_deg": 85.15258,
+            "lateral_acceleration_mps2": 0.787344,
+            "jerk_mps3": 0.088389,
+            "cabin_lean_deg": 4.590244
+          },
+          {
+            "t_s": 26.905,
+            "x_m": 249.456792,
+            "y_m": 207.39381,
+            "yaw_deg": 85.487045,
+            "lateral_acceleration_mps2": 0.778386,
+            "jerk_mps3": 0.113605,
+            "cabin_lean_deg": 4.538241
+          },
+          {
+            "t_s": 27.005,
+            "x_m": 249.558457,
+            "y_m": 208.731069,
+            "yaw_deg": 85.817018,
+            "lateral_acceleration_mps2": 0.766428,
+            "jerk_mps3": 0.142119,
+            "cabin_lean_deg": 4.468803
+          },
+          {
+            "t_s": 27.105,
+            "x_m": 249.652484,
+            "y_m": 210.068887,
+            "yaw_deg": 86.141177,
+            "lateral_acceleration_mps2": 0.751309,
+            "jerk_mps3": 0.172498,
+            "cabin_lean_deg": 4.380997
+          },
+          {
+            "t_s": 27.205,
+            "x_m": 249.739022,
+            "y_m": 211.407211,
+            "yaw_deg": 86.458153,
+            "lateral_acceleration_mps2": 0.732963,
+            "jerk_mps3": 0.203589,
+            "cabin_lean_deg": 4.27442
+          },
+          {
+            "t_s": 27.305,
+            "x_m": 249.818252,
+            "y_m": 212.745987,
+            "yaw_deg": 86.76657,
+            "lateral_acceleration_mps2": 0.711406,
+            "jerk_mps3": 0.234433,
+            "cabin_lean_deg": 4.149151
+          },
+          {
+            "t_s": 27.405,
+            "x_m": 249.890388,
+            "y_m": 214.085164,
+            "yaw_deg": 87.065073,
+            "lateral_acceleration_mps2": 0.686731,
+            "jerk_mps3": 0.264208,
+            "cabin_lean_deg": 4.005714
+          },
+          {
+            "t_s": 27.505,
+            "x_m": 249.955674,
+            "y_m": 215.424692,
+            "yaw_deg": 87.352364,
+            "lateral_acceleration_mps2": 0.659099,
+            "jerk_mps3": 0.292204,
+            "cabin_lean_deg": 3.845032
+          },
+          {
+            "t_s": 27.605,
+            "x_m": 250.014387,
+            "y_m": 216.764525,
+            "yaw_deg": 87.627228,
+            "lateral_acceleration_mps2": 0.628734,
+            "jerk_mps3": 0.317806,
+            "cabin_lean_deg": 3.668384
+          },
+          {
+            "t_s": 27.705,
+            "x_m": 250.066827,
+            "y_m": 218.104618,
+            "yaw_deg": 87.888558,
+            "lateral_acceleration_mps2": 0.595912,
+            "jerk_mps3": 0.340488,
+            "cabin_lean_deg": 3.477367
+          },
+          {
+            "t_s": 27.805,
+            "x_m": 250.113322,
+            "y_m": 219.444931,
+            "yaw_deg": 88.135375,
+            "lateral_acceleration_mps2": 0.560957,
+            "jerk_mps3": 0.359804,
+            "cabin_lean_deg": 3.273849
+          },
+          {
+            "t_s": 27.905,
+            "x_m": 250.154221,
+            "y_m": 220.785427,
+            "yaw_deg": 88.366848,
+            "lateral_acceleration_mps2": 0.524231,
+            "jerk_mps3": 0.375388,
+            "cabin_lean_deg": 3.05993
+          },
+          {
+            "t_s": 28.005,
+            "x_m": 250.189891,
+            "y_m": 222.126071,
+            "yaw_deg": 88.582307,
+            "lateral_acceleration_mps2": 0.486127,
+            "jerk_mps3": 0.386952,
+            "cabin_lean_deg": 2.837896
+          },
+          {
+            "t_s": 28.105,
+            "x_m": 250.220711,
+            "y_m": 223.466836,
+            "yaw_deg": 88.781257,
+            "lateral_acceleration_mps2": 0.447063,
+            "jerk_mps3": 0.394287,
+            "cabin_lean_deg": 2.610179
+          },
+          {
+            "t_s": 28.205,
+            "x_m": 250.247072,
+            "y_m": 224.807697,
+            "yaw_deg": 88.963383,
+            "lateral_acceleration_mps2": 0.407473,
+            "jerk_mps3": 0.397257,
+            "cabin_lean_deg": 2.379309
+          },
+          {
+            "t_s": 28.305,
+            "x_m": 250.269369,
+            "y_m": 226.148631,
+            "yaw_deg": 89.128562,
+            "lateral_acceleration_mps2": 0.367799,
+            "jerk_mps3": 0.395805,
+            "cabin_lean_deg": 2.147873
+          },
+          {
+            "t_s": 28.405,
+            "x_m": 250.287998,
+            "y_m": 227.489621,
+            "yaw_deg": 89.276856,
+            "lateral_acceleration_mps2": 0.328485,
+            "jerk_mps3": 0.389949,
+            "cabin_lean_deg": 1.91847
+          },
+          {
+            "t_s": 28.505,
+            "x_m": 250.303351,
+            "y_m": 228.830653,
+            "yaw_deg": 89.408517,
+            "lateral_acceleration_mps2": 0.28997,
+            "jerk_mps3": 0.379781,
+            "cabin_lean_deg": 1.693667
+          },
+          {
+            "t_s": 28.605,
+            "x_m": 250.315813,
+            "y_m": 230.171715,
+            "yaw_deg": 89.523984,
+            "lateral_acceleration_mps2": 0.252677,
+            "jerk_mps3": 0.365473,
+            "cabin_lean_deg": 1.475953
+          },
+          {
+            "t_s": 28.705,
+            "x_m": 250.325757,
+            "y_m": 231.512798,
+            "yaw_deg": 89.62387,
+            "lateral_acceleration_mps2": 0.217012,
+            "jerk_mps3": 0.347268,
+            "cabin_lean_deg": 1.267693
+          },
+          {
+            "t_s": 28.805,
+            "x_m": 250.333537,
+            "y_m": 232.853895,
+            "yaw_deg": 89.708954,
+            "lateral_acceleration_mps2": 0.183347,
+            "jerk_mps3": 0.325488,
+            "cabin_lean_deg": 1.071087
+          },
+          {
+            "t_s": 28.905,
+            "x_m": 250.33949,
+            "y_m": 234.195002,
+            "yaw_deg": 89.780169,
+            "lateral_acceleration_mps2": 0.152022,
+            "jerk_mps3": 0.300529,
+            "cabin_lean_deg": 0.888124
+          },
+          {
+            "t_s": 29.005,
+            "x_m": 250.343928,
+            "y_m": 235.536114,
+            "yaw_deg": 89.838584,
+            "lateral_acceleration_mps2": 0.123332,
+            "jerk_mps3": 0.272863,
+            "cabin_lean_deg": 0.720537
+          },
+          {
+            "t_s": 29.105,
+            "x_m": 250.347137,
+            "y_m": 236.877231,
+            "yaw_deg": 89.885379,
+            "lateral_acceleration_mps2": 0.097522,
+            "jerk_mps3": 0.243036,
+            "cabin_lean_deg": 0.569758
+          },
+          {
+            "t_s": 29.205,
+            "x_m": 250.349375,
+            "y_m": 238.218349,
+            "yaw_deg": 89.92183,
+            "lateral_acceleration_mps2": 0.074777,
+            "jerk_mps3": 0.211671,
+            "cabin_lean_deg": 0.436878
+          },
+          {
+            "t_s": 29.305,
+            "x_m": 250.350867,
+            "y_m": 239.559468,
+            "yaw_deg": 89.949274,
+            "lateral_acceleration_mps2": 0.055216,
+            "jerk_mps3": 0.179466,
+            "cabin_lean_deg": 0.322599
+          },
+          {
+            "t_s": 29.405,
+            "x_m": 250.351809,
+            "y_m": 240.900588,
+            "yaw_deg": 89.969087,
+            "lateral_acceleration_mps2": 0.038886,
+            "jerk_mps3": 0.147193,
+            "cabin_lean_deg": 0.227191
+          },
+          {
+            "t_s": 29.505,
+            "x_m": 250.352363,
+            "y_m": 242.241707,
+            "yaw_deg": 89.982642,
+            "lateral_acceleration_mps2": 0.025751,
+            "jerk_mps3": 0.1157,
+            "cabin_lean_deg": 0.150454
+          },
+          {
+            "t_s": 29.605,
+            "x_m": 250.35266,
+            "y_m": 243.582827,
+            "yaw_deg": 89.991281,
+            "lateral_acceleration_mps2": 0.015689,
+            "jerk_mps3": 0.085909,
+            "cabin_lean_deg": 0.091665
+          },
+          {
+            "t_s": 29.705,
+            "x_m": 250.3528,
+            "y_m": 244.923947,
+            "yaw_deg": 89.99627,
+            "lateral_acceleration_mps2": 0.00848,
+            "jerk_mps3": 0.058817,
+            "cabin_lean_deg": 0.049544
+          },
+          {
+            "t_s": 29.805,
+            "x_m": 250.352854,
+            "y_m": 246.265067,
+            "yaw_deg": 89.99876,
+            "lateral_acceleration_mps2": 0.0038,
+            "jerk_mps3": 0.035498,
+            "cabin_lean_deg": 0.022203
+          },
+          {
+            "t_s": 29.905,
+            "x_m": 250.35287,
+            "y_m": 247.606187,
+            "yaw_deg": 89.999739,
+            "lateral_acceleration_mps2": 0.001216,
+            "jerk_mps3": 0.017099,
+            "cabin_lean_deg": 0.007106
+          },
+          {
+            "t_s": 30.005,
+            "x_m": 250.352872,
+            "y_m": 248.947307,
+            "yaw_deg": 89.999982,
+            "lateral_acceleration_mps2": 0.000176,
+            "jerk_mps3": 0.004842,
+            "cabin_lean_deg": 0.001027
+          },
+          {
+            "t_s": 30.105,
+            "x_m": 250.352872,
+            "y_m": 250.288427,
+            "yaw_deg": 90.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 2.4e-05,
+            "cabin_lean_deg": 0.0
+          },
+          {
+            "t_s": 30.109805,
+            "x_m": 250.352872,
+            "y_m": 250.352872,
+            "yaw_deg": 90.0,
+            "lateral_acceleration_mps2": 0.0,
+            "jerk_mps3": 3e-06,
+            "cabin_lean_deg": 0.0
+          }
+        ]
+      },
+      "brake": {
+        "time_s": 18.764,
+        "distance_m": 125.82387839999998,
+        "ramp_s": 2.0,
+        "plateau_s": 14.764,
+        "max_acceleration_mps2": 0.8,
+        "max_jerk_mps3": 0.4
+      },
+      "route_total_time_s": 67.63780531179923,
+      "route_length_m": 655.4563777976018,
+      "destination_m": {
+        "x": 376.1767507377672,
+        "y": 376.1767507377361,
+        "height": "not modelled"
+      },
+      "vertical_acceleration_mps2": 0.0,
+      "reference_altitude_error_m": 0.0
+    }
+  ]
+}

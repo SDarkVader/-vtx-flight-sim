@@ -1,0 +1,2717 @@
+{
+  "retrieved_utc": "2026-10-31",
+  "source_sha256": "2db9abd64ba9b7078e6e539ba4c6b9177e58e335a085a8ea213b5ffa6e987e35",
+  "project": "3288318a-95f4-4dda-8d0f-dbf7b8eaceb9",
+  "version": "version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2",
+  "projectUrl": "https://blendstra.com/studio?workspace=wsp_816786f2f8ced68922a0d7b529616880cf8b6f22&project=3288318a-95f4-4dda-8d0f-dbf7b8eaceb9",
+  "reviews": [
+    {
+      "revision": 46,
+      "items": [
+        {
+          "entryId": "idem_58727db5f1c97093b97fe42dd68f8ead30e4af835098ea49bcaa72d29defc63a",
+          "revision": 46,
+          "kind": "decision",
+          "text": "VTX-P0-V4A revision built from exact P0-V3. Implemented geometry: two-level inner/outer annular structural rings at radii1.22m and1.75m; levels z0.75 and1.14m. Deep rotor triangles: 8 primary braces from lower R1.75 frame toward four original tilt pivot mounts at R2.6; 8 upper ties and additional shear braces. Four original fuel-cell object IDs preserved and relocated to azimuth45/135/225/315deg, R1.48m z0.83m, tangential-axis orientation. P07 tank inner R0.18m x L0.48m; four nominal gross195.43L and ASSUMED usable166.12L based on 85% fraction; no fuel qualification. 8 protected saddle hoops, isolated liners and frame-mounted triangulated suspension. Removed obsolete P10 two skids; added six independent landing contact pads at R1.90m with stroke-target0.25m, shock body/piston and dual shear load supports. Four local reduction gearbox envelopes are proposals, not assembled tested gears. Preserved all 11 P01-P11 root IDs and 4 original tank IDs. Motion animation retained as viewer clip0 16sec; tested 0,6,9,15.5s. New preliminary target mass ledger kg [132,163,91,88,35,128,48,28,27,42,61]=843kg empty;1073kg with170 crew+60 fuel;1123kg with110 fuel. Wolfram conditional ideal hover239.57kW at1073kg,256.51kW full; short benchmark mission~31.71kg fuel; mean 3m/s 0.25m touchdown load31.23kN full fuel, two-contact mean15.62kN/contact. These are only screening calculations. Known open requirements: actual tube wall/laminate, joints and nonlinear FEA, limit/ultimate landing peak load, modal/vibration, nacelle gyro/inertia/actuation torque, swept tilt and tank restraint clearance, usable fuel bladder/capacity, gear and CV continuous duty, closed-loop flight control and test safety. No new airworthiness acceptance or certification.",
+          "versionId": "version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2",
+          "objectId": null,
+          "targetEntryId": null,
+          "createdAt": "2026-10-31T03:15:28.407Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_58727db5f1c97093b97fe42dd68f8ead30e4af835098ea49bcaa72d29defc63a",
+            "revision": 46,
+            "versionId": "version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2",
+            "objectId": null
+          },
+          "anchorState": "current_version"
+        },
+        {
+          "entryId": "idem_d2fcbf430d9e95ffb5dd616560a68986a6ff15f0c57e1a9884cc2942c08bbe09",
+          "revision": 45,
+          "kind": "decision",
+          "text": "P0-V3 flight-motion and vectoring study, saved version version_dd12279b59abee9e412e34012e973a85dbd8825da4e49fe5b6b462562357aa6d. Inspectable 16s animation: lift, forward translation, turning/banking, deceleration, rotor spin and thrust-vector changes; replaced exploded animation. Four elevated 2-axis tilt hubs, static ±20deg tilt concept with continuous 360deg horizontal thrust direction; rotating shafts do NOT have 360deg structural bend. Geometry includes dual-CV joint envelopes, angular rotor-support trusses, 8 tank saddles plus triangular restraints and protective rails, short-dash yoke, FCC and IMU installation envelopes, signal/power paths and illustrative wakes (not CFD). Model allocated target mass 788kg empty, 1018kg test takeoff and 1068kg full fuel. Wolfram: hover 221.386kW at1018kg, each rotor shaft ~660.65Nm at800rpm hover and1213.69Nm in ideal1.5g screen; tilt actuator sizing reference 4622N at1100Nm assumed hinge moment. Chosen provisional comfort target 0.15g lateral: 8.53deg coordinated bank, 524m radius at100km/h; at200m radius reduce to~61.8km/h. Avionics candidate Embention Veronte 4x and Safran STIM300 RS422 require verified interface conversion; actuator candidate Moog aerospace EMA. This is animated conceptual hardware, NOT demonstrated functional controls, transmission, structural margins, turbine-out survival or certified flightworthiness. Verify rotor swept clearance under loads, CV rating, actuator control, CG, 6DOF simulation, aero, FEA and physical tests. No human acceptance.",
+          "versionId": "version_dd12279b59abee9e412e34012e973a85dbd8825da4e49fe5b6b462562357aa6d",
+          "objectId": null,
+          "targetEntryId": null,
+          "createdAt": "2026-10-31T02:53:59.638Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_d2fcbf430d9e95ffb5dd616560a68986a6ff15f0c57e1a9884cc2942c08bbe09",
+            "revision": 45,
+            "versionId": "version_dd12279b59abee9e412e34012e973a85dbd8825da4e49fe5b6b462562357aa6d",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_1a92a3e8a7a3b1e02c08b5e36bd3a44d67175f6d07bea0ef5f87779400765a76",
+          "revision": 44,
+          "kind": "decision",
+          "text": "VTX P0-V2 Issue C, CURRENT geometry baseline derived from P0-V1 Issue A. Actual editable mesh changes: 16 rotor blade tips at radius1.128379m, nominal total disk area16.0m2, 12mm nominal static blade-to-duct gap; 4 P07 physically hollow fuel-shell meshes each inside radius170mm/inside length460mm, exterior radius173mm/exterior length466mm (nominal 3mm CFRP skin), and 8 fitted strap meshes with connected pickups. Wolfram geometric inner gross total167.057L, assumed usable141.999L after10% ullage and5% unusable allowance; 110kg JetA1 requires137.5L at density0.8kg/L. Modeled shell mass13.128kg assuming uniform density1600kg/m3; no load or fuel qualification. P06 structural ring hollow cross-section R1.19m, tube outer radius45mm inner31mm, theoretical CFRP mass39.989kg; added triangulated load braces; P03 turbine coupling, bearings, four vertical outlets; P02 visible collective pitch linkages. Updated target allocations P03=75kg, P06=84kg, P07=37kg; 11-subsystem empty target691kg, loaded test921kg with170kg passengers+60kg fuel, full971kg with110kg fuel. Previous P0-V1 remains separate immutable version. Wolfram low-order conditional hover190.51kW at921kg, modeled mission fuel25.88kg over27km. All physical strength, composites, thermal, blade aero, speed/torque, gimbal kinematics, fuel integrity and single-engine/rotor-out failure modes remain unverified. Geometry viewer and source saved with assembled/exploded animation.",
+          "versionId": "version_c4813f986b7b20aba232aa2dd544191b5dce0c458e1c77bd5dcace58da18c18a",
+          "objectId": null,
+          "targetEntryId": null,
+          "createdAt": "2026-10-31T02:32:04.970Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_1a92a3e8a7a3b1e02c08b5e36bd3a44d67175f6d07bea0ef5f87779400765a76",
+            "revision": 44,
+            "versionId": "version_c4813f986b7b20aba232aa2dd544191b5dce0c458e1c77bd5dcace58da18c18a",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_719e020e78c4005a086e6a62d4f73f84a40928c0a054e8704f10c29674e5c9cd",
+          "revision": 43,
+          "kind": "brief",
+          "text": "VTX-P0-V1 / Issue A — source-of-truth register. Design baseline: Technical Performance PDF and Parts Cost/R&D PDF; 671 kg empty is a target allocation, not weighed hardware. All engineering dimensions/calculations are conceptual until physical testing. The 11 P01–P11 subsystem reference records VTX_P01_LINKED through VTX_P11_LINKED are anchored to the saved assembly objects; additional subcomponent references exist for P02 F1, P04 and P06. AUTHORITATIVE EXTERNAL SOURCE METADATA: prefer six CANONICAL_ records (CANONICAL_AKTURK_TIP, CANONICAL_HINE_LIFTFAN, CANONICAL_HU_WEIGHT, CANONICAL_CRITCHFIELD_MDO, CANONICAL_MUNIRAJ_HONEYCOMB, CANONICAL_LIU_COMPOSITES). They carry verified publisher, DOI, year and explicit model-part anchors, and supersede the older VTX_P02_PAPER_*/VTX_SCI_* records that incorrectly use 'VTX P0-V1 engineering study' as an external paper publisher. Older records are retained as immutable history, not source updates. Blendstra mobile shows five recent references, earlier entries remain in note history. The rendered blades have 38.379 mm nominal static tip clearance and 15.26065 m2 actual swept area versus nominal 16 m2; modeled P07 tanks have gross 83.24 L versus 137.5 L needed for 110 kg fuel. Neither defect is resolved by reference metadata. No flightworthiness, vendor certification or human acceptance has been granted.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "createdAt": "2026-10-31T02:11:24.257Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_719e020e78c4005a086e6a62d4f73f84a40928c0a054e8704f10c29674e5c9cd",
+            "revision": 43,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_97e0339b08bd0c99c77aff3ba9ade4f5c32e2e47e9ce77aa87bf84873b5cf341",
+          "revision": 42,
+          "kind": "reference",
+          "text": "CORRECTED external scientific attribution. Ali Akturk and Cengiz Camci, Tip Clearance Investigation of a Ducted Fan Used in VTOL Unmanned Aerial Vehicles — Part II: Novel Treatments via Computational Design and Their Experimental Verification. ASME Journal of Turbomachinery 136(2), 021005, issue 2014 (online September 2013). DOI 10.1115/1.4023469. Supersedes misleading VTX_P02_PAPER_TIP publisher field. Saved P02 blade radius 1.102m and duct inner radius approx1.140379m imply 38.379mm nominal STATIC gap; published research does not prescribe VTX clearance.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "CANONICAL_AKTURK_TIP",
+            "title": "P02 F1 | Akturk and Camci — ducted rotor tip clearance",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "American Society of Mechanical Engineers (ASME)",
+              "sourceId": "10.1115/1.4023469"
+            },
+            "evidence": [
+              {
+                "evidenceId": "SRC_CANONICAL_AKTURK_TIP",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4023469",
+                "documentRevision": "2014"
+              }
+            ],
+            "measurements": [
+              {
+                "label": "Saved-model radial blade tip gap",
+                "basis": "modeled",
+                "value": "38.379",
+                "unit": "mm",
+                "approximate": true
+              }
+            ],
+            "requiredParts": [
+              "P02 F1 duct",
+              "P02 F1 blade tip",
+              "P02 clearance and containment"
+            ],
+            "assumptions": [
+              "The static model gap is not verified operating gap or blade-containment allowance.",
+              "Publisher study uses different rotor diameter and tip treatment geometry."
+            ],
+            "parts": [
+              {
+                "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+                "role": "P02 F1 inner duct wall and blade-tip interface",
+                "aliases": [
+                  "AKTURK_TIP",
+                  "VTX research"
+                ],
+                "materialIntent": "Academic reference, not fabrication specification"
+              },
+              {
+                "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+                "role": "Linked subsystem context",
+                "aliases": [
+                  "P0-V1 linked assembly"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:10:57.387Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_97e0339b08bd0c99c77aff3ba9ade4f5c32e2e47e9ce77aa87bf84873b5cf341",
+            "revision": 42,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_4cedad2481816b73765a8bb80f4b28397566d7d19e0af6e5251efaf6fd518868",
+          "revision": 41,
+          "kind": "reference",
+          "text": "CORRECTED external scientific attribution. Rory Hine et al. (2025), Design and Analysis of a Liftfan for eVTOL Aircraft, Journal of Turbomachinery 147. Publisher American Society of Mechanical Engineers (ASME). DOI 10.1115/1.4067673. Supersedes VTX_P02_PAPER_HINE internal publisher field. Describes integrated rotor/stator numerical design and experimental wind tunnel validation; study uses hub electric motor architecture, unlike VTX mechanical shaft drive.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "CANONICAL_HINE_LIFTFAN",
+            "title": "P02 | Hine et al. 2025 — tested eVTOL liftfan design",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "American Society of Mechanical Engineers (ASME)",
+              "sourceId": "10.1115/1.4067673"
+            },
+            "evidence": [
+              {
+                "evidenceId": "SRC_CANONICAL_HINE_LIFTFAN",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4067673",
+                "documentRevision": "2025"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P02 fan blades",
+              "P02 nacelle and stators"
+            ],
+            "assumptions": [
+              "Study geometry and electric hub-motor cooling not directly interchangeable with mechanical drive.",
+              "Published performance cannot substantiate VTX 72% efficiency or 119kg fan group target."
+            ],
+            "parts": [
+              {
+                "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+                "role": "P02 ducted rotor/stator group",
+                "aliases": [
+                  "HINE_LIFTFAN",
+                  "VTX research"
+                ],
+                "materialIntent": "Academic reference, not fabrication specification"
+              },
+              {
+                "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+                "role": "Linked subsystem context",
+                "aliases": [
+                  "P0-V1 linked assembly"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:10:51.585Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_4cedad2481816b73765a8bb80f4b28397566d7d19e0af6e5251efaf6fd518868",
+            "revision": 41,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_7a92efc921f7118822cf146b6bacc58f005de8695884d690eb172b6220a62b7e",
+          "revision": 40,
+          "kind": "reference",
+          "text": "CORRECTED external attribution. Hu, Qing, Liu, Conrad, Cao and Zhang (2021), Hovering efficiency optimization of the ducted propeller with weight penalty taken into account. Aerospace Science and Technology 117, 106937. Publisher Elsevier. DOI 10.1016/j.ast.2021.106937. Supersedes former VTX_P02_PAPER_HU entry. Published experiments show structural weight and hover aerodynamic efficiency must be traded together; not an as-built test on VTX fans.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "CANONICAL_HU_WEIGHT",
+            "title": "P02 | Hu et al. 2021 — duct mass versus efficiency",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "Elsevier",
+              "sourceId": "10.1016/j.ast.2021.106937"
+            },
+            "evidence": [
+              {
+                "evidenceId": "SRC_CANONICAL_HU_WEIGHT",
+                "kind": "page",
+                "url": "https://doi.org/10.1016/j.ast.2021.106937",
+                "documentRevision": "2021"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P02 nacelle",
+              "P02 rotor/duct hover system",
+              "P06 ring mass coupling"
+            ],
+            "assumptions": [
+              "Liftfan geometry and duct mass optimisation require VTX-specific loads and experiments.",
+              "Duct structural weight must be checked together with hover efficiency."
+            ],
+            "parts": [
+              {
+                "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+                "role": "P02 four ducted fan modules",
+                "aliases": [
+                  "HU_WEIGHT",
+                  "VTX research"
+                ],
+                "materialIntent": "Academic reference, not fabrication specification"
+              },
+              {
+                "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+                "role": "Linked subsystem context",
+                "aliases": [
+                  "P0-V1 linked assembly"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:10:48.136Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_7a92efc921f7118822cf146b6bacc58f005de8695884d690eb172b6220a62b7e",
+            "revision": 40,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_18a350afa9ca1be1045b6b72c992a305f1b385f5ebc7e665463af4d5132adb58",
+          "revision": 39,
+          "kind": "reference",
+          "text": "CORRECTED external scientific attribution. Critchfield and Ning (2026), Mission-Focused Multidisciplinary Design Optimization of Tilt-Rotor eVTOL Propulsion System. Journal of Aircraft 63(4), 1563-1578. Publisher American Institute of Aeronautics and Astronautics (AIAA). DOI 10.2514/1.C038445. Supersedes incorrect publisher on VTX_P01_PAPER_MDO. This study describes a different tilt-rotor electrically propelled aircraft and supports design METHOD only, not VTX turbine/duct performance.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "CANONICAL_CRITCHFIELD_MDO",
+            "title": "P01 | Critchfield and Ning 2026 — mission propulsion MDO",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "American Institute of Aeronautics and Astronautics (AIAA)",
+              "sourceId": "10.2514/1.C038445"
+            },
+            "evidence": [
+              {
+                "evidenceId": "SRC_CANONICAL_CRITCHFIELD_MDO",
+                "kind": "page",
+                "url": "https://doi.org/10.2514/1.C038445",
+                "documentRevision": "2026"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P01 propulsion",
+              "P02 rotor system",
+              "P03 transmission"
+            ],
+            "assumptions": [
+              "Not experimental evidence for P0 0.72 aggregate rotor efficiency or 0.4kg/kWh turbine consumption.",
+              "Aircraft architecture differs (electric tilt-rotor versus VTX ducted rotor turboshaft)."
+            ],
+            "parts": [
+              {
+                "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e",
+                "role": "P01 turboshaft installation (mission trade study)",
+                "aliases": [
+                  "CRITCHFIELD_MDO",
+                  "VTX research"
+                ],
+                "materialIntent": "Academic reference, not fabrication specification"
+              },
+              {
+                "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+                "role": "Linked subsystem context",
+                "aliases": [
+                  "P0-V1 linked assembly"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:10:44.548Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_18a350afa9ca1be1045b6b72c992a305f1b385f5ebc7e665463af4d5132adb58",
+            "revision": 39,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_0cb93eef7169a83b84fa9737422c423e7299ba238906fd48a341a90071f2d496",
+          "revision": 38,
+          "kind": "reference",
+          "text": "CORRECTED external scientific attribution. D. Muniraj and V.M. Sreehari (2021), Experimental Damage Evaluation of Honeycomb Sandwich with Composite Face Sheets under Impact Load, International Journal of Engineering Transactions A: Basics, 34(4), 999-1007. Publisher Materials and Energy Research Center. DOI 10.5829/ije.2021.34.04a.26. Supersedes unspecific VTX_P06_PAPER_COMPOSITES attribution. Impact data from literature, NOT allowable stress/fatigue data for VTX structures.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "fca81003-4631-4bd9-810c-7ed956a3f6de",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "CANONICAL_MUNIRAJ_HONEYCOMB",
+            "title": "P06 | Muniraj and Sreehari 2021 — sandwich impact tests",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "Materials and Energy Research Center",
+              "sourceId": "10.5829/ije.2021.34.04a.26"
+            },
+            "evidence": [
+              {
+                "evidenceId": "SRC_CANONICAL_MUNIRAJ_HONEYCOMB",
+                "kind": "page",
+                "url": "https://doi.org/10.5829/ije.2021.34.04a.26",
+                "documentRevision": "2021"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P06 central ring",
+              "P06 CFRP sandwich and joints"
+            ],
+            "assumptions": [
+              "Published samples and tested layups differ from proposed VTX CFRP structural ring.",
+              "P06 mass target 75kg and central ring 40kg not structurally validated."
+            ],
+            "parts": [
+              {
+                "objectId": "fca81003-4631-4bd9-810c-7ed956a3f6de",
+                "role": "P06 main CFRP structural ring",
+                "aliases": [
+                  "MUNIRAJ_HONEYCOMB",
+                  "VTX research"
+                ],
+                "materialIntent": "Academic reference, not fabrication specification"
+              },
+              {
+                "objectId": "0b719ee5-bc0e-44f8-8f10-85404b5944ae",
+                "role": "Linked subsystem context",
+                "aliases": [
+                  "P0-V1 linked assembly"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:10:40.455Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_0cb93eef7169a83b84fa9737422c423e7299ba238906fd48a341a90071f2d496",
+            "revision": 38,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "fca81003-4631-4bd9-810c-7ed956a3f6de"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_08ca01da01393a71650e8fb6c8ba6f5d394317f8d81f2ac5a6667248ab33f4df",
+          "revision": 37,
+          "kind": "reference",
+          "text": "CORRECTED external scientific attribution. Liu, Bai et al. (2024), Impact response and crashworthy design of composite fuselage structures: An overview. Progress in Aerospace Sciences 148, 101002. Publisher Elsevier. DOI 10.1016/j.paerosci.2024.101002. Supersedes incorrect VTX-study publisher labeling in earlier VTX_P04_PAPER_CRASH / VTX_SCI_COMPOSITES entries. This is a research review, not a test or safety certification of our P04 cabin.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "157f44f2-d58d-4934-a150-dac034e365b0",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "CANONICAL_LIU_COMPOSITES",
+            "title": "P04 | Liu et al. 2024 — composite fuselage crashworthiness",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "Elsevier",
+              "sourceId": "10.1016/j.paerosci.2024.101002"
+            },
+            "evidence": [
+              {
+                "evidenceId": "SRC_CANONICAL_LIU_COMPOSITES",
+                "kind": "page",
+                "url": "https://doi.org/10.1016/j.paerosci.2024.101002",
+                "documentRevision": "2024"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P04 CFRP spherical shell",
+              "P05 occupant protection interface"
+            ],
+            "assumptions": [
+              "Published crashworthiness overview is not a validated P04 laminate or impact-response result.",
+              "P04 nominal mass 88kg is an allocation, not a measured composite structure."
+            ],
+            "parts": [
+              {
+                "objectId": "157f44f2-d58d-4934-a150-dac034e365b0",
+                "role": "P04 upper spherical CFRP shell",
+                "aliases": [
+                  "LIU_COMPOSITES",
+                  "VTX research"
+                ],
+                "materialIntent": "Academic reference, not fabrication specification"
+              },
+              {
+                "objectId": "69da1466-3a54-4459-9d8b-b2b63d69e7f4",
+                "role": "Linked subsystem context",
+                "aliases": [
+                  "P0-V1 linked assembly"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:10:35.455Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_08ca01da01393a71650e8fb6c8ba6f5d394317f8d81f2ac5a6667248ab33f4df",
+            "revision": 37,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "157f44f2-d58d-4934-a150-dac034e365b0"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_a05029b9efac50f19e5cde3625cd7cbf0eb5ab3a9cb3c4b6ff3766d3b56e9307",
+          "revision": 36,
+          "kind": "reference",
+          "text": "P02 F1 duct research: tip-clearance experiments",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P02_PAPER_TIP",
+            "title": "P02 F1 duct research: tip-clearance experiments",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "VTX_P02_PAPER_TIP_DOI",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4023469",
+                "documentRevision": "2014"
+              }
+            ],
+            "measurements": [
+              {
+                "label": "F1 nominal tip clearance",
+                "basis": "modeled",
+                "value": "38.379",
+                "unit": "mm",
+                "approximate": true
+              }
+            ],
+            "requiredParts": [
+              "P02 fan blades and casing"
+            ],
+            "assumptions": [
+              "Static geometry is not operational tip gap.",
+              "Blade stress and thermal/centrifugal growth unknown."
+            ],
+            "parts": [
+              {
+                "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+                "role": "F1 inner duct and rotor-tip interface",
+                "aliases": [
+                  "P02 F1 duct",
+                  "Tip clearance"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:05:35.888Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_a05029b9efac50f19e5cde3625cd7cbf0eb5ab3a9cb3c4b6ff3766d3b56e9307",
+            "revision": 36,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_6614e0b0253872fd7c6546b5f74aa176274eafea5e56e770e6ecdccd265aa03a",
+          "revision": 35,
+          "kind": "reference",
+          "text": "P2",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P02_PAPER_TIP",
+            "title": "P02 F1 duct research: tip-clearance experiments",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "VTX_P02_PAPER_TIP_DOI",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4023469",
+                "documentRevision": "2014"
+              }
+            ],
+            "measurements": [
+              {
+                "label": "F1 nominal tip clearance",
+                "basis": "modeled",
+                "value": "38.379",
+                "unit": "mm",
+                "approximate": true
+              }
+            ],
+            "requiredParts": [
+              "P02 fan blades and casing"
+            ],
+            "assumptions": [
+              "Static geometry is not operational tip gap.",
+              "Blade stress and thermal/centrifugal growth unknown."
+            ],
+            "parts": [
+              {
+                "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+                "role": "F1 inner duct and rotor-tip interface",
+                "aliases": [
+                  "P02 F1 duct",
+                  "Tip clearance"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:04:38.989Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_6614e0b0253872fd7c6546b5f74aa176274eafea5e56e770e6ecdccd265aa03a",
+            "revision": 35,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_fdcdb55601cc07c2cc6dd34679231e2c79e6f7956ab16817649d6bb2d9231162",
+          "revision": 34,
+          "kind": "reference",
+          "text": "Anchored to P04 upper spherical composite shell. Papers indexed in Parts Cost PDF p7: Liu et al., 2024, composite fuselage crashworthy design review; Muniraj and Sreehari, 2021, experimental damage evaluation of honeycomb sandwich composite face sheets. Relevant to cabin panel impact, face/core debonding and structural test design. P04 88kg target and glazing impact properties remain unverified.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "157f44f2-d58d-4934-a150-dac034e365b0",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P04_PAPER_CRASH",
+            "title": "P04 CFRP shell: crashworthiness and face-core debond research",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P04 structural shell",
+              "P04 cabin glazing"
+            ],
+            "assumptions": [
+              "No accident-load or occupant-injury evaluation performed."
+            ],
+            "parts": [
+              {
+                "objectId": "157f44f2-d58d-4934-a150-dac034e365b0",
+                "role": "Composite sphere shell",
+                "aliases": [
+                  "P04 CFRP shell",
+                  "Crashworthiness"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:01:02.928Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_fdcdb55601cc07c2cc6dd34679231e2c79e6f7956ab16817649d6bb2d9231162",
+            "revision": 34,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "157f44f2-d58d-4934-a150-dac034e365b0"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_961d37b6badc67f285879ee1b75b93e19dd37d99dc2d5348a649c22a971d760d",
+          "revision": 33,
+          "kind": "reference",
+          "text": "Anchored to the actual P06 carbon ring. Sources indexed in Parts Cost PDF p7: Liu et al., 2024, impact response and crashworthy design of composite fuselage structures: an overview; Muniraj and Sreehari, 2021, experimental damage evaluation of honeycomb sandwich composite face sheets. These support selecting test categories for CFRP/honeycomb shell, not stress allowables for VTX. 40kg central ring target is unmeasured.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "fca81003-4631-4bd9-810c-7ed956a3f6de",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P06_PAPER_COMPOSITES",
+            "title": "P06 central ring: composite impact and buckling research",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P06 main load ring",
+              "P06 composite supports"
+            ],
+            "assumptions": [
+              "No FEA or coupons validated for actual VTX laminate.",
+              "Scientific review abstracts are not material property datasheets."
+            ],
+            "parts": [
+              {
+                "objectId": "fca81003-4631-4bd9-810c-7ed956a3f6de",
+                "role": "CFRP load-bearing ring",
+                "aliases": [
+                  "P06 ring",
+                  "Structural failure study"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:00:59.190Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_961d37b6badc67f285879ee1b75b93e19dd37d99dc2d5348a649c22a971d760d",
+            "revision": 33,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "fca81003-4631-4bd9-810c-7ed956a3f6de"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_e0776eec002bd6ea67a600a4f4f7871ebd5828e3e3d77a707030adc6fdda181d",
+          "revision": 32,
+          "kind": "reference",
+          "text": "Linked to propulsion installation. Critchfield and Ning, 2026, mission-focused multidisciplinary eVTOL propulsion optimisation, DOI 10.2514/1.C038445; S06 research index in both PDFs. Relevant to coupling prime-mover sizing, rotor area, structure, propulsive efficiency and mission cost. Not evidence that assumed VTX engine part-load SFC=0.4kg/kWh or eta rotor=.72 is achieved.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P01_PAPER_MDO",
+            "title": "P01 propulsion research: mission-level multidisciplinary optimisation",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "VTX_P01_PAPER_MDO_DOI",
+                "kind": "page",
+                "url": "https://doi.org/10.2514/1.C038445",
+                "documentRevision": "2026"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P01 turbine installation",
+              "P02 ducted rotors"
+            ],
+            "assumptions": [
+              "Published optimisation approach not direct performance substantiation."
+            ],
+            "parts": [
+              {
+                "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e",
+                "role": "Prime-mover assembly",
+                "aliases": [
+                  "P01"
+                ]
+              },
+              {
+                "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+                "role": "Coupled fan system",
+                "aliases": [
+                  "P02"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:00:55.337Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_e0776eec002bd6ea67a600a4f4f7871ebd5828e3e3d77a707030adc6fdda181d",
+            "revision": 32,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_cd7df3f11c4f68c7e08ca11a8731431cb67d2c40fc8b9db6e40db616f1776c69",
+          "revision": 31,
+          "kind": "reference",
+          "text": "Anchored to the actual F1 duct geometry (not whole model). Akturk and Camci (2014), Tip-clearance treatment experiments in ducted VTOL fans. DOI 10.1115/1.4023469, S05. Existing saved blade extends to R=1.102m; inner wall at R~1.140379m, nominal 38.379mm static gap. This is a geometrical mismatch with the 16m2 analytic rotor-area target and must be investigated, not treated as a measured flow result.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P02_PAPER_TIP",
+            "title": "P02 F1 duct research: tip-clearance experiments",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "VTX_P02_PAPER_TIP_DOI",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4023469",
+                "documentRevision": "2014"
+              }
+            ],
+            "measurements": [
+              {
+                "label": "F1 nominal tip clearance",
+                "basis": "modeled",
+                "value": "38.379",
+                "unit": "mm",
+                "approximate": true
+              }
+            ],
+            "requiredParts": [
+              "P02 fan blades and casing"
+            ],
+            "assumptions": [
+              "Static geometry is not operational tip gap.",
+              "Blade stress and thermal/centrifugal growth unknown."
+            ],
+            "parts": [
+              {
+                "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+                "role": "F1 inner duct and rotor-tip interface",
+                "aliases": [
+                  "P02 F1 duct",
+                  "Tip clearance"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:00:51.196Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_cd7df3f11c4f68c7e08ca11a8731431cb67d2c40fc8b9db6e40db616f1776c69",
+            "revision": 31,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_9d3402b7a450944f2d8a36c623c469418134011538fec0fcb5c1ee2822283cae",
+          "revision": 30,
+          "kind": "reference",
+          "text": "P02 research linked to the fan group. Hu et al., 2021, Hovering efficiency optimization of the ducted propeller with weight penalty taken into account. DOI 10.1016/j.ast.2021.106937, S04 source index. Relevant to trade-off of inlet diffuser efficiency and nacelle structural mass. VTX 119kg P02 mass remains a target, not substantiated.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P02_PAPER_HU",
+            "title": "P02 research: duct efficiency versus mass penalty",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "VTX_P02_PAPER_HU_DOI",
+                "kind": "page",
+                "url": "https://doi.org/10.1016/j.ast.2021.106937",
+                "documentRevision": "2021"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P02 ducted fan modules",
+              "P06 supporting structure"
+            ],
+            "assumptions": [
+              "Modelled nacelle masses and aerodynamic efficiency are unverified."
+            ],
+            "parts": [
+              {
+                "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+                "role": "Four-fan propulsion group",
+                "aliases": [
+                  "P02",
+                  "Duct optimization"
+                ]
+              },
+              {
+                "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+                "role": "F1 nacelle",
+                "aliases": [
+                  "F1 duct"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:00:46.965Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_9d3402b7a450944f2d8a36c623c469418134011538fec0fcb5c1ee2822283cae",
+            "revision": 30,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_7110dbc8c273205d91b352935509277fc14035ac2a08668ee9019480427af3c5",
+          "revision": 29,
+          "kind": "reference",
+          "text": "P02 research linked to the complete fan assembly. Hine et al., 2025, Design and Analysis of a Liftfan for eVTOL Aircraft. DOI 10.1115/1.4067673; cited S03 Technical PDF p9 and cost PDF p7. Relevant to fan/rotor/stator profile optimization and forward-flight nacelle performance; no VTX performance certification implied.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P02_PAPER_HINE",
+            "title": "P02 research: eVTOL liftfan rotor/stator experiments",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "VTX_P02_PAPER_HINE_DOI",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4067673",
+                "documentRevision": "2025"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P02 ducted fan modules"
+            ],
+            "assumptions": [
+              "Published reference does not validate proprietary VTX rotor shape."
+            ],
+            "parts": [
+              {
+                "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+                "role": "Four-fan propulsion group",
+                "aliases": [
+                  "P02",
+                  "Liftfan"
+                ]
+              },
+              {
+                "objectId": "b7f4bbf2-9471-4c41-8cb4-0397ae5d06cd",
+                "role": "F1 nacelle",
+                "aliases": [
+                  "F1 duct"
+                ]
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T02:00:42.556Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_7110dbc8c273205d91b352935509277fc14035ac2a08668ee9019480427af3c5",
+            "revision": 29,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_09f27d9371712a4998ecad2e7d2cc47984804f734678b8f92487bcc6b6689864",
+          "revision": 28,
+          "kind": "reference",
+          "text": "P11 target49kg for electrical power buses, four collective-pitch servo feeds, gimbal actuation, thermal management, power conditioning and auxiliaries. SOURCE Technical PDF pp3-4,7 and Parts Cost PDF pp2,4. Four-fan auxiliary power, starter supply, emergency control power and radiator duty need explicit functional schematic and thermal validation. No verified mass/inertia/heat budget yet.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "add35739-0445-4917-8137-8c5d1cbadabd",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P11_LINKED",
+            "title": "Electrical power distribution and cooling – P11",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P11 radiator and cooling",
+              "P11 power distribution"
+            ],
+            "assumptions": [
+              "Electrical/cooling installed mass49kg placeholder.",
+              "No verified battery-backup endurance or electrical loads.",
+              "Thermal model not mapped to actual turbine+gearbox temperatures."
+            ],
+            "parts": [
+              {
+                "objectId": "add35739-0445-4917-8137-8c5d1cbadabd",
+                "role": "P11 subsystem root",
+                "aliases": [
+                  "P11",
+                  "Electrical power distribution and cooling"
+                ],
+                "materialIntent": "metallic heat exchangers and aerospace electrical distribution"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:47.865Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_09f27d9371712a4998ecad2e7d2cc47984804f734678b8f92487bcc6b6689864",
+            "revision": 28,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "add35739-0445-4917-8137-8c5d1cbadabd"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_d8c574e32e260fa4c5f5d8c79a8783d20d3b8649083fa8e58338e97875d56caf",
+          "revision": 27,
+          "kind": "reference",
+          "text": "P10 target24kg for skids, legs and energy absorbers. Technical PDF p6 uses illustrative mean reaction factor~2.02g for a 2m/s descent with0.20m deceleration stroke and~3.29g for3m/s same stroke. These are average reference values, not peak gear loads. Source Parts Cost PDF pp2,4-5: R07 drop/impact and G4 static/ground tests. Existing CAD skid geometry not yet connected to a complete structural load path.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "a08220bc-e58b-4ef3-8495-339275fde544",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P10_LINKED",
+            "title": "Landing skids, energy absorption and drop tests – P10",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P10 skid assembly",
+              "P10 damping elements"
+            ],
+            "assumptions": [
+              "No validated peak impact load or energy-absorber stroke in saved CAD.",
+              "24kg gear mass target not substantiated.",
+              "No fatigue or ground-handling cases developed."
+            ],
+            "parts": [
+              {
+                "objectId": "a08220bc-e58b-4ef3-8495-339275fde544",
+                "role": "P10 subsystem root",
+                "aliases": [
+                  "P10",
+                  "Landing skids, energy absorption and drop tests"
+                ],
+                "materialIntent": "lightweight alloys and protected energy absorbing struts"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:44.158Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_d8c574e32e260fa4c5f5d8c79a8783d20d3b8649083fa8e58338e97875d56caf",
+            "revision": 27,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "a08220bc-e58b-4ef3-8495-339275fde544"
+          },
+          "anchorState": "earlier_version"
+        }
+      ]
+    },
+    {
+      "revision": 46,
+      "items": [
+        {
+          "entryId": "idem_4d26936d5ae8f8c71094fc17c7d4fd0ffbd0397dfe946dcf8cd221dd4469d4da",
+          "revision": 26,
+          "kind": "reference",
+          "text": "P09 combined two-seat restraints target25kg, two occupants total170kg reference. CAD has two symbolic seats/harness paths, not verified load-rated mounts. SOURCE Technical PDF pp3,6-7 and Parts Cost PDF pp2,4. Occupant asymmetry, CG, gimbal dynamics and impact load cases require analysis. Seat and mounting interface should be defined alongside P04/P05.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "3e9398ca-70c6-483f-b208-24e078be26ee",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P09_LINKED",
+            "title": "Two passenger seats, restraints and anchors – P09",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P09 seats",
+              "P09 harness anchors"
+            ],
+            "assumptions": [
+              "Nominal occupants170kg combined design allowance.",
+              "Seat attachment loads and testable emergency evacuation not defined.",
+              "Seats are visualization meshes, not release-tested parts."
+            ],
+            "parts": [
+              {
+                "objectId": "3e9398ca-70c6-483f-b208-24e078be26ee",
+                "role": "P09 subsystem root",
+                "aliases": [
+                  "P09",
+                  "Two passenger seats, restraints and anchors"
+                ],
+                "materialIntent": "energy-absorbing seats and certified restraint materials pending qualification"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:40.039Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_4d26936d5ae8f8c71094fc17c7d4fd0ffbd0397dfe946dcf8cd221dd4469d4da",
+            "revision": 26,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "3e9398ca-70c6-483f-b208-24e078be26ee"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_dded6dccbd302184c1cae62f61701041af233d8f115a91d969eab6eadbd6bc2e",
+          "revision": 25,
+          "kind": "reference",
+          "text": "P08 mass target23kg. Architecture calls for ECU plus independent IMUs, blade/rotor speed and torque sensors, air data, vibration, gimbal angle and fuel sensing. Four independently commanded collective-pitch hubs; after one fan/shaft branch failure, 4-DOF allocation is insufficient with the current configuration. SOURCE Technical PDF p7 and Parts Cost PDF pp2,4. SIL/HIL fault-injection verification gates remain incomplete.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "1b734d52-4ba5-4055-ab0a-861e7e53dcc5",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P08_LINKED",
+            "title": "Flight-control avionics and sensors – P08",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P08 IMU/ECU",
+              "P08 cockpit displays"
+            ],
+            "assumptions": [
+              "Software control laws and actuator bandwidth unvalidated.",
+              "Electrical architecture, EMC and sensor failure detection unverified.",
+              "Control authority under rotor-out not established."
+            ],
+            "parts": [
+              {
+                "objectId": "1b734d52-4ba5-4055-ab0a-861e7e53dcc5",
+                "role": "P08 subsystem root",
+                "aliases": [
+                  "P08",
+                  "Flight-control avionics and sensors"
+                ],
+                "materialIntent": "aerospace electronics enclosures and qualified wiring"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:36.661Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_dded6dccbd302184c1cae62f61701041af233d8f115a91d969eab6eadbd6bc2e",
+            "revision": 25,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "1b734d52-4ba5-4055-ab0a-861e7e53dcc5"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_3849898474bbec30b6dbdc01f4d1932fe25812754fbd372247f27bbee8a641e8",
+          "revision": 24,
+          "kind": "reference",
+          "text": "P07 hardware target29kg; protected tanks, pumps, lines, vents and metering. Four current model cylinder envelopes radius120mm and length460mm total gross83.24L; 60kg JetA1 at 0.8kg/L needs75L usable, 110kg alternative needs137.5L usable. Existing model is therefore not sized for 110kg fuel and leaves only 8.24L gross slack in nominal 60kg case before ullage/unusable fuel. SOURCE Technical PDF p3,5 and Parts Cost PDF p4; Wolfram recomputed. Fuel placement/CG trim unresolved FM07.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "743763e0-c7ab-4550-8945-ccdd37caa3b6",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P07_LINKED",
+            "title": "Jet A-1 fuel tanks and balance – P07",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Cylinder radius in model",
+                "basis": "modeled",
+                "value": "120",
+                "unit": "mm",
+                "approximate": false
+              },
+              {
+                "label": "Cylinder length in model",
+                "basis": "modeled",
+                "value": "460",
+                "unit": "mm",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P07 tank envelopes",
+              "P07 fuel delivery hardware"
+            ],
+            "assumptions": [
+              "Tank volume is simplified cylinder envelope and cannot be assumed usable.",
+              "Full-load fuel option not supported by present geometry.",
+              "Vent routing, refuel interfaces and crash isolation are undefined."
+            ],
+            "parts": [
+              {
+                "objectId": "743763e0-c7ab-4550-8945-ccdd37caa3b6",
+                "role": "P07 subsystem root",
+                "aliases": [
+                  "P07",
+                  "Jet A-1 fuel tanks and balance"
+                ],
+                "materialIntent": "qualified impact-resistant fuel containment; no material released"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:33.145Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_3849898474bbec30b6dbdc01f4d1932fe25812754fbd372247f27bbee8a641e8",
+            "revision": 24,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "743763e0-c7ab-4550-8945-ccdd37caa3b6"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_6f7b2c247d2aa62ef01bf6d24da0ecda6ac75ac86ece03324596b35c12f83aea",
+          "revision": 23,
+          "kind": "reference",
+          "text": "P06 mass target75kg: provisional40kg central ring plus four stiffened CFRP support beams ~8.76kg each. Arm box cross-section340mm x120mm, 3.5mm skins, two webs. Current model ring radius1.19m and fan centres radius2.60m imply 1.41m ring-centre to hub-centre support span; analytical cantilever reference1.50m. Nominal 1.5g loads plus torsion need renewed local buckling, shear and joint analysis. SOURCE Technical PDF p6 and Parts Cost PDF p4. FM05 unresolved. Previous research VTX_SCI_COMPOSITES relevant.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "0b719ee5-bc0e-44f8-8f10-85404b5944ae",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P06_LINKED",
+            "title": "CFRP central ring and rotor support structure – P06",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Ring centre radius",
+                "basis": "nominal",
+                "value": "1.19",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Span ring-to-rotor centres",
+                "basis": "nominal",
+                "value": "1.41",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Reference beam section height",
+                "basis": "nominal",
+                "value": "340",
+                "unit": "mm",
+                "approximate": false
+              },
+              {
+                "label": "Reference beam section width",
+                "basis": "nominal",
+                "value": "120",
+                "unit": "mm",
+                "approximate": false
+              },
+              {
+                "label": "CFRP skin gauge study",
+                "basis": "nominal",
+                "value": "3.5",
+                "unit": "mm",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P06 central ring",
+              "P06 four stiffened spar sections"
+            ],
+            "assumptions": [
+              "40kg CFRP ring requires hollow-shell sizing and verified orthotropic properties.",
+              "Static beam study does not cover load transfer through joins or damage tolerance.",
+              "75kg allocation not weighed."
+            ],
+            "parts": [
+              {
+                "objectId": "0b719ee5-bc0e-44f8-8f10-85404b5944ae",
+                "role": "P06 subsystem root",
+                "aliases": [
+                  "P06",
+                  "CFRP central ring and rotor support structure"
+                ],
+                "materialIntent": "tailored CFRP box beams, stiffening webs, metal attachment inserts"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:29.351Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_6f7b2c247d2aa62ef01bf6d24da0ecda6ac75ac86ece03324596b35c12f83aea",
+            "revision": 23,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "0b719ee5-bc0e-44f8-8f10-85404b5944ae"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_f1a431b34743eb7eaae225d0288eda8158533c3afc0ced68f8768438e0643df7",
+          "revision": 22,
+          "kind": "reference",
+          "text": "P05 gimbal mass target35kg; pitch and roll rings, bearings and actuation. Outer envelope diameter2.20m, cabin outer diameter1.90m. Nominal ring-to-gimbal radial separation45mm in current model. Cabin attitude should coordinate with resultant acceleration, not remain level in all turns; R500m bank8.94deg and R200m bank21.47deg at 100km/h are unverified low-order model reference values. SOURCE Technical PDF pp1,6-7, Parts Cost PDF p3. Jam and travel limit FM04 unresolved.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "8b0dca63-a951-4206-acc3-a261af5dedc1",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P05_LINKED",
+            "title": "Two-axis cabin gimbal – P05",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Nominal gimbal diameter",
+                "basis": "nominal",
+                "value": "2.2",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Static ring-gimbal clearance",
+                "basis": "nominal",
+                "value": "45",
+                "unit": "mm",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P05 outer and inner rings",
+              "P05 bearing mounts"
+            ],
+            "assumptions": [
+              "45mm gap is static, not proven swept volume clearance.",
+              "Gimbal bearings, motors and inertia effects not sized.",
+              "No hatch/access coupling demonstrated."
+            ],
+            "parts": [
+              {
+                "objectId": "8b0dca63-a951-4206-acc3-a261af5dedc1",
+                "role": "P05 subsystem root",
+                "aliases": [
+                  "P05",
+                  "Two-axis cabin gimbal"
+                ],
+                "materialIntent": "metallic bearing fittings and lightweight composite/metal rings"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:25.151Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_f1a431b34743eb7eaae225d0288eda8158533c3afc0ced68f8768438e0643df7",
+            "revision": 22,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "8b0dca63-a951-4206-acc3-a261af5dedc1"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_d6e23d7c99c0c32f7c002c747dae8153e30dda320d2708c42b219bbfeacbc705",
+          "revision": 21,
+          "kind": "reference",
+          "text": "P04 mass target88kg. Cabin external diameter1.90m; approx35% surface glazing, laminated aviation window candidate; CFRP sandwich structural shell with flame-resistant PEI/PEEK trim candidate. Source Technical PDF pp1,3,7 and Parts Cost PDF pp3-4. Door/access route, glazing impact properties, mullion loads and occupant escape unverified. FM04/F05; see global VTX_CABIN_GIMBAL and VTX_SCI_COMPOSITES.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "69da1466-3a54-4459-9d8b-b2b63d69e7f4",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P04_LINKED",
+            "title": "Spherical CFRP cabin and laminated glazing – P04",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Cabin outside diameter",
+                "basis": "nominal",
+                "value": "1.9",
+                "unit": "m",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P04 shell",
+              "P04 glazing",
+              "P04 window seals"
+            ],
+            "assumptions": [
+              "Cabin glazing, mullions and sandwich laminate not structurally rated.",
+              "No escape hatch designed or demonstrated.",
+              "Cabin mass allocation is not a weighed result."
+            ],
+            "parts": [
+              {
+                "objectId": "69da1466-3a54-4459-9d8b-b2b63d69e7f4",
+                "role": "P04 subsystem root",
+                "aliases": [
+                  "P04",
+                  "Spherical CFRP cabin and laminated glazing"
+                ],
+                "materialIntent": "CFRP sandwich shell and laminated transparent glazing"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:20.982Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_d6e23d7c99c0c32f7c002c747dae8153e30dda320d2708c42b219bbfeacbc705",
+            "revision": 21,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "69da1466-3a54-4459-9d8b-b2b63d69e7f4"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_945ca12cdd74e8c9cdea1e92d1e3a995dfc19a087877f1308c1df02f6177a237",
+          "revision": 20,
+          "kind": "reference",
+          "text": "P03 target72kg; four-way speed-reduction gearbox, radial shafts, couplings, gearheads, bearings and lubrication. At illustrative6016rpm engine-output and800rpm rotor speed, nominal ratio 7.52:1 (not released). Shaft torque, modal response and gearbox efficiency need mechanical design. Prior Wolfram screening at 901kg estimated ~550Nm per rotor shaft at 800rpm hover, ~1011Nm for 1.5g ideal induced power at same fan rpm (not a released torque demand). SOURCE Technical PDF p4,6; Parts Cost PDF pp2-3,6. Relevant U03 and FM01/FM02 failure modes.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "6e2d17ed-5bb0-4f15-a80f-b380ebb6efa7",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P03_LINKED",
+            "title": "Four-way mechanical transmission – P03",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P03 four-way gearbox",
+              "P03 four output shafts"
+            ],
+            "assumptions": [
+              "No true connected gearbox mesh or verified mechanical couplings.",
+              "Torque depends on RPM and drivetrain losses; screening values only.",
+              "Gearbox weight72kg unsubstantiated."
+            ],
+            "parts": [
+              {
+                "objectId": "6e2d17ed-5bb0-4f15-a80f-b380ebb6efa7",
+                "role": "P03 subsystem root",
+                "aliases": [
+                  "P03",
+                  "Four-way mechanical transmission"
+                ],
+                "materialIntent": "metal gears/bearings with composite shaft tubes subject to dynamic verification"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:17.463Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_945ca12cdd74e8c9cdea1e92d1e3a995dfc19a087877f1308c1df02f6177a237",
+            "revision": 20,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "6e2d17ed-5bb0-4f15-a80f-b380ebb6efa7"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_4ddcf20e5f1aa86dc8d03ab76c31405a7fac860cae6fa228daa5271783852221",
+          "revision": 19,
+          "kind": "reference",
+          "text": "P01 engine target132kg, M250-C30P family reference. Technical PDF p4: 650shaft horsepower (484.7kW) takeoff; 630shp max-continuous placeholder not validated as installed availability. Source Parts Cost R&D PDF pp2-3: budget GBP220k-650k. Engine dry weight, mounts, intake, exhaust, cooling, clutch/decoupling and oil system require supplier-confirmed design. One-engine common failure FM02 unresolved. Read global references VTX_TURBINE_TRANSMISSION, VTX_FLIGHT_EQUATIONS and VTX_FAILURE_MODES.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P01_LINKED",
+            "title": "Turboshaft installation – P01 engineering register",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P01 turbine",
+              "P01 engine mounts"
+            ],
+            "assumptions": [
+              "132kg is unmeasured target installation.",
+              "No demonstrated engine-out safe landing capability.",
+              "Takeoff rating is not available continuous fan shaft rating."
+            ],
+            "parts": [
+              {
+                "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e",
+                "role": "P01 subsystem root",
+                "aliases": [
+                  "P01",
+                  "Turboshaft installation"
+                ],
+                "materialIntent": "titanium/alloy engine mount design with turbine manufacturer material controls"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:59:13.741Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_4ddcf20e5f1aa86dc8d03ab76c31405a7fac860cae6fa228daa5271783852221",
+            "revision": 19,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "9e1dc673-7102-4cfc-843b-424697d1496e"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_8739d7e22500e7c98cb6bb15484b4554d6381521ce8c72bd8883e0f76fcbe152",
+          "revision": 18,
+          "kind": "reference",
+          "text": "Component-linked P02: technical PDF pages 1, 3-6, research S03-S05. Four ducted fan modules 119 kg target. Nominal disk diameter 2.256758 m and total area 16 m2. Saved Blender blades radius 1.102 m correspond to 15.26065 m2 geometric swept area, with ~38.38 mm model tip gap. Derived by Wolfram, not measured. Independent collective pitch and blade containment remain unverified. The existing whole-model references VTX_ROTOR_GEOMETRY, VTX_SCI_LIFTFAN, VTX_SCI_DUCT_WEIGHT and VTX_SCI_TIP_GAP hold expanded details.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_P02_LINKED",
+            "title": "P02 ducted fans – component measurements and research",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "P02_PAPER_TIP",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4023469",
+                "documentRevision": "2014"
+              }
+            ],
+            "measurements": [
+              {
+                "label": "Nominal rotor disk diameter",
+                "basis": "nominal",
+                "value": "2.256758",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Nominal external duct diameter",
+                "basis": "nominal",
+                "value": "2.406758",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Saved-model blade radius",
+                "basis": "modeled",
+                "value": "1.102",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Saved-model radial blade gap",
+                "basis": "modeled",
+                "value": "38.379",
+                "unit": "mm",
+                "approximate": true
+              }
+            ],
+            "requiredParts": [
+              "P02 fan duct assemblies",
+              "P02 pitch-controlled rotor hubs"
+            ],
+            "assumptions": [
+              "Efficiency, tip growth and rotor-containment unverified.",
+              "Mass119kg is a target not measured value."
+            ],
+            "parts": [
+              {
+                "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9",
+                "role": "Four-ducted-fan assembly grouped root",
+                "aliases": [
+                  "P02",
+                  "Rotor system"
+                ],
+                "materialIntent": "CFRP ducts and qualified blades with metallic hubs"
+              }
+            ]
+          },
+          "createdAt": "2026-10-31T01:58:35.544Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_8739d7e22500e7c98cb6bb15484b4554d6381521ce8c72bd8883e0f76fcbe152",
+            "revision": 18,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": "1ecf560c-f78a-4dc7-a0d8-5355bede21f9"
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_7961390e99bb391e1c71b73882e09db111d529d687bc0ffbbee15103fad07ad6",
+          "revision": 17,
+          "kind": "reference",
+          "text": "RESEARCH INDEX from technical PDF p9 and Parts Cost R&D PDF p7. Liu et al. (2024), 'Impact response and crashworthy design of composite fuselage structures: An overview'; Muniraj and Sreehari (2021), 'Experimental damage evaluation of honeycomb sandwich with composite face sheets'. Relevance: P04 cabin shell, P06 ring, laminate buckling, debonding and energy absorption. No material or joint allowables for VTX have been verified.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_SCI_COMPOSITES",
+            "title": "Research: composite crashworthiness and impact damage",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P04 CFRP cabin",
+              "P06 support ring",
+              "P10 landing gear"
+            ],
+            "assumptions": [
+              "Paper identifiers and abstracts should be rechecked before formal design release.",
+              "Not a structural certification basis or laminate schedule."
+            ]
+          },
+          "createdAt": "2026-10-31T01:53:14.041Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_7961390e99bb391e1c71b73882e09db111d529d687bc0ffbbee15103fad07ad6",
+            "revision": 17,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_4c14b4611fac272b4b27e35b93b00291e7433882fc373fb35b662d0772ca5b20",
+          "revision": 16,
+          "kind": "reference",
+          "text": "RESEARCH INDEX from technical PDF p9 and costs PDF p7. Critchfield and Ning (2026), mission-focused multidisciplinary eVTOL propulsion optimisation, DOI 10.2514/1.C038445. Method motivates coupled rotor sizing, mass, structure, drag and mission energy, but does not demonstrate P0-V1 72% rotor efficiency or 671kg empty weight.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_SCI_MISSION",
+            "title": "Research: multidisciplinary mission-based propulsion optimisation",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "S06_MDO",
+                "kind": "page",
+                "url": "https://doi.org/10.2514/1.C038445",
+                "documentRevision": "2026"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P01 propulsion",
+              "P02 fans",
+              "P06 structure"
+            ],
+            "assumptions": [
+              "Use as optimisation method reference only; validate design against actual maps and material tests."
+            ]
+          },
+          "createdAt": "2026-10-31T01:53:10.266Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_4c14b4611fac272b4b27e35b93b00291e7433882fc373fb35b662d0772ca5b20",
+            "revision": 16,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_8f6e2988b11f1bd373e57f20ba25fd36f3ebec6108f34a424b48e8b0587f70c4",
+          "revision": 15,
+          "kind": "reference",
+          "text": "RESEARCH INDEX from technical PDF p9 and costs PDF p7. Akturk and Camci (2014), ducted VTOL fan tip-clearance treatment experiments; DOI 10.1115/1.4023469. Relevant to P02 tip-gap discrepancy, blade growth, efficiency and flow near the casing. Current 38.379mm tip gap comes only from saved 3D nominal geometry; it is not a measured performance limit.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_SCI_TIP_GAP",
+            "title": "Research: ducted fan tip-clearance treatment",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "S05_TIP",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4023469",
+                "documentRevision": "2014"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P02 blade tips",
+              "P02 duct inner wall"
+            ],
+            "assumptions": [
+              "Actual VTX fan profile and structural deflection need independent design and validation."
+            ]
+          },
+          "createdAt": "2026-10-31T01:53:06.998Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_8f6e2988b11f1bd373e57f20ba25fd36f3ebec6108f34a424b48e8b0587f70c4",
+            "revision": 15,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_3bc2f724990460b7ce5218829daa39bc71092fa216038f0987fefe6c23e5654b",
+          "revision": 14,
+          "kind": "reference",
+          "text": "RESEARCH INDEX from technical PDF p9 and costs PDF p7. Hu et al. (2021), 'Hovering efficiency optimization of the ducted propeller with weight penalty taken into account', Aerospace Science and Technology, DOI 10.1016/j.ast.2021.106937. Supports studying the duct's aerodynamic benefits and structural weight together, not assuming larger ducts improve the total aircraft.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_SCI_DUCT_WEIGHT",
+            "title": "Research: duct hover efficiency with mass penalty",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "S04_DUCT",
+                "kind": "page",
+                "url": "https://doi.org/10.1016/j.ast.2021.106937",
+                "documentRevision": "2021"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P02 ducted fans",
+              "P06 structural frame"
+            ],
+            "assumptions": [
+              "Research findings need re-evaluation at VTX rotor diameter and fan operating conditions."
+            ]
+          },
+          "createdAt": "2026-10-31T01:53:03.596Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_3bc2f724990460b7ce5218829daa39bc71092fa216038f0987fefe6c23e5654b",
+            "revision": 14,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_82aae93b85d7fba4468c33a7a6bff0b3f8a43339a856d093f767345a231a6a28",
+          "revision": 13,
+          "kind": "reference",
+          "text": "RESEARCH INDEX from P0-V1 Technical PDF p9 and Parts Cost R&D PDF p7. Hine et al. (2025), 'Design and Analysis of a Liftfan for eVTOL Aircraft', DOI 10.1115/1.4067673. Paper cited for rotor/stator and nacelle performance study; does not qualify the actual VTX P02 design. Publisher manuscript, thrust curves, and operating conditions must be acquired and compared before claiming scaled performance.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_SCI_LIFTFAN",
+            "title": "Research: liftfan design and experimental rotor-stator optimisation",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [
+              {
+                "evidenceId": "S03_LIFTFAN",
+                "kind": "page",
+                "url": "https://doi.org/10.1115/1.4067673",
+                "documentRevision": "2025"
+              }
+            ],
+            "measurements": [],
+            "requiredParts": [
+              "P02 fans",
+              "P03 transmission"
+            ],
+            "assumptions": [
+              "Research analogue, not VTX component test data.",
+              "Require comparable rotor loading, Reynolds number, duct geometry and edgewise flow conditions."
+            ]
+          },
+          "createdAt": "2026-10-31T01:53:00.162Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_82aae93b85d7fba4468c33a7a6bff0b3f8a43339a856d093f767345a231a6a28",
+            "revision": 13,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_4cd646b7c72f7b37f649ba98ed101e99e494c944c307b983eeffcc3a1c76c6d1",
+          "revision": 12,
+          "kind": "reference",
+          "text": "SOURCE: VTX_P0_V1_Parts_Cost_RnD.pdf Issue A 30 October 2026, pages 1-2,5-6, SHA256 f709d33d30f65a75a87f01c3393d4834f58162ee33eff0c4b7420ba9c16831c5. One-off component fabrication/procurement GBP1.07m-3.11m, non-recurring development and validation GBP3.97m-12.05m; subtotal GBP5.04m-15.16m +25% contingency gives GBP6.30m-18.95m indicative total. Work packages R01-R11, gates G0-G7. Budget is not a cap; no vendor quotations or contracts verified.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_COST_RD",
+            "title": "P0-V1 prototype procurement and R&D cost allowances",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P01-P11 procurement ledger",
+              "R01-R11 development work packages",
+              "G0-G7 validation gates"
+            ],
+            "assumptions": [
+              "Amounts are 2026 indicative GBP planning allowances, not procurement quotations.",
+              "No supplier quote, detailed VAT treatment or committed project schedule verified.",
+              "Unlimited R&D means upper range not an imposed spending cap."
+            ]
+          },
+          "createdAt": "2026-10-31T01:52:56.437Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_4cd646b7c72f7b37f649ba98ed101e99e494c944c307b983eeffcc3a1c76c6d1",
+            "revision": 12,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_56060940aca09ab94b90d3ff66bf4c04e7fdf9656603878d99d809a096573dc9",
+          "revision": 11,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF pp7-8 and Parts Cost R&D PDF p6. FM01 loss of one rotor/branch: 4 independent lift channels lose rank/control authority; FM02 single turbine common failure removes powered lift. FM03 duct/blade damage and containment; FM04 gimbal bearing jam; FM05 CFRP joint debond/buckling; FM06 inlet distortion/crosswind; FM07 asymmetry of CG; FM08 rotor modal interference. Independent test gates G0-G7 are specified. No crewed or untethered flight approval is established. Current Blendstra model is conceptual geometry only.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_FAILURE_MODES",
+            "title": "FM01-FM08 unresolved failure-mode and evidence register",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P01-P11 assemblies",
+              "FM01-FM08 failure analysis"
+            ],
+            "assumptions": [
+              "Rotor-out feasibility needs 6DOF constrained allocation and actuator rate limits.",
+              "Engine-out and controlled landing requirements unmitigated in P0.",
+              "FEA, testing and control verification not complete."
+            ]
+          },
+          "createdAt": "2026-10-31T01:49:52.959Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_56060940aca09ab94b90d3ff66bf4c04e7fdf9656603878d99d809a096573dc9",
+            "revision": 11,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_77e33d45fb6f85256a89eadc8fa3a5e4e4c6904186e4ae10a90d59eca09a3696",
+          "revision": 10,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF pp5-6. Wolfram independent check: 901kg, 500m turn =>184.338kW hover,217.699kW turning,62.875kWh energy,25.150kg fuel. 200m turn =>235.251kW turning,67.614kWh,27.046kg fuel. 951kg sensitivity =>199.894kW hover,67.491kWh,26.996kg fuel. Pessimistic901kg eta.60 CdA3 SFC.50 =>81.067kWh,40.533kg. 1.5g per rotor3314.55N; total ideal induced power338.651kW. Turn angles at100km/h 8.94deg for500m,21.47deg for200m.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_MISSION_ENVELOPES",
+            "title": "P0-V1 calculated mission and load-case register",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "500m turn radius",
+                "basis": "nominal",
+                "value": "500",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "200m turn radius",
+                "basis": "nominal",
+                "value": "200",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Bank angle at500m",
+                "basis": "nominal",
+                "value": "8.94",
+                "unit": "deg",
+                "approximate": false
+              },
+              {
+                "label": "Bank angle at200m",
+                "basis": "nominal",
+                "value": "21.47",
+                "unit": "deg",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P02 fan drive",
+              "P03 gearbox",
+              "P05 gimbal",
+              "P06 structure"
+            ],
+            "assumptions": [
+              "Load cases are screening assumptions, not certified limit load factors.",
+              "Power and fuel predictions subject to installed efficiency and environment.",
+              "Actual flight control, rotor angular momentum and transient power not modeled."
+            ]
+          },
+          "createdAt": "2026-10-31T01:49:46.712Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_77e33d45fb6f85256a89eadc8fa3a5e4e4c6904186e4ae10a90d59eca09a3696",
+            "revision": 10,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_f8c99379aeb3babf1ee299c9812395a7dd7f15d54657168bff2364baf8aa3486",
+          "revision": 9,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF p5 Issue A 30 Oct 2026. WOLFRAM VERIFIED arithmetic: rho=1.225kg/m3, g=9.81m/s2, total disk A=16m2, m=901kg. Hover shaft P=(mg)^1.5/(eta sqrt(2 rho A)), eta=0.72 ->184.338kW. V=100km/h, D=0.5rho V^2 CdA, CdA=1.65m2. Turn resultant T=sqrt((mg)^2+(m V^2/R)^2+D^2); cruise shaft P=T sqrt(T/(2rho A))/eta + D V/etaProp, etaProp=.75, R=500m ->217.699kW. Energy 0.27h cruise+80/3600h hover=62.87515kWh. SFC0.4kg/kWh ->25.15006kg Jet A-1, cost GBP45.5845 at0.8kg/L, GBP1.45/L. Shaft-energy hypothesis only.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_FLIGHT_EQUATIONS",
+            "title": "P0-V1 hover, turning and fuel equations",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P02 rotor area",
+              "P01 turbine",
+              "P03 transmission"
+            ],
+            "assumptions": [
+              "0.72 rotor efficiency, 0.75 forward propulsive efficiency and 0.4kg/kWh SFC unverified.",
+              "Not blade-element-momentum CFD or actual engine performance map.",
+              "Constant takeoff mass during benchmark."
+            ]
+          },
+          "createdAt": "2026-10-31T01:49:42.098Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_f8c99379aeb3babf1ee299c9812395a7dd7f15d54657168bff2364baf8aa3486",
+            "revision": 9,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_3b2a0506a0c399d3a1b88ba2810c122d8716db0f0bf2fafa7939b842c00a727a",
+          "revision": 8,
+          "kind": "reference",
+          "text": "SOURCES Technical Performance PDF pp3,7-8 and Parts Cost R&D PDF pp2-4. P08 flight avionics23kg target: ECU, IMUs, rotor speed/torque/air-data/vibration/fuel sensors. P09 two-seat restraints25kg target. P10 landing gear24kg target with energy absorption. P11 electrical and cooling49kg target. No physical seat anchors, skid load paths, thermal duty map, wiring harness bill of materials or emergency electrical backup demonstrated.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_AVIONICS_LANDING",
+            "title": "P08-P11 avionics, seats, landing and cooling allocations",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P08 avionics",
+              "P09 seating",
+              "P10 landing gear",
+              "P11 cooling"
+            ],
+            "assumptions": [
+              "Landing stroke0.20m appears only as a load-study assumption.",
+              "No measured actual masses or detailed thermal balance."
+            ]
+          },
+          "createdAt": "2026-10-31T01:49:12.180Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_3b2a0506a0c399d3a1b88ba2810c122d8716db0f0bf2fafa7939b842c00a727a",
+            "revision": 8,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_c78199600149a3831c0eaa38b8a15351cf8a1cc23bedbe294d09859a00c9817c",
+          "revision": 7,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF p4; Parts Cost R&D PDF pp3,6. M250-C30P reference turboshaft rated 650 shp takeoff /484.7kW, not purchased; 6016rpm output speed study value; 7.52:1 overall reduction to800rpm study-point fan speed. P01 turbine installation132kg target, P03 transmission72kg target. One engine -> four-way gearbox -> four shaft branches; independent collective-pitch hubs for thrust control. Rated engine and reference dry weight do NOT establish installed sustained power. Critical common-engine/gearbox failures remain unresolved.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_TURBINE_TRANSMISSION",
+            "title": "P01 turbine, P03 gearbox and independent pitch hubs",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P01 turbine",
+              "P03 gearbox",
+              "P03 four radial shafts",
+              "P02 variable-pitch hubs"
+            ],
+            "assumptions": [
+              "Engine installation fit, efficiency, bearing paths, oil systems and transient loads unresolved.",
+              "Turbine dry catalogue data is not the installed unit mass.",
+              "Differential thrust requires active pitch control with proven bandwidth."
+            ]
+          },
+          "createdAt": "2026-10-31T01:49:08.284Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_c78199600149a3831c0eaa38b8a15351cf8a1cc23bedbe294d09859a00c9817c",
+            "revision": 7,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        }
+      ]
+    },
+    {
+      "revision": 46,
+      "items": [
+        {
+          "entryId": "idem_d630e5f912b4588cedca8e89c9287c7c69e1dcdb5a18fae58ec39d40a1bab511",
+          "revision": 6,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF pp3,5; Parts Cost R&D PDF p4; Blendstra source-model inspection 31 Oct 2026. P07 fuel system29kg target. Four modeled tank cylinders radius0.12m x length0.46m give83.2396 litres GROSS. At assumed0.80kg/L fuel density, 60kg needs75L and110kg needs137.5L. The modelled tanks cannot support110kg. For nominal60kg the geometric spare volume is8.24L before ullage, lines and unusable fuel. Wolfram recomputed these dimensions; change record required, not a baseline overwrite.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_FUEL_PACKAGING",
+            "title": "P07 Jet A-1 tank geometry and capacity discrepancy",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Rendered tank radius",
+                "basis": "nominal",
+                "value": "120",
+                "unit": "mm",
+                "approximate": false
+              },
+              {
+                "label": "Rendered tank cylinder length",
+                "basis": "nominal",
+                "value": "460",
+                "unit": "mm",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P07 tank envelopes",
+              "P07 fuel subsystem"
+            ],
+            "assumptions": [
+              "Fuel density0.8 kg/L placeholder; thermal expansion and unusable volume excluded.",
+              "Tank shapes are concept envelopes rather than certified pressure/impact tanks."
+            ]
+          },
+          "createdAt": "2026-10-31T01:49:04.223Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_d630e5f912b4588cedca8e89c9287c7c69e1dcdb5a18fae58ec39d40a1bab511",
+            "revision": 6,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_0ec142d3d00f12f4c38760a1b2d5414a9d321edbf48c07f3afc0054ea0bec7ab",
+          "revision": 5,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF pp1,4,6; Parts Cost R&D PDF pp3-4. P02 budget119kg total, four fan modules with variable collective pitch. Nominal rotor disk diameter 2.256758m and 16m2 combined disk area. 3D mesh blade reaches radius1.102m, so geometric swept area is15.26065m2 and nominal radial blade-tip gap is38.379mm. These are Wolfram results from current saved mesh dimensions, not experimentally measured duct clearances. 800rpm and 53.33Hz 4-blade pass frequency are analysis inputs.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_ROTOR_GEOMETRY",
+            "title": "P02 four ducted fans and model blade discrepancy",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Nominal rotor disk diameter",
+                "basis": "nominal",
+                "value": "2.256758",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Nominal duct external diameter",
+                "basis": "nominal",
+                "value": "2.406758",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Rendered blade tip radius",
+                "basis": "nominal",
+                "value": "1.102",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Rendered blade to duct gap",
+                "basis": "nominal",
+                "value": "38.379",
+                "unit": "mm",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P02 fan assemblies",
+              "P02 blade meshes",
+              "P02 duct lips"
+            ],
+            "assumptions": [
+              "Mesh blade profile is visual, not a validated rotor airfoil.",
+              "72% aggregate aerodynamic efficiency is not measured.",
+              "Tip deflection, containment and crosswind loads unverified."
+            ]
+          },
+          "createdAt": "2026-10-31T01:49:00.565Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_0ec142d3d00f12f4c38760a1b2d5414a9d321edbf48c07f3afc0054ea0bec7ab",
+            "revision": 5,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_e618e6015226d17b4168ee6e576958397c847f5d839af1c3dc83f6263eead88e",
+          "revision": 4,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF pp3,6; Parts Cost R&D PDF pp3-4. Main structure mass allocation75kg; 40kg central ring plus four arms modelled approx8.76kg each. CFRP section 340mm high x120mm wide, 3.5mm skins, two webs. Published design study uses 1.5m analytical cantilever, Blender geometry from R1.19m ring centre to R2.6m rotor centre is1.41m. The solid-looking torus has no specified wall thickness or credible mass properties; 40kg ring target remains unverified. Wolfram verified beam geometry calculations only.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_CFRP_FRAME",
+            "title": "P06 CFRP ring and internally stiffened beams",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Ring centre radius",
+                "basis": "nominal",
+                "value": "1.19",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Nominal arm length model",
+                "basis": "nominal",
+                "value": "1.41",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Analytical arm span",
+                "basis": "nominal",
+                "value": "1.5",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Support height",
+                "basis": "nominal",
+                "value": "340",
+                "unit": "mm",
+                "approximate": false
+              },
+              {
+                "label": "Support width",
+                "basis": "nominal",
+                "value": "120",
+                "unit": "mm",
+                "approximate": false
+              },
+              {
+                "label": "Nominal skin thickness",
+                "basis": "nominal",
+                "value": "3.5",
+                "unit": "mm",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P06 central ring",
+              "P06 four support beams"
+            ],
+            "assumptions": [
+              "No orthotropic FEA or bolted joint substantiation.",
+              "40kg ring budget is an unvalidated target."
+            ]
+          },
+          "createdAt": "2026-10-31T01:48:56.788Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_e618e6015226d17b4168ee6e576958397c847f5d839af1c3dc83f6263eead88e",
+            "revision": 4,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_ff73c6022ebbbc825ff3d00eb90a71439e725f6d69258a70e344e60a673ae1b3",
+          "revision": 3,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF pp1,3,7; Parts Cost R&D PDF pp3-4. Cabin target88kg: CFRP sandwich nontransparent shell, approx35% aviation laminated glazing and qualified flame-retardant interior. Two-axis pitch/roll gimbal budget35kg with bearings and actuation; cabin must follow resultant acceleration during turns. Access hatch, restraint anchors, 3D attitude limits, impact response and occupied-capsule CG unverified. Wolfram static ring-to-gimbal radial clearance45mm.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_CABIN_GIMBAL",
+            "title": "P04/P05 composite cabin, glazing and gimbal",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Cabin diameter",
+                "basis": "nominal",
+                "value": "1.9",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Gimbal envelope diameter",
+                "basis": "nominal",
+                "value": "2.2",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Static radial clearance",
+                "basis": "nominal",
+                "value": "45",
+                "unit": "mm",
+                "approximate": false
+              }
+            ],
+            "requiredParts": [
+              "P04 cabin",
+              "P05 gimbal",
+              "P09 seats"
+            ],
+            "assumptions": [
+              "Nominal 35% transparent surface area is a design intent, not validated glazing mass.",
+              "Gimbal rotation clearance is not verified."
+            ]
+          },
+          "createdAt": "2026-10-31T01:48:53.266Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_ff73c6022ebbbc825ff3d00eb90a71439e725f6d69258a70e344e60a673ae1b3",
+            "revision": 3,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_4e7b6dc50715e5864503fbcf493d606fbd9687ef6b05180ef72249762b9c7cf4",
+          "revision": 2,
+          "kind": "reference",
+          "text": "SOURCE Technical Performance PDF p3; Parts Cost R&D PDF p2 (Issue A, 30 Oct 2026). P01 engine132, P02 fan group119, P03 drive72, P04 cabin88, P05 gimbal35, P06 frame75, P07 fuel hardware29, P08 avionics23, P09 seats25, P10 gear24, P11 electrical/cooling49 kg. Wolfram confirms 671kg empty, +170 occupants+60 fuel=901kg, or +110fuel=951kg. All remain TARGET ALLOCATIONS, not weighed parts. Technical PDF SHA256 ab5af8410702ae1fe0d34459c55e0abb7c76dc5c59387837f1920fdfcff04c66.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_MASS_REGISTER",
+            "title": "P01-P11 component target mass ledger",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [],
+            "requiredParts": [
+              "P01-P11 assemblies"
+            ],
+            "assumptions": [
+              "Mass allocations in kg, not physically weighed parts.",
+              "110kg fuel configuration is conditional on tank volume redesign.",
+              "No additional mass-growth reserve has been included."
+            ]
+          },
+          "createdAt": "2026-10-31T01:48:49.087Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_4e7b6dc50715e5864503fbcf493d606fbd9687ef6b05180ef72249762b9c7cf4",
+            "revision": 2,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        },
+        {
+          "entryId": "idem_942616f5e90f82cddd457ef3e3b095f8d5081f36cc56fd72e929c2b913a8be9a",
+          "revision": 1,
+          "kind": "reference",
+          "text": "SOURCE VTX_P0_V1_Technical_Performance.pdf, Issue A 30 Oct 2026 pp1-2; SHA256 ab5af8410702ae1fe0d34459c55e0abb7c76dc5c59387837f1920fdfcff04c66. Wolfram independently checked layout arithmetic. Nominal design values, not measured dynamic fit.",
+          "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+          "objectId": null,
+          "targetEntryId": null,
+          "reference": {
+            "referenceId": "VTX_CONFIGURATION",
+            "title": "P0-V1 nominal geometry and clearance baseline",
+            "identity": {
+              "namespace": "vtx-p0-v1",
+              "variantState": "resolved",
+              "productId": "VTX-P0-V1",
+              "variantId": "Issue-A"
+            },
+            "publisher": {
+              "name": "VTX P0-V1 engineering study"
+            },
+            "evidence": [],
+            "measurements": [
+              {
+                "label": "Cabin outer diameter",
+                "basis": "nominal",
+                "value": "1.9",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Gimbal outer envelope",
+                "basis": "nominal",
+                "value": "2.2",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Each rotor disk diameter",
+                "basis": "nominal",
+                "value": "2.256758",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Each duct outer diameter",
+                "basis": "nominal",
+                "value": "2.406758",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Fan centre radius",
+                "basis": "nominal",
+                "value": "2.6",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Overall span",
+                "basis": "nominal",
+                "value": "7.606758",
+                "unit": "m",
+                "approximate": false
+              },
+              {
+                "label": "Static duct-gimbal gap",
+                "basis": "nominal",
+                "value": "296.621",
+                "unit": "mm",
+                "approximate": true
+              },
+              {
+                "label": "Static ring-gimbal gap",
+                "basis": "nominal",
+                "value": "45",
+                "unit": "mm",
+                "approximate": true
+              }
+            ],
+            "requiredParts": [
+              "P02 fans",
+              "P04 cabin",
+              "P05 gimbal",
+              "P06 structural ring"
+            ],
+            "assumptions": [
+              "Controlled concept values; not measured/tested clearances.",
+              "PDF evidence cannot be attached through this connector; file and SHA256 are in note."
+            ]
+          },
+          "createdAt": "2026-10-31T01:48:11.523Z",
+          "createdBySubjectId": "usr_5976f2219cbbd72efb1f2e47c79494e322110a9b",
+          "state": null,
+          "targetRevision": null,
+          "currentAnchor": {
+            "entryId": "idem_942616f5e90f82cddd457ef3e3b095f8d5081f36cc56fd72e929c2b913a8be9a",
+            "revision": 1,
+            "versionId": "version_a19182f234c0a4e129bbfeb900e51091245a193e17803aa71b11ba3c1a7d1ec6",
+            "objectId": null
+          },
+          "anchorState": "earlier_version"
+        }
+      ]
+    }
+  ]
+}

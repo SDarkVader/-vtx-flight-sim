@@ -1,0 +1,16 @@
+{
+  "story": "User watches current physical aircraft, opens/closes keyboard guide, and explicitly retries a crash through the same live controls",
+  "boundaries": {
+    "browser": "PASS: Chromium mobile 430x932, R5 rendered, guide closed initially; open, Close and Escape verified; screenshots retained",
+    "client_to_api": "PASS: retry POST routes to Laboratory.retry; raw controls use unchanged Action schema",
+    "api_to_data": "PASS: physical drop integration check produced a collision; retry retained old summary/events and exact pilot checkpoint bytes",
+    "response_to_ui": "PASS: retry availability visible; R5 revision rendered; asset selection follows recorded physical revision"
+  },
+  "unit_mechanical_checks": "64 passed; original 31 unchanged; test log preserved separately",
+  "runtime_log": "Uvicorn application startup complete; no browser page errors",
+  "environment": "Local MuJoCo 3.17.0; no API credential required for simulation",
+  "issue_fixed": "Delay terrain rendering until aircraft load and throttle repeated map painting; initial mobile load now completes",
+  "limits": "Functional verification is not an aircraft performance or structural qualification",
+  "hosted_browser": "PASS: HTTPS host reached via local CA-verifying QA proxy, R5 revision and COLIN authority shown; no page errors. Hosted keyboard dialog open/Escape verified.",
+  "retained_learning": "Three observed lessons exported after the R5 return/hosting interruption"
+}

@@ -1,0 +1,19 @@
+{
+  "project": "VTX P0-V4", "status": "NOT CALIBRATED — enter measured or validated values",
+  "mass_kg": null,
+  "cg_xyz_m": null,
+  "inertia_about_cg_kg_m2": null,
+  "rotor_centres_xyz_m": [[2.6, 0, 2.31], [0, 2.6, 2.31], [-2.6, 0, 2.31], [0, -2.6, 2.31]],
+  "rotor_rotation_directions": null,
+  "rotor_shaft_inertias_kg_m2": null,
+  "rotor_speed_rad_s": null,
+  "thrust_vs_collective_map": null,
+  "torque_vs_collective_map": null,
+  "thrust_transient_response": null,
+  "tilt_actuator_response": null,
+  "max_rotor_thrust_n": null,
+  "max_rotor_tilt_deg": null,
+  "aerodynamic_force_moment_model": null,
+  "controller_gains": null,
+  "gimbal_mass_and_inertia": null
+}

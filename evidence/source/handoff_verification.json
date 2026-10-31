@@ -1,0 +1,126 @@
+{
+  "archive_sha256": "67973109aa3afd644f339c4893975a795c10dd18c8748b7261a2612efac3a7df",
+  "manifest_verified": [
+    {
+      "path": "COLIN_HANDOFF_README.md",
+      "sha256": "5635373afe9d67a598856b27bb763689613e475a3eecfcf1d60e1d1e2052d7dd",
+      "bytes": 2918
+    },
+    {
+      "path": "starter/vtx-flight-sim-map-missions.zip",
+      "sha256": "26f105eb821a196459e66f80b3708e325bc7e251746aa120d3f9a5841863a502",
+      "bytes": 1009823
+    },
+    {
+      "path": "engineering/VTX_P0_V1_Technical_Performance.pdf",
+      "sha256": "ab5af8410702ae1fe0d34459c55e0abb7c76dc5c59387837f1920fdfcff04c66",
+      "bytes": 481028
+    },
+    {
+      "path": "engineering/VTX_P0_V1_Parts_Cost_RnD.pdf",
+      "sha256": "f709d33d30f65a75a87f01c3393d4834f58162ee33eff0c4b7420ba9c16831c5",
+      "bytes": 89744
+    },
+    {
+      "path": "engineering/VTX_P0_V1_Engineering_Blueprints.pptx",
+      "sha256": "319468a66129201e705f8f26f8d93669ed72e6c4778b60c40bb122f1f75cabf0",
+      "bytes": 2138206
+    },
+    {
+      "path": "engineering/VTX_P0_V4_Physics_Model.py",
+      "sha256": "fcea4cff322853a4cbe27c81cdc05700fe80db3238149b2be1e74ec3289b525f",
+      "bytes": 10808
+    },
+    {
+      "path": "engineering/VTX_P0_V4_Required_Inputs.json",
+      "sha256": "33f1da321e95269763846fadffcb3238d7e859466eb28381846f209cf4d6d420",
+      "bytes": 674
+    },
+    {
+      "path": "engineering/VTX_urban_reference_simulation.py",
+      "sha256": "4b27d7e2dbbe35655ced7379f77bd02e48737e09ac542576bbeeb6177160b452",
+      "bytes": 7772
+    },
+    {
+      "path": "engineering/VTX_urban_reference_results.json",
+      "sha256": "70a057abc6abfd7d7568ccb68cccfc334bd0844952c8eb335f036033d88a761b",
+      "bytes": 179008
+    },
+    {
+      "path": "engineering/VTX_P0_V5_Independent_Rotor_Control_Screen.csv",
+      "sha256": "2669442d367b5b7a05b743bd40a21abdbc38ee7eb209633978b90f4db6ae1a90",
+      "bytes": 2213
+    }
+  ],
+  "protected_contracts": {
+    "README.md": "936f5dfab418aabba5d6318728fe4b30e8f7dce6d8c2a3c964c2299b5e779d72",
+    "COLIN_MISSION.md": "ecf39ea1056db153d3ebc45060c3e00ace14b7f2a4d29d7ff00ae1eeb64b9a75",
+    "COLIN_FIRST_TASK.md": "cf50f2cb23a4cd6b01f78566f5ded1f828a1f536b32afb63e4ee08c655645348",
+    "docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md": "8ffb0b2aa71c38f071bf561a58274f706a8b4b4ce298fefb558f1426bc1cf6a0",
+    "docs/MAP_TO_MAP_FLIGHT_CONTRACT.md": "26c231190df41ec2ef38eb20807a1da5e46066224c57e30aa66018f571512e53",
+    "docs/INTERACTIVE_SANDBOX_CONTRACT.md": "cdc44b1a0b7d4a17878efd3d62f883dd71e52d955aeddbf55df827e63199e3f1",
+    "docs/STAGED_ENVIRONMENT_TRANSFER.md": "67051d3e1c4c547d592ba2c0d7faf245b2fc8e0afea8db243f2fa9806c9ff4b2",
+    "docs/PHYSICS_AND_RESEARCH_BASELINE.md": "a6447efca8c2cb75aad04ca26fc9a32cee840072e155f73e4c4ac6f4a0d2b540"
+  },
+  "starter_manifest_verified": [
+    ".devcontainer/devcontainer.json",
+    ".github/workflows/physics-regression.yml",
+    ".gitignore",
+    "COLIN_FIRST_TASK.md",
+    "COLIN_MISSION.md",
+    "GITHUB_REMOTE_SETUP.md",
+    "README.md",
+    "VERSION.txt",
+    "docs/INPUT_PROVENANCE.md",
+    "docs/INTERACTIVE_SANDBOX_CONTRACT.md",
+    "docs/MAP_TO_MAP_FLIGHT_CONTRACT.md",
+    "docs/STAGED_ENVIRONMENT_TRANSFER.md",
+    "docs/VTX_P0_V1_Parts_Cost_RnD.pdf",
+    "docs/VTX_P0_V1_Technical_Performance.pdf",
+    "inputs/independent_rotor_screen_UNCALIBRATED.csv",
+    "inputs/vtx_calibration_required.json",
+    "refs/vtx_p0v4_concept_reference.png",
+    "requirements.txt",
+    "results/.gitkeep",
+    "scripts/run_reference.py",
+    "src/vtx/__init__.py",
+    "src/vtx/mission_selection.py",
+    "src/vtx/physics_model.py",
+    "src/vtx/urban_reference.py",
+    "tests/test_mission_selection.py",
+    "tests/test_physics.py",
+    "tests/test_urban.py"
+  ],
+  "imported": [
+    ".devcontainer/devcontainer.json",
+    ".github/workflows/physics-regression.yml",
+    ".gitignore",
+    "VERSION.txt",
+    "docs/INPUT_PROVENANCE.md",
+    "docs/VTX_P0_V1_Parts_Cost_RnD.pdf",
+    "docs/VTX_P0_V1_Technical_Performance.pdf",
+    "inputs/independent_rotor_screen_UNCALIBRATED.csv",
+    "inputs/vtx_calibration_required.json",
+    "refs/vtx_p0v4_concept_reference.png",
+    "requirements.txt",
+    "results/.gitkeep",
+    "scripts/run_reference.py",
+    "src/vtx/__init__.py",
+    "src/vtx/mission_selection.py",
+    "src/vtx/physics_model.py",
+    "src/vtx/urban_reference.py",
+    "tests/test_mission_selection.py",
+    "tests/test_physics.py",
+    "tests/test_urban.py"
+  ],
+  "preserved": [
+    "COLIN_FIRST_TASK.md",
+    "COLIN_MISSION.md",
+    "GITHUB_REMOTE_SETUP.md",
+    "MANIFEST_SHA256.txt",
+    "README.md",
+    "docs/INTERACTIVE_SANDBOX_CONTRACT.md",
+    "docs/MAP_TO_MAP_FLIGHT_CONTRACT.md",
+    "docs/STAGED_ENVIRONMENT_TRANSFER.md"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "pilot": "Colin",
+  "experience_count": 1,
+  "lessons": [
+    {
+      "run_id": "20261031T060411-29e1d6",
+      "lesson": "The first live attempt remained gear-supported at about 773 rpm and 20 degrees collective. I also twice exceeded the 5 simulated-second command lease, then tried to use a stale observation and the action was rejected. Future decisions must renew controls early, use a slower explicit clock when reasoning is delayed, and cite a fresh observation. Collective demand and shaft speed alone do not guarantee takeoff.",
+      "wall_utc": "2026-10-31T06:11:24.342623+00:00",
+      "basis": [
+        "20261031T060411-29e1d6 observations 69, 180, 329; decisions 1\u20133; rejected stale-observation feather request"
+      ]
+    }
+  ],
+  "aircraft_familiarity": "Explicit lessons from logged live decisions; no automatic policy or environment map",
+  "stage2_accessed": false,
+  "history": [
+    {
+      "run_id": "20261031T060411-29e1d6",
+      "checkpoint": 1
+    }
+  ]
+}

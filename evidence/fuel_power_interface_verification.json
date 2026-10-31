@@ -1,0 +1,9 @@
+{
+  "browser": "Hosted Chromium: guide closed on load, no page errors, active fuel10kg and ceiling300kW shown",
+  "history_restore": "Local Chromium: pageshow persisted restored guide closed; open/Escape verified",
+  "mechanics": "75 tests passed; original31 unchanged; actual clamped dynamometer saved separately",
+  "live_run": "20261031T081204-ce4792",
+  "live_outcome": "Local touchdown and supported rest near A; no crash flag; B not reached; not stable-flight qualification",
+  "memory_lessons": 4,
+  "stage2_accessed": false
+}

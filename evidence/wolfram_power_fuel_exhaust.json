@@ -1,0 +1,13 @@
+{
+  "query": "m0=1046.6689476043953;m1=m0-50;g=9.80665;a=16;rho=1.225;pi[m_]:=(m*g)^(3/2)/Sqrt[2*rho*a];f=50*g;ExportString[N[<|\"testMassKg\"->m1,\"fuelRemovedKg\"->50,\"weightRemovedN\"->f,\"idealHoverPowerRatio\"->pi[m1]/pi[m0],\"idealPowerSavedW\"->pi[m0]-pi[m1],\"maxPowerFuel2minKg\"->469.8*.4*120/3600,\"fuelPlus2kgReserve\"->469.8*.4*120/3600+2,\"hypothetical2kgPerSecondCase\"-><|\"requiredVFor490N\"->f/2,\"jetKEW\"->f^2/4|>,\"hypothetical2kgPerSecond100mPerSecond700KOutlets\"-><|\"thrustN\"->200,\"jetKEW\"->10000,\"totalAreaM2\"->2*287*700/(101325*100),\"eachDiameterM\"->Sqrt[2*(2*287*700/(101325*100))/Pi]|>|>],\"RawJSON\"]",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Out[1]= \"{\\n\\t\\\"testMassKg\\\":9.966689476043953e2,\\n\\t\\\"fuelRemovedKg\\\":5.0e1,\\n\\t\\\"weightRemovedN\\\":4.903325e2,\\n\\t\\\"idealHoverPowerRatio\\\":0.9292068048341514,\\n\\t\\\"idealPowerSavedW\\\":1.175827203550763e4,\\n\\t\\\"maxPowerFuel2minKg\\\":6.264,\\n\\t\\\"fuelPlus2kgReserve\\\":8.264,\\n\\t\\\"hypothetical2kgPerSecondCase\\\":{\\n\\t\\t\\\"requiredVFor490N\\\":2.4516625e2,\\n\\t\\t\\\"jetKEW\\\":6.0106490139062495e4\\n\\t},\\n\\t\\\"hypothetical2kgPerSecond100mPerSecond700KOutlets\\\":{\\n\\t\\t\\\"thrustN\\\":2.0e2,\\n\\t\\t\\\"jetKEW\\\":1.0e4,\\n\\t\\t\\\"totalAreaM2\\\":3.9654576856649394e-2,\\n\\t\\t\\\"eachDiameterM\\\":0.1588863986998664\\n\\t}\\n}\""
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  }
+}

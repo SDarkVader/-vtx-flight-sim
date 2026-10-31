@@ -1,0 +1,7 @@
+# Cabin gimbal and cockpit view proposal
+
+The operator specifies an internally rotating, occupant-leveling cockpit and a 180° free-look view. The cockpit view now accepts pointer or touch dragging through ±90° horizontally and ±60° vertically; double-click or double-tap recenters it. View rotation changes the camera only.
+
+The simulated cabin now has a third, relative yaw joint with a provisional ±180° range in addition to the existing ±15° X and Y gimbal joints. Manual heading and tilt controls drive physical joints, and the “Face direction of travel” button sets the requested relative yaw from measured horizontal velocity and aircraft heading, for use once the route is clear. The default powered leveling assistance requests a level cabin using airframe attitude; it does not control the aircraft's flight path.
+
+These are explicitly proposed simulation assumptions. The source evidence does not establish a real yaw bearing, its dimensions, travel, clearance, motor torque, mass, or power demand. The third axis uses the existing provisional actuator model and adds no invented bearing mass. Actuator limits, ±15° tilt travel, fuel/power availability, angular rate, and coupling mean the cabin cannot be guaranteed level at all times. The level controller is experimental, not a certified occupant protection system. The request for motion alignment does not authorize inventing structural clearance or claiming a validated design.

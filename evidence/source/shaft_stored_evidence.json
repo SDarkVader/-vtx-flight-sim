@@ -1,0 +1,111 @@
+{
+  "projectId": "3288318a-95f4-4dda-8d0f-dbf7b8eaceb9",
+  "versionId": "version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2",
+  "versionUrl": "https://blendstra.com/studio?workspace=wsp_816786f2f8ced68922a0d7b529616880cf8b6f22&project=3288318a-95f4-4dda-8d0f-dbf7b8eaceb9&version=version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2",
+  "sourceArtifactId": "output_be0d135c7855b963faf39eff1dbd18f9fbbaa9d33a402f33f7f03f22aa380979",
+  "sourceSha256": "2db9abd64ba9b7078e6e539ba4c6b9177e58e335a085a8ea213b5ffa6e987e35",
+  "available": true,
+  "storedViews": {
+    "artifactId": "output_27bf6103725b7878feb8d8126661f92fa4d886497391ac3e01d58a0028adfa0a",
+    "settingsSha256": "a2b56daf68a97fa76b814bc50974d407293a422d43597f68648f8b86df084739",
+    "tool": "preview_get",
+    "arguments": {
+      "projectId": "3288318a-95f4-4dda-8d0f-dbf7b8eaceb9",
+      "versionId": "version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2",
+      "kind": "inspection"
+    }
+  },
+  "representation": "stored_native_source",
+  "producer": "fixed_exporter_v1",
+  "captureMilliseconds": 3169,
+  "frame": 1,
+  "coordinateScale": 1000000,
+  "dimensionBasis": "modeled_geometry",
+  "unit": "micrometers",
+  "worldMatrixLayout": "row_major_basis_millionths_translation_micrometers",
+  "activeCameraId": "a6bfc67a-367d-4fd7-816c-e1d37e2efb7a",
+  "animated": true,
+  "objectCount": 823,
+  "runtime": {
+    "blendstraVersion": "1.0.0"
+  },
+  "capturedObjectCount": 823,
+  "evidenceTruncated": false,
+  "matchedCount": 1,
+  "objects": [
+    {
+      "boundsMicrometers": {
+        "max": [
+          41000,
+          41000,
+          365000
+        ],
+        "min": [
+          -41000,
+          -41000,
+          -365000
+        ]
+      },
+      "cameraSha256": null,
+      "evaluatedGeometry": {
+        "sha256": "2e677c5f8586a0dbafa3c5da0517ee519cd3f9918e11a0b1578098908f83920a",
+        "topologySha256": "8413b572cd4e708428b261c60c383f861b0ec3a3a4fe97f1decd262081c68460",
+        "triangleCount": 96,
+        "vertexCount": 48
+      },
+      "materialAssignmentSha256": "2dfba633817046c7f559ed4b93076048435f7e1a90f14eb8035c04b9ebae2537",
+      "materials": [
+        {
+          "name": "VTX V3 / titanium forged joint",
+          "sha256": "6ea29ae4929923e0a91c060a5778c0b03737dca1cae79b2555d57278fc75ab6a",
+          "supported": true
+        }
+      ],
+      "name": "V3 P03 | F1 vertical torque shaft extension",
+      "objectId": "421cf512-8eb4-411c-bb1c-ef6f1613ba09",
+      "parentId": "6e2d17ed-5bb0-4f15-a80f-b380ebb6efa7",
+      "sourceGeometry": {
+        "sha256": "2e677c5f8586a0dbafa3c5da0517ee519cd3f9918e11a0b1578098908f83920a",
+        "topologySha256": "8413b572cd4e708428b261c60c383f861b0ec3a3a4fe97f1decd262081c68460",
+        "triangleCount": 96,
+        "vertexCount": 48
+      },
+      "type": "MESH",
+      "unsupported": [],
+      "visibility": {
+        "render": true,
+        "viewport": true
+      },
+      "webMapping": "retained",
+      "worldMatrixMicros": [
+        1000000,
+        0,
+        0,
+        0,
+        0,
+        1000000,
+        0,
+        0,
+        0,
+        0,
+        1000000,
+        0,
+        0,
+        0,
+        0,
+        1000000
+      ]
+    }
+  ],
+  "offset": 0,
+  "nextOffset": null,
+  "coverage": "recorded_fields_only",
+  "unsupportedChecks": [
+    "full_source_preservation",
+    "animation_channels",
+    "modifier_configuration",
+    "engineering_fit",
+    "dependency_permissions"
+  ],
+  "startsCompute": false
+}
