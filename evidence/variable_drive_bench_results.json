@@ -1,0 +1,104 @@
+{
+  "description": "Idealized single-step arithmetic bench, not an aircraft test",
+  "assumptions": {
+    "constant_sun_rpm": 4800.0,
+    "fixed_aerodynamic_torque_nm": 566.9894847648771,
+    "fan_rotor_inertia_kg_m2": 3.3325749872301054,
+    "four_equal_branches_for_totals": true,
+    "control_gear_efficiency": 0.95,
+    "omissions": [
+      "motor/inverter losses and thermal behavior",
+      "gear compliance and dynamics",
+      "gearbox and motor inertia",
+      "actual fan load curve",
+      "starting and fault behavior",
+      "engine response",
+      "bearing/frame loads",
+      "four quadrant duty validation"
+    ]
+  },
+  "cases": {
+    "steady_1100": {
+      "fan_rpm": 1100,
+      "acceleration_rpm_s": 0.0,
+      "ring_rpm": -133.33333333333334,
+      "motor_rpm": -400.0,
+      "carrier_torque_nm": 566.9894847648771,
+      "ring_torque_nm": 425.2421135736579,
+      "motor_torque_nm": 134.66000263165833,
+      "sun_power_kw": 71.25,
+      "ring_power_kw": -5.9375,
+      "motor_shaft_power_kw": -5.640625,
+      "fan_power_kw": 65.3125,
+      "mesh_hz": 1233.3333333333333
+    },
+    "steady_1200": {
+      "fan_rpm": 1200,
+      "acceleration_rpm_s": 0.0,
+      "ring_rpm": 0.0,
+      "motor_rpm": 0.0,
+      "carrier_torque_nm": 566.9894847648771,
+      "ring_torque_nm": 425.2421135736579,
+      "motor_torque_nm": 149.20775914865192,
+      "sun_power_kw": 71.25,
+      "ring_power_kw": 0.0,
+      "motor_shaft_power_kw": 0.0,
+      "fan_power_kw": 71.25,
+      "mesh_hz": 1200.0
+    },
+    "steady_1300": {
+      "fan_rpm": 1300,
+      "acceleration_rpm_s": 0.0,
+      "ring_rpm": 133.33333333333334,
+      "motor_rpm": 400.0,
+      "carrier_torque_nm": 566.9894847648771,
+      "ring_torque_nm": 425.2421135736579,
+      "motor_torque_nm": 149.2077591486519,
+      "sun_power_kw": 71.25,
+      "ring_power_kw": 5.9375,
+      "motor_shaft_power_kw": 6.25,
+      "fan_power_kw": 77.1875,
+      "mesh_hz": 1166.6666666666667
+    },
+    "ramp_up_1200": {
+      "fan_rpm": 1200,
+      "acceleration_rpm_s": 100,
+      "ring_rpm": 0.0,
+      "motor_rpm": 0.0,
+      "carrier_torque_nm": 601.8881284229411,
+      "ring_torque_nm": 451.41609631720587,
+      "motor_torque_nm": 158.39161274287926,
+      "sun_power_kw": 75.63549290145686,
+      "ring_power_kw": 0.0,
+      "motor_shaft_power_kw": 0.0,
+      "fan_power_kw": 75.63549290145686,
+      "mesh_hz": 1200.0
+    },
+    "ramp_down_1200": {
+      "fan_rpm": 1200,
+      "acceleration_rpm_s": -100,
+      "ring_rpm": 0.0,
+      "motor_rpm": 0.0,
+      "carrier_torque_nm": 532.0908411068132,
+      "ring_torque_nm": 399.0681308301099,
+      "motor_torque_nm": 140.02390555442454,
+      "sun_power_kw": 66.86450709854313,
+      "ring_power_kw": 0.0,
+      "motor_shaft_power_kw": 0.0,
+      "fan_power_kw": 66.86450709854313,
+      "mesh_hz": 1200.0
+    }
+  },
+  "mixed_four_branch": {
+    "fan_rpm": [
+      1100,
+      1200,
+      1250,
+      1300
+    ],
+    "sum_ring_mechanical_kw": 2.96875,
+    "sum_motor_shaft_kw": 3.734375,
+    "gross_abs_motor_shaft_kw": 15.015625
+  },
+  "equal_four_branch_1200_ramp_up_sun_kw": 302.5419716058274
+}
