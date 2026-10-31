@@ -9,6 +9,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime,timezone
 import hashlib
+import gzip
 import json
 import math
 from pathlib import Path
@@ -34,7 +35,8 @@ class Action(BaseModel):
     engine:float=Field(ge=0,le=1)
     collective_deg:list[float]
     tilt_deg:list[list[float]]
-    cabin_deg:list[float]=[0.,0.]
+    cabin_deg:list[float]=[0.,0.,0.]
+    cabin_level:bool=True
     @field_validator('collective_deg')
     @classmethod
     def pitch(cls,v):
@@ -48,8 +50,8 @@ class Action(BaseModel):
     @field_validator('cabin_deg')
     @classmethod
     def cabin(cls,v):
-        if len(v)!=2 or any(abs(x)>15 for x in v):raise ValueError('Two cabin gimbal commands, ±15 degrees')
-        return v
+        if len(v) not in (2,3) or any(abs(x)>15 for x in v[:2]) or (len(v)==3 and abs(v[2])>180):raise ValueError('Cabin X/Y ±15 degrees and yaw ±180 degrees')
+        return v if len(v)==3 else [*v,0.]
 
 class Mission(BaseModel):
     model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
@@ -137,6 +139,7 @@ class Laboratory:
             shaft_torque_nm=[round(v['torque_nm'],1) for v in p.rotors],
             collective_feedback_deg=np.round(p.pitch,3).tolist(),
             tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
+            cabin_feedback_deg=[round(math.degrees(p.joint(f'cabin_{a}')[0]),3) for a in 'xyz'],
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
             fuel_kg=np.round(p.fuel,4).tolist(),engine_shaft_kw=round(p.power['engine_w']/1000,2),
             warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=.001 else []),
@@ -362,8 +365,11 @@ async def runs():
 async def replay(run_id:str):
     if not run_id.replace('-','').isalnum():raise HTTPException(422,'Invalid run ID')
     path=ROOT/'evidence/flights'/run_id/'events.jsonl'
-    if not path.exists():raise HTTPException(404,'Run not found')
-    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=[json.loads(l)['payload'] for l in path.read_text().splitlines() if json.loads(l)['kind']=='physics_audit'])
+    compressed=path.with_suffix('.jsonl.gz')
+    if not path.exists() and not compressed.exists():raise HTTPException(404,'Run not found')
+    with (path.open() if path.exists() else gzip.open(compressed,'rt')) as stream:
+        frames=[row['payload'] for line in stream if (row:=json.loads(line))['kind']=='physics_audit']
+    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=frames)
 @app.websocket('/ws')
 async def stream(ws:WebSocket):
     await ws.accept()

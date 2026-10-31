@@ -112,3 +112,28 @@ def test_retry_archives_crash_and_preserves_learning(tmp_path,monkeypatch):
     with pytest.raises(HTTPException):lab.retry({'authority':'manual'})
     lab.stop('End isolated retry integration check')
     assert lab.sensor_observation()['active'] is False
+
+def test_cabin_gimbal_accepts_yaw_and_legacy_controls():
+    base=dict(authority='manual',engine=0,collective_deg=[0]*4,tilt_deg=[[0,0]]*4,reason='Cabin control bench')
+    assert Action(**base,cabin_deg=[1,-2,180]).cabin_deg==[1,-2,180]
+    assert Action(**base,cabin_deg=[1,-2]).cabin_deg==[1,-2,0.]
+    with pytest.raises(ValidationError):Action(**base,cabin_deg=[0,0,181])
+
+
+def test_cabin_level_assistance_uses_physical_joints():
+    import numpy as np
+    import mujoco as mj
+    from scipy.spatial.transform import Rotation
+    from vtx.aircraft import Aircraft
+    aircraft=Aircraft()
+    q=Rotation.from_euler('x',10,degrees=True).as_quat()
+    aircraft.data.qpos[3:7]=[q[3],q[0],q[1],q[2]]
+    mj.mj_forward(aircraft.model,aircraft.data)
+    aircraft.engine_spool=1.
+    aircraft.set_command(dict(engine=1.,collective_deg=[0.]*4,tilt_deg=[[0.,0.]]*4,cabin_deg=[0.,0.,90.],cabin_level=True))
+    for _ in range(20):aircraft.step()
+    assert aircraft.cabin_target[0]<0
+    assert aircraft.cabin_target[2]>0
+    assert aircraft.joint('cabin_x')[0]<0
+    assert aircraft.joint('cabin_z')[0]>0
+    assert np.isfinite(aircraft.data.qpos).all()

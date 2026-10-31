@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "pilot": "Colin",
-  "experience_count": 5,
+  "experience_count": 10,
   "lessons": [
     {
       "run_id": "20261031T060411-29e1d6",
@@ -46,6 +46,69 @@
         "Proprietor eyewitness correction: credit expired and pilot control was lost before the impact",
         "20261031T082338-71a679 events.jsonl: last applied command, first collision, later lease expiry and final summary"
       ]
+    },
+    {
+      "run_id": "20261031T094649-bda3b7",
+      "lesson": "During the requested 180-degree turn, the aircraft developed approximately 33 degrees nose-up attitude and descending flight while travelling north. At observation 660 clearance was 5.894 m and vertical speed -2.627 m/s; a brief requested pitch-up input was followed by steeper descent. Shaft power reached its 300 kW limit and a gear impact occurred by observation 682. In future, monitor attitude, vertical speed and power margin together and arrest a developing descent early; do not assume pitching up creates an immediate climb, especially when already steeply inclined. This records the observed sequence, not a validated aerodynamic causal diagnosis.",
+      "wall_utc": "2026-10-31T10:16:07.493754+00:00",
+      "basis": [
+        660,
+        666,
+        671,
+        679,
+        682
+      ]
+    },
+    {
+      "run_id": "20261031T102855-4e8aa8",
+      "lesson": "On this retry the aircraft reached 6.1 m clearance, but northward speed kept increasing while nose-up pitch oscillated and altitude fell. Rear-rotor tilt requested by the operator reached about 8 degrees; after simultaneous collective corrections, pitch rate reversed rapidly, so the individual effect of the tilt cannot be isolated. At observation 443 clearance was 2.895 m and vertical speed -1.864 m/s; gear contact followed, and IMPACT appeared by observation 466. Do not allow speed and attitude oscillations to build at low clearance; start correcting drift and descent earlier, and use smaller rotor-tilt changes with time to observe cross-axis response. This is a simulation observation, not a validated flight rule.",
+      "wall_utc": "2026-10-31T10:48:54.271180+00:00",
+      "basis": [
+        247,
+        376,
+        392,
+        400,
+        443,
+        455,
+        466
+      ]
+    },
+    {
+      "run_id": "20261031T105046-c050dc",
+      "lesson": "On this retry early, modest north/south collective corrections kept pitch near level during the climb and much of the turn. The last recorded observation before the host timed out showed 12.131 m clearance, pitch/roll within 3.4 degrees, and yaw -106.515 degrees. The flight ended due to server shutdown while airborne; it did not reach B, and no impact was recorded. Plan host lifetime and speed before starting, and do not claim a completed turn or landing.",
+      "wall_utc": "2026-10-31T11:14:27.512730+00:00",
+      "basis": [
+        120,
+        176,
+        247,
+        384,
+        482,
+        538
+      ]
+    },
+    {
+      "run_id": "20261031T111439-91c918",
+      "lesson": "During the attempt to reach the right side of the block, pitch and bank grew while altitude fell; corrective inputs were late and the aircraft gained excessive northward speed, touched the gear and rotated rapidly. Observation 437 showed 7.03 m clearance with -0.40 m/s vertical speed; by observation 547 clearance was 3.73 m, and gear contact was recorded by observation 599. For the user's next retry, actively keep bank within 5 degrees, address negative vertical speed immediately, level and climb before continuing, and avoid increasing bank to make the turn happen. A 5-degree limit is a pilot target, not a guaranteed physical constraint.",
+      "wall_utc": "2026-10-31T11:40:47.224968+00:00",
+      "basis": [
+        437,
+        474,
+        496,
+        530,
+        547,
+        577,
+        599,
+        612
+      ]
+    },
+    {
+      "run_id": "20261031T114125-81987f",
+      "lesson": "The connection dropped while the aircraft was drifting toward the water and losing altitude. The operator took manual control and landed it. The recorded run shows a change from Colin to manual authority and ends after server shutdown; the last sampled instruments show nearly level attitude, nearly zero velocity, and all six gear legs compressed. The screenshots were supplied by the operator as the same run; do not infer a separate flight solely from phone timestamps. The operator advises using independent fan vectors and counter-thrust to check drift, correcting any descent early, leveling and regaining altitude before clearance falls below roughly 4\u20135 m, and targeting 8\u201310 m. These are pilot instructions and observed simulator experience, not validated aircraft limits.",
+      "wall_utc": "2026-10-31T13:44:32.300836+00:00",
+      "basis": [
+        "operator account and five supplied screenshots",
+        "manual authority changes and observation 1043 in archived events"
+      ]
     }
   ],
   "aircraft_familiarity": "Explicit lessons from logged live decisions; no automatic policy or environment map",
@@ -70,6 +133,26 @@
     {
       "run_id": "20261031T082338-71a679",
       "checkpoint": 5
+    },
+    {
+      "run_id": "20261031T094649-bda3b7",
+      "checkpoint": 6
+    },
+    {
+      "run_id": "20261031T102855-4e8aa8",
+      "checkpoint": 7
+    },
+    {
+      "run_id": "20261031T105046-c050dc",
+      "checkpoint": 8
+    },
+    {
+      "run_id": "20261031T111439-91c918",
+      "checkpoint": 9
+    },
+    {
+      "run_id": "20261031T114125-81987f",
+      "checkpoint": 10
     }
   ]
 }

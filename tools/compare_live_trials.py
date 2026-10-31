@@ -1,6 +1,6 @@
 """Post-flight sensor comparison only; never reads an active run or sends inputs."""
 from pathlib import Path
-import argparse,json,math
+import argparse,json,math,gzip
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -11,7 +11,11 @@ def metrics(run):
     if not (path/'summary.json').exists():raise ValueError('Completed, archived trials only')
     summary=json.loads((path/'summary.json').read_text())
     meta=json.loads((path/'metadata.json').read_text())
-    events=[json.loads(s) for s in (path/'events.jsonl').read_text().splitlines()]
+    event_path=path/'events.jsonl'
+    if event_path.exists():
+        with event_path.open() as f:events=[json.loads(s) for s in f]
+    else:
+        with gzip.open(path/'events.jsonl.gz','rt') as f:events=[json.loads(s) for s in f]
     obs=[e['payload'] for e in events if e['kind']=='observation']
     start_height=obs[0]['baro_m']
     # A disclosed instrument proxy: extension plus a measurable rise from parked.

@@ -1,0 +1,96 @@
+{
+  "run_id": "20261031T094649-bda3b7",
+  "mission": {
+    "departure": [
+      -205.7,
+      -117.6
+    ],
+    "destination": [
+      144.3,
+      173.2
+    ],
+    "departure_z_m": 0.0,
+    "destination_z_m": 0.0,
+    "environment": "stage1-valley",
+    "environment_version": "1",
+    "label": "Explicit retry of 20261031T082338-71a679"
+  },
+  "operator": "colin",
+  "request": {
+    "departure": [
+      -205.7,
+      -117.6
+    ],
+    "destination": [
+      144.3,
+      173.2
+    ],
+    "authority": "colin",
+    "time_scale": 0.02,
+    "reference_rpm": 1200.0,
+    "gear_variant": "critical-damping-proposal",
+    "airframe_variant": "light",
+    "fuel_kg": 10.0,
+    "engine_power_limit_kw": 300.0,
+    "label": "Explicit retry of 20261031T082338-71a679"
+  },
+  "airframe": {
+    "revision": "P0-V4A-assembly-r5",
+    "ledger_sha256": "1dabedd7c423c55a6b9910522b8003fd33cd76aafc9137c9058dcd119b9fea50",
+    "airframe_variant": "light",
+    "render_asset": "/assets/airframe-live.glb",
+    "initial_fuel_kg": 10.0,
+    "engine_power_limit_kw": 300.0,
+    "propulsion_revision": "P0-V4A-power-r1",
+    "exhaust_lift": {
+      "status": "CALIBRATION_BLOCKED",
+      "applied_force_n": 0.0,
+      "reason": "Installed exhaust airflow/state, duct mass and shaft backpressure penalty unknown"
+    },
+    "shaft_governor": {
+      "mode": "pi",
+      "kp_nm_per_rad_s": 180.0,
+      "integral_time_s": 2.0,
+      "status": "Proposed local RPM regulation; no attitude/height/navigation feedback"
+    },
+    "physics": "MuJoCo 3.17.0",
+    "dt_s": 0.0025,
+    "aero_rate_hz": 100,
+    "gear_variant": "critical-damping-proposal",
+    "reference_rpm": 1200.0,
+    "model_xml_sha256": "7ebb8e2725a540a3ec9506dce1e761f1442716448c4b9c8f2859727f35aed2bf",
+    "status": "CALIBRATION_BLOCKED \u2014 conditional engineering experiment",
+    "hypotheses": {
+      "mass_distribution": "R4 per-part allocated masses preserved; 32 legacy P06 box-spar parts removed; exact retained surface triangle moments. NOT measured mass.",
+      "polar": "2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2",
+      "nacelle_torque_limit_nm": 1100.0,
+      "nacelle_command_rate_deg_s": 20.0,
+      "pitch_rate_deg_s": 12.0,
+      "pitch_lag_s": 0.15,
+      "engine_spool_s": 2.0,
+      "engine_continuous_w": 469800.0,
+      "transmission_efficiency": 0.95,
+      "overall_ratio": 5.013333333333334,
+      "rotor_spin_senses": [
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "highspeed_shaft_topology": "ideal equivalent ratio; CV/tooth compliance unmodeled",
+      "installed_torque_limit_nm": 769.3723495675698,
+      "sfc_kg_kwh": 0.4,
+      "fuel_density_kg_l": 0.8,
+      "body_CdA_m2": 1.65,
+      "gear": "linear spring: static compression quarter stroke; damping ratio 1.0",
+      "self_contact": "CAD clearance audit; no all-part multibody self-contact",
+      "structural_failure": "rigid load paths; no laminate failure allowables or FEA",
+      "rotor_map": "axial BEMT; duct gain=1; no CFD/interference/edgewise qualification"
+    }
+  },
+  "software_commit": "c0f6271bdaec27884021518068df40c017a8d0dc",
+  "runtime_source_sha256": "967b4c66321f52bd9aa568d11481e6d0c94ae28fc4194318978f2f6c39196755",
+  "learning_checkpoint_sha256": "fe9aaca2ab1b6e2037a1eae089cf8378904b42a0a4d5fe8350fbffd85f6469d2",
+  "clocks": "400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale",
+  "controls": "20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; no attitude stabilization"
+}

@@ -12,6 +12,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 import mujoco as mj
 import numpy as np
+from scipy.spatial.transform import Rotation
 from .aero import BladeElementModel, ideal_hover
 from .world import TestWorld
 from .governor import ShaftGovernor
@@ -65,8 +66,9 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
             # Two serial hinge coordinates at the measured common pivot.
             # No massive outer bearing ring is invented where the source rig is empty.
             limit=math.radians(20 if name!='cabin' else 15)
-            for axis in 'xy':
-                ET.SubElement(b,'joint',name=name+'_'+axis,type='hinge',axis='1 0 0' if axis=='x' else '0 1 0',range=fmt([-limit,limit]))
+            for axis in ('xyz' if name=='cabin' else 'xy'):
+                bound=math.pi if axis=='z' else limit
+                ET.SubElement(b,'joint',name=name+'_'+axis,type='hinge',axis={'x':'1 0 0','y':'0 1 0','z':'0 0 1'}[axis],range=fmt([-bound,bound]))
         elif name.startswith('rotor'):
             ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis='0 0 1',limited='false')
         elif name.startswith('shaft'):
@@ -168,8 +170,8 @@ class Aircraft:
         self.qadr={n:int(self.model.jnt_qposadr[i]) for n,i in self.jids.items()}
         self.vadr={n:int(self.model.jnt_dofadr[i]) for n,i in self.jids.items()}
         self.aero=BladeElementModel(self.ledger['blade'])
-        self.command=dict(engine=0.,collective_deg=[0.]*4,tilt_deg=[[0.,0.] for _ in range(4)],cabin_deg=[0.,0.])
-        self.pitch=np.zeros(4);self.target_angles=np.zeros((4,2));self.cabin_target=np.zeros(2)
+        self.command=dict(engine=0.,collective_deg=[0.]*4,tilt_deg=[[0.,0.] for _ in range(4)],cabin_deg=[0.,0.,0.],cabin_level=True)
+        self.pitch=np.zeros(4);self.target_angles=np.zeros((4,2));self.cabin_target=np.zeros(3)
         self.engine_spool=0.;self.fuel=np.full(4,fuel_kg/4)
         self.governor=ShaftGovernor(governor_mode)
         self.fuel_initial=self.fuel.copy();self.fuel_bids=[mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,f'fuel{i}') for i in range(1,5)]
@@ -185,6 +187,7 @@ class Aircraft:
             'revision':self.ledger['revision'],'ledger_sha256':hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
             'airframe_variant':airframe_variant,'render_asset':'/assets/airframe-r4.glb' if airframe_variant=='baseline' else '/assets/airframe-live.glb',
             'initial_fuel_kg':float(fuel_kg),
+            'cabin_gimbal':'Proposed yaw ±180°, roll/pitch ±15°, powered level assistance; travel, torque and power limits prevent guaranteed leveling',
             'engine_power_limit_kw':float(engine_power_limit_kw),'propulsion_revision':'P0-V4A-power-r1',
             'exhaust_lift':dict(status='CALIBRATION_BLOCKED',applied_force_n=0.,
                 reason='Installed exhaust airflow/state, duct mass and shaft backpressure penalty unknown'),
@@ -217,7 +220,8 @@ class Aircraft:
         mj.mj_forward(self.model,self.data)
 
     def set_command(self,cmd):
-        self.command={k:cmd[k] for k in self.command}
+        self.command={k:cmd.get(k,self.command[k]) for k in self.command}
+        if len(self.command['cabin_deg'])==2:self.command['cabin_deg']=[*self.command['cabin_deg'],0.]
 
     def joint(self,name):return self.data.qpos[self.qadr[name]],self.data.qvel[self.vadr[name]]
 
@@ -275,11 +279,17 @@ class Aircraft:
         self.pitch+=np.clip((np.array(self.command['collective_deg'])-self.pitch)*DT/.15,-12*DT,12*DT)
         requested=np.radians(self.command['tilt_deg'])
         self.target_angles+=np.clip(requested-self.target_angles,-math.radians(20)*DT,math.radians(20)*DT)
-        self.cabin_target+=np.clip(np.radians(self.command['cabin_deg'])-self.cabin_target,-math.radians(12)*DT,math.radians(12)*DT)
+        cabin_requested=np.radians(self.command['cabin_deg']).copy()
+        if self.command['cabin_level']:
+            air_rotation=Rotation.from_matrix(d.xmat[self.bids['airframe']].reshape(3,3))
+            heading=air_rotation.as_euler('xyz')[2]+cabin_requested[2]
+            level_relative=(air_rotation.inv()*Rotation.from_euler('z',heading)).as_euler('XYZ')
+            cabin_requested[:2]=np.clip(level_relative[:2],-math.radians(15),math.radians(15))
+        self.cabin_target+=np.clip(cabin_requested-self.cabin_target,-math.radians(12)*DT,math.radians(12)*DT)
         servo_power=0.
         for i in range(4):
             for index in range(2):servo_power+=self.linear_actuator(i+1,index,self.target_angles[i])
-        for j,a in enumerate('xy'):servo_power+=self.servo(f'cabin_{a}',self.cabin_target[j],600.)
+        for j,a in enumerate('xyz'):servo_power+=self.servo(f'cabin_{a}',self.cabin_target[j],600.)
         if self.step_count%4==0:self.refresh_aero()
         aero_power=0.
         for i in range(4):
