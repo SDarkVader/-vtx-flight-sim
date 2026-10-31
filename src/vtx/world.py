@@ -8,7 +8,7 @@ from .mission_selection import MapPoint, SurfaceDecision
 
 class TestWorld:
     id = 'stage1-valley'
-    version = '1'
+    version = '2'
     half = 500.
     n = 101
     def __init__(self, seed=41031):
@@ -24,6 +24,10 @@ class TestWorld:
             dict(id='tower',kind='box',center=[115.,115.,29.],half=[9.,9.,29.],color='#71838a',landable=False),
             dict(id='freight',kind='box',center=[-100.,105.,4.],half=[18.,11.,4.],color='#ae735c',landable=True),
             dict(id='ridge-block',kind='box',center=[-175.,-110.,12.],half=[14.,30.,12.],color='#747b76',landable=False),
+            dict(id='dispatch',kind='box',center=[45.,110.,12.],half=[14.,12.,12.],color='#355453',landable=True),
+            dict(id='arcade',kind='box',center=[185.,45.,6.],half=[15.,11.,6.],color='#634e56',landable=True),
+            dict(id='operations',kind='box',center=[50.,-145.,8.],half=[15.,12.,8.],color='#496c70',landable=True),
+            dict(id='terminal',kind='box',center=[-145.,100.,7.],half=[15.,12.,7.],color='#725d50',landable=True),
         ]
         rng=np.random.default_rng(seed)
         for i in range(36):

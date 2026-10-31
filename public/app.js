@@ -36,6 +36,65 @@ function makeLabel(text,color='#7cdfcb'){
 const markerA=makeLabel('A'),markerB=makeLabel('B','#ffc88b');
 function surfaceZ(x,y){if(!world)return 0;const n=world.heights_m.length,half=world.half_m,u=THREE.MathUtils.clamp((x+half)/(2*half)*(n-1),0,n-1.00001),v=THREE.MathUtils.clamp((y+half)/(2*half)*(n-1),0,n-1.00001),i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j,h=world.heights_m;let z=a>b?(1-a)*h[j][i]+(a-b)*h[j][i+1]+b*h[j+1][i+1]:(1-b)*h[j][i]+(b-a)*h[j+1][i]+a*h[j+1][i+1];for(const o of world.obstacles){if(o.kind==='box'&&Math.abs(x-o.center[0])<=o.half[0]&&Math.abs(y-o.center[1])<=o.half[1])z=Math.max(z,o.center[2]+o.half[2]);}return z;}
 function updateMarkers(){markerA.position.set(departure[0]-5,departure[1]+4,surfaceZ(...departure)+1.5);markerB.position.set(destination[0]-5,destination[1]+4,surfaceZ(...destination)+1.5);}
+// Artwork is mounted on the existing physical hangar face. It is visual only;
+// no new obstacles or landing surfaces are implied by these decorations.
+function addCompanyGallery(w){
+ const hangar=w.obstacles.find(o=>o.id==='hangar'&&o.kind==='box');if(!hangar)return;
+ const [cx,cy,cz]=hangar.center,[hx,hy,hz]=hangar.half,face=cy-hy-.035;
+ function panel(width,height,x,z,material,depth=0){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),material);mesh.rotation.x=Math.PI/2;mesh.position.set(x,face-depth,z);scene.add(mesh);return mesh;}
+ function sign(message,width,height,x,z,bg,fg){
+  const c=document.createElement('canvas');c.width=1024;c.height=128;const g=c.getContext('2d');
+  g.fillStyle=bg;g.fillRect(0,0,c.width,c.height);g.strokeStyle='#d6a960';g.lineWidth=5;g.strokeRect(4,4,c.width-8,c.height-8);
+  g.fillStyle=fg;g.font='bold 50px Georgia, serif';g.textAlign='center';g.textBaseline='middle';g.fillText(message,512,66,980);
+  const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
+  return panel(width,height,x,z,new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}),.02);
+ }
+ sign("VADER'S TAXIS  •  THE PEOPLE BEHIND THE JOURNEY",Math.min(43,hx*2-2),2.3,cx,cz+hz-2.2,'#172927','#f4d39c');
+ sign('SAME PEOPLE  •  DIFFERENT PROBLEMS',32,1.1,cx,cz-hz+2.7,'#243c38','#e1c391');
+ const pictures=[
+  ['1-68021.jpg','THE INTERN'],['2-67362.jpg','FIELD TESTING'],['3-67194.jpg','THE HEARING'],
+  ['4-66709.jpg','STRATEGY ROOM'],['5-67766.jpg','THE TEAM']
+ ];
+ const loader=new THREE.TextureLoader();
+ pictures.forEach(([file,label],i)=>{
+  const x=cx-16+i*8,z=cz+.5;
+  panel(7.6,6.3,x,z,new THREE.MeshBasicMaterial({color:'#172927',side:THREE.DoubleSide}),.01);
+  loader.load('/assets/company/'+file,texture=>{
+   texture.colorSpace=THREE.SRGBColorSpace;
+   const aspect=texture.image.width/texture.image.height, width=Math.min(7.1,5.15*aspect),height=width/aspect;
+   panel(width,height,x,z+.25,new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}),.03);
+  },undefined,e=>console.warn('Company artwork unavailable',file,e));
+  sign(label,7.2,.62,x,z-2.75,'#172927','#e6c68e');
+ });
+}
+// The structures are the same obstacle boxes used by the physics engine;
+// signs, window panes and ground paint are surface details only.
+function addDistrictDetails(w){
+ const labels={dispatch:'VADER’S TAXIS  /  DISPATCH',arcade:'THE STRATEGY ROOM',operations:'FLIGHT OPERATIONS',terminal:'PEOPLE  •  PLACES  •  A BRIGHTER TOMORROW',tower:'VTX  /  CONTROL',workshop:'VTX  /  ENGINEERING',freight:'VADER’S TAXIS  /  CARGO'};
+ const windowMaterial=new THREE.MeshBasicMaterial({color:'#87c5c1',side:THREE.DoubleSide});
+ const pane=new THREE.PlaneGeometry(2.3,1.45),matrix=new THREE.Matrix4(),rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI/2,0,0));
+ for(const o of w.obstacles){
+  const label=labels[o.id];if(!label)continue;
+  const [x,y,z]=o.center,[hx,hy,hz]=o.half,front=y-hy-.04;
+  const rows=Math.min(5,Math.max(1,Math.floor((hz*2-4)/3.2))),cols=Math.min(8,Math.max(1,Math.floor((hx*2-2)/3.6)));
+  const inst=new THREE.InstancedMesh(pane,windowMaterial,rows*cols);let n=0;
+  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+   const px=x+(col-(cols-1)/2)*3.5,pz=z-hz+2.2+row*3.1;
+   matrix.compose(new THREE.Vector3(px,front,pz),rot,new THREE.Vector3(1,1,1));inst.setMatrixAt(n++,matrix);
+  }
+  scene.add(inst);
+  const c=document.createElement('canvas');c.width=1024;c.height=128;const ctx=c.getContext('2d');
+  ctx.fillStyle='#162c2b';ctx.fillRect(0,0,1024,128);ctx.strokeStyle='#d8a965';ctx.lineWidth=5;ctx.strokeRect(4,4,1016,120);
+  ctx.fillStyle='#f1d4a0';ctx.font='bold 48px Georgia,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,512,66,980);
+  const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
+  const plate=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(hx*2-1,27),1.8),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}));
+  plate.rotation.x=Math.PI/2;plate.position.set(x,front-.02,z+hz-1.2);scene.add(plate);
+ }
+ // A painted apron and taxiway help navigation without adding physical objects.
+ plane(54,24,'#576766',25,-32,.022);
+ plane(2,85,'#d5c189',25,-9,.029);
+ for(let y=-47;y<=27;y+=10)plane(1.1,5,'#e5d7a7',25,y,.033);
+}
 function buildWorld(w){
  console.log('VTX: terrain building');
  world=w;const n=w.heights_m.length,vertices=[],indices=[],colors=[];
@@ -50,7 +109,7 @@ function buildWorld(w){
  for(let x=-80;x<10;x+=12)plane(5,.15,'#c7ccb8',x,-65,.021);
  const grid=new THREE.GridHelper(180,18,'#a9b5a5','#a8b3a1');grid.rotation.x=Math.PI/2;grid.position.z=.025;grid.material.transparent=true;grid.material.opacity=.2;scene.add(grid);
  const water=plane(w.water.half_x*2,w.water.half_y*2,'#6f9fa8',w.water.x,w.water.y,surfaceZ(w.water.x,w.water.y)+.1);water.material.metalness=.3;water.material.roughness=.3;
- updateMarkers();drawMaps();console.log('VTX: terrain ready');
+ addDistrictDetails(w);addCompanyGallery(w);updateMarkers();drawMaps();console.log('VTX: terrain ready');
 }
 let loadedAsset=null,assetRetryAfter=0,modelReady=false;
 function disposeModel(root){
