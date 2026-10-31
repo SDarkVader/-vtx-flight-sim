@@ -139,7 +139,10 @@ are also unresolved. These limitations prevent a claim
 that the real VTX has been validated or that every original engineering
 requirement is complete. No controlled A-to-B landing has been achieved.
 
-The pilot's three observed lessons are in `pilot/colin-memory.json`, with flight
+The subsequent low-fuel/power revision and actual local-return test are recorded
+in `PROPULSION_FUEL_REVISION.md`; they do not retroactively change these runs.
+
+The pilot's four observed lessons are in `pilot/colin-memory.json`, with flight
 checkpoint copies and a transfer manifest. They are explicit learned experience,
 not pretrained VTX control weights. No unfamiliar Stage 2 world has been built
 or accessed.

@@ -12,6 +12,9 @@ the 170 kg occupant ballast. The allocated R5 test mass falls from 1046.66895 kg
 power 7.08% at the same 16 m² disk area. It raises the neutral CG18.66 mm because
 the removed fuel was low in the frame; reduced mass does not establish improved
 attitude stability. Full mass tensors and CG are recomputed by the live plant.
+Fuel uses the existing uniform fractional-cylinder distribution hypothesis;
+liquid level and slosh are unresolved, so the CG delta is conditional on that
+distribution.
 
 The planning choice is a 120 s test plus 2 kg fuel allowance. At the provisional
 469.8 kW maximum continuous shaft output and 0.4 kg/kWh SFC,120 s uses 6.264 kg;
@@ -32,7 +35,9 @@ remain open control problems.
 
 The proposed local PI shaft regulator retains Kp 180 Nm/(rad/s), adds a 2 s integral
 time (Ki 90), conditional anti-windup, and a drive fuel-cut at 101% of commanded
-RPM. The threshold is a proposed governor setting, not a blade structural
+RPM. Each overspeed cut also resets the stored integral through its zero torque
+ceiling; recovery can therefore be slower after a cut. The threshold is a
+proposed governor setting, not a blade structural
 rating. No speed, angular momentum or position is clipped; overspeed coasts
 under actual aerodynamic loading. The controller reads only common shaft
 speed and engine command. It cannot hold altitude, attitude or navigate.
@@ -46,6 +51,13 @@ continuously. The nominal static hover calculation at 10 kg fuel is approximatel
 **202.82 kW before actuator loads**,16.951° collective. Weak-polar sensitivity
 (CLmax 0.8) leaves only 2.6% peak thrust margin; neither the polar nor rotor/gear
 rating is qualified.800 rpm still cannot support this test mass.
+
+Constant-RPM peak maps do not bypass the engine ceiling. At the nominal polar,
+the unconstrained 1.468 thrust/weight peak would require 344.36 kW. The 300 kW
+ceiling instead intersects the constant 1200 rpm map around 21.60° and 1.325
+thrust/weight before servo demand; actual transients still follow the coupled
+power-limited plant. These are conditional static calculations, not flight
+stability margins.
 
 The articulated, clamped dynamometer compared a 20° collective load at the same
 1200 rpm command. The prior regulator settled at 1107.02 rpm/213.88 kW; PI at
@@ -97,7 +109,31 @@ and the installation penalty map.
 inputs, doing so would invent lift. The calculator, sensitivity cases and
 unknown-input register are saved for a concrete installation review.
 
-## Evidence
+## Actual low-fuel piloting test
+
+Run `20261031T081204-ce 4792` used the same proprietor A/B, R5 geometry, the
+1200 rpm gearset, critical-damping gear,10 kg fuel and the 300 kW ceiling.
+Eighteen individual live decisions produced lift-off, a small vector-response
+test, local descent and touchdown near A. The pilot feathered and idled from a
+fresh observation after contact. Observations 308 and 339 then showed sustained
+six-foot support, near-zero velocity and nearly level attitude. The saved final
+position was approximately (-205.662,-115.851)m,1.75 m from A, with no body/rotor
+crash flag. B was not reached.
+
+Maximum airframe-origin height was 0.9085 m, fuel use 0.17515 kg and maximum sampled
+contact force 7.747 kN. The touchdown transient included about −15.35°/s X rate;
+this is not a structural qualification or proof of robust control. The formal
+summary retains **airborne attempt ended** because the mission landing gate
+requires B; its reason explicitly records the local touchdown and settling.
+This was a brief low-altitude test, not established stable flight or a completed
+A-to-B mission. Multiple configuration and pilot-behaviour changes prevent
+attributing the improvement to fuel reduction alone.
+
+The fourth observed lesson and all prior lessons are saved for transfer.
+No Stage 2 environment has been accessed. These results came from live inputs,
+not from the dynamometer sequence or a flight controller.
+
+## Evidence files
 
 - `power_fuel_exhaust_study.json`: full CG/inertia, fuel plan, conditional two-outlet sizes and dynamometer samples.
 - `wolfram_power_fuel_exhaust.json`: independent Wolfram arithmetic query/result.
