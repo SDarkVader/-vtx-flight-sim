@@ -1,0 +1,31 @@
+name: VTX mathematical regressions (uncalibrated)
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mathematics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Assert algebra, trajectory and calibration gate
+        env:
+          PYTHONPATH: src
+        run: python -m pytest -q
+      - name: Produce labelled reference-only outputs
+        env:
+          PYTHONPATH: src
+        run: python scripts/run_reference.py --out results
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vtx-reference-only-results
+          path: results/
+          if-no-files-found: error
