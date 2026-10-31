@@ -61,8 +61,10 @@ stored separately in `pilot/colin-memory.json`; no Stage 2 world is created.
 The original exact-version `.blend` and GLB remain immutable local source
 artifacts. `tools/build_airframe.py` derives the current editable scene at
 `assets/derived/p0-v4-live.blend`, live GLB and component ledger together.
-Use Blender with `-- --baseline` or `-- --r2` to reproduce earlier assembly
-stages. R3 requires `r2_gear_area.json`, retained with the source evidence.
+Historical exact R1 code is retained at commit `288d53b`. The current builder
+also exposes `-- --baseline`, `-- --r2` and `-- --r3` repair-stage modes; those
+use the current interface specification and are not byte-identical historical
+reproductions. R3 requires `r2_gear_area.json`, retained with the source evidence.
 Source object IDs are retained. Browser batching preserves triangles and keeps
 the ledger's part mapping. It does not change mechanics.
 
@@ -71,10 +73,23 @@ density within each subsystem's allocation. This is a disclosed **distribution
 hypothesis**, not measured material mass. Occupants are two 85 kg ellipsoid
 ballasts at the source seats. Fuel occupies four fixed diagonal cylinders with
 no slosh; mass and inertia are updated as fuel leaves with local velocity.
-The current revision retains the original 843 kg reference and separately adds
+The retained R4 revision lowers the gimbal bearing stack by 0.28 m, separates
+stationary rings from the blade plane, refits the load braces and assigns moving
+EMA heads to their nacelles. The sampled triangle audit checks 6,912 blade/pose
+configurations with no intersections; continuous elastic clearance is unverified.
+It retains the original 843 kg reference and separately adds
 the longer gear's material allowance. See `assembly_repairs.json` and both
 preserved ground-fault records. Actual laminate, hardware and human inertias
 remain unmeasured.
+
+R5 is the default experimental lighter underside: 32 legacy P06 box-spar
+components are retired while the newer primary triangulated frame remains.
+Retained part masses and landing-gear hardware constants are unchanged. This
+removes 32.7202 allocated kg; test mass is 1046.6689 kg. Select R4 to compare.
+The exact removed IDs, Wolfram CG/inertia cross-check and unverified structural
+consequences are in `evidence/EXPERIMENT_REPORT.md` and `underside_trade.json`.
+Rebuild with Blender and `tools/build_airframe.py`; `-- --r4` builds the older
+configuration. R5 requires the preserved R4 mass ledger as an input.
 
 MuJoCo integrates a free airframe, independently articulated nacelles, rotor
 spin, high-speed radial shafts, occupied two-axis cabin and six spring/damper

@@ -8,7 +8,9 @@ let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=nul
 let departure=[0,0],destination=[-50,20],track=[],lastDecision='',lastRun=null;
 const bodyNodes={},pitchMeshes=[];
 const command={engine:0,collective_deg:[0,0,0,0],tilt_deg:[[0,0],[0,0],[0,0],[0,0]],cabin_deg:[0,0]};
-let dirty=false,manualBeat=0;
+let dirty=false,manualBeat=0,manualOwned=false;
+const manualChannel=new BroadcastChannel('vtx-manual-authority');
+manualChannel.onmessage=()=>{manualOwned=false;keys.clear();};
 async function api(path,body){
  const r=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  const value=await r.json();if(!r.ok)throw Error(typeof value.detail==='string'?value.detail:JSON.stringify(value.detail));return value;
@@ -47,8 +49,14 @@ function buildWorld(w){
  const water=plane(w.water.half_x*2,w.water.half_y*2,'#6f9fa8',w.water.x,w.water.y,surfaceZ(w.water.x,w.water.y)+.1);water.material.metalness=.3;water.material.roughness=.3;
  updateMarkers();drawMaps();console.log('VTX: terrain ready');
 }
-new GLTFLoader().load('/assets/airframe-live.glb',g=>{
- console.log('VTX: aircraft received');
+let loadedAsset=null;
+function loadAirframe(asset){
+ if(asset===loadedAsset)return;loadedAsset=asset;
+ $('loading').hidden=false;$('loading').textContent='Loading physical revision…';
+ new GLTFLoader().load(asset,g=>{
+ if(asset!==loadedAsset)return;
+ if(model){scene.remove(model);model.traverse(n=>{if(n.isMesh)n.geometry.dispose();});}
+ for(const key of Object.keys(bodyNodes))delete bodyNodes[key];pitchMeshes.length=0;
  model=g.scene;scene.add(model);model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
  // Blender exports empty groups as Object3D or Group depending on loader.
  for(const name of ['airframe','cabin',...Array.from({length:4},(_,i)=>`nacelle${i+1}`),...Array.from({length:4},(_,i)=>`rotor${i+1}`),...Array.from({length:6},(_,i)=>`gear${i+1}`),...Array.from({length:4},(_,i)=>`shaft${i+1}`)]){const n=model.getObjectByName(name);if(n)bodyNodes[name]=n;}
@@ -65,8 +73,9 @@ new GLTFLoader().load('/assets/airframe-live.glb',g=>{
    if(merged){const n=new THREE.Mesh(merged,meshes[0].material);n.castShadow=true;n.receiveShadow=true;n.userData.source_ids=meshes.map(m=>m.userData.blendstra_id);meshes.forEach(m=>m.removeFromParent());body.add(n);}
   }
  }
- $('loading').hidden=true;console.log('VTX: aircraft ready');toast('Recovered source assembly loaded. No motion animation is used.');
-},undefined,e=>{$('loading').textContent='Aircraft asset failed to load';console.error(e);});
+$('loading').hidden=true;
+ },undefined,e=>{$('loading').textContent='Aircraft asset failed to load';console.error(e);});
+}
 
 for(let i=0;i<4;i++){
  const div=document.createElement('div');div.className='rotor';div.innerHTML=`<div class="rotor-top"><b>F${i+1} / ${['EAST','NORTH','WEST','SOUTH'][i]}</b><span id="rpm-${i}">0 rpm</span></div><label class="range-label">Collective <output id="pval-${i}">0.0°</output><input type="range" id="p-${i}" min="0" max="30" step="0.1" value="0" aria-label="Rotor ${i+1} collective"></label><div class="vector-controls"><label class="range-label">Tilt X <output id="xval-${i}">0°</output><input id="x-${i}" type="range" min="-20" max="20" step="0.1" value="0" aria-label="Rotor ${i+1} tilt X"></label><label class="range-label">Tilt Y <output id="yval-${i}">0°</output><input id="y-${i}" type="range" min="-20" max="20" step="0.1" value="0" aria-label="Rotor ${i+1} tilt Y"></label></div>`;$('rotors').appendChild(div);
@@ -75,17 +84,32 @@ for(let i=0;i<4;i++){
 $('engine').oninput=()=>{command.engine=+$('engine').value;$('engine-value').value=Math.round(command.engine*100)+'%';dirty=true;};
 $('common').oninput=()=>{command.collective_deg.fill(+$('common').value);$('common-value').value=(+$('common').value).toFixed(1)+'°';for(let i=0;i<4;i++){$('p-'+i).value=command.collective_deg[i];$('pval-'+i).value=command.collective_deg[i].toFixed(1)+'°';}dirty=true;};
 for(const [key,axis] of [['common-x',0],['common-y',1]])$(key).oninput=()=>{for(let i=0;i<4;i++){command.tilt_deg[i][axis]=+$(key).value;$(axis?'y-'+i:'x-'+i).value=+$(key).value;$(axis?'yval-'+i:'xval-'+i).value=(+$(key).value).toFixed(1)+'°';}dirty=true;};
-const onMap=async(event,canvas)=>{const rect=canvas.getBoundingClientRect(),x=((event.clientX-rect.left)/rect.width-.5)*world.half_m*2,y=(.5-(event.clientY-rect.top)/rect.height)*world.half_m*2;await choosePoint([Math.round(x*10)/10,Math.round(y*10)/10]);};
+const onMap=async(event,canvas)=>{if(last?.active){toast('End the current sortie before selecting the next mission.');return;}const rect=canvas.getBoundingClientRect(),x=((event.clientX-rect.left)/rect.width-.5)*world.half_m*2,y=(.5-(event.clientY-rect.top)/rect.height)*world.half_m*2;await choosePoint([Math.round(x*10)/10,Math.round(y*10)/10]);};
 async function choosePoint(p){const verdict=await api(`/api/validate?x=${p[0]}&y=${p[1]}`);$('validation').textContent=`${pick.toUpperCase()} (${p.join(', ')}): ${verdict.reason}`;$('large-validation').textContent=$('validation').textContent;if(!verdict.valid){toast(verdict.reason);return;}if(pick==='a'){departure=p;$('dep').value=p.join(', ');}else{destination=p;$('dest').value=p.join(', ');}updateMarkers();drawMaps();}
 $('map').onclick=guard(e=>onMap(e,$('map')));$('large-map').onclick=guard(e=>onMap(e,$('large-map')));
 function setPick(p){pick=p;$('pick-a').classList.toggle('selected',p==='a');$('pick-b').classList.toggle('selected',p==='b');$('large-pick').textContent=p.toUpperCase();}
 $('pick-a').onclick=()=>setPick('a');$('pick-b').onclick=()=>setPick('b');
 for(const [id,p] of [['dep','a'],['dest','b']])$(id).onchange=guard(async()=>{const vals=$(id).value.split(',').map(Number);if(vals.length!==2||vals.some(v=>!Number.isFinite(v)))throw Error('Use two finite coordinates: east, north');setPick(p);await choosePoint(vals);});
 $('map-zoom').onclick=()=>{$('map-dialog').showModal();drawMaps();};
-$('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,reference_rpm:+$('drive').value,gear_variant:$('gear').value,label:'Map-selected live ground-to-ground attempt'});track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
+$('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,reference_rpm:+$('drive').value,gear_variant:$('gear').value,airframe_variant:$('airframe').value,label:'Map-selected live ground-to-ground attempt'});manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
 $('end').onclick=guard(async()=>{const r=await api('/api/stop',{reason:'Operator ended the live attempt'});toast(`Recorded: ${r.outcome}. Every failed attempt is retained.`);});
+for(const authority of ['manual','colin'])$('retry-'+authority).onclick=guard(async()=>{
+ replayFrames=null;
+ const r=await api('/api/retry',{authority,time_scale:authority==='colin'?.02:.1,airframe_variant:$('airframe').value});
+ manualOwned=authority==='manual';if(manualOwned)manualChannel.postMessage('takeover');
+ command.engine=0;command.collective_deg.fill(0);command.tilt_deg=[[0,0],[0,0],[0,0],[0,0]];dirty=false;
+ toast('New sortie '+r.run_id+'. The failed run and pilot checkpoint are preserved.');
+});
 $('pause').onclick=guard(async()=>{await api('/api/operator',{paused:!last.paused});});
-$('takeover').onclick=guard(async()=>{await api('/api/operator',{authority:'manual'});$('pilot').value='manual';dirty=true;toast('Manual authority acquired. Same fly-by-wire channels.');});
+$('takeover').onclick=guard(async()=>{
+ if(last){const o=last.observation,issued=last.recent_decisions.at(-1)?.issued;
+  command.engine=issued?.engine??(Math.max(...o.rotor_rpm)>300?1:0);
+  command.collective_deg=[...o.collective_feedback_deg];command.tilt_deg=o.tilt_feedback_deg.map(v=>[...v]);
+  $('engine').value=command.engine;$('engine-value').value=Math.round(command.engine*100)+'%';
+  for(let i=0;i<4;i++){$('p-'+i).value=command.collective_deg[i];$('pval-'+i).value=command.collective_deg[i].toFixed(1)+'°';}
+ }
+ await api('/api/operator',{authority:'manual'});manualChannel.postMessage('takeover');manualOwned=true;$('pilot').value='manual';dirty=true;toast('Manual authority acquired with the current actuator settings.');
+});
 $('scale').onchange=guard(async()=>{await api('/api/operator',{time_scale:+$('scale').value});});
 $('feather').onclick=()=>{command.engine=0;command.collective_deg.fill(0);$('engine').value=0;$('engine').oninput();$('common').value=0;$('common').oninput();dirty=true;};
 $('camera').onclick=()=>{cameraMode=cameraMode==='chase'?'orbit':'chase';$('camera').textContent=cameraMode==='chase'?'Chase camera':'Free orbit';orbit.enabled=true;};
@@ -95,25 +119,25 @@ $('cockpit').onclick=()=>{cameraMode=cameraMode==='cockpit'?'chase':'cockpit';or
 const keys=new Set();
 function typing(e){return /INPUT|TEXTAREA|SELECT/.test(e.target.tagName);}
 addEventListener('keydown',e=>{
- if(typing(e))return;
+ if(typing(e)||document.querySelector('dialog[open]'))return;
  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
  if(e.code==='KeyC'&&!e.repeat)$('cockpit').click();
- if(last?.authority!=='manual'||!last.active)return;
+ if(last?.authority!=='manual'||!last.active||!manualOwned)return;
  if(e.code==='KeyX'&&!e.repeat){$('engine').value=command.engine>.5?0:1;$('engine').oninput();}
  if(e.code==='Space'){$('feather').click();keys.clear();}
  keys.add(e.code);
 });
 addEventListener('keyup',e=>keys.delete(e.code));addEventListener('blur',()=>keys.clear());
 setInterval(()=>{
- if(!last?.active||last.authority!=='manual'||last.paused||replayFrames||!keys.size)return;
+ if(!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames||!keys.size)return;
  const down=k=>keys.has(k)?1:0,delta=.12;
  const lift=(down('KeyR')-down('KeyF'))*delta;
  const pitch=(down('KeyW')-down('KeyS'))*.06,roll=(down('KeyD')-down('KeyA'))*.06;
  const yaw=(down('KeyE')-down('KeyQ'))*.15;
- const tx=(down('ArrowLeft')-down('ArrowRight'))*.15;
- const ty=(down('ArrowUp')-down('ArrowDown'))*.15;
+ const tx=(down('ArrowUp')-down('ArrowDown'))*.15;
+ const ty=(down('ArrowRight')-down('ArrowLeft'))*.15;
  // Collective torque mix: north/south produce body X torque; east/west Y.
- const differential=[-pitch,roll,pitch,-roll];
+ const differential=[-roll,pitch,roll,-pitch];
  const yawX=[-yaw,0,yaw,0],yawY=[0,-yaw,0,yaw];
  for(let i=0;i<4;i++){
   command.collective_deg[i]=THREE.MathUtils.clamp(command.collective_deg[i]+lift+differential[i],0,30);
@@ -125,6 +149,7 @@ setInterval(()=>{
  $('common').value=command.collective_deg.reduce((a,b)=>a+b,0)/4;$('common-value').value=(+$('common').value).toFixed(1)+'°';
  dirty=true;
 },50);
+$('keyboard-open').onclick=()=>{$('keyboard-help').showModal();keys.clear();};
 for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>b.closest('dialog').close();
 $('engineering').onclick=()=>{$('engineering-dialog').showModal();updateEngineering();};
 $('history').onclick=guard(async()=>{const records=await api('/api/runs');$('runs').replaceChildren();for(const r of records){const a=document.createElement('article'),button=document.createElement('button');button.textContent='Inspect recorded states';button.onclick=guard(async()=>{const replay=await api('/api/replay/'+r.run_id);replayFrames=replay.frames;replayFrame=0;$('replay-time').max=Math.max(0,replayFrames.length-1);$('replay-controls').hidden=false;$('view-mode').textContent='POST-FLIGHT AUDIT · NO CONTROL';toast('Inspection only. The live physical plant remains separate.');});a.append(button,document.createTextNode(`${r.run_id} · ${r.outcome} · ${r.simulated_seconds.toFixed(1)} s · ${r.decisions} decisions`));$('runs').appendChild(a);}$('history-dialog').showModal();});
@@ -140,31 +165,37 @@ function drawMap(canvas){if(!world)return;const ctx=canvas.getContext('2d'),w=ca
  if(last){const p=last.observation.gnss_xy_m;ctx.strokeStyle='#fff';ctx.lineWidth=1.7;const x=px(p[0]),y=py(p[1]);ctx.beginPath();ctx.moveTo(x,y-5);ctx.lineTo(x+4,y+4);ctx.lineTo(x-4,y+4);ctx.closePath();ctx.stroke();}
  ctx.fillStyle='#ddede6';ctx.font=`${Math.max(9,w/60)}px system-ui`;ctx.textAlign='left';ctx.fillText('N ↑',10,17);ctx.fillText('0',w/2+4,h/2+12);
 }
-function drawMaps(){drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
+let lastMapMs=0;
+function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return;lastMapMs=performance.now();drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
 function updateEngineering(){if(!last)return;const t=last.rendering_truth;$('engineering-content').textContent=JSON.stringify({revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses},null,2);}
-function updateView(v){last=v;const o=v.observation,t=v.rendering_truth;if(v.run_id!==lastRun){lastRun=v.run_id;track=[];}
+function updateView(v){last=v;const o=v.observation,t=v.rendering_truth;if(v.run_id!==lastRun){lastRun=v.run_id;track=[];if(v.mission){departure=[...v.mission.departure];destination=[...v.mission.destination];$('dep').value=departure.join(', ');$('dest').value=destination.join(', ');updateMarkers();}}
  $('state').textContent=v.active?(v.paused?'PHYSICS PAUSED':'LIVE EXPERIMENT'):'INSPECTION';$('lamp').style.background=v.active?'#7cdfcb':'#8a9a9d';$('clock').textContent=`${Math.floor(o.t_s/60).toString().padStart(2,'0')}:${(o.t_s%60).toFixed(2).padStart(5,'0')} / ${v.time_scale}×`;
  $('authority').textContent=v.authority.toUpperCase();$('start').disabled=v.active;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('pause').textContent=v.paused?'Resume physics':'Pause physics';$('revision').textContent=t.provenance.revision.toUpperCase();$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';
+ $('retry-bar').hidden=!(v.retry_available&&(!v.active||t.crashed));
+ $('retry-status').textContent=t.crashed?'Crash recorded · retry starts a new aircraft at A.':'Retained mission · retry preserves the pilot checkpoint.';
  $('alt').innerHTML=o.radar_clearance_m.toFixed(2)+'<small>m</small>';$('vs').innerHTML=o.gnss_velocity_mps[2].toFixed(2)+'<small>m/s</small>';$('speed').innerHTML=Math.hypot(...o.gnss_velocity_mps.slice(0,2)).toFixed(2)+'<small>m/s</small>';$('power').innerHTML=o.engine_shaft_kw.toFixed(1)+'<small>kW</small>';$('fuel').innerHTML=o.fuel_kg.reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';
  for(let i=0;i<4;i++)$('rpm-'+i).textContent=o.rotor_rpm[i].toFixed(0)+' rpm';
- for(const el of document.querySelectorAll('.controls-panel input[type=range],#feather'))el.disabled=v.authority!=='manual';
- if(v.authority==='colin'){for(let i=0;i<4;i++){$('p-'+i).value=o.collective_feedback_deg[i];$('pval-'+i).value=o.collective_feedback_deg[i].toFixed(1)+'°';for(let j=0;j<2;j++){const k=j?'y':'x';$(k+'-'+i).value=o.tilt_feedback_deg[i][j];$(k+'val-'+i).value=o.tilt_feedback_deg[i][j].toFixed(1)+'°';}}}
+ for(const el of document.querySelectorAll('.controls-panel input[type=range],#feather'))el.disabled=v.authority!=='manual'||!manualOwned;
+ for(const id of ['dep','dest','drive','gear','airframe','pilot'])$(id).disabled=v.active;
+ if(v.active){$('pilot').value=v.authority;$('scale').value=String(v.time_scale);$('drive').value=String(t.provenance.reference_rpm);$('gear').value=t.provenance.gear_variant;$('airframe').value=t.provenance.revision.endsWith('r4')?'baseline':'light';}
+ if(v.authority==='colin'||!manualOwned){const issued=v.recent_decisions.at(-1)?.issued;$('engine').value=issued?.engine??0;$('engine-value').value=Math.round((issued?.engine??0)*100)+'%';$('common').value=o.collective_feedback_deg.reduce((a,b)=>a+b,0)/4;$('common-value').value=(+$('common').value).toFixed(1)+'°';for(let i=0;i<4;i++){$('p-'+i).value=o.collective_feedback_deg[i];$('pval-'+i).value=o.collective_feedback_deg[i].toFixed(1)+'°';for(let j=0;j<2;j++){const k=j?'y':'x';$(k+'-'+i).value=o.tilt_feedback_deg[i][j];$(k+'val-'+i).value=o.tilt_feedback_deg[i][j].toFixed(1)+'°';}}}
  $('angles').textContent=o.attitude_xyz_deg.map((x,i)=>`${'XYZ'[i]} ${x.toFixed(1)}°`).join(' · ');$('horizon').style.transform=`translateY(${o.attitude_xyz_deg[1]*1.2}px) rotate(${-o.attitude_xyz_deg[0]}deg)`;
  if(t.crashed||v.error){$('consequence').hidden=false;$('consequence').textContent=v.error?'Solver stopped: '+v.error:'IMPACT RECORDED · '+(t.events[0]?.body||'aircraft')+'. Physical consequences remain active; no automatic rescue.';}else{$('consequence').hidden=true;}
  const key=v.recent_decisions.map(a=>a.sequence).join(',');if(key!==lastDecision){lastDecision=key;$('decisions').replaceChildren();for(const d of [...v.recent_decisions].reverse()){const a=document.createElement('article'),tm=document.createElement('time'),p=document.createElement('p'),code=document.createElement('code');tm.textContent=`${d.issued_t_s.toFixed(3)} s / ${d.issued.authority.toUpperCase()}`;p.textContent=d.decision;code.textContent=`Collective ${d.issued.collective_deg.join(' / ')}° · engine ${d.issued.engine}`;a.append(tm,p,code);$('decisions').appendChild(a);}}
  if(v.active&&(!track.length||Math.hypot(o.gnss_xy_m[0]-track.at(-1)[0],o.gnss_xy_m[1]-track.at(-1)[1])>.2)){track.push(o.gnss_xy_m);if(track.length>3000)track.shift();}drawMaps();if($('engineering-dialog').open)updateEngineering();
 }
-setInterval(guard(async()=>{if(!last?.active||last.authority!=='manual'||last.paused||replayFrames)return;manualBeat++;if(dirty||manualBeat%10===0){dirty=false;await api('/api/action',{...command,authority:'manual',observation_id:last.observation.observation_id,reason:'Manual operator controls and command heartbeat'});}}),50);
+setInterval(guard(async()=>{if(!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames)return;manualBeat++;if(dirty||manualBeat%10===0){dirty=false;await api('/api/action',{...command,authority:'manual',observation_id:last.observation.observation_id,reason:'Manual operator controls and command heartbeat'});}}),50);
 function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);ws.onmessage=e=>updateView(JSON.parse(e.data));ws.onclose=()=>{toast('Live connection lost; physical command lease still applies.');setTimeout(connect,2000);};}
 api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
 function animate(){requestAnimationFrame(animate);const now=performance.now();if(now-lastFrameMs<80)return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
+ if(truth)loadAirframe(truth.provenance.render_asset||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb'));
  if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);}for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
   const base=truth.body_poses.airframe,posArray=base.position;pos.set(posArray[0],posArray[1],posArray[2]+1.5);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);}
-  if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(0,-.18,.05).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));cameraTarget.copy(camera.position).add(new THREE.Vector3(0,-1,.02).applyQuaternion(q));camera.lookAt(cameraTarget);}else{camera.up.set(0,0,1);orbit.update();}
+  if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));cameraTarget.copy(camera.position).add(new THREE.Vector3(0,-1,-.04).applyQuaternion(q));camera.lookAt(cameraTarget);}else{camera.up.set(0,0,1);orbit.update();}
   sun.target.position.copy(pos);sun.position.copy(pos).add(new THREE.Vector3(-70,-90,140));
  }
- if(!window.__vtxNoRender)renderer.render(scene,camera);
+ if(model&&!window.__vtxNoRender)renderer.render(scene,camera);
 }animate();

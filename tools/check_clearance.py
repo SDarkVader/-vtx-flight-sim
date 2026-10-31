@@ -49,6 +49,6 @@ for i in range(1,5):
                         if hits:
                             findings.append(dict(rotor=i,tilt_deg=[x,y],collective_deg=collective,spin_deg=spin,blade=p['id'],against='nacelle',parts=sorted({fixed_ids[b] for a,b in hits})))
 out=dict(revision=j['revision'],status='SAMPLED_TRIANGLE_INTERSECTION_AUDIT',checks=checks,findings=findings,
-         coverage='4 rotors × 9 gimbal poses × 3 collectives × 12 spin angles × 4 blades. Not a continuous sweep or strength proof.')
+         coverage='4 rotors × 9 gimbal poses × 4 collectives × 12 spin angles × 4 blades. Not a continuous sweep or strength proof.')
 (ROOT/'evidence/clearance_audit.json').write_text(json.dumps(out,indent=2))
 print('CLEARANCE_AUDIT',checks,'checks',len(findings),'intersection configurations')

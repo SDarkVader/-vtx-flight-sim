@@ -2,7 +2,9 @@
 
 **Independent private repository for Vader's Taxis VTX flight simulation.** Not related to The Node.
 
-**Current state:** repository scaffolding only. A fully coupled, interactive 3D flight simulator does not yet exist, and no VTX flightworthiness or calibrated stability result is claimed.
+**Current state:** recovered P0-V4 assembly, conditional multibody physics and a live interactive Stage 1 flight laboratory. Actual Colin control attempts include a failed takeoff and an airborne collision; no controlled A-to-B landing or real VTX flightworthiness is claimed.
+
+[Open the live laboratory](https://sb-6iqplfebw9l2.vercel.run) · [Run locally and use keyboard controls](docs/LIVE_ACCESS.md) · [Engineering and flight findings](evidence/EXPERIMENT_REPORT.md). Hosting is a temporary, resumable Vercel Sandbox. Keyboard controls open in a closable pop-up; crash retries retain the failed run and pilot checkpoint. R4 and the experimental lighter R5 underside are selectable.
 
 ## Non-negotiable: Colin flies by wire
 
@@ -10,7 +12,7 @@
 
 ## Required physics and source register
 
-[PHYSICS_AND_RESEARCH_BASELINE.md](docs/PHYSICS_AND_RESEARCH_BASELINE.md) is the authoritative engineering baseline. Current published repository has design requirements and physics research only; it does **not** yet contain the complete starter source or validated executable aircraft. No flight or unit-test results have been independently verified on GitHub.
+[PHYSICS_AND_RESEARCH_BASELINE.md](docs/PHYSICS_AND_RESEARCH_BASELINE.md) is the authoritative engineering baseline. The verified handoff source, original tests and historical PDFs are imported. The exact current Blendstra source and derivative component ledgers are retained. Independent conservation/mechanical checks and actual live attempts are recorded, with unresolved mass, aerodynamic and structural calibration explicit in [the experiment report](evidence/EXPERIMENT_REPORT.md). The executable model is conditional, not a validated physical aircraft.
 
 ## Primary engineering reference
 
@@ -30,4 +32,4 @@ Use explicitly synthetic fixtures where VTX calibration is missing. Real CG/iner
 
 Acceptance: live playable browser preview; arbitrary map-valid A-to-B physics-driven takeoff-to-land attempt; independently commanded 4 rotors; deterministic success AND failure cases; complete telemetry, seeds, parameter provenance, scenario traces, learning checkpoints and test evidence. Preserve all source art/model provenance. Work independently and deliver reviewable PR and exact run commands.
 
-See `COLIN_MISSION.md` for the execution contract. The user's earlier full starter package (`vtx-flight-sim-map-missions.zip` and Git bundle) is still the source for the existing 31 numerical and mission-selection tests; **those local files have not yet been fully imported into this remote repository**.
+See `COLIN_MISSION.md` for the execution contract. The verified `VTX_COLIN_ENGINEERING_HANDOFF.zip` supplied the starter snapshot and all 31 original tests. Its older instruction files remain archived and did not overwrite the current GitHub contracts. The earlier Git bundle/history at e768250 was not in the handoff; this provenance gap does not prevent running the imported snapshot.

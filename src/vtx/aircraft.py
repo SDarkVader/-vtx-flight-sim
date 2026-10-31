@@ -72,7 +72,8 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
             a=np.array(info['centroid_m']);a[2]=0;a/=np.linalg.norm(a)
             ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis=fmt(a),limited='false')
         elif name.startswith('gear'):
-            effective_mass=(ledger['empty']['mass_kg']+170+fuel_kg)/6
+            # Same physical gear hardware across loading/lightening studies.
+            effective_mass=ledger.get('gear_design_reference_mass_kg',ledger['empty']['mass_kg']+170+60)/6
             stiffness=effective_mass*G/(.25/4)
             ratio=.55 if gear_variant=='baseline' else 1.
             damping=2*ratio*math.sqrt(stiffness*effective_mass)
@@ -150,8 +151,10 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
 
 
 class Aircraft:
-    def __init__(self,world=None,gear_variant='baseline',rpm=800.,fuel_kg=60.):
-        self.ledger=json.loads(LEDGER_PATH.read_text())
+    def __init__(self,world=None,gear_variant='baseline',rpm=800.,fuel_kg=60.,airframe_variant='light'):
+        ledger_path=ROOT/'evidence/source/airframe_ledger_r4.json' if airframe_variant=='baseline' else LEDGER_PATH
+        self.ledger=json.loads(ledger_path.read_text())
+        self.airframe_variant=airframe_variant
         self.world=world or TestWorld()
         self.gear_variant=gear_variant;self.reference_rpm=float(rpm)
         self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm)
@@ -174,11 +177,12 @@ class Aircraft:
         self.events=[];self.flags=set();self.crashed=False;self.max_alt=0.;self.max_impact_n=0.
         self.step_count=0;self.last_mass_update=0.;self.last_collision=None
         self.provenance={
-            'revision':self.ledger['revision'],'ledger_sha256':hashlib.sha256(LEDGER_PATH.read_bytes()).hexdigest(),
+            'revision':self.ledger['revision'],'ledger_sha256':hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
+            'airframe_variant':airframe_variant,'render_asset':'/assets/airframe-r4.glb' if airframe_variant=='baseline' else '/assets/airframe-live.glb',
             'physics':'MuJoCo '+mj.__version__,'dt_s':DT,'aero_rate_hz':100,
             'gear_variant':gear_variant,'reference_rpm':rpm,'model_xml_sha256':hashlib.sha256(self.xml.encode()).hexdigest(),
             'status':'CALIBRATION_BLOCKED — conditional engineering experiment',
-            'hypotheses':dict(mass_distribution='uniform subsystem surface density',
+            'hypotheses':dict(mass_distribution=self.ledger['allocation_method'],
                 polar='2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2',
                 nacelle_torque_limit_nm=1100.,nacelle_command_rate_deg_s=20.,
                 pitch_rate_deg_s=12.,pitch_lag_s=.15,engine_spool_s=2.,
@@ -211,7 +215,8 @@ class Aircraft:
         # Local position servo only: no airframe attitude/altitude feedback.
         # Ten local servos share a provisional 5 kW engine-driven supply. With
         # no running engine there is no invented battery/actuator energy.
-        cap=min(limit*self.engine_spool,500*self.engine_spool/max(abs(v),.1))
+        supply=self.engine_spool if self.fuel.sum()>.001 else 0.
+        cap=min(limit*supply,500*supply/max(abs(v),.1))
         torque=float(np.clip(4200*(target-q)-260*v,-cap,cap))
         self.data.qfrc_applied[self.vadr[name]]+=torque
         return abs(torque*v)
@@ -242,7 +247,8 @@ class Aircraft:
         wanted=np.linalg.norm(rx@ry@tip-base)
         tid=mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_TENDON,f'ema{i}_{index}')
         speed=self.data.ten_velocity[tid]
-        cap=min(4622*self.engine_spool,500*self.engine_spool/max(abs(speed),.01))
+        supply=self.engine_spool if self.fuel.sum()>.001 else 0.
+        cap=min(4622*supply,500*supply/max(abs(speed),.01))
         force=float(np.clip(67200*(wanted-self.data.ten_length[tid])-4160*speed,-cap,cap))
         # MuJoCo 3.17 stores tendon Jacobians in CSR even when the constraint
         # solver uses dense Jacobians; structure belongs to the model.

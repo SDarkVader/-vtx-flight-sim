@@ -6,13 +6,17 @@ JSON schema and HTTP endpoint as the human interface. No step/pose API exists.
 import argparse
 import json
 import urllib.request
+import urllib.error
+import os
 
-URL='http://127.0.0.1:8765'
+URL=os.environ.get('VTX_LAB_URL','http://127.0.0.1:8765').rstrip('/')
 
 def request(path,payload=None):
     req=urllib.request.Request(URL+path,data=None if payload is None else json.dumps(payload).encode(),
                                headers={'Content-Type':'application/json'})
-    return json.load(urllib.request.urlopen(req,timeout=15))
+    try:return json.load(urllib.request.urlopen(req,timeout=15))
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f'HTTP {e.code}: {e.read().decode()}')
 
 ap=argparse.ArgumentParser(description=__doc__)
 sub=ap.add_subparsers(dest='mode',required=True)

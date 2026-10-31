@@ -21,7 +21,9 @@ objects = list(bpy.data.objects)
 byname = {o.name:o for o in objects}
 mechanism=json.loads((ROOT/'inputs/live_mechanism.json').read_text())
 repairs=[]
-revision=1 if '--baseline' in sys.argv else (2 if '--r2' in sys.argv else (3 if '--r3' in sys.argv else 4))
+revision=1 if '--baseline' in sys.argv else (2 if '--r2' in sys.argv else (3 if '--r3' in sys.argv else (4 if '--r4' in sys.argv else 5)))
+baseline_r4=json.loads((ROOT/'evidence/source/airframe_ledger_r4.json').read_text()) if revision>=5 else None
+baseline_parts={p['id']:p for p in baseline_r4['parts']} if baseline_r4 else {}
 repair_objects=objects if revision>=2 else []
 previous_gear_area=None
 previous_gear_path=ROOT/'evidence/source/r2_gear_area.json'
@@ -148,6 +150,10 @@ parts=[]; excluded=[]; source_meshes={}; blade_geometry=[]
 for o in objects:
     if o.type!='MESH':continue
     sys=subsystem(o)
+    if revision>=5 and sys=='P06' and o.name.startswith('P06 | F'):
+        excluded.append({'name':o.name,'id':o.get('blendstra_id'),'reason':'R5 experimental retirement of legacy box-spar module; newer triangulated primary frame retained',
+                         'removed_allocation_kg':baseline_parts[o.get('blendstra_id')]['mass_kg']})
+        continue
     if sys is None or 'wake' in o.name.lower():
         excluded.append({'name':o.name,'reason':'nonmechanical presentation/wake geometry'})
         continue
@@ -216,8 +222,10 @@ for sys,mass in alloc.items():
     sub=[p for p in parts if p['subsystem']==sys]
     area=sum(p['area_m2'] for p in sub)
     for p in sub:
-        p['mass_kg']=mass*p['area_m2']/area
+        p['mass_kg']=baseline_parts[p['id']]['mass_kg'] if baseline_r4 else mass*p['area_m2']/area
         p['inertia_centroid_kg_m2']=(p['mass_kg']*np.array(p['inertia_per_kg_m2'])).tolist()
+if baseline_r4:
+    alloc={s:sum(p['mass_kg'] for p in parts if p['subsystem']==s) for s in alloc}
 
 def aggregate(items):
     mass=sum(p['mass_kg'] for p in items)
@@ -234,13 +242,15 @@ tanks=[dict(id=p['id'],centroid_m=p['centroid_m'],axis=byname[p['name']].matrix_
 for t in tanks:t['axis']=list(t['axis'])
 ledger=dict(source_sha256='2db9abd64ba9b7078e6e539ba4c6b9177e58e335a085a8ea213b5ffa6e987e35',
             revision=f'P0-V4A-assembly-r{revision}',frame='world/body +Z up; +X east, +Y north; source cabin faces -Y',
-            allocation_method='Uniform areal density within each V4 subsystem; exact surface triangle moments. NOT measured mass.',
+            allocation_method=('R4 per-part allocated masses preserved; 32 legacy P06 box-spar parts removed; exact retained surface triangle moments. NOT measured mass.' if baseline_r4 else 'Uniform areal density within each V4 subsystem; exact surface triangle moments. NOT measured mass.'),
             subsystem_allocations_kg=alloc,parts=parts,excluded=excluded,bodies=bodies,
             empty=aggregate(parts),rotor_pivots_m=[groups[f'rotor{i}'].tolist() for i in range(1,5)],
             nacelle_pivots_m=[p.tolist() for p in pivots],
             blade=blade_geometry,tanks=tanks,gear_stroke_target_m=.25,
             fuel_inner_radius_m=.18,fuel_inner_length_m=.48,assembly_repairs=repairs,
-            mechanism=mechanism)
+            mechanism=mechanism,
+            gear_design_reference_mass_kg=(baseline_r4['empty']['mass_kg'] if baseline_r4 else aggregate(parts)['mass_kg'])+170+60,
+            lightening_status='R5 legacy box spars retired; primary trusses/rings, drive, tanks and gear retained. Structural strength remains unverified.' if baseline_r4 else None)
 (ROOT/'evidence/source/airframe_ledger.json').write_text(json.dumps(ledger,indent=2))
 (ROOT/'evidence/source/assembly_repairs.json').write_text(json.dumps(repairs,indent=2))
 

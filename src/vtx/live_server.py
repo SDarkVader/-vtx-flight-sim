@@ -59,6 +59,7 @@ class Mission(BaseModel):
     time_scale:float=Field(default=1.,ge=.01,le=1)
     reference_rpm:float=800.
     gear_variant:str='baseline'
+    airframe_variant:str='light'
     label:str='user selected mission'
     @field_validator('departure','destination')
     @classmethod
@@ -80,6 +81,11 @@ class Mission(BaseModel):
     def gear(cls,v):
         if v not in ['baseline','critical-damping-proposal']:raise ValueError('Unknown reviewed gear model')
         return v
+    @field_validator('airframe_variant')
+    @classmethod
+    def airframe(cls,v):
+        if v not in ['baseline','light']:raise ValueError('Unknown airframe revision')
+        return v
 
 
 class Laboratory:
@@ -89,10 +95,18 @@ class Laboratory:
         self.mission=None;self.action_log=[];self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
-        self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None
+        self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
+        self.retry_hint=None
         self.memory_path=ROOT/'pilot/colin-memory.json'
         self.memory_path.parent.mkdir(exist_ok=True)
         if not self.memory_path.exists():self.memory_path.write_text(json.dumps(dict(schema_version=1,pilot='Colin',experience_count=0,lessons=[],aircraft_familiarity='cold start; no VTX-specific solution',stage2_accessed=False,history=[]),indent=2))
+        completed=sorted((ROOT/'evidence/flights').glob('*/summary.json'))
+        if completed:
+            last=json.loads(completed[-1].read_text())
+            meta_path=completed[-1].parent/'metadata.json'
+            if meta_path.exists():
+                self.retry_hint=dict(run_id=last['run_id'],mission=last['mission'],request=json.loads(meta_path.read_text())['request'])
+                self.end_summary={k:v for k,v in last.items() if k!='final'}
 
     def log(self,kind,payload):
         if self.audit_file:
@@ -123,7 +137,9 @@ class Laboratory:
             tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
             fuel_kg=np.round(p.fuel,4).tolist(),engine_shaft_kw=round(p.power['engine_w']/1000,2),
-            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else []),
+            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=.001 else []),
+            configuration=dict(airframe_revision=p.ledger['revision'],reference_rpm=p.reference_rpm,gear_variant=p.gear_variant),
+            scheduler_backlog_s=round(self.clock_lag_s,3),
             mission=self.mission,authority=self.authority,active=self.active,paused=self.paused,
             time_scale=self.time_scale,
             sensor_status='Provisional sensor models: GNSS/baro/IMU/shaft/angle/fuel/gear transducers; no certified sensor integration')
@@ -135,7 +151,7 @@ class Laboratory:
     def start(self,request:Mission):
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
-        self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm)
+        self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,airframe_variant=request.airframe_variant)
         self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
         self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
@@ -148,9 +164,13 @@ class Laboratory:
         self.last_obs=None;self.obs_id=0;self.last_sensor_t=-1.;self.last_audit_t=-1.;self.observations={}
         self.settled_s=0.;self.left_ground=False;self.error=None;self.end_summary=None
         self.sensor_rng=np.random.default_rng(self.world.seed)
-        commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+        try:commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True,stderr=subprocess.DEVNULL).strip()
+        except (subprocess.CalledProcessError,FileNotFoundError):
+            pin=ROOT/'BUILD_COMMIT'
+            commit=pin.read_text().strip() if pin.exists() else 'UNKNOWN_BUILD_COMMIT'
         meta=dict(run_id=self.run_id,mission=self.mission,operator=request.authority,request=request.model_dump(),
                   airframe=self.aircraft.provenance,software_commit=commit,
+                  runtime_source_sha256=hashlib.sha256(b''.join(p.read_bytes() for p in sorted((ROOT/'src/vtx').glob('*.py')))).hexdigest(),
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
                   controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; no attitude stabilization')
@@ -211,7 +231,24 @@ class Laboratory:
         self.log('sortie_end',summary)
         (self.log_path/'summary.json').write_text(json.dumps(summary,indent=2));self.audit_file.close();self.audit_file=None
         self.end_summary={k:v for k,v in summary.items() if k!='final'}
+        self.retry_hint=dict(run_id=self.run_id,mission=self.mission,request=json.loads((self.log_path/'metadata.json').read_text())['request'])
         return self.end_summary
+
+    def retry(self,request):
+        """Explicit new sortie. Preserve the failed run and the learned state."""
+        if self.active:
+            if not self.aircraft.crashed:raise HTTPException(409,'Current sortie has no recorded crash; end it before starting another')
+            self.stop('User requested retry after crash; failed sortie archived')
+        hint=self.retry_hint
+        if not hint:raise HTTPException(409,'No retained mission to retry')
+        old=hint['request']
+        m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
+                  authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
+                  reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
+                  airframe_variant=request.get('airframe_variant','light'),label='Explicit retry of '+hint['run_id'])
+        result=self.start(m)
+        self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant))
+        return result
 
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
@@ -219,16 +256,19 @@ class Laboratory:
                     clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
                     rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,
                     recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
-                    end_summary=self.end_summary)
+                    end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
 
 lab=Laboratory()
 
 async def physical_clock():
-    last=time.monotonic();accum=0.;seen_run=None
+    last=time.monotonic();accum=0.;seen_run=None;seen_epoch=lab.clock_epoch
     while True:
         await asyncio.sleep(.005)
         now=time.monotonic();delta=now-last;last=now
         if not lab.active or lab.paused:accum=0.;continue
+        if seen_epoch!=lab.clock_epoch:
+            lab.log('scheduler_clock_rebase',dict(unintegrated_backlog_s=accum,time_scale=lab.time_scale,reason='Explicit operator clock change; no physical state reset'))
+            seen_epoch=lab.clock_epoch;accum=0.;continue
         if seen_run!=lab.run_id:
             seen_run=lab.run_id;accum=0.;continue
         accum+=delta*lab.time_scale
@@ -265,20 +305,28 @@ async def mission(request:Mission):
     try:return lab.start(request)
     except ValueError as e:raise HTTPException(422,str(e))
 @app.post('/api/action')
-async def action(a:Action):return lab.accept_action(a)
+async def action(a:Action):
+    try:return lab.accept_action(a)
+    except HTTPException as e:
+        lab.log('rejected_pilot_action',dict(request=a.model_dump(),reason=e.detail))
+        raise
 @app.post('/api/stop')
 async def stop(request:dict):return lab.stop(str(request.get('reason','Operator ended sortie')))
+@app.post('/api/retry')
+async def retry(request:dict):
+    try:return lab.retry(request)
+    except ValueError as e:raise HTTPException(422,str(e))
 @app.post('/api/operator')
 async def operator(request:dict):
     if 'authority' in request:
         if request['authority'] not in ['manual','colin']:raise HTTPException(422,'Unknown authority')
         lab.log('authority_change',dict(before=lab.authority,after=request['authority']));lab.authority=request['authority']
     if 'paused' in request:
-        lab.paused=bool(request['paused']);lab.log('explicit_operator_pause',dict(paused=lab.paused))
+        lab.paused=bool(request['paused']);lab.clock_epoch+=1;lab.log('explicit_operator_pause',dict(paused=lab.paused))
     if 'time_scale' in request:
         value=float(request['time_scale'])
         if not .01<=value<=1 or not math.isfinite(value):raise HTTPException(422,'Time scale must be .01–1')
-        lab.time_scale=value;lab.log('clock_scale',dict(time_scale=value))
+        lab.time_scale=value;lab.clock_epoch+=1;lab.log('clock_scale',dict(time_scale=value))
     return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale)
 @app.get('/api/memory')
 async def memory():return json.loads(lab.memory_path.read_text())

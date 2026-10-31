@@ -1,9 +1,36 @@
 {
   "schema_version": 1,
   "pilot": "Colin",
-  "experience_count": 0,
-  "lessons": [],
-  "aircraft_familiarity": "cold start; no VTX-specific solution",
+  "experience_count": 2,
+  "lessons": [
+    {
+      "run_id": "20261031T060411-29e1d6",
+      "lesson": "The first live attempt remained gear-supported at about 773 rpm and 20 degrees collective. I also twice exceeded the 5 simulated-second command lease, then tried to use a stale observation and the action was rejected. Future decisions must renew controls early, use a slower explicit clock when reasoning is delayed, and cite a fresh observation. Collective demand and shaft speed alone do not guarantee takeoff.",
+      "wall_utc": "2026-10-31T06:11:24.342623+00:00",
+      "basis": [
+        "20261031T060411-29e1d6 observations 69, 180, 329; decisions 1\u20133; rejected stale-observation feather request"
+      ]
+    },
+    {
+      "run_id": "20261031T062325-eb8ab0",
+      "lesson": "On the proprietor-selected mission, low collective at about 1181 rpm unloaded the gear. At 20 degrees, an X-bank tendency appeared before full release. I reacted too late; the requested north/south correction was rejected as stale, and the craft rolled steeply and impacted. Recovery commands caused strong cross-axis rotation and tilt saturation. I must trim from measured response before leaving ground support, use body-frame rates after heading changes, and stop escalating commands when actuator feedback no longer follows targets. A clock-scale change also needs scheduler rebasing; 0.02x with a low-latency control transport is necessary for this pilot. This was a crash, not a completed A-to-B flight.",
+      "wall_utc": "2026-10-31T06:46:26.940363+00:00",
+      "basis": [
+        "20261031T062325-eb8ab0",
+        "observations 3174, 3203, 3261, 3288, 3308, 3333, 3358, 3414; actual decisions and rejected inputs"
+      ]
+    }
+  ],
+  "aircraft_familiarity": "Explicit lessons from logged live decisions; no automatic policy or environment map",
   "stage2_accessed": false,
-  "history": []
+  "history": [
+    {
+      "run_id": "20261031T060411-29e1d6",
+      "checkpoint": 1
+    },
+    {
+      "run_id": "20261031T062325-eb8ab0",
+      "checkpoint": 2
+    }
+  ]
 }

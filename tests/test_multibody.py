@@ -34,8 +34,26 @@ def test_source_allocation_and_positive_full_tensors():
     for b in j['bodies'].values():
         i=np.array(b['inertia_centroid_kg_m2']);assert np.linalg.eigvalsh(i).min()>0
         assert np.allclose(i,i.T)
-    assert len(j['parts'])==763 and len(j['excluded'])==32
-    assert len({s['id'] for s in j['parts']})==763
+    assert len(j['parts'])+len(j['excluded'])==795
+    assert len({s['id'] for s in j['parts']})==len(j['parts'])
+
+def test_underside_removal_preserves_retained_mass_and_hardware():
+    full=Aircraft(airframe_variant='baseline');light=Aircraft(airframe_variant='light')
+    original={p['id']:p for p in full.ledger['parts']}
+    retired=[p for p in light.ledger['excluded'] if 'removed_allocation_kg' in p]
+    assert len(retired)==32
+    removed=sum(p['removed_allocation_kg'] for p in retired)
+    assert full.model.body_mass.sum()-light.model.body_mass.sum()==pytest.approx(removed)
+    assert removed==pytest.approx(32.72015015345063)
+    for p in light.ledger['parts']:
+        assert p['mass_kg']==original[p['id']]['mass_kg']
+    for subsystem in ['P03','P07','P10']:
+        assert light.ledger['subsystem_allocations_kg'][subsystem]==pytest.approx(full.ledger['subsystem_allocations_kg'][subsystem])
+    for i in range(1,7):
+        a,b=full.jids[f'gear{i}_stroke'],light.jids[f'gear{i}_stroke']
+        assert full.model.jnt_stiffness[a]==pytest.approx(light.model.jnt_stiffness[b])
+        assert full.model.dof_damping[full.vadr[f'gear{i}_stroke']]==pytest.approx(light.model.dof_damping[light.vadr[f'gear{i}_stroke']])
+    assert len(light.ledger['tanks'])==4
 
 def test_no_initial_interpenetration_and_full_gear_clearance():
     p=Aircraft();p.spawn(13.7,-28.4,0)
@@ -154,6 +172,14 @@ def test_fuel_recomputes_mass_and_inertia_and_obeys_power_accounting():
     assert used==pytest.approx(p.energy['engine_j']/3.6e6*.4,abs=1e-10)
     assert p.mass_properties()['mass_kg']<initial['mass_kg']
     assert not np.allclose(p.mass_properties()['inertia_world_kg_m2'],initial['inertia_world_kg_m2'])
+
+def test_empty_fuel_cannot_supply_engine_or_servo_work():
+    p=Aircraft();p.spawn(0,0,30);p.fuel[:]=0;p.engine_spool=1
+    p.command['engine']=1;p.command['tilt_deg']=[[20,20]]*4
+    p.data.qvel[p.vadr['nacelle1_x']]=1
+    p.step()
+    assert p.power['engine_w']==0 and p.power['servo_w']==0
+    assert p.power['fuel_chemical_w']==0
 
 @pytest.mark.parametrize('point',[(13.7,-28.4),(-42.5,78.1),(-73.13,-102.7),(150.,-95.)])
 def test_arbitrary_world_support_including_roofs(point):
