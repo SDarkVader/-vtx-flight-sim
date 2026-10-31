@@ -35,7 +35,7 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
     xml=ET.Element('mujoco',model='VTX-P0-V4A-experimental')
     ET.SubElement(xml,'compiler',angle='radian',autolimits='true',inertiafromgeom='false',fusestatic='false')
     ET.SubElement(xml,'option',timestep=str(DT),gravity=f'0 0 {-G}',integrator='implicitfast',
-                  solver='Newton',iterations='50',tolerance='1e-10',cone='elliptic')
+                  solver='Newton',iterations='50',tolerance='1e-10',cone='elliptic',jacobian='dense')
     size=ET.SubElement(xml,'size',njmax='4000',nconmax='2000')
     default=ET.SubElement(xml,'default')
     ET.SubElement(default,'geom',friction='.75 .005 .0001',condim='4',solref='.008 1',solimp='.98 .999 .001',density='0',margin='.001')
@@ -56,7 +56,7 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
         if name=='airframe':continue
         parent=air;relative=pivots[name]
         if name.startswith('rotor'):
-            parent=bodies['nacelle'+name[-1]];relative=np.zeros(3)
+            parent=bodies['nacelle'+name[-1]];relative=pivots[name]-pivots['nacelle'+name[-1]]
         b=ET.SubElement(parent,'body',name=name,pos=fmt(relative))
         bodies[name]=b
         inertial(b,info,pivots[name])
@@ -72,7 +72,7 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
             a=np.array(info['centroid_m']);a[2]=0;a/=np.linalg.norm(a)
             ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis=fmt(a),limited='false')
         elif name.startswith('gear'):
-            effective_mass=(843+170+fuel_kg)/6
+            effective_mass=(ledger['empty']['mass_kg']+170+fuel_kg)/6
             stiffness=effective_mass*G/(.25/4)
             ratio=.55 if gear_variant=='baseline' else 1.
             damping=2*ratio*math.sqrt(stiffness*effective_mass)
@@ -122,12 +122,23 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
     ET.SubElement(bodies['cabin'],'geom',name='cabin_shell',type='sphere',pos='0 0 0',size='.95',contype='2',conaffinity='1')
     for i in range(1,5):
         ET.SubElement(bodies[f'rotor{i}'],'geom',name=f'rotor_disk{i}',type='cylinder',size=fmt([ledger['blade']['radius_m'],.044]),contype='2',conaffinity='1',friction='.8 .04 .001')
+    tendons=ET.SubElement(xml,'tendon')
+    for i in range(1,5):
+        pivot=pivots[f'nacelle{i}']
+        for index in range(2):
+            mount=ledger['mechanism']['nacelle_actuators'][index]
+            tip=np.array(mount['tip_m']);base=np.array(mount['root_m'])
+            root_site=f'ema{i}_{index}_root';tip_site=f'ema{i}_{index}_tip'
+            ET.SubElement(air,'site',name=root_site,pos=fmt(pivot+base),size='.01')
+            ET.SubElement(bodies[f'nacelle{i}'],'site',name=tip_site,pos=fmt(tip),size='.01')
+            tendon=ET.SubElement(tendons,'spatial',name=f'ema{i}_{index}',width='.01')
+            ET.SubElement(tendon,'site',site=root_site);ET.SubElement(tendon,'site',site=tip_site)
     eq=ET.SubElement(xml,'equality')
     senses=[1,-1,1,-1]
     for i in range(2,5):
         ET.SubElement(eq,'joint',name=f'branch{i}',joint1=f'rotor{i}_spin',joint2='rotor1_spin',polycoef=fmt([0,senses[i-1],0,0,0]),solref='.003 1')
     for i in range(1,5):
-        ET.SubElement(eq,'joint',name=f'highspeed_branch{i}',joint1=f'shaft{i}_spin',joint2='rotor1_spin',polycoef=fmt([0,7.52*senses[i-1],0,0,0]),solref='.003 1')
+        ET.SubElement(eq,'joint',name=f'highspeed_branch{i}',joint1=f'shaft{i}_spin',joint2='rotor1_spin',polycoef=fmt([0,6016/rpm*senses[i-1],0,0,0]),solref='.003 1')
     sensor=ET.SubElement(xml,'sensor')
     ET.SubElement(sensor,'subtreeangmom',name='total_H',body='airframe')
     ET.SubElement(sensor,'subtreelinvel',name='total_v',body='airframe')
@@ -172,7 +183,7 @@ class Aircraft:
                 nacelle_torque_limit_nm=1100.,nacelle_command_rate_deg_s=20.,
                 pitch_rate_deg_s=12.,pitch_lag_s=.15,engine_spool_s=2.,
                 engine_continuous_w=469800.,transmission_efficiency=.95,
-                overall_ratio=7.52,rotor_spin_senses=[1,-1,1,-1],
+                overall_ratio=6016/rpm,rotor_spin_senses=[1,-1,1,-1],
                 highspeed_shaft_topology='ideal equivalent ratio; CV/tooth compliance unmodeled',
                 installed_torque_limit_nm=484700/(6016*2*math.pi/60),
                 sfc_kg_kwh=.4,fuel_density_kg_l=.8,body_CdA_m2=1.65,
@@ -185,7 +196,8 @@ class Aircraft:
     def spawn(self,x,y,z):
         """Operator mission setup ONLY, never exposed in the pilot action API."""
         mj.mj_resetData(self.model,self.data)
-        self.data.qpos[:3]=[x,y,z-.0425]
+        lowest=min(p['bounds_m'][0][2] for p in self.ledger['parts'] if 'replaceable contact foot' in p['name'])
+        self.data.qpos[:3]=[x,y,z-lowest+.01]
         self.data.qpos[3:7]=[1,0,0,0]
         mj.mj_forward(self.model,self.data)
 
@@ -216,6 +228,29 @@ class Aircraft:
             if axial<-.5*max(value['induced_mps'],1):self.flags.add('DESCENDING_WAKE_UNCALIBRATED')
             self.rotors[i]={k:v*self.integrity[i] if k in ['thrust_n','torque_nm'] else v for k,v in value.items()}
 
+    def linear_actuator(self,i,index,angles):
+        """Local EMA position servo applies equal/opposite forces at real anchors.
+
+        Spatial-tendon Jacobians distribute the physical force through both
+        bodies. These are not direct body torques or a flight attitude loop.
+        """
+        ax,ay=angles
+        rx=np.array([[1,0,0],[0,math.cos(ax),-math.sin(ax)],[0,math.sin(ax),math.cos(ax)]])
+        ry=np.array([[math.cos(ay),0,math.sin(ay)],[0,1,0],[-math.sin(ay),0,math.cos(ay)]])
+        mount=self.ledger['mechanism']['nacelle_actuators'][index]
+        tip=np.array(mount['tip_m']);base=np.array(mount['root_m'])
+        wanted=np.linalg.norm(rx@ry@tip-base)
+        tid=mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_TENDON,f'ema{i}_{index}')
+        speed=self.data.ten_velocity[tid]
+        cap=min(4622*self.engine_spool,500*self.engine_spool/max(abs(speed),.01))
+        force=float(np.clip(67200*(wanted-self.data.ten_length[tid])-4160*speed,-cap,cap))
+        # MuJoCo 3.17 stores tendon Jacobians in CSR even when the constraint
+        # solver uses dense Jacobians; structure belongs to the model.
+        start=int(self.model.ten_J_rowadr[tid]);count=int(self.model.ten_J_rownnz[tid])
+        cols=self.model.ten_J_colind[start:start+count]
+        self.data.qfrc_applied[cols]+=self.data.ten_J[start:start+count]*force
+        return abs(force*speed)
+
     def step(self):
         m,d=self.model,self.data
         d.qfrc_applied[:]=0.;d.xfrc_applied[:]=0.
@@ -226,7 +261,7 @@ class Aircraft:
         self.cabin_target+=np.clip(np.radians(self.command['cabin_deg'])-self.cabin_target,-math.radians(12)*DT,math.radians(12)*DT)
         servo_power=0.
         for i in range(4):
-            for j,a in enumerate('xy'):servo_power+=self.servo(f'nacelle{i+1}_{a}',self.target_angles[i,j])
+            for index in range(2):servo_power+=self.linear_actuator(i+1,index,self.target_angles[i])
         for j,a in enumerate('xy'):servo_power+=self.servo(f'cabin_{a}',self.cabin_target[j],600.)
         if self.step_count%4==0:self.refresh_aero()
         aero_power=0.
@@ -245,7 +280,8 @@ class Aircraft:
         omega=self.joint('rotor1_spin')[1]
         target=self.engine_spool*self.reference_rpm*2*math.pi/60
         # A mechanical speed governor is disclosed; it cannot command aircraft pose.
-        torque_cap=484700/(6016*2*math.pi/60)*7.52*.95*self.engine_spool
+        ratio=6016/self.reference_rpm
+        torque_cap=484700/(6016*2*math.pi/60)*ratio*.95*self.engine_spool
         power_cap=max(0.,469800*self.engine_spool-servo_power)
         torque_cap=min(torque_cap,power_cap*.95/max(abs(omega),1.))
         torque=float(np.clip(180*(target-omega),0.,torque_cap)) if self.fuel.sum()>.001 else 0.

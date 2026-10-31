@@ -1,0 +1,116 @@
+{
+  "status": "Conditional calculations and drop benches; NOT piloted flights or calibrated performance",
+  "revision": "P0-V4A-assembly-r4",
+  "mass_kg": 1079.389097757846,
+  "empty_kg": 849.389097757846,
+  "ideal_lower_bound": {
+    "weight_n": 10585.19109552698,
+    "induced_velocity_mps": 16.432599349551094,
+    "ideal_induced_power_w": 173942.2043112307
+  },
+  "polar_speed_sensitivity": [
+    {
+      "cl_max_assumed": 0.8,
+      "rpm": 800,
+      "ratio": 7.52,
+      "max_collective_deg": 24.25,
+      "four_rotor_peak_thrust_n": 4457.660369346562,
+      "shaft_power_at_peak_w": 57225.724944322596,
+      "thrust_weight_ratio": 0.4211223329950322,
+      "centrifugal_load_ratio_vs_800": 1.0,
+      "tip_mach": 0.27778690331891603
+    },
+    {
+      "cl_max_assumed": 0.8,
+      "rpm": 1200,
+      "ratio": 5.013333333333334,
+      "max_collective_deg": 24.25,
+      "four_rotor_peak_thrust_n": 10029.735831001031,
+      "shaft_power_at_peak_w": 193136.8216874797,
+      "thrust_weight_ratio": 0.9475252492361079,
+      "centrifugal_load_ratio_vs_800": 2.25,
+      "tip_mach": 0.416680354978374
+    },
+    {
+      "cl_max_assumed": 1.2,
+      "rpm": 800,
+      "ratio": 7.52,
+      "max_collective_deg": 26.75,
+      "four_rotor_peak_thrust_n": 6378.643333832767,
+      "shaft_power_at_peak_w": 96930.3006002225,
+      "thrust_weight_ratio": 0.6026006782747845,
+      "centrifugal_load_ratio_vs_800": 1.0,
+      "tip_mach": 0.27778690331891603
+    },
+    {
+      "cl_max_assumed": 1.2,
+      "rpm": 1200,
+      "ratio": 5.013333333333334,
+      "max_collective_deg": 26.75,
+      "four_rotor_peak_thrust_n": 14351.947501075403,
+      "shaft_power_at_peak_w": 327139.7645262181,
+      "thrust_weight_ratio": 1.3558515261137,
+      "centrifugal_load_ratio_vs_800": 2.25,
+      "tip_mach": 0.416680354978374
+    },
+    {
+      "cl_max_assumed": 1.6,
+      "rpm": 800,
+      "ratio": 7.52,
+      "max_collective_deg": 29.75,
+      "four_rotor_peak_thrust_n": 8028.065120223196,
+      "shaft_power_at_peak_w": 137804.71020838636,
+      "thrust_weight_ratio": 0.7584242029995701,
+      "centrifugal_load_ratio_vs_800": 1.0,
+      "tip_mach": 0.27778690331891603
+    },
+    {
+      "cl_max_assumed": 1.6,
+      "rpm": 1200,
+      "ratio": 5.013333333333334,
+      "max_collective_deg": 29.75,
+      "four_rotor_peak_thrust_n": 18063.14652044473,
+      "shaft_power_at_peak_w": 465090.896953996,
+      "thrust_weight_ratio": 1.7064544567436044,
+      "centrifugal_load_ratio_vs_800": 2.25,
+      "tip_mach": 0.416680354978374
+    }
+  ],
+  "landing_gear_comparison": [
+    {
+      "variant": "baseline",
+      "initial_drop_m": 0.2,
+      "max_contact_force_n": 6237.137443331405,
+      "underside_collision": false,
+      "final_speed_mps": 0.0005558439786394644,
+      "final_gear_compression_m": [
+        0.061027003151262665,
+        0.060956443462572764,
+        0.060930391409086335,
+        0.06097389277464504,
+        0.060884994555020916,
+        0.06091128483111996
+      ]
+    },
+    {
+      "variant": "critical-damping-proposal",
+      "initial_drop_m": 0.2,
+      "max_contact_force_n": 9703.701649665732,
+      "underside_collision": false,
+      "final_speed_mps": 0.0032343366615395284,
+      "final_gear_compression_m": [
+        0.05980822966861707,
+        0.06189058971551781,
+        0.06160119092094602,
+        0.05981914098448988,
+        0.06198718713116378,
+        0.061309774927509574
+      ]
+    }
+  ],
+  "conclusions": [
+    "800 rpm fails to support allocated weight for every listed provisional CLmax.",
+    "1200 rpm requires a different gearset and 2.25x centrifugal load; it is a proposal, not qualified hardware.",
+    "No installed engine derating, laminate/gear/CV ratings or rotor polar measurements are supplied."
+  ]
+}

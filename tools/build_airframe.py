@@ -8,6 +8,7 @@ import bpy
 import json
 import math
 import re
+import sys
 from pathlib import Path
 import numpy as np
 from mathutils import Matrix, Vector
@@ -18,13 +19,99 @@ bpy.context.view_layer.update()
 deps = bpy.context.evaluated_depsgraph_get()
 objects = list(bpy.data.objects)
 byname = {o.name:o for o in objects}
+mechanism=json.loads((ROOT/'inputs/live_mechanism.json').read_text())
+repairs=[]
+revision=1 if '--baseline' in sys.argv else (2 if '--r2' in sys.argv else (3 if '--r3' in sys.argv else 4))
+repair_objects=objects if revision>=2 else []
+previous_gear_area=None
+previous_gear_path=ROOT/'evidence/source/r2_gear_area.json'
+
+def fit_segment(o,a,b,reason):
+    """A separately recorded proposed assembly repair, never a master overwrite."""
+    a,b=Vector(a),Vector(b)
+    before=[list(row) for row in o.matrix_world]
+    local_z=[v.co.z for v in o.data.vertices]
+    span=max(local_z)-min(local_z)
+    direction=b-a
+    rotation=Vector((0,0,1)).rotation_difference(direction.normalized()).to_matrix().to_4x4()
+    matrix=Matrix.Translation((a+b)/2)@rotation@Matrix.Diagonal((1.,1.,direction.length/span,1.))
+    o.animation_data_clear()
+    o.matrix_world=matrix
+    repairs.append(dict(id=o.get('blendstra_id'),name=o.name,reason=reason,
+                        before_world_matrix=before,after_world_matrix=[list(row) for row in matrix],
+                        proposed_endpoints_m=[list(a),list(b)],status='PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE'))
+
+# R2 fixes independently verified zero-transform source defects. Keep all IDs.
+# Endpoints come from source branch outlets, nacelle pivots and gearbox bounds;
+# actuator anchor offsets are explicit new interface proposals, not recovered CAD.
+for i in range(1,5):
+    pivot=np.array(byname[f'V3 P02 | F{i} INNER vector axis Y'].matrix_world.translation)
+    if revision>=4:pivot[2]-=mechanism['bearing_below_rotor_m']
+    x,y,z=pivot
+    for o in repair_objects:
+        if f'F{i} vertical torque shaft extension' in o.name:
+            fit_segment(o,[x,y,.42],[x,y,2.07],'Connect radial branch output elevation to local gearbox input; source was at origin')
+        if f'F{i} vectoring output shaft stub' in o.name:
+            fit_segment(o,[x,y,2.16],[x,y,2.31],'Connect proposed local gearbox output to rotor bearing at measured pivot')
+        for axis_index in (1,2):
+            if f'F{i} actuator {axis_index} ' in o.name:
+                mount=mechanism['nacelle_actuators'][axis_index-1]
+                tip=pivot+np.array(mount['tip_m'])
+                base=pivot+np.array(mount['root_m'])
+                if 'compression body' in o.name:a,b=base,base+.60*(tip-base)
+                else:a,b=tip-.60*(tip-base),tip
+                fit_segment(o,a,b,'Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston')
+        match=re.search(rf'F{i} redundant digital bus ([AB]) (\d+)',o.name)
+        if match:
+            offset=-.035 if match.group(1)=='A' else .035
+            radial=pivot.copy();radial[2]=0;radial/=np.linalg.norm(radial)
+            tangent=np.array([-radial[1],radial[0],0.])
+            route=[np.array([0.,.53,.58]),radial*.85+np.array([0,0,1.14]),
+                   radial*1.75+np.array([0,0,1.14]),radial*2.4+np.array([0,0,1.85]),pivot]
+            k=int(match.group(2));a,b=route[k]+offset*tangent,route[k+1]+offset*tangent
+            fit_segment(o,a,b,'Separate and route source buses along lower frame and protected rotor support')
+for o in repair_objects:
+    if 'Short-stroke fly-by-wire yoke stem' in o.name:
+        fit_segment(o,[-.24,-.52,1.20],[-.24,-.73,1.245],'Connect source yoke base to source grip midpoint instead of origin')
+    if 'Yoke lateral grips' in o.name:
+        fit_segment(o,[-.40,-.73,1.245],[-.08,-.73,1.245],'Align source transverse yoke to the existing cushioned grips instead of origin')
+if revision>=3:
+    for o in objects:
+        if 'replaceable contact foot' in o.name:
+            before=[list(row) for row in o.matrix_world]
+            matrix=o.matrix_world.copy();matrix.translation.z-=.25;o.matrix_world=matrix
+            repairs.append(dict(id=o.get('blendstra_id'),name=o.name,reason='R3: extend gear 0.25 m so full stroke leaves ~50 mm fixed-underside clearance',before_world_matrix=before,after_world_matrix=[list(row) for row in matrix],status='PROPOSED_GEAR_EXTENSION; BUCKLING/RATINGS_UNKNOWN'))
+        if 'sliding piston and hardstop' in o.name:
+            zz=[v.co.z for v in o.data.vertices]
+            a=o.matrix_world@Vector((0,0,min(zz)));b=o.matrix_world@Vector((0,0,max(zz)))
+            if a.z>b.z:a,b=b,a
+            a.z-=.25
+            fit_segment(o,a,b,'R3: extend piston to lowered contact foot; retain upper pressure-body interface')
+if revision>=4:
+    for o in objects:
+        dz=0.
+        if any(s in o.name for s in ['fixed X bearing support ring','fixed Y ring trunnion','static trunnion boss']):dz=-.28
+        if 'pitch actuator ring' in o.name:dz=-.18
+        if 'CV joint' in o.name or 'primary trunnion load head' in o.name or 'transverse hub support' in o.name:dz=-.28
+        if dz:
+            before=[list(row) for row in o.matrix_world]
+            matrix=o.matrix_world.copy();matrix.translation.z+=dz;o.matrix_world=matrix
+            repairs.append(dict(id=o.get('blendstra_id'),name=o.name,reason='R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m',before_world_matrix=before,after_world_matrix=[list(row) for row in matrix],status='PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED'))
+        if 'PRIMARY deep-angle axial leg' in o.name or 'UPPER nacelle tie' in o.name:
+            zz=[v.co.z for v in o.data.vertices]
+            a=o.matrix_world@Vector((0,0,min(zz)));b=o.matrix_world@Vector((0,0,max(zz)))
+            if a.z>b.z:a,b=b,a
+            b.z-=.28
+            fit_segment(o,a,b,'R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor')
+bpy.context.view_layer.update()
 groups = {'airframe': np.zeros(3), 'cabin':np.array([0.,0.,1.56])}
 pivots = []
 for i in range(1,5):
     p = np.array(byname[f'V3 P02 | F{i} INNER vector axis Y'].matrix_world.translation)
+    if revision>=4:p[2]-=mechanism['bearing_below_rotor_m']
     pivots.append(p)
     groups[f'nacelle{i}'] = p
-    groups[f'rotor{i}'] = p
+    groups[f'rotor{i}'] = np.array(byname[f'V3 P02 | F{i} rotor rotation shaft (slow visual)'].matrix_world.translation)
 for i in range(1,7):
     groups[f'gear{i}'] = np.array(byname[f'V4 P10 | LANDING leg{i} replaceable contact foot'].matrix_world.translation)
 
@@ -38,6 +125,8 @@ def subsystem(o):
     return 'P'+match.group(1) if match else None
 
 def body_for(o):
+    moving_actuator=re.search(r'F(\d) actuator [12] (tensile piston|pivot clevis)',o.name)
+    if moving_actuator:return 'nacelle'+moving_actuator.group(1)
     m = re.search(r'LANDING leg(\d)',o.name)
     if m and ('contact foot' in o.name or 'sliding piston' in o.name):return 'gear'+m.group(1)
     m = re.search(r'F(\d) radial drive shaft',o.name)
@@ -116,6 +205,13 @@ for o in objects:
     ev.to_mesh_clear()
 
 alloc={o['VTX_ID']:float(o['V4_mass_allocation_kg']) for o in objects if o.get('VTX_ID')}
+gear_area=sum(p['area_m2'] for p in parts if p['subsystem']=='P10')
+if revision==2:
+    previous_gear_path.write_text(json.dumps(dict(area_m2=gear_area,allocation_kg=42.),indent=2))
+if revision>=3:
+    previous_gear_area=json.loads(previous_gear_path.read_text())['area_m2']
+    # Preserve the R2 areal mass density, including the added piston material.
+    alloc['P10']=42.*gear_area/previous_gear_area
 for sys,mass in alloc.items():
     sub=[p for p in parts if p['subsystem']==sys]
     area=sum(p['area_m2'] for p in sub)
@@ -137,13 +233,16 @@ bodies={name:dict(pivot_m=p.tolist(),**aggregate([x for x in parts if x['body']=
 tanks=[dict(id=p['id'],centroid_m=p['centroid_m'],axis=byname[p['name']].matrix_world.to_quaternion()@Vector((0,0,1))) for p in parts if 'protected fuel cell' in p['name']]
 for t in tanks:t['axis']=list(t['axis'])
 ledger=dict(source_sha256='2db9abd64ba9b7078e6e539ba4c6b9177e58e335a085a8ea213b5ffa6e987e35',
-            revision='P0-V4A-surface-allocation-r1',frame='world/body +Z up; +X east, +Y north; source cabin faces -Y',
+            revision=f'P0-V4A-assembly-r{revision}',frame='world/body +Z up; +X east, +Y north; source cabin faces -Y',
             allocation_method='Uniform areal density within each V4 subsystem; exact surface triangle moments. NOT measured mass.',
             subsystem_allocations_kg=alloc,parts=parts,excluded=excluded,bodies=bodies,
-            empty=aggregate(parts),rotor_pivots_m=[p.tolist() for p in pivots],
+            empty=aggregate(parts),rotor_pivots_m=[groups[f'rotor{i}'].tolist() for i in range(1,5)],
+            nacelle_pivots_m=[p.tolist() for p in pivots],
             blade=blade_geometry,tanks=tanks,gear_stroke_target_m=.25,
-            fuel_inner_radius_m=.18,fuel_inner_length_m=.48)
+            fuel_inner_radius_m=.18,fuel_inner_length_m=.48,assembly_repairs=repairs,
+            mechanism=mechanism)
 (ROOT/'evidence/source/airframe_ledger.json').write_text(json.dumps(ledger,indent=2))
+(ROOT/'evidence/source/assembly_repairs.json').write_text(json.dumps(repairs,indent=2))
 
 # Build a separate scene: deleting animated objects from this newer-version
 # master crashes the older local Blender. Preserve the complete source scene.
@@ -174,6 +273,11 @@ bpy.ops.export_scene.gltf(filepath=str(ROOT/'public/assets/airframe-live.glb'),
                          export_format='GLB',export_animations=False,export_yup=False,
                          export_extras=True,export_cameras=False,export_lights=False,
                          use_active_scene=True)
+derived=ROOT/'assets/derived';derived.mkdir(exist_ok=True)
+live_scene['airframe_revision']=ledger['revision']
+live_scene['mass_distribution']=ledger['allocation_method']
+live_scene['physics_definition']='src/vtx/aircraft.py; evidence/source/airframe_ledger.json'
+bpy.data.libraries.write(str(derived/'p0-v4-live.blend'),{live_scene},fake_user=True)
 print('BUILD_AIRFRAME',len(parts),'mapped parts',len(excluded),'presentation exclusions')
 print('EMPTY',ledger['empty'],'BLADE',blade_geometry)
 print('BODIES',[(k,round(v['mass_kg'],3)) for k,v in bodies.items()])

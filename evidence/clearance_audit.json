@@ -1,0 +1,7 @@
+{
+  "revision": "P0-V4A-assembly-r4",
+  "status": "SAMPLED_TRIANGLE_INTERSECTION_AUDIT",
+  "checks": 6912,
+  "findings": [],
+  "coverage": "4 rotors \u00d7 9 gimbal poses \u00d7 3 collectives \u00d7 12 spin angles \u00d7 4 blades. Not a continuous sweep or strength proof."
+}

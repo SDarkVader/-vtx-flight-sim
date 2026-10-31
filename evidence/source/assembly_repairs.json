@@ -1,0 +1,8598 @@
+[
+  {
+    "id": "14a7b8bc-81d7-4609-96e8-6570f0b78cfb",
+    "name": "V3 P03 | F1 vectoring output shaft stub",
+    "reason": "Connect proposed local gearbox output to rotor bearing at measured pivot",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.9999983906745911,
+        2.2350001335144043
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.5999999046325684,
+        0.0,
+        2.1600000858306885
+      ],
+      [
+        2.5999999046325684,
+        0.0,
+        2.309999942779541
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "421cf512-8eb4-411c-bb1c-ef6f1613ba09",
+    "name": "V3 P03 | F1 vertical torque shaft extension",
+    "reason": "Connect radial branch output elevation to local gearbox input; source was at origin",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        2.2602739334106445,
+        1.2450000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.5999999046325684,
+        0.0,
+        0.41999998688697815
+      ],
+      [
+        2.5999999046325684,
+        0.0,
+        2.069999933242798
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "ae992f10-2488-45c2-a3d3-51e64c5731e8",
+    "name": "V3 P06 | F1 actuator 1 compression body",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.9486833214759827,
+        -0.17797324061393738,
+        0.3199999928474426
+      ],
+      [
+        0.0,
+        0.31622767448425293,
+        0.5339198708534241,
+        1.9399999380111694
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.5999999046325684,
+        0.3499999940395355,
+        1.8499999046325684
+      ],
+      [
+        2.5999999046325684,
+        0.28999999165534973,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "fbc3b705-f2d6-42dd-bb7b-400e5e06c499",
+    "name": "V3 P06 | F1 actuator 1 pivot clevis",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.20499999821186066
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.9486832618713379,
+        -0.5172414183616638,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        0.31622785329818726,
+        1.5517237186431885,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.5999999046325684,
+        0.3100000023841858,
+        1.96999990940094
+      ],
+      [
+        2.5999999046325684,
+        0.25,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "4ce039b0-f325-4343-9466-c38e32eca886",
+    "name": "V3 P06 | F1 actuator 1 tensile piston",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.9486832618713379,
+        -0.17797324061393738,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        0.31622785329818726,
+        0.5339195728302002,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.5999999046325684,
+        0.3100000023841858,
+        1.96999990940094
+      ],
+      [
+        2.5999999046325684,
+        0.25,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "32c88c58-eb7d-4801-be9c-e15291ba6dd6",
+    "name": "V3 P06 | F1 actuator 2 compression body",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486834406852722,
+        0.0,
+        -0.17797306180000305,
+        2.919999837875366
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.31622740626335144,
+        0.0,
+        0.5339198708534241,
+        1.9399999380111694
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.9499998092651367,
+        0.0,
+        1.8499999046325684
+      ],
+      [
+        2.8899998664855957,
+        0.0,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "7a49c9d9-0a28-48b6-a20b-64e966465003",
+    "name": "V3 P06 | F1 actuator 2 pivot clevis",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.20499999821186066
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486833810806274,
+        0.0,
+        -0.5172408819198608,
+        2.879999876022339
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.3162275552749634,
+        0.0,
+        1.5517237186431885,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.9099998474121094,
+        0.0,
+        1.96999990940094
+      ],
+      [
+        2.8499999046325684,
+        0.0,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "680e8c2f-0645-48fe-96a9-694bb095c1ff",
+    "name": "V3 P06 | F1 actuator 2 tensile piston",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486833810806274,
+        0.0,
+        -0.17797304689884186,
+        2.879999876022339
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.3162275552749634,
+        0.0,
+        0.5339195728302002,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.9099998474121094,
+        0.0,
+        1.96999990940094
+      ],
+      [
+        2.8499999046325684,
+        0.0,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "9bc646ca-b64c-4cbd-a56c-9a1f96c94a09",
+    "name": "V3 P11 | F1 redundant digital bus A 00",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.6313135623931885,
+        0.22988690435886383,
+        1.1062308549880981,
+        0.42500001192092896
+      ],
+      [
+        0.22988690435886383,
+        0.8566586971282959,
+        -0.689767599105835,
+        0.23000000417232513
+      ],
+      [
+        -0.7406721711158752,
+        0.4618309736251831,
+        0.7288109660148621,
+        0.8600000143051147
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        0.4950000047683716,
+        0.5799999833106995
+      ],
+      [
+        0.8500000238418579,
+        -0.03500000014901161,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "72789b55-7176-4428-8c8e-470d39e1c99a",
+    "name": "V3 P11 | F1 redundant digital bus A 01",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        3.422854177870249e-08,
+        0.0,
+        1.4991672039031982,
+        1.2999999523162842
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        -1.0,
+        0.0,
+        5.1314305693495044e-08,
+        1.1399999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.8500000238418579,
+        -0.03500000014901161,
+        1.1399999856948853
+      ],
+      [
+        1.75,
+        -0.03500000014901161,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "570dc504-47dd-4389-88a4-83eeae35d219",
+    "name": "V3 P11 | F1 redundant digital bus A 02",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.737585186958313,
+        0.0,
+        1.140175461769104,
+        2.075000047683716
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        -0.6752541065216064,
+        0.0,
+        1.2454222440719604,
+        1.4950000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        1.75,
+        -0.03500000014901161,
+        1.1399999856948853
+      ],
+      [
+        2.4000000953674316,
+        -0.03500000014901161,
+        1.850000023841858
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "b7a9fa6b-f989-4ed2-9cc9-bfe2b8d10c23",
+    "name": "V3 P11 | F1 redundant digital bus A 03",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.6689649820327759,
+        0.0,
+        0.31124842166900635,
+        2.5
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        -0.7432938814163208,
+        0.0,
+        0.2801238000392914,
+        1.940000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.4000000953674316,
+        -0.03500000014901161,
+        1.850000023841858
+      ],
+      [
+        2.5999999046325684,
+        -0.03500000014901161,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "0c5be808-73ed-4c35-bb84-6413730ce3f0",
+    "name": "V3 P11 | F1 redundant digital bus B 00",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.6313135623931885,
+        0.22988682985305786,
+        1.1062308549880981,
+        0.42500001192092896
+      ],
+      [
+        0.22988682985305786,
+        0.8566588163375854,
+        -0.6897674202919006,
+        0.30000001192092896
+      ],
+      [
+        -0.7406721711158752,
+        0.46183082461357117,
+        0.7288110852241516,
+        0.8600000143051147
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        0.5649999976158142,
+        0.5799999833106995
+      ],
+      [
+        0.8500000238418579,
+        0.03500000014901161,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "08b7e075-ec22-4f49-aba7-faee53792637",
+    "name": "V3 P11 | F1 redundant digital bus B 01",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        3.422854177870249e-08,
+        0.0,
+        1.4991672039031982,
+        1.2999999523162842
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        -1.0,
+        0.0,
+        5.1314305693495044e-08,
+        1.1399999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.8500000238418579,
+        0.03500000014901161,
+        1.1399999856948853
+      ],
+      [
+        1.75,
+        0.03500000014901161,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "0c82a2d3-bc9d-4c39-be9b-0c3e802e4553",
+    "name": "V3 P11 | F1 redundant digital bus B 02",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.737585186958313,
+        0.0,
+        1.140175461769104,
+        2.075000047683716
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        -0.6752541065216064,
+        0.0,
+        1.2454222440719604,
+        1.4950000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        1.75,
+        0.03500000014901161,
+        1.1399999856948853
+      ],
+      [
+        2.4000000953674316,
+        0.03500000014901161,
+        1.850000023841858
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "22a33563-6efd-4cff-8fc7-2984e8d97ffe",
+    "name": "V3 P11 | F1 redundant digital bus B 03",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.6689649820327759,
+        0.0,
+        0.31124842166900635,
+        2.5
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        -0.7432938814163208,
+        0.0,
+        0.2801238000392914,
+        1.940000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        2.4000000953674316,
+        0.03500000014901161,
+        1.850000023841858
+      ],
+      [
+        2.5999999046325684,
+        0.03500000014901161,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "35341eda-03a8-4913-b832-fdb39b51bd63",
+    "name": "V3 P03 | F2 vectoring output shaft stub",
+    "reason": "Connect proposed local gearbox output to rotor bearing at measured pivot",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        0.9999983906745911,
+        2.2350001335144043
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        2.5999999046325684,
+        2.1600000858306885
+      ],
+      [
+        0.0,
+        2.5999999046325684,
+        2.309999942779541
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "6713773c-00a5-4faf-aec7-76028685eaaa",
+    "name": "V3 P03 | F2 vertical torque shaft extension",
+    "reason": "Connect radial branch output elevation to local gearbox input; source was at origin",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        2.2602739334106445,
+        1.2450000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        2.5999999046325684,
+        0.41999998688697815
+      ],
+      [
+        0.0,
+        2.5999999046325684,
+        2.069999933242798
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "d23874ff-5d44-4d60-a88a-a126b3faf888",
+    "name": "V3 P06 | F2 actuator 1 compression body",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.9486834406852722,
+        -0.17797306180000305,
+        2.919999837875366
+      ],
+      [
+        0.0,
+        0.31622740626335144,
+        0.5339198708534241,
+        1.9399999380111694
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        2.9499998092651367,
+        1.8499999046325684
+      ],
+      [
+        0.0,
+        2.8899998664855957,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "794fd8a1-8a02-4f46-a439-68d4e92aa955",
+    "name": "V3 P06 | F2 actuator 1 pivot clevis",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.20499999821186066
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.9486833810806274,
+        -0.5172408819198608,
+        2.879999876022339
+      ],
+      [
+        0.0,
+        0.3162275552749634,
+        1.5517237186431885,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        2.9099998474121094,
+        1.96999990940094
+      ],
+      [
+        0.0,
+        2.8499999046325684,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "f36949d3-9314-4486-83ab-66890b167362",
+    "name": "V3 P06 | F2 actuator 1 tensile piston",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.9486833810806274,
+        -0.17797304689884186,
+        2.879999876022339
+      ],
+      [
+        0.0,
+        0.3162275552749634,
+        0.5339195728302002,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        2.9099998474121094,
+        1.96999990940094
+      ],
+      [
+        0.0,
+        2.8499999046325684,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "243f3532-3c15-469f-8a9a-9b9f17a4a262",
+    "name": "V3 P06 | F2 actuator 2 compression body",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486833214759827,
+        0.0,
+        -0.17797324061393738,
+        0.3199999928474426
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.31622767448425293,
+        0.0,
+        0.5339198708534241,
+        1.9399999380111694
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.3499999940395355,
+        2.5999999046325684,
+        1.8499999046325684
+      ],
+      [
+        0.28999999165534973,
+        2.5999999046325684,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "d9994df3-7c62-41ce-bc8c-e0a4c9cd6ae3",
+    "name": "V3 P06 | F2 actuator 2 pivot clevis",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.20499999821186066
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486832618713379,
+        0.0,
+        -0.5172414183616638,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.31622785329818726,
+        0.0,
+        1.5517237186431885,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.3100000023841858,
+        2.5999999046325684,
+        1.96999990940094
+      ],
+      [
+        0.25,
+        2.5999999046325684,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "8e644454-adef-4c0f-95f3-b025842abecf",
+    "name": "V3 P06 | F2 actuator 2 tensile piston",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486832618713379,
+        0.0,
+        -0.17797324061393738,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.31622785329818726,
+        0.0,
+        0.5339195728302002,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.3100000023841858,
+        2.5999999046325684,
+        1.96999990940094
+      ],
+      [
+        0.25,
+        2.5999999046325684,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "d44f5e3f-5668-4f0a-8cd4-ae63bac47bc5",
+    "name": "V3 P11 | F2 redundant digital bus A 00",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.8682430982589722,
+        0.4164634346961975,
+        0.6899999976158142
+      ],
+      [
+        0.0,
+        -0.4961389899253845,
+        0.7288109064102173,
+        0.8600000143051147
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.03500000014901161,
+        0.5299999713897705,
+        0.5799999833106995
+      ],
+      [
+        0.03500000014901161,
+        0.8500000238418579,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "3af0c7b8-379c-46b2-80d3-842a35c455b6",
+    "name": "V3 P11 | F2 redundant digital bus A 01",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        3.422854177870249e-08,
+        1.4991672039031982,
+        1.2999999523162842
+      ],
+      [
+        0.0,
+        -1.0,
+        5.1314305693495044e-08,
+        1.1399999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.03500000014901161,
+        0.8500000238418579,
+        1.1399999856948853
+      ],
+      [
+        0.03500000014901161,
+        1.75,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "87bc239c-ed02-4fe2-b166-0c848cdfbf07",
+    "name": "V3 P11 | F2 redundant digital bus A 02",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.737585186958313,
+        1.140175461769104,
+        2.075000047683716
+      ],
+      [
+        0.0,
+        -0.6752541065216064,
+        1.2454222440719604,
+        1.4950000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.03500000014901161,
+        1.75,
+        1.1399999856948853
+      ],
+      [
+        0.03500000014901161,
+        2.4000000953674316,
+        1.850000023841858
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "64fbfeee-fa1a-40a7-a159-1bc67bda7c1f",
+    "name": "V3 P11 | F2 redundant digital bus A 03",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.6689649820327759,
+        0.31124842166900635,
+        2.5
+      ],
+      [
+        0.0,
+        -0.7432938814163208,
+        0.2801238000392914,
+        1.940000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.03500000014901161,
+        2.4000000953674316,
+        1.850000023841858
+      ],
+      [
+        0.03500000014901161,
+        2.5999999046325684,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "1da1fea7-e81a-4888-b51d-0807d3e72ee6",
+    "name": "V3 P11 | F2 redundant digital bus B 00",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.0,
+        0.8682430982589722,
+        0.4164634346961975,
+        0.6899999976158142
+      ],
+      [
+        0.0,
+        -0.4961389899253845,
+        0.7288109064102173,
+        0.8600000143051147
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.03500000014901161,
+        0.5299999713897705,
+        0.5799999833106995
+      ],
+      [
+        -0.03500000014901161,
+        0.8500000238418579,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "4a10a015-ccde-42a9-b88f-a60c0c3f8740",
+    "name": "V3 P11 | F2 redundant digital bus B 01",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.0,
+        3.422854177870249e-08,
+        1.4991672039031982,
+        1.2999999523162842
+      ],
+      [
+        0.0,
+        -1.0,
+        5.1314305693495044e-08,
+        1.1399999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.03500000014901161,
+        0.8500000238418579,
+        1.1399999856948853
+      ],
+      [
+        -0.03500000014901161,
+        1.75,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "15f61f61-35ee-4912-8893-c7ecbe43dc88",
+    "name": "V3 P11 | F2 redundant digital bus B 02",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.0,
+        0.737585186958313,
+        1.140175461769104,
+        2.075000047683716
+      ],
+      [
+        0.0,
+        -0.6752541065216064,
+        1.2454222440719604,
+        1.4950000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.03500000014901161,
+        1.75,
+        1.1399999856948853
+      ],
+      [
+        -0.03500000014901161,
+        2.4000000953674316,
+        1.850000023841858
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "a9ccd7bc-7e76-4d8a-9e4f-a105f6f90286",
+    "name": "V3 P11 | F2 redundant digital bus B 03",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.0,
+        0.6689649820327759,
+        0.31124842166900635,
+        2.5
+      ],
+      [
+        0.0,
+        -0.7432938814163208,
+        0.2801238000392914,
+        1.940000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.03500000014901161,
+        2.4000000953674316,
+        1.850000023841858
+      ],
+      [
+        -0.03500000014901161,
+        2.5999999046325684,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "29115bc9-2637-4995-9b76-1f5e6c6d4958",
+    "name": "V3 P03 | F3 vectoring output shaft stub",
+    "reason": "Connect proposed local gearbox output to rotor bearing at measured pivot",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.9999983906745911,
+        2.2350001335144043
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.5999999046325684,
+        0.0,
+        2.1600000858306885
+      ],
+      [
+        -2.5999999046325684,
+        0.0,
+        2.309999942779541
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "4f2e74e7-d1ee-4bb3-b5e9-0f2a536941c2",
+    "name": "V3 P03 | F3 vertical torque shaft extension",
+    "reason": "Connect radial branch output elevation to local gearbox input; source was at origin",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        2.2602739334106445,
+        1.2450000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.5999999046325684,
+        0.0,
+        0.41999998688697815
+      ],
+      [
+        -2.5999999046325684,
+        0.0,
+        2.069999933242798
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "e08ee62a-505a-4ba5-9833-ebb8de87b130",
+    "name": "V3 P06 | F3 actuator 1 compression body",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.9486833214759827,
+        -0.17797324061393738,
+        0.3199999928474426
+      ],
+      [
+        0.0,
+        0.31622767448425293,
+        0.5339198708534241,
+        1.9399999380111694
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.5999999046325684,
+        0.3499999940395355,
+        1.8499999046325684
+      ],
+      [
+        -2.5999999046325684,
+        0.28999999165534973,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "164c79ca-cfba-48f7-b22e-57b860968065",
+    "name": "V3 P06 | F3 actuator 1 pivot clevis",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.20499999821186066
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.9486832618713379,
+        -0.5172414183616638,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        0.31622785329818726,
+        1.5517237186431885,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.5999999046325684,
+        0.3100000023841858,
+        1.96999990940094
+      ],
+      [
+        -2.5999999046325684,
+        0.25,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "406f8234-cc27-4996-856e-88b58d22e941",
+    "name": "V3 P06 | F3 actuator 1 tensile piston",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.9486832618713379,
+        -0.17797324061393738,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        0.31622785329818726,
+        0.5339195728302002,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.5999999046325684,
+        0.3100000023841858,
+        1.96999990940094
+      ],
+      [
+        -2.5999999046325684,
+        0.25,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "8ad86d4e-bf5c-45a3-995a-f4d8af599410",
+    "name": "V3 P06 | F3 actuator 2 compression body",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486834406852722,
+        0.0,
+        -0.17797306180000305,
+        -2.2799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.31622740626335144,
+        0.0,
+        0.5339198708534241,
+        1.9399999380111694
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.25,
+        0.0,
+        1.8499999046325684
+      ],
+      [
+        -2.309999942779541,
+        0.0,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "2f27e957-5e22-48a3-a6a5-f02da37d1fda",
+    "name": "V3 P06 | F3 actuator 2 pivot clevis",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.20499999821186066
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486833810806274,
+        0.0,
+        -0.5172408819198608,
+        -2.319999933242798
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.3162275552749634,
+        0.0,
+        1.5517237186431885,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.2899999618530273,
+        0.0,
+        1.96999990940094
+      ],
+      [
+        -2.3499999046325684,
+        0.0,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "461f4208-95fa-4d15-9776-2c82eacd266a",
+    "name": "V3 P06 | F3 actuator 2 tensile piston",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486833810806274,
+        0.0,
+        -0.17797304689884186,
+        -2.319999933242798
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.3162275552749634,
+        0.0,
+        0.5339195728302002,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.2899999618530273,
+        0.0,
+        1.96999990940094
+      ],
+      [
+        -2.3499999046325684,
+        0.0,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "e62b4a93-b430-4ddc-b47a-72759ab4de38",
+    "name": "V3 P11 | F3 redundant digital bus A 00",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.6313135623931885,
+        -0.22988682985305786,
+        -1.1062308549880981,
+        -0.42500001192092896
+      ],
+      [
+        -0.22988682985305786,
+        0.8566588163375854,
+        -0.6897674202919006,
+        0.30000001192092896
+      ],
+      [
+        0.7406721711158752,
+        0.46183082461357117,
+        0.7288110852241516,
+        0.8600000143051147
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        0.5649999976158142,
+        0.5799999833106995
+      ],
+      [
+        -0.8500000238418579,
+        0.03500000014901161,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "ac4e9380-6a0f-4759-a3b7-59e985a2a716",
+    "name": "V3 P11 | F3 redundant digital bus A 01",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        3.422854177870249e-08,
+        0.0,
+        -1.4991672039031982,
+        -1.2999999523162842
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        1.0,
+        0.0,
+        5.1314305693495044e-08,
+        1.1399999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.8500000238418579,
+        0.03500000014901161,
+        1.1399999856948853
+      ],
+      [
+        -1.75,
+        0.03500000014901161,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "e38cebdb-927d-426a-bafe-46043775fe0e",
+    "name": "V3 P11 | F3 redundant digital bus A 02",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.737585186958313,
+        0.0,
+        -1.140175461769104,
+        -2.075000047683716
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.6752541065216064,
+        0.0,
+        1.2454222440719604,
+        1.4950000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -1.75,
+        0.03500000014901161,
+        1.1399999856948853
+      ],
+      [
+        -2.4000000953674316,
+        0.03500000014901161,
+        1.850000023841858
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "ee891c36-1042-4bcb-a293-3e637c844f15",
+    "name": "V3 P11 | F3 redundant digital bus A 03",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.6689649820327759,
+        0.0,
+        -0.31124842166900635,
+        -2.5
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.7432938814163208,
+        0.0,
+        0.2801238000392914,
+        1.940000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.4000000953674316,
+        0.03500000014901161,
+        1.850000023841858
+      ],
+      [
+        -2.5999999046325684,
+        0.03500000014901161,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "b3b88a4b-dbe8-4b7b-801b-8c4a633296b4",
+    "name": "V3 P11 | F3 redundant digital bus B 00",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.6313135623931885,
+        -0.22988690435886383,
+        -1.1062308549880981,
+        -0.42500001192092896
+      ],
+      [
+        -0.22988690435886383,
+        0.8566586971282959,
+        -0.689767599105835,
+        0.23000000417232513
+      ],
+      [
+        0.7406721711158752,
+        0.4618309736251831,
+        0.7288109660148621,
+        0.8600000143051147
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        0.4950000047683716,
+        0.5799999833106995
+      ],
+      [
+        -0.8500000238418579,
+        -0.03500000014901161,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "8041af72-dbbe-4d88-9788-81605cbda0a7",
+    "name": "V3 P11 | F3 redundant digital bus B 01",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        3.422854177870249e-08,
+        0.0,
+        -1.4991672039031982,
+        -1.2999999523162842
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        1.0,
+        0.0,
+        5.1314305693495044e-08,
+        1.1399999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.8500000238418579,
+        -0.03500000014901161,
+        1.1399999856948853
+      ],
+      [
+        -1.75,
+        -0.03500000014901161,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "96849962-3d5a-4f46-a68c-56b43a5d9bb5",
+    "name": "V3 P11 | F3 redundant digital bus B 02",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.737585186958313,
+        0.0,
+        -1.140175461769104,
+        -2.075000047683716
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.6752541065216064,
+        0.0,
+        1.2454222440719604,
+        1.4950000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -1.75,
+        -0.03500000014901161,
+        1.1399999856948853
+      ],
+      [
+        -2.4000000953674316,
+        -0.03500000014901161,
+        1.850000023841858
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "14b9392f-ddc2-43a0-944b-891d0a609e0d",
+    "name": "V3 P11 | F3 redundant digital bus B 03",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.6689649820327759,
+        0.0,
+        -0.31124842166900635,
+        -2.5
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.7432938814163208,
+        0.0,
+        0.2801238000392914,
+        1.940000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -2.4000000953674316,
+        -0.03500000014901161,
+        1.850000023841858
+      ],
+      [
+        -2.5999999046325684,
+        -0.03500000014901161,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "07dc345a-1100-4d3c-93cf-994bfd8462c3",
+    "name": "V3 P03 | F4 vectoring output shaft stub",
+    "reason": "Connect proposed local gearbox output to rotor bearing at measured pivot",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        0.9999983906745911,
+        2.2350001335144043
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        -2.5999999046325684,
+        2.1600000858306885
+      ],
+      [
+        0.0,
+        -2.5999999046325684,
+        2.309999942779541
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "88cd0c46-d11a-4ba9-ab98-8f383c29a1d9",
+    "name": "V3 P03 | F4 vertical torque shaft extension",
+    "reason": "Connect radial branch output elevation to local gearbox input; source was at origin",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        2.2602739334106445,
+        1.2450000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        -2.5999999046325684,
+        0.41999998688697815
+      ],
+      [
+        0.0,
+        -2.5999999046325684,
+        2.069999933242798
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "1efe5b42-fb75-49b7-b0dc-face11155c0a",
+    "name": "V3 P06 | F4 actuator 1 compression body",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.9486834406852722,
+        -0.17797306180000305,
+        -2.2799999713897705
+      ],
+      [
+        0.0,
+        0.31622740626335144,
+        0.5339198708534241,
+        1.9399999380111694
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        -2.25,
+        1.8499999046325684
+      ],
+      [
+        0.0,
+        -2.309999942779541,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "775938e2-3e7f-4e8c-95e9-0e1d278b1d8e",
+    "name": "V3 P06 | F4 actuator 1 pivot clevis",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.20499999821186066
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.9486833810806274,
+        -0.5172408819198608,
+        -2.319999933242798
+      ],
+      [
+        0.0,
+        0.3162275552749634,
+        1.5517237186431885,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        -2.2899999618530273,
+        1.96999990940094
+      ],
+      [
+        0.0,
+        -2.3499999046325684,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "a27c312a-2094-4a21-b671-b68742a491c2",
+    "name": "V3 P06 | F4 actuator 1 tensile piston",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.9486833810806274,
+        -0.17797304689884186,
+        -2.319999933242798
+      ],
+      [
+        0.0,
+        0.3162275552749634,
+        0.5339195728302002,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.0,
+        -2.2899999618530273,
+        1.96999990940094
+      ],
+      [
+        0.0,
+        -2.3499999046325684,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "fd57f518-a701-486f-a9a1-bd16ed9beacd",
+    "name": "V3 P06 | F4 actuator 2 compression body",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486833214759827,
+        0.0,
+        -0.17797324061393738,
+        0.3199999928474426
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.31622767448425293,
+        0.0,
+        0.5339198708534241,
+        1.9399999380111694
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.3499999940395355,
+        -2.5999999046325684,
+        1.8499999046325684
+      ],
+      [
+        0.28999999165534973,
+        -2.5999999046325684,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "5f8e8c65-ce9a-47c2-ae6b-5247590a7841",
+    "name": "V3 P06 | F4 actuator 2 pivot clevis",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.20499999821186066
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486832618713379,
+        0.0,
+        -0.5172414183616638,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.31622785329818726,
+        0.0,
+        1.5517237186431885,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.3100000023841858,
+        -2.5999999046325684,
+        1.96999990940094
+      ],
+      [
+        0.25,
+        -2.5999999046325684,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "f9707591-dfea-4317-a9bc-dc0c0b7f48a9",
+    "name": "V3 P06 | F4 actuator 2 tensile piston",
+    "reason": "Proposed linear-actuator root and nacelle anchors; 0.25/0.35m lever offsets, overlapping barrel/piston",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9486832618713379,
+        0.0,
+        -0.17797324061393738,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.31622785329818726,
+        0.0,
+        0.5339195728302002,
+        2.059999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.3100000023841858,
+        -2.5999999046325684,
+        1.96999990940094
+      ],
+      [
+        0.25,
+        -2.5999999046325684,
+        2.1499998569488525
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "cc03cdf9-8ed1-46f2-8723-3f4e69d0048c",
+    "name": "V3 P11 | F4 redundant digital bus A 00",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.0,
+        0.37601688504219055,
+        -1.7959980964660645,
+        -0.1600000262260437
+      ],
+      [
+        0.0,
+        0.9266127347946167,
+        0.7288110852241516,
+        0.8600000143051147
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.03500000014901161,
+        0.5299999713897705,
+        0.5799999833106995
+      ],
+      [
+        -0.03500000014901161,
+        -0.8500000238418579,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "6015c54f-9551-492f-9982-c52a65183a1c",
+    "name": "V3 P11 | F4 redundant digital bus A 01",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.0,
+        3.422854177870249e-08,
+        -1.4991672039031982,
+        -1.2999999523162842
+      ],
+      [
+        0.0,
+        1.0,
+        5.1314305693495044e-08,
+        1.1399999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.03500000014901161,
+        -0.8500000238418579,
+        1.1399999856948853
+      ],
+      [
+        -0.03500000014901161,
+        -1.75,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "3192485f-38bc-4931-8db6-6e2cd7b639ef",
+    "name": "V3 P11 | F4 redundant digital bus A 02",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.0,
+        0.737585186958313,
+        -1.140175461769104,
+        -2.075000047683716
+      ],
+      [
+        0.0,
+        0.6752541065216064,
+        1.2454222440719604,
+        1.4950000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.03500000014901161,
+        -1.75,
+        1.1399999856948853
+      ],
+      [
+        -0.03500000014901161,
+        -2.4000000953674316,
+        1.850000023841858
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "da95d3eb-2184-48d2-9614-1bbbc71a2199",
+    "name": "V3 P11 | F4 redundant digital bus A 03",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.03500000014901161
+      ],
+      [
+        0.0,
+        0.6689649820327759,
+        -0.31124842166900635,
+        -2.5
+      ],
+      [
+        0.0,
+        0.7432938814163208,
+        0.2801238000392914,
+        1.940000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.03500000014901161,
+        -2.4000000953674316,
+        1.850000023841858
+      ],
+      [
+        -0.03500000014901161,
+        -2.5999999046325684,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "e4a9c8f5-c7eb-4ee2-8ffd-38095f1ac876",
+    "name": "V3 P11 | F4 redundant digital bus B 00",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.37601688504219055,
+        -1.7959980964660645,
+        -0.1600000262260437
+      ],
+      [
+        0.0,
+        0.9266127347946167,
+        0.7288110852241516,
+        0.8600000143051147
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.03500000014901161,
+        0.5299999713897705,
+        0.5799999833106995
+      ],
+      [
+        0.03500000014901161,
+        -0.8500000238418579,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "38925364-75ff-423b-89ce-1dd24e6a3625",
+    "name": "V3 P11 | F4 redundant digital bus B 01",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        3.422854177870249e-08,
+        -1.4991672039031982,
+        -1.2999999523162842
+      ],
+      [
+        0.0,
+        1.0,
+        5.1314305693495044e-08,
+        1.1399999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.03500000014901161,
+        -0.8500000238418579,
+        1.1399999856948853
+      ],
+      [
+        0.03500000014901161,
+        -1.75,
+        1.1399999856948853
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "d9625a46-49a2-4bf4-be1d-01d81b5e6fb7",
+    "name": "V3 P11 | F4 redundant digital bus B 02",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.737585186958313,
+        -1.140175461769104,
+        -2.075000047683716
+      ],
+      [
+        0.0,
+        0.6752541065216064,
+        1.2454222440719604,
+        1.4950000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.03500000014901161,
+        -1.75,
+        1.1399999856948853
+      ],
+      [
+        0.03500000014901161,
+        -2.4000000953674316,
+        1.850000023841858
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "c2e3ae87-6983-4c7e-85e4-6fb443646819",
+    "name": "V3 P11 | F4 redundant digital bus B 03",
+    "reason": "Separate and route source buses along lower frame and protected rotor support",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.6689649820327759,
+        -0.31124842166900635,
+        -2.5
+      ],
+      [
+        0.0,
+        0.7432938814163208,
+        0.2801238000392914,
+        1.940000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.03500000014901161,
+        -2.4000000953674316,
+        1.850000023841858
+      ],
+      [
+        0.03500000014901161,
+        -2.5999999046325684,
+        2.0299999713897705
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "2a371ab0-e514-4547-a3e1-383e01a06ea9",
+    "name": "V3 P08 | Short-stroke fly-by-wire yoke stem",
+    "reason": "Connect source yoke base to source grip midpoint instead of origin",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.23999999463558197
+      ],
+      [
+        0.0,
+        0.20952893793582916,
+        -1.6800003051757812,
+        -0.625
+      ],
+      [
+        0.0,
+        0.9778024554252625,
+        0.35999980568885803,
+        1.2225000858306885
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.23999999463558197,
+        -0.5199999809265137,
+        1.2000000476837158
+      ],
+      [
+        -0.23999999463558197,
+        -0.7300000190734863,
+        1.2450000047683716
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "763878f7-c1f9-4545-81b7-c40b22c80d34",
+    "name": "V3 P08 | Yoke lateral grips",
+    "reason": "Align source transverse yoke to the existing cushioned grips instead of origin",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        3.422854177870249e-08,
+        0.0,
+        1.0,
+        -0.24000000953674316
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.7300000190734863
+      ],
+      [
+        -1.0,
+        0.0,
+        3.422854177870249e-08,
+        1.2450000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.4000000059604645,
+        -0.7300000190734863,
+        1.2450000047683716
+      ],
+      [
+        -0.07999999821186066,
+        -0.7300000190734863,
+        1.2450000047683716
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "b250549e-7c93-4dd6-afe1-92f0af207954",
+    "name": "V4 P10 | LANDING leg1 replaceable contact foot",
+    "reason": "R3: extend gear 0.25 m so full stroke leaves ~50 mm fixed-underside clearance",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.899999976158142
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.09000000357627869
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.899999976158142
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_GEAR_EXTENSION; BUCKLING/RATINGS_UNKNOWN"
+  },
+  {
+    "id": "0290b3d2-008a-4abb-bd32-bfc2a1dde25a",
+    "name": "V4 P10 | LANDING leg1 sliding piston and hardstop",
+    "reason": "R3: extend piston to lowered contact foot; retain upper pressure-body interface",
+    "before_world_matrix": [
+      [
+        -4.371138828673793e-08,
+        0.980580747127533,
+        0.19611582159996033,
+        1.8799999952316284
+      ],
+      [
+        1.0,
+        6.548250297555569e-08,
+        -1.0452746579403538e-07,
+        0.0
+      ],
+      [
+        -1.1533977328781475e-07,
+        0.19611582159996033,
+        -0.980580747127533,
+        0.27000001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9960726499557495,
+        2.0932315880628494e-09,
+        -0.19611594080924988,
+        1.8799999952316284
+      ],
+      [
+        2.0932315880628494e-09,
+        1.0,
+        1.0452745158318066e-07,
+        0.0
+      ],
+      [
+        0.08853970468044281,
+        -4.7190603424951405e-08,
+        2.2063064575195312,
+        0.14500001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        1.899999976158142,
+        -1.0659751303876419e-08,
+        -0.07999999821186066
+      ],
+      [
+        1.8600000143051147,
+        1.0659751303876419e-08,
+        0.3700000047683716
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "0cb74253-a386-484d-b63c-3796631cf657",
+    "name": "V4 P10 | LANDING leg2 replaceable contact foot",
+    "reason": "R3: extend gear 0.25 m so full stroke leaves ~50 mm fixed-underside clearance",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.949999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        1.6454482078552246
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.09000000357627869
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.949999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        1.6454482078552246
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_GEAR_EXTENSION; BUCKLING/RATINGS_UNKNOWN"
+  },
+  {
+    "id": "4db2e5f0-a5b0-4b0a-aa13-6ef59d10d2de",
+    "name": "V4 P10 | LANDING leg2 sliding piston and hardstop",
+    "reason": "R3: extend piston to lowered contact foot; retain upper pressure-body interface",
+    "before_world_matrix": [
+      [
+        -0.866024911403656,
+        0.49029111862182617,
+        0.09805791825056076,
+        0.9399999976158142
+      ],
+      [
+        0.5000006556510925,
+        0.8492075204849243,
+        0.16984066367149353,
+        1.6281278133392334
+      ],
+      [
+        -1.5099578831723193e-07,
+        0.19611528515815735,
+        -0.9805808663368225,
+        0.27000001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.999018132686615,
+        -0.0017005839617922902,
+        -0.09805798530578613,
+        0.9399999976158142
+      ],
+      [
+        -0.0017005839617922902,
+        0.9970545172691345,
+        -0.16984045505523682,
+        1.6281278133392334
+      ],
+      [
+        0.044269859790802,
+        0.07667721062898636,
+        2.2063066959381104,
+        0.14500001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.949999988079071,
+        1.6454482078552246,
+        -0.07999999821186066
+      ],
+      [
+        0.9300000071525574,
+        1.6108074188232422,
+        0.3700000047683716
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "638da996-366b-4008-b332-c4ae68dca832",
+    "name": "V4 P10 | LANDING leg3 replaceable contact foot",
+    "reason": "R3: extend gear 0.25 m so full stroke leaves ~50 mm fixed-underside clearance",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.949999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        1.6454482078552246
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.09000000357627869
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.949999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        1.6454482078552246
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_GEAR_EXTENSION; BUCKLING/RATINGS_UNKNOWN"
+  },
+  {
+    "id": "d80a2d45-33e1-446e-a4c8-a8e9aa1a7193",
+    "name": "V4 P10 | LANDING leg3 sliding piston and hardstop",
+    "reason": "R3: extend piston to lowered contact foot; retain upper pressure-body interface",
+    "before_world_matrix": [
+      [
+        -0.866024911403656,
+        -0.49029111862182617,
+        -0.09805791825056076,
+        -0.9399999976158142
+      ],
+      [
+        -0.5000006556510925,
+        0.8492075204849243,
+        0.16984066367149353,
+        1.6281278133392334
+      ],
+      [
+        1.5099578831723193e-07,
+        0.19611528515815735,
+        -0.9805808663368225,
+        0.27000001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.999018132686615,
+        0.0017005839617922902,
+        0.09805798530578613,
+        -0.9399999976158142
+      ],
+      [
+        0.0017005839617922902,
+        0.9970545172691345,
+        -0.16984045505523682,
+        1.6281278133392334
+      ],
+      [
+        -0.044269859790802,
+        0.07667721062898636,
+        2.2063066959381104,
+        0.14500001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.949999988079071,
+        1.6454482078552246,
+        -0.07999999821186066
+      ],
+      [
+        -0.9300000071525574,
+        1.6108074188232422,
+        0.3700000047683716
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "9597d77e-bda7-4c0a-800d-de190d68b6fa",
+    "name": "V4 P10 | LANDING leg4 replaceable contact foot",
+    "reason": "R3: extend gear 0.25 m so full stroke leaves ~50 mm fixed-underside clearance",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -1.899999976158142
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.326828887562921e-16
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.09000000357627869
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -1.899999976158142
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.326828887562921e-16
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_GEAR_EXTENSION; BUCKLING/RATINGS_UNKNOWN"
+  },
+  {
+    "id": "06874d5a-be7e-41fd-8d0e-e8b96a3d7b91",
+    "name": "V4 P10 | LANDING leg4 sliding piston and hardstop",
+    "reason": "R3: extend piston to lowered contact foot; retain upper pressure-body interface",
+    "before_world_matrix": [
+      [
+        -4.371138828673793e-08,
+        -0.980580747127533,
+        -0.19611582159996033,
+        -1.8799999952316284
+      ],
+      [
+        -1.0,
+        6.753886339083692e-08,
+        -1.1480928208129626e-07,
+        2.302336135799675e-16
+      ],
+      [
+        1.258252098068624e-07,
+        0.19611582159996033,
+        -0.980580747127533,
+        0.27000001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9960726499557495,
+        -2.2991317738529915e-09,
+        0.19611594080924988,
+        -1.8799999952316284
+      ],
+      [
+        -2.2991317738529915e-09,
+        1.0,
+        1.148092749758689e-07,
+        0.0
+      ],
+      [
+        -0.08853970468044281,
+        -5.183249740525753e-08,
+        2.2063064575195312,
+        0.14500001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -1.899999976158142,
+        -1.17082947781455e-08,
+        -0.07999999821186066
+      ],
+      [
+        -1.8600000143051147,
+        1.17082947781455e-08,
+        0.3700000047683716
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "b8d35eae-63c2-4539-8748-9ffc138be0ca",
+    "name": "V4 P10 | LANDING leg5 replaceable contact foot",
+    "reason": "R3: extend gear 0.25 m so full stroke leaves ~50 mm fixed-underside clearance",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.949999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -1.6454482078552246
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.09000000357627869
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.949999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -1.6454482078552246
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_GEAR_EXTENSION; BUCKLING/RATINGS_UNKNOWN"
+  },
+  {
+    "id": "3d92d2b4-0b23-4cd1-b52f-293facb7fd27",
+    "name": "V4 P10 | LANDING leg5 sliding piston and hardstop",
+    "reason": "R3: extend piston to lowered contact foot; retain upper pressure-body interface",
+    "before_world_matrix": [
+      [
+        0.8660249710083008,
+        -0.49029114842414856,
+        -0.09805801510810852,
+        -0.9399999976158142
+      ],
+      [
+        -0.5000007748603821,
+        -0.84920734167099,
+        -0.16984149813652039,
+        -1.6281278133392334
+      ],
+      [
+        1.9617058910625929e-07,
+        0.19611606001853943,
+        -0.9805806875228882,
+        0.27000001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.999018132686615,
+        -0.0017005952540785074,
+        0.09805798530578613,
+        -0.9399999976158142
+      ],
+      [
+        -0.0017005952540785074,
+        0.9970544576644897,
+        0.16984161734580994,
+        -1.6281278133392334
+      ],
+      [
+        -0.044269852340221405,
+        -0.07667772471904755,
+        2.2063066959381104,
+        0.14500001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.949999988079071,
+        -1.6454483270645142,
+        -0.07999998331069946
+      ],
+      [
+        -0.9300000071525574,
+        -1.6108072996139526,
+        0.3700000047683716
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "ed02e980-07f4-408b-9844-ee4dd832e9d8",
+    "name": "V4 P10 | LANDING leg6 replaceable contact foot",
+    "reason": "R3: extend gear 0.25 m so full stroke leaves ~50 mm fixed-underside clearance",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.949999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -1.6454482078552246
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.09000000357627869
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.949999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -1.6454482078552246
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_GEAR_EXTENSION; BUCKLING/RATINGS_UNKNOWN"
+  },
+  {
+    "id": "59ba66da-92f0-4d68-ad15-4e3fb9466a2f",
+    "name": "V4 P10 | LANDING leg6 sliding piston and hardstop",
+    "reason": "R3: extend piston to lowered contact foot; retain upper pressure-body interface",
+    "before_world_matrix": [
+      [
+        0.8660249710083008,
+        0.49029114842414856,
+        0.09805801510810852,
+        0.9399999976158142
+      ],
+      [
+        0.5000007748603821,
+        -0.84920734167099,
+        -0.16984149813652039,
+        -1.6281278133392334
+      ],
+      [
+        -1.9617058910625929e-07,
+        0.19611606001853943,
+        -0.9805806875228882,
+        0.27000001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.999018132686615,
+        0.0017005952540785074,
+        -0.09805798530578613,
+        0.9399999976158142
+      ],
+      [
+        0.0017005952540785074,
+        0.9970544576644897,
+        0.16984161734580994,
+        -1.6281278133392334
+      ],
+      [
+        0.044269852340221405,
+        -0.07667772471904755,
+        2.2063066959381104,
+        0.14500001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.949999988079071,
+        -1.6454483270645142,
+        -0.07999998331069946
+      ],
+      [
+        0.9300000071525574,
+        -1.6108072996139526,
+        0.3700000047683716
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "539f7f7c-102b-4112-b3e1-c5ae2ed4acbb",
+    "name": "P02 | F1 pitch actuator ring",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.129999876022339
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "a1c319a0-99a2-487d-8259-92aa5b8ab0f2",
+    "name": "P02 | F2 pitch actuator ring",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.129999876022339
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "77f94a84-9156-4db1-b40d-3cb7f0d68a0a",
+    "name": "P02 | F3 pitch actuator ring",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.129999876022339
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "6cbaaa03-c39e-42d3-b5cd-c28cb3c461c5",
+    "name": "P02 | F4 pitch actuator ring",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.129999876022339
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "0e6206ed-1698-450c-9ef0-55937b100adf",
+    "name": "V3 P03 | F1 CV joint outer yoke",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.3450000286102295
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.065000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "5658902c-a5cf-4093-b2eb-39aadaf3d839",
+    "name": "V3 P03 | F2 CV joint outer yoke",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.3450000286102295
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.065000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "336cd4b9-9b95-4766-a17f-d10234fca3a8",
+    "name": "V3 P03 | F3 CV joint outer yoke",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.3450000286102295
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.065000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "5ec688e3-6972-4583-9251-7f3acf4c7aa1",
+    "name": "V3 P03 | F4 CV joint outer yoke",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.3450000286102295
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.065000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "6b25a9f0-da34-4c58-9272-755c29848eb8",
+    "name": "V3 P06 | F1 fixed X bearing support ring",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "e4cd1817-8968-4444-94a8-ec76d21ca551",
+    "name": "V3 P06 | F1 fixed Y ring trunnion",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "59509dc8-542d-455a-911a-f846bb879744",
+    "name": "V3 P06 | F1 static trunnion boss -1",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.3350000381469727
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.3350000381469727
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "69ce9265-5631-40ed-88b3-f9d7d960261b",
+    "name": "V3 P06 | F1 static trunnion boss 1",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.865000009536743
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.865000009536743
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "c7900c18-b57c-4682-ae96-a135c6043608",
+    "name": "V3 P06 | F2 fixed X bearing support ring",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "c6e37b10-52bf-440e-9031-1593e556b913",
+    "name": "V3 P06 | F2 fixed Y ring trunnion",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "f333c68a-2515-4fef-8eaa-5c079a6052a6",
+    "name": "V3 P06 | F2 static trunnion boss -1",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.26499998569488525
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.26499998569488525
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "0f2f3325-34db-47b3-bb12-860f5dc27768",
+    "name": "V3 P06 | F2 static trunnion boss 1",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.26499998569488525
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.26499998569488525
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "39e52705-6541-41d5-bb2a-f9820231514c",
+    "name": "V3 P06 | F3 fixed X bearing support ring",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "d083e28c-1372-49fd-b82f-f48e7fd20b0f",
+    "name": "V3 P06 | F3 fixed Y ring trunnion",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "9934dfb4-d09a-411a-9e78-31d5c660c74c",
+    "name": "V3 P06 | F3 static trunnion boss -1",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.865000009536743
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.865000009536743
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "0fd7e0fa-f7d4-4dfc-8b73-03cd88c97fc4",
+    "name": "V3 P06 | F3 static trunnion boss 1",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.3350000381469727
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.3350000381469727
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "fcbfb45e-4e3c-4c32-8814-92335873b78a",
+    "name": "V3 P06 | F4 fixed X bearing support ring",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "709cad0b-a970-4a9d-96a8-e859a0146cdd",
+    "name": "V3 P06 | F4 fixed Y ring trunnion",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "8bf1f528-a28f-425c-ada2-86954dfe78f4",
+    "name": "V3 P06 | F4 static trunnion boss -1",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.26499998569488525
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.26499998569488525
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "335c565d-0aa5-4552-8c2a-6efcbb77c4e7",
+    "name": "V3 P06 | F4 static trunnion boss 1",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.26499998569488525
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.309999942779541
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.26499998569488525
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.0299999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "be18b4e6-2889-47ec-9aa5-74de6ac68cbe",
+    "name": "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        -0.09370344877243042,
+        -0.8594424724578857,
+        0.502571702003479,
+        2.174999952316284
+      ],
+      [
+        0.995600163936615,
+        -0.08088865131139755,
+        0.04730076715350151,
+        -0.21000000834465027
+      ],
+      [
+        5.5617132233010125e-08,
+        0.5047926902770996,
+        0.8632405996322632,
+        1.4800000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.811845600605011,
+        -0.017708616331219673,
+        0.502571702003479,
+        2.174999952316284
+      ],
+      [
+        -0.017708616331219673,
+        0.9983333349227905,
+        0.047300785779953,
+        -0.21000000834465027
+      ],
+      [
+        -0.58360356092453,
+        -0.05492729693651199,
+        0.6976876854896545,
+        1.340000033378601
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        1.7499998807907104,
+        -0.24999994039535522,
+        0.7500000596046448
+      ],
+      [
+        2.5999999046325684,
+        -0.1700000762939453,
+        1.9300000667572021
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "095ba212-be0f-4ad6-a669-ab6786f5f91a",
+    "name": "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        0.09370336681604385,
+        -0.8594425320625305,
+        0.5025715827941895,
+        2.174999952316284
+      ],
+      [
+        0.995600163936615,
+        0.08088846504688263,
+        -0.04730091989040375,
+        0.21000000834465027
+      ],
+      [
+        1.7604929780645762e-07,
+        0.5047926306724548,
+        0.863240659236908,
+        1.4800000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.8118457198143005,
+        0.017708662897348404,
+        0.5025715827941895,
+        2.174999952316284
+      ],
+      [
+        0.017708662897348404,
+        0.9983332753181458,
+        -0.04730091616511345,
+        0.21000000834465027
+      ],
+      [
+        -0.5836034417152405,
+        0.05492745339870453,
+        0.6976876854896545,
+        1.340000033378601
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        1.75,
+        0.2500000596046448,
+        0.75
+      ],
+      [
+        2.5999999046325684,
+        0.16999995708465576,
+        1.9300000667572021
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "f1291daa-ddfc-4b08-a5e0-5a3b81b68322",
+    "name": "V4 P06 | F1 primary trunnion load head L",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "b82dbf46-f998-4a23-93c0-fcfe691979ff",
+    "name": "V4 P06 | F1 primary trunnion load head R",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "35958258-d257-4096-97be-f307ab65b28c",
+    "name": "V4 P06 | F1 transverse hub support",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        -1.0,
+        8.742279078433057e-08,
+        -1.5099578831723193e-07,
+        2.5999999046325684
+      ],
+      [
+        -1.5099580252808664e-07,
+        -7.54978870531886e-08,
+        1.0,
+        0.0
+      ],
+      [
+        8.742277657347586e-08,
+        1.0,
+        7.549790126404332e-08,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        -1.0,
+        8.742279078433057e-08,
+        -1.5099578831723193e-07,
+        2.5999999046325684
+      ],
+      [
+        -1.5099580252808664e-07,
+        -7.54978870531886e-08,
+        1.0,
+        0.0
+      ],
+      [
+        8.742277657347586e-08,
+        1.0,
+        7.549790126404332e-08,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "0583c753-5e96-4d56-b78b-77f9bc89630b",
+    "name": "V4 P06 | F1 UPPER nacelle tie L",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        -0.021734001114964485,
+        -0.6089208722114563,
+        0.7929331660270691,
+        1.909999966621399
+      ],
+      [
+        0.9997637867927551,
+        -0.013237515464425087,
+        0.017237603664398193,
+        -0.20499999821186066
+      ],
+      [
+        1.2834856022436725e-07,
+        0.7931205034255981,
+        0.6090647578239441,
+        1.6700000762939453
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.492209255695343,
+        -0.011038887314498425,
+        0.7929332256317139,
+        1.909999966621399
+      ],
+      [
+        -0.011038887314498425,
+        0.9997600317001343,
+        0.01723761111497879,
+        -0.20499999821186066
+      ],
+      [
+        -0.8704069256782532,
+        -0.01892181672155857,
+        0.4481797516345978,
+        1.5300002098083496
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        1.2200000286102295,
+        -0.21999993920326233,
+        1.1399999856948853
+      ],
+      [
+        2.5999999046325684,
+        -0.19000005722045898,
+        1.9200003147125244
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "a5d4ae6e-ccfc-436e-ad2d-6e447769d5a9",
+    "name": "V4 P06 | F1 UPPER nacelle tie R",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        0.02173379436135292,
+        -0.6089207530021667,
+        0.7929332852363586,
+        1.909999966621399
+      ],
+      [
+        0.9997637867927551,
+        0.01323717925697565,
+        -0.017237601801753044,
+        0.20499999821186066
+      ],
+      [
+        1.3288600086980296e-07,
+        0.7931206226348877,
+        0.6090645790100098,
+        1.6700000762939453
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.49220898747444153,
+        0.011038879863917828,
+        0.7929332852363586,
+        1.9099998474121094
+      ],
+      [
+        0.011038879863917828,
+        0.9997600317001343,
+        -0.017237594351172447,
+        0.20499999821186066
+      ],
+      [
+        -0.8704070448875427,
+        0.01892179809510708,
+        0.44817954301834106,
+        1.53000009059906
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        1.21999990940094,
+        0.21999992430210114,
+        1.1400001049041748
+      ],
+      [
+        2.5999999046325684,
+        0.19000007212162018,
+        1.9200000762939453
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "13085418-f694-4dda-83e0-bdee35a169be",
+    "name": "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        -0.995600163936615,
+        0.08088871091604233,
+        -0.047300875186920166,
+        0.21000000834465027
+      ],
+      [
+        -0.09370356053113937,
+        -0.8594424724578857,
+        0.5025716423988342,
+        2.174999952316284
+      ],
+      [
+        -6.008801900492244e-09,
+        0.5047926902770996,
+        0.8632405996322632,
+        1.4800000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9983332753181458,
+        0.017708653584122658,
+        -0.04730088263750076,
+        0.21000000834465027
+      ],
+      [
+        0.017708653584122658,
+        0.8118456602096558,
+        0.5025716423988342,
+        2.174999952316284
+      ],
+      [
+        0.054927416145801544,
+        -0.5836035013198853,
+        0.6976876258850098,
+        1.340000033378601
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.2500000298023224,
+        1.75,
+        0.7500000596046448
+      ],
+      [
+        0.16999998688697815,
+        2.5999999046325684,
+        1.9300000667572021
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "bede5c21-a838-4c16-aedf-0754f41e8009",
+    "name": "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        -0.995600163936615,
+        -0.08088871091604233,
+        0.047300875186920166,
+        -0.21000000834465027
+      ],
+      [
+        0.09370356053113937,
+        -0.8594424724578857,
+        0.5025716423988342,
+        2.174999952316284
+      ],
+      [
+        6.008801900492244e-09,
+        0.5047926902770996,
+        0.8632405996322632,
+        1.4800000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9983332753181458,
+        -0.017708653584122658,
+        0.04730088263750076,
+        -0.21000000834465027
+      ],
+      [
+        -0.017708653584122658,
+        0.8118456602096558,
+        0.5025716423988342,
+        2.174999952316284
+      ],
+      [
+        -0.054927416145801544,
+        -0.5836035013198853,
+        0.6976876258850098,
+        1.340000033378601
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.2500000298023224,
+        1.75,
+        0.7500000596046448
+      ],
+      [
+        -0.16999998688697815,
+        2.5999999046325684,
+        1.9300000667572021
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "c8e41efa-246b-4b5a-b4b4-81e3003c3cc4",
+    "name": "V4 P06 | F2 primary trunnion load head L",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "7182a8df-34db-469a-b4c4-c13ebbf167c0",
+    "name": "V4 P06 | F2 primary trunnion load head R",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.17000000178813934
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.17000000178813934
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "811dd923-f35b-4b31-b5e8-701018051310",
+    "name": "V4 P06 | F2 transverse hub support",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        7.549790126404332e-08,
+        7.549790126404332e-08,
+        -1.0,
+        0.0
+      ],
+      [
+        -1.0,
+        -1.4610056261045272e-15,
+        -7.549790126404332e-08,
+        2.5999999046325684
+      ],
+      [
+        -7.16093850883226e-15,
+        1.0,
+        7.549790126404332e-08,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        7.549790126404332e-08,
+        7.549790126404332e-08,
+        -1.0,
+        0.0
+      ],
+      [
+        -1.0,
+        -1.4610056261045272e-15,
+        -7.549790126404332e-08,
+        2.5999999046325684
+      ],
+      [
+        -7.16093850883226e-15,
+        1.0,
+        7.549790126404332e-08,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "3431fd31-5610-43ec-9c03-19650621e112",
+    "name": "V4 P06 | F2 UPPER nacelle tie L",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        -0.9997637867927551,
+        0.013237543404102325,
+        -0.017237717285752296,
+        0.20499999821186066
+      ],
+      [
+        -0.02173410728573799,
+        -0.6089208126068115,
+        0.7929332256317139,
+        1.909999966621399
+      ],
+      [
+        8.310698973446051e-08,
+        0.7931205630302429,
+        0.6090646982192993,
+        1.6700000762939453
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9997600317001343,
+        0.011038954369723797,
+        -0.01723771169781685,
+        0.20499999821186066
+      ],
+      [
+        0.011038954369723797,
+        0.49220913648605347,
+        0.7929332256317139,
+        1.909999966621399
+      ],
+      [
+        0.018921928480267525,
+        -0.870406985282898,
+        0.44817960262298584,
+        1.53000009059906
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.2200000286102295,
+        1.2200000286102295,
+        1.1400001049041748
+      ],
+      [
+        0.18999996781349182,
+        2.5999999046325684,
+        1.9200000762939453
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "49a48de7-5478-477c-a34f-0309f0f8583c",
+    "name": "V4 P06 | F2 UPPER nacelle tie R",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        -0.9997637867927551,
+        -0.013237543404102325,
+        0.017237717285752296,
+        -0.20499999821186066
+      ],
+      [
+        0.02173410728573799,
+        -0.6089208126068115,
+        0.7929332256317139,
+        1.909999966621399
+      ],
+      [
+        -8.310698973446051e-08,
+        0.7931205630302429,
+        0.6090646982192993,
+        1.6700000762939453
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9997600317001343,
+        -0.011038954369723797,
+        0.01723771169781685,
+        -0.20499999821186066
+      ],
+      [
+        -0.011038954369723797,
+        0.49220913648605347,
+        0.7929332256317139,
+        1.909999966621399
+      ],
+      [
+        -0.018921928480267525,
+        -0.870406985282898,
+        0.44817960262298584,
+        1.53000009059906
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.2200000286102295,
+        1.2200000286102295,
+        1.1400001049041748
+      ],
+      [
+        -0.18999996781349182,
+        2.5999999046325684,
+        1.9200000762939453
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "11c0a478-3364-4a20-b086-22024b4ebeda",
+    "name": "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        0.09370336681604385,
+        0.8594425320625305,
+        -0.5025715827941895,
+        -2.174999952316284
+      ],
+      [
+        -0.995600163936615,
+        0.08088846504688263,
+        -0.04730091989040375,
+        0.21000000834465027
+      ],
+      [
+        -1.7604929780645762e-07,
+        0.5047926306724548,
+        0.863240659236908,
+        1.4800000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.8118457198143005,
+        -0.017708662897348404,
+        -0.5025715827941895,
+        -2.174999952316284
+      ],
+      [
+        -0.017708662897348404,
+        0.9983332753181458,
+        -0.04730091616511345,
+        0.21000000834465027
+      ],
+      [
+        0.5836034417152405,
+        0.05492745339870453,
+        0.6976876854896545,
+        1.340000033378601
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -1.75,
+        0.2500000596046448,
+        0.75
+      ],
+      [
+        -2.5999999046325684,
+        0.16999995708465576,
+        1.9300000667572021
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "904cfa57-d205-4f67-85e4-fdde61f25906",
+    "name": "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        -0.09370344877243042,
+        0.8594424724578857,
+        -0.502571702003479,
+        -2.174999952316284
+      ],
+      [
+        -0.995600163936615,
+        -0.08088865131139755,
+        0.04730076715350151,
+        -0.21000000834465027
+      ],
+      [
+        -5.5617132233010125e-08,
+        0.5047926902770996,
+        0.8632405996322632,
+        1.4800000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.811845600605011,
+        0.017708616331219673,
+        -0.502571702003479,
+        -2.174999952316284
+      ],
+      [
+        0.017708616331219673,
+        0.9983333349227905,
+        0.047300785779953,
+        -0.21000000834465027
+      ],
+      [
+        0.58360356092453,
+        -0.05492729693651199,
+        0.6976876854896545,
+        1.340000033378601
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -1.7499998807907104,
+        -0.24999994039535522,
+        0.7500000596046448
+      ],
+      [
+        -2.5999999046325684,
+        -0.1700000762939453,
+        1.9300000667572021
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "ea0d9535-e512-4cd5-ae10-82c7237e9ec6",
+    "name": "V4 P06 | F3 primary trunnion load head L",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "a787ec7e-28c8-465e-a848-a156e5776cdc",
+    "name": "V4 P06 | F3 primary trunnion load head R",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "6b3f1fe3-a594-4978-80b1-24672433f980",
+    "name": "V4 P06 | F3 transverse hub support",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        7.549790126404332e-08,
+        -1.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        7.549790126404332e-08,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        7.549790126404332e-08,
+        -1.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        7.549790126404332e-08,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "769717a3-d83c-439d-8211-488cb7ff981b",
+    "name": "V4 P06 | F3 UPPER nacelle tie L",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        0.02173379436135292,
+        0.6089207530021667,
+        -0.7929332852363586,
+        -1.909999966621399
+      ],
+      [
+        -0.9997637867927551,
+        0.01323717925697565,
+        -0.017237601801753044,
+        0.20499999821186066
+      ],
+      [
+        -1.3288600086980296e-07,
+        0.7931206226348877,
+        0.6090645790100098,
+        1.6700000762939453
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.49220898747444153,
+        -0.011038879863917828,
+        -0.7929332852363586,
+        -1.9099998474121094
+      ],
+      [
+        -0.011038879863917828,
+        0.9997600317001343,
+        -0.017237594351172447,
+        0.20499999821186066
+      ],
+      [
+        0.8704070448875427,
+        0.01892179809510708,
+        0.44817954301834106,
+        1.53000009059906
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -1.21999990940094,
+        0.21999992430210114,
+        1.1400001049041748
+      ],
+      [
+        -2.5999999046325684,
+        0.19000007212162018,
+        1.9200000762939453
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "891fad64-0666-429a-9823-5cd09a4a5bfb",
+    "name": "V4 P06 | F3 UPPER nacelle tie R",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        -0.021734001114964485,
+        0.6089208722114563,
+        -0.7929331660270691,
+        -1.909999966621399
+      ],
+      [
+        -0.9997637867927551,
+        -0.013237515464425087,
+        0.017237603664398193,
+        -0.20499999821186066
+      ],
+      [
+        -1.2834856022436725e-07,
+        0.7931205034255981,
+        0.6090647578239441,
+        1.6700000762939453
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.492209255695343,
+        0.011038887314498425,
+        -0.7929332256317139,
+        -1.909999966621399
+      ],
+      [
+        0.011038887314498425,
+        0.9997600317001343,
+        0.01723761111497879,
+        -0.20499999821186066
+      ],
+      [
+        0.8704069256782532,
+        -0.01892181672155857,
+        0.4481797516345978,
+        1.5300002098083496
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -1.2200000286102295,
+        -0.21999993920326233,
+        1.1399999856948853
+      ],
+      [
+        -2.5999999046325684,
+        -0.19000005722045898,
+        1.9200003147125244
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "cdce7fba-dc5e-4bfa-9597-7dfb2046370e",
+    "name": "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        0.995600163936615,
+        -0.08088872581720352,
+        0.04730084538459778,
+        -0.21000000834465027
+      ],
+      [
+        0.09370355308055878,
+        0.8594425916671753,
+        -0.5025715231895447,
+        -2.174999952316284
+      ],
+      [
+        1.137177285670532e-08,
+        0.5047925114631653,
+        0.8632407188415527,
+        1.4800000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9983332753181458,
+        0.017708640545606613,
+        0.04730084910988808,
+        -0.21000000834465027
+      ],
+      [
+        0.017708640545606613,
+        0.8118456602096558,
+        -0.5025716423988342,
+        -2.174999952316284
+      ],
+      [
+        -0.05492737516760826,
+        0.5836035013198853,
+        0.6976876854896545,
+        1.340000033378601
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.25,
+        -1.75,
+        0.75
+      ],
+      [
+        -0.17000001668930054,
+        -2.5999999046325684,
+        1.9300000667572021
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "a06beebd-19d3-42d3-bce7-4b03f70891fb",
+    "name": "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        0.995600163936615,
+        0.08088872581720352,
+        -0.04730084538459778,
+        0.21000000834465027
+      ],
+      [
+        -0.09370355308055878,
+        0.8594425916671753,
+        -0.5025715231895447,
+        -2.174999952316284
+      ],
+      [
+        -1.137177285670532e-08,
+        0.5047925114631653,
+        0.8632407188415527,
+        1.4800000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9983332753181458,
+        -0.017708640545606613,
+        -0.04730084910988808,
+        0.21000000834465027
+      ],
+      [
+        -0.017708640545606613,
+        0.8118456602096558,
+        -0.5025716423988342,
+        -2.174999952316284
+      ],
+      [
+        0.05492737516760826,
+        0.5836035013198853,
+        0.6976876854896545,
+        1.340000033378601
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.25,
+        -1.75,
+        0.75
+      ],
+      [
+        0.17000001668930054,
+        -2.5999999046325684,
+        1.9300000667572021
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "09baf3da-0079-4e08-86a4-05b2209d0f8b",
+    "name": "V4 P06 | F4 primary trunnion load head L",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.17000000178813934
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.17000000178813934
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "845ae970-c797-426b-bf7d-ab218b8eb5ad",
+    "name": "V4 P06 | F4 primary trunnion load head R",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -2.5999999046325684
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "77ca1829-f6d0-4732-aace-c7d65666fee9",
+    "name": "V4 P06 | F4 transverse hub support",
+    "reason": "R4: separate stationary bearing/pitch rings from the swept blades; gimbal pivot lowered 0.28m",
+    "before_world_matrix": [
+      [
+        7.549790126404332e-08,
+        -7.549790126404332e-08,
+        1.0,
+        0.0
+      ],
+      [
+        1.0,
+        -1.4610056261045272e-15,
+        -7.549790126404332e-08,
+        -2.5999999046325684
+      ],
+      [
+        7.16093850883226e-15,
+        1.0,
+        7.549790126404332e-08,
+        2.2100000381469727
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        7.549790126404332e-08,
+        -7.549790126404332e-08,
+        1.0,
+        0.0
+      ],
+      [
+        1.0,
+        -1.4610056261045272e-15,
+        -7.549790126404332e-08,
+        -2.5999999046325684
+      ],
+      [
+        7.16093850883226e-15,
+        1.0,
+        7.549790126404332e-08,
+        1.9300000667572021
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "status": "PROPOSED_BEARING_STACK; LOADS/DEFLECTION_UNQUALIFIED"
+  },
+  {
+    "id": "34f58124-00ab-41ca-8015-b2b5188eedce",
+    "name": "V4 P06 | F4 UPPER nacelle tie L",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        0.9997637867927551,
+        -0.013237413950264454,
+        0.01723768562078476,
+        -0.20499999821186066
+      ],
+      [
+        0.021734002977609634,
+        0.6089208126068115,
+        -0.7929332256317139,
+        -1.909999966621399
+      ],
+      [
+        -4.296666356040646e-10,
+        0.7931205630302429,
+        0.6090646982192993,
+        1.6700000762939453
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9997600317001343,
+        0.01103893294930458,
+        0.017237678170204163,
+        -0.20499999821186066
+      ],
+      [
+        0.01103893294930458,
+        0.49220913648605347,
+        -0.7929332256317139,
+        -1.909999966621399
+      ],
+      [
+        -0.01892189122736454,
+        0.870406985282898,
+        0.44817960262298584,
+        1.53000009059906
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        -0.2199999988079071,
+        -1.2200000286102295,
+        1.1400001049041748
+      ],
+      [
+        -0.1899999976158142,
+        -2.5999999046325684,
+        1.9200000762939453
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  },
+  {
+    "id": "197829aa-623b-4616-a044-5206a6b8354d",
+    "name": "V4 P06 | F4 UPPER nacelle tie R",
+    "reason": "R4: refit upper brace endpoint to the lowered bearing-stack load head; preserve lower frame anchor",
+    "before_world_matrix": [
+      [
+        0.9997637867927551,
+        0.013237413950264454,
+        -0.01723768562078476,
+        0.20499999821186066
+      ],
+      [
+        -0.021734002977609634,
+        0.6089208126068115,
+        -0.7929332256317139,
+        -1.909999966621399
+      ],
+      [
+        4.296666356040646e-10,
+        0.7931205630302429,
+        0.6090646982192993,
+        1.6700000762939453
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "after_world_matrix": [
+      [
+        0.9997600317001343,
+        -0.01103893294930458,
+        -0.017237678170204163,
+        0.20499999821186066
+      ],
+      [
+        -0.01103893294930458,
+        0.49220913648605347,
+        -0.7929332256317139,
+        -1.909999966621399
+      ],
+      [
+        0.01892189122736454,
+        0.870406985282898,
+        0.44817960262298584,
+        1.53000009059906
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proposed_endpoints_m": [
+      [
+        0.2199999988079071,
+        -1.2200000286102295,
+        1.1400001049041748
+      ],
+      [
+        0.1899999976158142,
+        -2.5999999046325684,
+        1.9200000762939453
+      ]
+    ],
+    "status": "PROPOSED_ASSEMBLY_REPAIR_NOT_QUALIFIED_HARDWARE"
+  }
+]

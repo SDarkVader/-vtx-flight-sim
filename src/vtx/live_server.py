@@ -1,0 +1,316 @@
+"""Live observer/action boundary, independent physics clock and durable evidence.
+
+There is no pilot policy here. Colin must read /api/observe, reason, and send
+individual /api/action requests while the physical clock keeps running. Manual
+controls use that same endpoint. /api/view is renderer/audit truth, NOT a sensor.
+"""
+from __future__ import annotations
+import asyncio
+from contextlib import asynccontextmanager
+from datetime import datetime,timezone
+import hashlib
+import json
+import math
+from pathlib import Path
+import subprocess
+import time
+import uuid
+import mujoco as mj
+import numpy as np
+from fastapi import FastAPI,HTTPException,WebSocket,WebSocketDisconnect
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel,Field,field_validator,ConfigDict
+from scipy.spatial.transform import Rotation
+from .aircraft import Aircraft,DT,ROOT
+from .mission_selection import MapPoint,select_mission
+from .world import TestWorld
+
+class Action(BaseModel):
+    model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
+    authority:str
+    observation_id:int|None=None
+    reason:str=Field(min_length=3,max_length=2000)
+    engine:float=Field(ge=0,le=1)
+    collective_deg:list[float]
+    tilt_deg:list[list[float]]
+    cabin_deg:list[float]=[0.,0.]
+    @field_validator('collective_deg')
+    @classmethod
+    def pitch(cls,v):
+        if len(v)!=4 or any(not 0<=x<=30 for x in v):raise ValueError('Four collective controls, each 0–30 degrees')
+        return v
+    @field_validator('tilt_deg')
+    @classmethod
+    def tilt(cls,v):
+        if len(v)!=4 or any(len(t)!=2 or any(abs(x)>20 for x in t) for t in v):raise ValueError('Four X/Y tilt commands, each ±20 degrees')
+        return v
+    @field_validator('cabin_deg')
+    @classmethod
+    def cabin(cls,v):
+        if len(v)!=2 or any(abs(x)>15 for x in v):raise ValueError('Two cabin gimbal commands, ±15 degrees')
+        return v
+
+class Mission(BaseModel):
+    model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
+    departure:list[float]
+    destination:list[float]
+    authority:str='manual'
+    time_scale:float=Field(default=1.,ge=.01,le=1)
+    reference_rpm:float=800.
+    gear_variant:str='baseline'
+    label:str='user selected mission'
+    @field_validator('departure','destination')
+    @classmethod
+    def xy(cls,v):
+        if len(v)!=2:raise ValueError('Expected map X/Y')
+        return v
+    @field_validator('authority')
+    @classmethod
+    def auth(cls,v):
+        if v not in ['colin','manual']:raise ValueError('Authority must be colin or manual')
+        return v
+    @field_validator('reference_rpm')
+    @classmethod
+    def rpm(cls,v):
+        if v not in [800.,1200.]:raise ValueError('Only the documented 800 rpm baseline / 1200 rpm gearset proposal')
+        return v
+    @field_validator('gear_variant')
+    @classmethod
+    def gear(cls,v):
+        if v not in ['baseline','critical-damping-proposal']:raise ValueError('Unknown reviewed gear model')
+        return v
+
+
+class Laboratory:
+    def __init__(self):
+        self.world=TestWorld();self.aircraft=Aircraft(self.world);self.aircraft.spawn(0,0,0)
+        self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
+        self.mission=None;self.action_log=[];self.last_command_time=0.;self.lease_expired=False
+        self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
+        self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
+        self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None
+        self.memory_path=ROOT/'pilot/colin-memory.json'
+        self.memory_path.parent.mkdir(exist_ok=True)
+        if not self.memory_path.exists():self.memory_path.write_text(json.dumps(dict(schema_version=1,pilot='Colin',experience_count=0,lessons=[],aircraft_familiarity='cold start; no VTX-specific solution',stage2_accessed=False,history=[]),indent=2))
+
+    def log(self,kind,payload):
+        if self.audit_file:
+            row=dict(kind=kind,wall_utc=datetime.now(timezone.utc).isoformat(),t_s=round(float(self.aircraft.data.time),9),payload=payload)
+            self.audit_file.write(json.dumps(row,separators=(',',':'),allow_nan=False)+'\n');self.audit_file.flush()
+
+    def sensor_observation(self):
+        p=self.aircraft;d=p.data;m=p.model
+        if self.last_obs is not None and d.time-self.last_sensor_t<.05:return self.last_obs
+        self.last_sensor_t=float(d.time);self.obs_id+=1
+        bid=p.bids['airframe'];q=d.xquat[bid]
+        euler=Rotation.from_quat([q[1],q[2],q[3],q[0]]).as_euler('xyz',degrees=True)
+        velocity=np.zeros(6);mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,bid,velocity,0)
+        pos=d.xpos[bid];surface=self.world.surface_z(float(pos[0]),float(pos[1]))
+        # Quantized independent instruments, not privileged accelerations, thrust,
+        # inertia, future trajectory, contact manifold or optimizer state.
+        noise=self.sensor_rng.normal
+        obs=dict(observation_id=self.obs_id,t_s=round(float(d.time),3),
+            gnss_xy_m=np.round(pos[:2]+noise(0,.015,2),2).tolist(),
+            baro_m=round(float(pos[2]+noise(0,.01)),2),
+            radar_clearance_m=round(float(pos[2]+1.56-.95-surface+noise(0,.005)),3),
+            attitude_xyz_deg=np.round(euler+noise(0,.008,3),3).tolist(),
+            gyro_world_deg_s=np.round(np.degrees(velocity[:3])+noise(0,.008,3),3).tolist(),
+            gnss_velocity_mps=np.round(velocity[3:]+noise(0,.005,3),3).tolist(),
+            rotor_rpm=[round(float(abs(p.joint(f'rotor{i}_spin')[1])*60/(2*math.pi)),2) for i in range(1,5)],
+            shaft_torque_nm=[round(v['torque_nm'],1) for v in p.rotors],
+            collective_feedback_deg=np.round(p.pitch,3).tolist(),
+            tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
+            gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
+            fuel_kg=np.round(p.fuel,4).tolist(),engine_shaft_kw=round(p.power['engine_w']/1000,2),
+            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else []),
+            mission=self.mission,authority=self.authority,active=self.active,paused=self.paused,
+            time_scale=self.time_scale,
+            sensor_status='Provisional sensor models: GNSS/baro/IMU/shaft/angle/fuel/gear transducers; no certified sensor integration')
+        self.last_obs=obs;self.observations[self.obs_id]=obs
+        if len(self.observations)>3000:del self.observations[min(self.observations)]
+        self.log('observation',obs)
+        return obs
+
+    def start(self,request:Mission):
+        if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
+        mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
+        self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm)
+        self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
+        self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
+        self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
+        self.mission=dict(departure=request.departure,destination=request.destination,
+                          departure_z_m=mission.departure_surface_z_m,destination_z_m=mission.destination_surface_z_m,
+                          environment=self.world.id,environment_version=self.world.version,label=request.label)
+        self.log_path=ROOT/'evidence/flights'/self.run_id;self.log_path.mkdir(parents=True)
+        self.audit_file=(self.log_path/'events.jsonl').open('w')
+        self.wall_started=time.monotonic();self.action_log=[];self.last_command_time=0.;self.lease_expired=False
+        self.last_obs=None;self.obs_id=0;self.last_sensor_t=-1.;self.last_audit_t=-1.;self.observations={}
+        self.settled_s=0.;self.left_ground=False;self.error=None;self.end_summary=None
+        self.sensor_rng=np.random.default_rng(self.world.seed)
+        commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+        meta=dict(run_id=self.run_id,mission=self.mission,operator=request.authority,request=request.model_dump(),
+                  airframe=self.aircraft.provenance,software_commit=commit,
+                  learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
+                  clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
+                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; no attitude stabilization')
+        (self.log_path/'metadata.json').write_text(json.dumps(meta,indent=2))
+        (self.log_path/'model.xml').write_text(self.aircraft.xml)
+        (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
+        self.log('mission_start',meta)
+        return dict(run_id=self.run_id,observation=self.sensor_observation())
+
+    def accept_action(self,a:Action):
+        if not self.active:raise HTTPException(409,'No active sortie')
+        if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
+        if self.authority=='colin' and a.observation_id not in self.observations:raise HTTPException(409,'Colin action requires an actual permitted observation ID')
+        obs=self.observations.get(a.observation_id)
+        if obs and self.aircraft.data.time-obs['t_s']>1.:raise HTTPException(409,'Observation is more than one simulated second old; observe again')
+        row=dict(sequence=len(self.action_log)+1,issued_t_s=float(self.aircraft.data.time),
+                 apply_t_s=float(self.aircraft.data.time)+.02,observation=obs,decision=a.reason,issued=a.model_dump())
+        self.action_log.append(row);self.last_command_time=float(self.aircraft.data.time);self.lease_expired=False
+        self.log('pilot_decision',row)
+        return dict(accepted=True,sequence=row['sequence'],apply_t_s=row['apply_t_s'])
+
+    def integrate(self):
+        p=self.aircraft
+        if self.action_log:
+            for row in self.action_log[-4:]:
+                if not row.get('applied') and p.data.time>=row['apply_t_s']:
+                    cmd={k:row['issued'][k] for k in p.command}
+                    p.set_command(cmd);row['applied']=True
+                    self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
+        if p.data.time-self.last_command_time>5 and not self.lease_expired:
+            p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
+            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine idle; no flight rescue'))
+        p.step()
+        if p.data.time-self.last_audit_t>=.05:
+            self.last_audit_t=float(p.data.time)
+            self.log('physics_audit',p.physical_snapshot())
+            self.sensor_observation()
+            support=sum(1 for i in range(1,7) if p.joint(f'gear{i}_stroke')[0]>.002)
+            if support==0 and p.data.time>1:self.left_ground=True
+            dest=np.array(self.mission['destination'])
+            speed=float(np.linalg.norm(p.data.qvel[:3]))
+            level=float(p.data.xmat[p.bids['airframe']].reshape(3,3)[2,2])>.98
+            near=float(np.linalg.norm(p.data.qpos[:2]-dest))<2.
+            if self.left_ground and support>=3 and near and level and speed<.15 and not p.crashed:self.settled_s+=.05
+            else:self.settled_s=0.
+            if self.settled_s>=2:self.stop('supported stationary landing at destination')
+
+    def stop(self,reason):
+        if not self.active:return self.end_summary or dict(status='No active sortie')
+        self.active=False;p=self.aircraft
+        outcome='landed' if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
+        summary=dict(run_id=self.run_id,outcome=outcome,reason=reason,simulated_seconds=float(p.data.time),
+                     wall_seconds=time.monotonic()-self.wall_started,decisions=len(self.action_log),
+                     left_ground=self.left_ground,max_airframe_origin_altitude_m=p.max_alt,
+                     max_contact_force_n=p.max_impact_n,fuel_used_kg=float((p.fuel_initial-p.fuel).sum()),
+                     final=p.physical_snapshot(),mission=self.mission,
+                     claim='Conditional experimental model; not validated VTX performance')
+        self.log('sortie_end',summary)
+        (self.log_path/'summary.json').write_text(json.dumps(summary,indent=2));self.audit_file.close();self.audit_file=None
+        self.end_summary={k:v for k,v in summary.items() if k!='final'}
+        return self.end_summary
+
+    def view(self):
+        return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
+                    active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,
+                    clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
+                    rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,
+                    recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
+                    end_summary=self.end_summary)
+
+lab=Laboratory()
+
+async def physical_clock():
+    last=time.monotonic();accum=0.;seen_run=None
+    while True:
+        await asyncio.sleep(.005)
+        now=time.monotonic();delta=now-last;last=now
+        if not lab.active or lab.paused:accum=0.;continue
+        if seen_run!=lab.run_id:
+            seen_run=lab.run_id;accum=0.;continue
+        accum+=delta*lab.time_scale
+        n=min(int(accum/DT),40)
+        try:
+            for _ in range(n):
+                if lab.active:lab.integrate()
+                accum-=DT
+            lab.clock_lag_s=accum
+        except Exception as e:
+            lab.error=str(e);lab.log('solver_error',dict(error=str(e)))
+            lab.stop('solver error; evidence retained')
+
+@asynccontextmanager
+async def lifespan(app):
+    task=asyncio.create_task(physical_clock())
+    yield
+    if lab.active:lab.stop('server shutdown')
+    task.cancel()
+
+app=FastAPI(title='VTX live engineering laboratory',lifespan=lifespan)
+@app.get('/api/world')
+async def world():return lab.world.public()
+@app.get('/api/observe')
+async def observe():return lab.sensor_observation()
+@app.get('/api/view')
+async def view():return lab.view()
+@app.get('/api/validate')
+async def validate(x:float,y:float):
+    from dataclasses import asdict
+    return asdict(lab.world.validate(MapPoint(x,y),'mission'))
+@app.post('/api/mission')
+async def mission(request:Mission):
+    try:return lab.start(request)
+    except ValueError as e:raise HTTPException(422,str(e))
+@app.post('/api/action')
+async def action(a:Action):return lab.accept_action(a)
+@app.post('/api/stop')
+async def stop(request:dict):return lab.stop(str(request.get('reason','Operator ended sortie')))
+@app.post('/api/operator')
+async def operator(request:dict):
+    if 'authority' in request:
+        if request['authority'] not in ['manual','colin']:raise HTTPException(422,'Unknown authority')
+        lab.log('authority_change',dict(before=lab.authority,after=request['authority']));lab.authority=request['authority']
+    if 'paused' in request:
+        lab.paused=bool(request['paused']);lab.log('explicit_operator_pause',dict(paused=lab.paused))
+    if 'time_scale' in request:
+        value=float(request['time_scale'])
+        if not .01<=value<=1 or not math.isfinite(value):raise HTTPException(422,'Time scale must be .01–1')
+        lab.time_scale=value;lab.log('clock_scale',dict(time_scale=value))
+    return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale)
+@app.get('/api/memory')
+async def memory():return json.loads(lab.memory_path.read_text())
+@app.post('/api/lesson')
+async def lesson(request:dict):
+    text=str(request.get('lesson','')).strip()
+    if len(text)<10 or len(text)>4000:raise HTTPException(422,'A concrete observed lesson is required')
+    mem=json.loads(lab.memory_path.read_text())
+    record=dict(run_id=lab.run_id,lesson=text,wall_utc=datetime.now(timezone.utc).isoformat(),basis=request.get('basis',[]))
+    mem['lessons'].append(record);mem['experience_count']=len(mem['lessons']);mem['history'].append(dict(run_id=lab.run_id,checkpoint=mem['experience_count']))
+    mem['aircraft_familiarity']='Explicit lessons from logged live decisions; no automatic policy or environment map'
+    lab.memory_path.write_text(json.dumps(mem,indent=2));lab.log('learned_state_update',record)
+    if lab.log_path:(lab.log_path/'pilot-after.json').write_bytes(lab.memory_path.read_bytes())
+    return mem
+@app.get('/api/runs')
+async def runs():
+    result=[]
+    for path in sorted((ROOT/'evidence/flights').glob('*/summary.json'),reverse=True):
+        s=json.loads(path.read_text());result.append({k:v for k,v in s.items() if k!='final'})
+    return result
+@app.get('/api/replay/{run_id}')
+async def replay(run_id:str):
+    if not run_id.replace('-','').isalnum():raise HTTPException(422,'Invalid run ID')
+    path=ROOT/'evidence/flights'/run_id/'events.jsonl'
+    if not path.exists():raise HTTPException(404,'Run not found')
+    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=[json.loads(l)['payload'] for l in path.read_text().splitlines() if json.loads(l)['kind']=='physics_audit'])
+@app.websocket('/ws')
+async def stream(ws:WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            await ws.send_json(lab.view());await asyncio.sleep(.05)
+    except (WebSocketDisconnect,RuntimeError):pass
+app.mount('/evidence',StaticFiles(directory=ROOT/'evidence'),name='evidence')
+app.mount('/',StaticFiles(directory=ROOT/'public',html=True),name='frontend')
