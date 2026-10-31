@@ -4,6 +4,10 @@
 
 **Current state:** repository scaffolding only. A fully coupled, interactive 3D flight simulator does not yet exist, and no VTX flightworthiness or calibrated stability result is claimed.
 
+## Non-negotiable: Colin flies by wire
+
+[Live fly-by-wire piloting contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md). The proprietor selects start and destination; **Colin pilots through live controls from observations**, including physical takeoff and landing attempts. No autopilot pretending to be an agent, no precomputed trajectory driving motion and no playback substituted for flight. Deterministic replay is post-flight audit only.
+
 ## Required physics and source register
 
 [PHYSICS_AND_RESEARCH_BASELINE.md](docs/PHYSICS_AND_RESEARCH_BASELINE.md) is the authoritative engineering baseline. Current published repository has design requirements and physics research only; it does **not** yet contain the complete starter source or validated executable aircraft. No flight or unit-test results have been independently verified on GitHub.
@@ -18,7 +22,7 @@ Four independently tilt-vectoring ducted rotors, central two-seat spherical cabi
 
 Implement a deterministic 6-DOF Newton–Euler flight dynamics model with quaternion attitude, four independently actuated ducted rotor thrust vectors, feedback control, saturation and gyroscopic effects, realistic contacts/collisions and a reproducible browser-hosted 3D interactive flight sandbox. Physics state must drive animation, never the reverse.
 
-The user chooses **any valid takeoff position and destination on the map**. The vehicle must attempt ground takeoff, hover, navigation, turning, approach, touchdown and settling under simulated physics. Show failures and crashes; do not script success or suppress instability.
+The user chooses **any valid takeoff position and destination on the map**. Colin must personally issue fly-by-wire controls based on live pilot observations to attempt ground takeoff, hover, navigation, turning, approach, touchdown and settling under simulated physics. Show failures and crashes; do not script success or suppress instability.
 
 Stage 1 is a training/test world Colin builds. Persist versioned controller learning and experience. The proprietor later introduces a **previously unseen Stage 2 world**. No advance access or training on Stage 2. Evaluate transfer with continued learned state, and compare against fresh-start. Record failures and adaptation.
 
