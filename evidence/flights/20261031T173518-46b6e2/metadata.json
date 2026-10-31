@@ -1,0 +1,53 @@
+{
+  "run_id": "20261031T173518-46b6e2",
+  "mission": {
+    "departure": [
+      0.0,
+      0.0
+    ],
+    "destination": [
+      -50.0,
+      20.0
+    ],
+    "departure_z_m": 0.0,
+    "destination_z_m": 0.0,
+    "environment": "stage1-valley",
+    "environment_version": "1",
+    "label": "Mobile supervised simulator practice"
+  },
+  "operator": "colin",
+  "request": {
+    "departure": [
+      0.0,
+      0.0
+    ],
+    "destination": [
+      -50.0,
+      20.0
+    ],
+    "authority": "colin",
+    "time_scale": 0.05,
+    "stability_assist": 0.0,
+    "reference_rpm": 1200.0,
+    "gear_variant": "baseline",
+    "airframe_variant": "light",
+    "fuel_kg": 10.0,
+    "engine_power_limit_kw": 300.0,
+    "label": "Mobile supervised simulator practice"
+  },
+  "airframe": {
+    "revision": "P0-V4A-assembly-r5",
+    "ledger_sha256": "1dabedd7c423c55a6b9910522b8003fd33cd76aafc9137c9058dcd119b9fea50",
+    "airframe_variant": "light",
+    "render_asset": "/assets/airframe-live.glb",
+    "initial_fuel_kg": 10.0,
+    "cabin_gimbal": "Proposed yaw \u00b1180\u00b0, roll/pitch \u00b115\u00b0, powered level assistance; travel, torque and power limits prevent guaranteed leveling",
+    "engine_power_limit_kw": 300.0,
+    "propulsion_revision": "P0-V4A-power-r1",
+    "exhaust_lift": {
+      "status": "CALIBRATION_BLOCKED",
+      "applied_force_n": 0.0,
+      "reason": "Installed exhaust airflow/state, duct mass and shaft backpressure penalty unknown"
+    },
+    "shaft_governor": {
+      "mode": "pi",¶»§q«^
