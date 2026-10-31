@@ -111,7 +111,7 @@ unknown-input register are saved for a concrete installation review.
 
 ## Actual low-fuel piloting test
 
-Run `20261031T081204-ce 4792` used the same proprietor A/B, R5 geometry, the
+Run `20261031T081204-ce4792` used the same proprietor A/B, R5 geometry, the
 1200 rpm gearset, critical-damping gear,10 kg fuel and the 300 kW ceiling.
 Eighteen individual live decisions produced lift-off, a small vector-response
 test, local descent and touchdown near A. The pilot feathered and idled from a
