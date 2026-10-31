@@ -50,4 +50,50 @@
       "reason": "Installed exhaust airflow/state, duct mass and shaft backpressure penalty unknown"
     },
     "shaft_governor": {
-      "mode": "pi",¶»§q«^
+      "mode": "pi",
+      "kp_nm_per_rad_s": 180.0,
+      "integral_time_s": 2.0,
+      "status": "Proposed local RPM regulation; no attitude/height/navigation feedback"
+    },
+    "physics": "MuJoCo 3.17.0",
+    "dt_s": 0.0025,
+    "aero_rate_hz": 100,
+    "gear_variant": "baseline",
+    "reference_rpm": 1200.0,
+    "model_xml_sha256": "92261c0fede61e02c6a10047168de5d0b04d8258d083c1719dc4bdcb77b050ad",
+    "status": "CALIBRATION_BLOCKED \u2014 conditional engineering experiment",
+    "hypotheses": {
+      "mass_distribution": "R4 per-part allocated masses preserved; 32 legacy P06 box-spar parts removed; exact retained surface triangle moments. NOT measured mass.",
+      "polar": "2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2",
+      "nacelle_torque_limit_nm": 1100.0,
+      "nacelle_command_rate_deg_s": 20.0,
+      "pitch_rate_deg_s": 4.0,
+      "pitch_lag_s": 0.15,
+      "nacelle_target_rate_deg_s": 5.0,
+      "engine_spool_s": 2.0,
+      "engine_continuous_w": 469800.0,
+      "transmission_efficiency": 0.95,
+      "overall_ratio": 5.013333333333334,
+      "rotor_spin_senses": [
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "highspeed_shaft_topology": "ideal equivalent ratio; CV/tooth compliance unmodeled",
+      "installed_torque_limit_nm": 769.3723495675698,
+      "sfc_kg_kwh": 0.4,
+      "fuel_density_kg_l": 0.8,
+      "body_CdA_m2": 1.65,
+      "gear": "linear spring: static compression quarter stroke; damping ratio 0.55",
+      "self_contact": "CAD clearance audit; no all-part multibody self-contact",
+      "structural_failure": "rigid load paths; no laminate failure allowables or FEA",
+      "rotor_map": "axial BEMT; duct gain=1; no CFD/interference/edgewise qualification"
+    }
+  },
+  "software_commit": "UNKNOWN_BUILD_COMMIT",
+  "runtime_source_sha256": "5adc0a582d26251d8f995f95ae194af359708a3edbf565fb56b45dd0d9b784b6",
+  "learning_checkpoint_sha256": "d76efa408091aaf520cbea7be6531b68dae748162a38a66206719c6c3c240f70",
+  "clocks": "400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale",
+  "controls": "20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; experimental rate damping is shadow-only and does not control aircraft"
+}
