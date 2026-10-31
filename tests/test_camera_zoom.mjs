@@ -1,0 +1,10 @@
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const source=await readFile(new URL('../public/camera-zoom.js',import.meta.url),'utf8');
+const {zoomDistance}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+assert.equal(zoomDistance(20,.8,2,600),16);
+assert.equal(zoomDistance(20,1.25,2,600),25);
+assert.equal(zoomDistance(2,.8,2,600),2);
+assert.equal(zoomDistance(590,1.25,2,600),600);
+assert.throws(()=>zoomDistance(NaN,.8,2,600),RangeError);
+console.log('Camera zoom limits passed');

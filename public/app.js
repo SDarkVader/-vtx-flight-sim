@@ -3,6 +3,7 @@ import {OrbitControls} from './vendor/OrbitControls.js';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
 import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-5';
+import {zoomDistance} from './camera-zoom.js?v=1';
 
 const $=id=>document.getElementById(id);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
@@ -26,6 +27,8 @@ const viewport=$('viewport'),scene=new THREE.Scene();scene.background=new THREE.
 const camera=new THREE.PerspectiveCamera(48,1,.05,2000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.2));renderer.shadowMap.enabled=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
+// Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
+orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
 const hemi=new THREE.HemisphereLight('#e4f5ff','#65745a',2.3);hemi.position.set(0,0,100);scene.add(hemi);
 const sun=new THREE.DirectionalLight('#fff1d6',3.2);sun.position.set(-70,-90,140);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.camera.near=1;sun.shadow.camera.far=350;sun.shadow.bias=-.0004;scene.add(sun);scene.add(sun.target);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
@@ -196,9 +199,24 @@ $('takeover').onclick=guard(async()=>{
 });
 $('scale').onchange=guard(async()=>{await api('/api/operator',{time_scale:+$('scale').value});});
 $('feather').onclick=()=>{command.engine=0;command.collective_deg.fill(0);$('engine').value=0;$('engine').oninput();$('common').value=0;$('common').oninput();dirty=true;};
-$('camera').onclick=()=>{cameraMode=cameraMode==='chase'?'orbit':'chase';$('camera').textContent=cameraMode==='chase'?'Chase camera':'Free orbit';orbit.enabled=true;};
 let cockpitYaw=0,cockpitPitch=0,cockpitPointer=null;
-$('cockpit').onclick=()=>{cameraMode=cameraMode==='cockpit'?'chase':'cockpit';orbit.enabled=cameraMode!=='cockpit';renderer.domElement.style.touchAction=cameraMode==='cockpit'?'none':'';$('cockpit-look').hidden=cameraMode!=='cockpit';$('cockpit').textContent=cameraMode==='cockpit'?'Exit cockpit · C':'Cockpit · C';};
+function setCameraMode(mode){cameraMode=mode;orbit.enabled=mode!=='cockpit';renderer.domElement.style.touchAction='none';$('cockpit-look').hidden=mode!=='cockpit';$('cockpit').textContent=mode==='cockpit'?'Exit cockpit · C':'Cockpit · C';$('camera').textContent=mode==='chase'?'Chase camera':'Free orbit';}
+$('camera').onclick=()=>setCameraMode(cameraMode==='chase'?'orbit':'chase');
+$('cockpit').onclick=()=>setCameraMode(cameraMode==='cockpit'?'chase':'cockpit');
+function zoomCamera(factor){
+ if(cameraMode==='cockpit'){toast('Zoom is available in the external camera.');return;}
+ const offset=camera.position.clone().sub(orbit.target),distance=offset.length();
+ if(distance<1e-9)return;
+ camera.position.copy(orbit.target).add(offset.multiplyScalar(zoomDistance(distance,factor,orbit.minDistance,orbit.maxDistance)/distance));
+ orbit.update();
+}
+$('zoom-in').onclick=()=>zoomCamera(.8);$('zoom-out').onclick=()=>zoomCamera(1.25);
+$('view-top').onclick=()=>{
+ const truth=replayFrames?.[replayFrame]||last?.rendering_truth,air=truth?.body_poses?.airframe?.position;
+ if(air)orbit.target.set(air[0],air[1],air[2]+1.5);
+ const distance=THREE.MathUtils.clamp(camera.position.distanceTo(orbit.target),18,orbit.maxDistance);
+ setCameraMode('orbit');camera.up.set(0,0,1);camera.position.copy(orbit.target).add(new THREE.Vector3(0,-.01,distance));orbit.update();
+};
 $('look-left').onclick=()=>{cockpitYaw=THREE.MathUtils.clamp(cockpitYaw-Math.PI/12,-Math.PI/2,Math.PI/2);};
 $('look-right').onclick=()=>{cockpitYaw=THREE.MathUtils.clamp(cockpitYaw+Math.PI/12,-Math.PI/2,Math.PI/2);};
 $('look-center').onclick=()=>{cockpitYaw=0;cockpitPitch=0;};
