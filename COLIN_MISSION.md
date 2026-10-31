@@ -1,6 +1,10 @@
 # Colin — VTX physical aircraft and experiential flight laboratory
 
-**Objective:** Build the actual VTX-P0-V4 as a coherent mechanical *digital aircraft*, place it in an explorable physical 3D test world, and let an initially inexperienced pilot learn to operate it through attempts and consequences. Use results to revise the design. This is an engineering development experiment, not a flight-demo animation or a predetermined stable autopilot.
+**Objective:** Build the actual VTX-P0-V4 as a coherent mechanical *digital aircraft*, place it in an explorable physical 3D test world, and have Colin operate its real-time fly-by-wire controls as an initially inexperienced pilot who learns from attempts and consequences. Use results to revise the design. This is an engineering development experiment, not a flight-demo animation or a predetermined stable autopilot.
+
+## Live piloting — no scripted route, no autopilot substitution
+
+**Mandatory: [docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md).** Colin must literally **fly** using live fly-by-wire controls: receive limited pilot observations, operate the control inputs, see the physical response, react and learn. The proprietor chooses valid origin A and destination B, **not a path or a control schedule**. No route-following autopilot, replay-based flying, precomputed attitude/position trajectory, pose manipulation or invisible flight assistance. Expose a shared real-time manual/agent flight-controls interface and show timestamped observation → issued control → resulting actuator/body response. Replay serves only later analysis, never as the flight mechanism. The exact same mechanical aircraft, gravity, mass and rotor angular momentum govern flight throughout.
 
 ## Authoritative engineering baseline — mandatory before implementation
 
