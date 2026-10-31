@@ -1,0 +1,382 @@
+ORIGINAL DOCUMENT: VTX_P0_V1_Parts_Cost_RnD.pdf
+SOURCE STATUS: Extracted text from original concept PDF, not the PDF binary; images/diagrams are not included. This is P0-V1 historical reference, not a validated P0-V4 specification.
+
+<PARSED TEXT FOR PAGE: 1 / 7>
+VTX / P0-V1                                                                                PARTS, COST AND R&D PROGRAMME
+
+
+
+
+ PROCUREMENT / PROGRAMME DEFINITION
+
+
+
+ Prototype P0-V1 Parts, Cost & R&D;
+ VTX-P0-V1 / P0-V1 / ISSUE A / 30 OCT 2026
+
+
+ ENGINEERING CONCEPT / NOT A RELEASED DESIGN: geometry is an internally consistent concept
+ baseline; component masses, aerodynamic coefficients, engine-specific fuel consumption,
+ crashworthiness and flight-control performance are not substantiated by qualification tests.
+
+ One-off, two-place, gimballed spherical-cabin VTOL with a central CFRP ring and four ducted rotors. This
+ document defines an initial procurement and development investment envelope, not a production quotation.
+
+
+
+ 01 / Executive cost position
+   COST GROUP                                            LOW PLANNING CASE                   HIGH PLANNING CASE
+
+   P0 component procurement / fabrication                GBP 1,070,000                       GBP 3,110,000
+
+   Non-recurring development & validation                GBP 3,970,000                       GBP 12,050,000
+
+   Subtotal                                              GBP 5,040,000                       GBP 15,160,000
+
+   Explicit programme contingency: 25%                   GBP 1,260,000                       GBP 3,790,000
+
+   TOTAL DEVELOPMENT ENVELOPE                            GBP 6,300,000                       GBP 18,950,000
+
+
+ R&D; budget is separate from the listed completed-P0 parts budget. Test articles, coupons, sacrificial rigs and
+ prototype rework may appear within R&D.; All figures are illustrative GBP 2026 planning allowances; no
+ supplier quotations, VAT allocation or contracts verified. Unlimited R&D; budget means the upper range is not
+ a spending cap.
+
+
+ Configuration and controlled cost basis
+
+   METRIC                           VALUE                        COST / MASS BASIS
+
+   Empty mass target                671 kg                       11 subsystem allocations, P01-P11
+
+   Test loaded mass                 901 kg                       671 + 170 kg occupants + 60 kg Jet A-1
+
+   Nominal turbine reference        M250-C30P                    650 shp takeoff; supplier/install fit review outstanding
+
+   Fan group                        4 x 2.257 m                  16.0 m² disk area, composite ducts and blades
+
+   Reference fuel price             GBP 1.45/L                   Brighton City Airport gross listed, 5 Sep 2026 [S10]
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                      PAGE 1
+<PARSED TEXT FOR PAGE: 2 / 7>
+VTX / P0-V1                                                                       PARTS, COST AND R&D PROGRAMME
+
+
+
+
+ 02 / Component procurement ledger
+   ID       SUBSYSTEM                                         KG        LOW GBP k            HIGH GBP k
+
+   P01      Turboshaft installation                           132       220                  650
+
+   P02      Four ducted fan modules                           119       120                  320
+
+   P03      Four-way transmission                             72        130                  350
+
+   P04      Spherical cabin module                            88        120                  400
+
+   P05      Two-axis cabin gimbal                             35        80                   230
+
+   P06      Main structure                                    75        120                  350
+
+   P07      Fuel installation                                 29        35                   100
+
+   P08      Flight-control avionics                           23        110                  280
+
+   P09      Two seat/restraint systems                        25        25                   90
+
+   P10      Landing gear                                      24        30                   110
+
+   P11      Electrical and cooling                            49        80                   230
+
+   -        TOTAL TARGET EMPTY MASS                           671       1,070                3,110
+
+
+ P0-V1 masses are held fixed across the technical PDF and blueprint slides. Structural reserve/mass-growth
+ allowance is NOT silently added here; mass-growth scenarios must be reported as explicit deltas.
+
+
+ Cost-estimate classification
+ Indicative order-of-magnitude engineering allowances for one bespoke full-scale prototype. Engine cost
+ depends critically on serviceable status, overhaul condition and availability. Duct/manufacturing prices
+ depend on composite layup, tool count, quality records and iterative test rejects. Do not treat these numbers
+ as supplier offers.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                      PAGE 2
+<PARSED TEXT FOR PAGE: 3 / 7>
+VTX / P0-V1                                                                                      PARTS, COST AND R&D PROGRAMME
+
+
+
+
+ 03 / What is included in each subsystem
+ P01 Turboshaft installation / 132 kg
+ M250-C30P class; mounts, intake, exhaust and ancillaries. The allocation covers a component-level design target; detailed
+ drawings, measured masses, interfaces and supplier selections are pending.
+
+
+ P02 Four ducted fan modules / 119 kg
+ CFRP blades, short ducts, stators, independently actuated collective-pitch hubs, containment. The allocation covers a
+ component-level design target; detailed drawings, measured masses, interfaces and supplier selections are pending.
+
+
+ P03 Four-way transmission / 72 kg
+ Common-speed reduction, shafts, couplings, gearboxes and bearings. The allocation covers a component-level design target;
+ detailed drawings, measured masses, interfaces and supplier selections are pending.
+
+
+ P04 Spherical cabin module / 88 kg
+ CFRP sandwich shell; laminated glazing; internal liner. The allocation covers a component-level design target; detailed drawings,
+ measured masses, interfaces and supplier selections are pending.
+
+
+ P05 Two-axis cabin gimbal / 35 kg
+ Gimbal rings, bearings, actuation and sensing. The allocation covers a component-level design target; detailed drawings,
+ measured masses, interfaces and supplier selections are pending.
+
+
+ P06 Main structure / 75 kg
+ 40 kg ring allocation plus four stiffened radial supports. The allocation covers a component-level design target; detailed drawings,
+ measured masses, interfaces and supplier selections are pending.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                          PAGE 3
+<PARSED TEXT FOR PAGE: 4 / 7>
+VTX / P0-V1                                                                                    PARTS, COST AND R&D PROGRAMME
+
+
+
+
+ P07 Fuel installation / 29 kg
+ Protected tanks, lines, pumps, vents, instrumentation. The allocation covers a component-level design target; detailed drawings,
+ measured masses, interfaces and supplier selections are pending.
+
+
+ P08 Flight-control avionics / 23 kg
+ Independent control computer, IMU, sensors, wiring. The allocation covers a component-level design target; detailed drawings,
+ measured masses, interfaces and supplier selections are pending.
+
+
+ P09 Two seat/restraint systems / 25 kg
+ Load-bearing seats, harnesses and anchors. The allocation covers a component-level design target; detailed drawings, measured
+ masses, interfaces and supplier selections are pending.
+
+
+ P10 Landing gear / 24 kg
+ Skid/strut arrangement with energy absorbing elements. The allocation covers a component-level design target; detailed
+ drawings, measured masses, interfaces and supplier selections are pending.
+
+
+ P11 Electrical and cooling / 49 kg
+ Power buses, actuators, heat exchangers, auxiliaries. The allocation covers a component-level design target; detailed drawings,
+ measured masses, interfaces and supplier selections are pending.
+
+
+
+ 04 / Materials and weight-risk strategy
+   LOCATION                          PRIMARY STUDY MATERIAL                        VERIFICATION ISSUE
+
+   Cabin structural shell            CFRP skins / aramid honeycomb or PMI          Buckling, face/core debond, impact, fire/smoke,
+                                     foam core                                     ingress
+
+   Cabin transparent regions         Laminated aviation glazing, approx. 35%       Pane stack, impact, edges, optical distortion; 88
+                                     area target                                   kg cabin allowance
+
+   Interior trim                     Flame-resistant PEI/PEEK where justified;     Fire/smoke/toxicity; non-load-bearing only
+                                     PVC only if qualified
+
+   Central ring and supports         Tailored CFRP box structures + metallic       Local compression, torsion, damage tolerance,
+                                     inserts                                       joint slip
+
+   Bearing and gearbox               Titanium and steels where needed              Bearing pressure, fatigue, temperature,
+   interfaces                                                                      lubrication
+
+   Rotor/stator ducts                Composite structure with containment          Blade-out load, dynamic distortion and tip-gap
+                                     concept                                       clearance
+
+
+
+
+ Why weight targets are not yet released
+ The 75 kg frame allocation uses an illustrative 40 kg central ring plus four internally stiffened arms of
+ approximately 8.76 kg each. Shortening these arms requires the central ring to accept the transferred loads.
+ Local panel buckling may invalidate the selected 3.5 mm skins without verified transverse stiffness and webs.
+ The 88 kg cabin includes a speculative 14 kg increment over the earlier monolithic-glass concept to allow
+ laminated glazing.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                       PAGE 4
+<PARSED TEXT FOR PAGE: 5 / 7>
+VTX / P0-V1                                                                                       PARTS, COST AND R&D PROGRAMME
+
+
+
+
+ 05 / Non-recurring R&D; programme
+   ID        WORK PACKAGE                                                                 LOW GBP k             HIGH GBP k
+
+   R01       Architecture, requirements, configuration control                            220                   550
+
+   R02       Composite design, coupon tests, joints and nonlinear FEA                     300                   900
+
+   R03       Aerodynamic CFD, wind tunnel and airframe interference                       350                   1,100
+
+   R04       Rotor/stator, variable-pitch hubs, tooling and dynamometer                   450                   1,400
+
+   R05       Transmission, lubrication, turbine integration test rigs                     450                   1,400
+
+   R06       Gimbal / flight-controls software, HIL and fault injection                   450                   1,200
+
+   R07       Drop, landing, impact, fatigue and structural proof tests                    250                   800
+
+   R08       Manufacturing tooling, quality assurance and assembly                        450                   1,300
+
+   R09       Tethered / uncrewed flight-test and instrumented campaign                    400                   1,200
+
+   R10       Test site, telemetry, rigs and data instrumentation                          350                   1,300
+
+   R11       Independent assurance, test operations and insurance                         300                   900
+
+   -         R&D SUBTOTAL                                                                 3,970                 12,050
+
+
+ Packages include engineering labour, models, material and destructive test specimens, commissioned tests,
+ revisions and independent review. They do not include the full completed P0 prototype procurement subtotal
+ already listed in section 02.
+
+
+
+ 06 / Development gates and evidence requirements
+   GATE      OBJECTIVE                                       MINIMUM DOCUMENTED EVIDENCE
+
+   G0        Freeze dimensions, requirements and             Signed interface control drawing; load cases; project configuration
+             failure analysis                                ledger
+
+   G1        Converged structural sizing                     Laminate schedules; modal + buckling FEA; coupon/element evidence;
+                                                             measured mass
+
+   G2        Rotor and turbine bench substantiation          Thrust/torque maps, energy efficiency, nacelle crosswind, SFC and
+                                                             controls
+
+   G3        Gimbal and avionics hardware-in-loop            Sensor-failure test, asymmetric loads, saturation and power
+                                                             interruption
+
+   G4        Full-aircraft static/ground test                Proof load, drop/load paths, blade containment assessment, resonance
+
+   G5        Tethered uncrewed powered hover                 Instrumented margins, fault detection, power oscillation and thermal
+                                                             limits
+
+   G6        Uncrewed restricted-range manoeuvre             500 m baseline and 200 m conditional turn; repeatable flight logs
+             programme
+
+   G7        Post-test design release decision               Revised actual masses, measured power map and unresolved hazard
+                                                             closure
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                        PAGE 5
+<PARSED TEXT FOR PAGE: 6 / 7>
+VTX / P0-V1                                                                                 PARTS, COST AND R&D PROGRAMME
+
+
+
+
+ 07 / Principal engineering uncertainties
+   ID       RISK                                SPECIFIC IMPACT
+
+   U01      Four-thrust-channel control loss    The simplified allocation loses a degree of independent control after one rotor
+                                                fails; backup torque/authority not demonstrated.
+
+   U02      Common turbine failure              All four rotor branches share one prime mover; no power-out continued-hover
+                                                capability in P0.
+
+   U03      Drive torque & dynamics             Gear reduction, shaft critical speeds and torsional vibration under cyclic rotor
+                                                loading unverified.
+
+   U04      Duct aero / structural distortion   Blade tip clearance, edgewise-flow losses, rotor wake interference and
+                                                containment not yet tested.
+
+   U05      Cabin impact and gimbal integrity   Laminated glazing and composite panel impact/load allowables not
+                                                substantiated.
+
+   U06      Mass budget / CG                    No solid CAD or weighed subassembly; fore-aft fuel/crew balance and mass
+                                                moments of inertia unknown.
+
+   U07      SFC & power integration             Reference 0.4 kg/kWh independent of engine power and altitude is unvalidated;
+                                                rated power not constant.
+
+   U08      Test configuration maturity         Drawings are parametric concept views, not fabrication or toleranced
+                                                machining drawings.
+
+
+
+
+ Development spending priorities
+ Do not first optimise only cost per kilogram. Priority 1 is a testable rotor/thrust/engine envelope; priority 2 a
+ verified stiff structural load path; priority 3 control authority with asymmetric loads and credible
+ propulsion-failure response; priority 4 aerodynamic optimisation of duct lip, blade and stator; priority 5
+ component-level production design.
+
+
+ Budget sensitivity
+ Changing fuel from GBP 1.45/L to GBP 1.82/L (both published UK airfield examples, [S10-S11]) alters P0-V1
+ calculated 27 km mission fuel cost from approximately GBP 45.58 to GBP 57.22 at the nominal assumed
+ engine efficiency. That fuel variation is small compared with airframe development costs.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                     PAGE 6
+<PARSED TEXT FOR PAGE: 7 / 7>
+VTX / P0-V1                                                                                                 PARTS, COST AND R&D PROGRAMME
+
+
+
+
+ 08 / Research and provenance
+ S01 Rolls-Royce: M250/RR300 FIRST Network Directory (2024); C30P 650 shp takeoff, nominal 245 lb dry, published SFC table. OPEN SOURCE
+
+ S02 Bell / 206L-4: Engine takeoff and maximum-continuous engine ratings vs installed transmission limitations (2005 product specification).
+ OPEN SOURCE
+
+ S03 Hine et al., 2025: Design and Analysis of a Liftfan for eVTOL Aircraft. Experimental rotor/stator optimisation and nacelle forward-flight
+ losses. DOI:10.1115/1.4067673. OPEN SOURCE
+
+ S04 Hu et al., 2021: Hovering efficiency optimization of the ducted propeller with weight penalty taken into account.
+ DOI:10.1016/j.ast.2021.106937. OPEN SOURCE
+
+ S05 Akturk & Camci, 2014: Tip-clearance treatment experiments in ducted VTOL fans. DOI:10.1115/1.4023469. OPEN SOURCE
+
+ S06 Critchfield & Ning, 2026: Mission-focused multidisciplinary eVTOL propulsion optimisation. DOI:10.2514/1.C038445. OPEN SOURCE
+
+ S07 Li, Chen & Jia, 2023: Experimental investigation on hover performance of a ducted coaxial-rotor UAV; rotor location and clearance
+ influence. OPEN SOURCE
+
+ S08 Liu et al., 2024: Impact response and crashworthy design of composite fuselage structures: An overview. OPEN SOURCE
+
+ S09 Muniraj & Sreehari, 2021: Experimental damage evaluation of honeycomb sandwich with composite face sheets. OPEN SOURCE
+
+ S10 Brighton City Airport: Jet A-1 gross indicative pump price GBP 1.45/L from 5 September 2026. OPEN SOURCE
+
+ S11 Shobdon Airfield: Jet A-1 quoted GBP 1.82/L nonmember, 2 October 2026; regional price variation. OPEN SOURCE
+
+ Research screening conducted with Wolfram calculations, SciSpace and Consensus; retrieved papers support trade-study
+ assumptions but do not qualify the specific aircraft. Elicit access unavailable in this chat. Source dates and contents should be
+ rechecked during formal design control.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                                           PAGE 7
