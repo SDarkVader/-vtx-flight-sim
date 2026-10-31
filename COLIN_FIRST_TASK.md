@@ -2,6 +2,8 @@
 
 **Build our VTX aircraft, not a convenient mathematical substitute.**
 
+**Colin must directly fly the simulated aircraft via actual live fly-by-wire inputs.** Read [docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md). User selects only start and destination. Colin, not an autopilot or scripted replay, chooses controls continuously from observations, takes off, navigates, tries to land and learns from consequences. Give Colin the exact same input interface as a human pilot. Never substitute a precomputed path for actual piloting.
+
 **First read [docs/PHYSICS_AND_RESEARCH_BASELINE.md](docs/PHYSICS_AND_RESEARCH_BASELINE.md).** No aircraft physics work is accepted without gravity, full body inertia, rotor angular momentum, ground contact, real moment arms and source-provenanced design properties. A massless visual proxy is not the aircraft.
 
 1. Import and inspect the actual P0-V4 model and engineering data. Build a coherent editable mechanical 3D aircraft, including real rotor tilt joints, power path, mass/CG/inertia, fuel placement, structure and landing contacts. Document unknowns; do not invent performance to force flight.
