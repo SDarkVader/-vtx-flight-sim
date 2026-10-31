@@ -40,10 +40,11 @@
     },
     {
       "run_id": "20261031T082338-71a679",
-      "lesson": "The 6 m climb and northbound obstacle avoidance developed substantial northward and westward speed. I initiated the east turn with high lateral speed and insufficient clearance from the water area. The first airframe collision occurred at 27.935 simulated seconds; the command lease expired later at 29.71 seconds. Do not attribute the initial impact to the later command loss. Plan a velocity reduction and safe route earlier, and treat edgewise flow above 5 m/s as uncalibrated. The displayed water has no flotation or hydrodynamic impact model.",
+      "lesson": "The proprietor watched the pilot lose control when the credit ran out, leading to the collision in the displayed water area. The last applied command was at 24.73 simulated seconds, first impact at 27.935, and the five-second command lease expired at 29.71. Lease expiry is a later failsafe event; pilot control can be lost earlier when credit expires. In future, preserve a safe handover plan and account for control availability, lateral speed and water clearance. Edgewise flow above 5 m/s remains uncalibrated; displayed water has no flotation or hydrodynamic impact model.",
       "wall_utc": "2026-10-31T09:42:36.923167+00:00",
       "basis": [
-        "20261031T082338-71a679 events.jsonl: decisions 39\u201343, first collision, lease expiry and final summary"
+        "Proprietor eyewitness correction: credit expired and pilot control was lost before the impact",
+        "20261031T082338-71a679 events.jsonl: last applied command, first collision, later lease expiry and final summary"
       ]
     }
   ],
