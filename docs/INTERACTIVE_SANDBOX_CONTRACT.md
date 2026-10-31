@@ -1,11 +1,13 @@
-# Interactive 3D sandbox acceptance
+# Physical flight-test world
 
-A single coherent VTX-P0-V4 aircraft must be rendered from its true integrated 6-DOF physics state. Never replace flight dynamics with scripted trajectories, keyed animation or invisible attitude corrections. Show separate F1–F4 ducted fan thrust, tilt actuators, saturation and latency.
+The environment must be a meaningful navigable 3D world with scale, terrain, obstacles, ground/structure collisions and multiple viable departure and landing surfaces, not a small scripted viewer. Engine choice is Colin's engineering decision; full-screen or standalone access is acceptable.
 
-Implement a deterministic headless solver, quaternion rotation, rigid-body inertia, coupled force/moment integration, rotor gyroscopic/reaction moments, physical contact/collisions, power and aerodynamic terms with clearly stated synthetic assumptions and separate VTX calibration blockers. Use fixed timesteps, stable numerical integration and exact logged initial conditions.
+Aircraft geometry and physical parameters must come from the editable VTX mechanical assembly. Forces and torques follow its actual simulated structure, joints, rotor drives and actuators. Render the physical state, including crashes and destroyed/collided configurations when modelled; do not control physical state with animation.
 
-Browser view: live 3D aircraft/map, camera, map-click A-to-B mission selection and all takeoff/flight/landing phases, telemetry, controls to fly/pause/abort/replay, failures and crash visualisation. Geometry and render pose shall agree with logged state.
+The proprietor selects any valid departure and destination on the map, with visible reasons why a location is invalid. Flight starts on the ground and ends with actual contact and settling, or failure. Show the four independently commanded and moving rotors and relevant pilot observations/controls.
 
-Test deterministic nominal flights and physically meaningful failures (rotor asymmetry, loss of control authority, changing CG, actuator delays, gusts, sensor faults, collisions, infeasible landings); report precisely why each run succeeded or failed.
+Do not install a flight-perfect controller as an invisible safeguard. The pilot must learn through interacting with the simulated aircraft. Flight experiments need audit logs: initial conditions, model revision, permitted observations, actions, learning updates, contact events, faults and outcomes.
 
-The actual P0-V4 performance remains CALIBRATION_BLOCKED without real mass/CG/inertia, rotor maps, airloads and actuator validation. Synthetic test results are not evidence of physical airworthiness. Keep source artwork separate from measured geometry.
+Reproducibility of physics and replay is required; consistently passing a mission is not. Successful flights cannot be manufactured by adjusting arbitrary physical parameters.
+
+Missing calibration/geometry is a real blocker for the corresponding flightworthiness claim. Interim assumptions, derived bounds and separate sensitivity experiments must be identified, not disguised as known aircraft facts.
