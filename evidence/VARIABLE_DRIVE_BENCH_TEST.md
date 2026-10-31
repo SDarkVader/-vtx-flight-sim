@@ -2,7 +2,7 @@
 
 This is a point-by-point ideal planetary power and torque calculation, **not a flight, dynamic gearbox, structural, thermal or resonance test**. The actual simulator currently couples all four fan speeds through equality constraints in `src/vtx/aircraft.py`; it does not model independent electronically controlled transmissions. No live test of the proposed component was performed.
 
-The reproducible calculation and its numerical output are in `tools/test_variable_drive_bench.py` and `evidence/variable_drive_bench_results.json`; checks are in `tests/test_variable_drive_bench.py`. It assumes fixed 4,800 rpm sun speed, 20:60 gearing, 3:1 motor-to-ring stage, 95% control gearing efficiency, constant 566.99 N m fan load and 3.333 kg m² rotor inertia. It omits motor/inverter loss and inertia, thermal limits, actual fan load curves, compliance, startup, engine response and failures. The range and acceleration rate are illustrative, not approved limits.
+The reproducible calculation and its numerical output are in `tools/bench_variable_drive.py` and `evidence/variable_drive_bench_results.json`; checks are in `tests/test_variable_drive_bench.py`. It assumes fixed 4,800 rpm sun speed, 20:60 gearing, 3:1 motor-to-ring stage, 95% control gearing efficiency, constant 566.99 N m fan load and 3.333 kg m² rotor inertia. It omits motor/inverter loss and inertia, thermal limits, actual fan load curves, compliance, startup, engine response and failures. The range and acceleration rate are illustrative, not approved limits.
 
 | Case | Ring rpm | Ring mechanical power per fan | Control motor torque estimate | Sun power per fan |
 | --- | ---: | ---: | ---: | ---: |

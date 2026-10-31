@@ -3,7 +3,7 @@ import math
 from pathlib import Path
 
 
-spec = importlib.util.spec_from_file_location('drive_bench', Path(__file__).parents[1] / 'tools/test_variable_drive_bench.py')
+spec = importlib.util.spec_from_file_location('drive_bench', Path(__file__).parents[1] / 'tools/bench_variable_drive.py')
 bench = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bench)
 
