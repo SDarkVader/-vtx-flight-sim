@@ -2,6 +2,10 @@
 
 **Objective:** Build the actual VTX-P0-V4 as a coherent mechanical *digital aircraft*, place it in an explorable physical 3D test world, and let an initially inexperienced pilot learn to operate it through attempts and consequences. Use results to revise the design. This is an engineering development experiment, not a flight-demo animation or a predetermined stable autopilot.
 
+## Authoritative engineering baseline — mandatory before implementation
+
+**Read [docs/PHYSICS_AND_RESEARCH_BASELINE.md](docs/PHYSICS_AND_RESEARCH_BASELINE.md) first.** It pins the existing VTX-P0-V4 design, research references, explicit 843 kg *empty allocation* and 1,073/1,123 kg test/full aircraft masses, body/rotor angular momentum, gravity, fuel mass, CG/inertia, gearbox/shaft and rotor constraints and verification cases. The model must use mass, inertia, gravity, angular momentum, physical bearing/actuator reactions and energy accounting in every flight run. Do not develop or accept a massless toy or unlimited generic rotor thrust. Never tune physics parameters to obtain a successful demonstration.
+
 ## 1. Build the aircraft before pretending to fly it
 
 Use the saved Blendstra P0-V4 design and available engineering records as the baseline. Establish **one authoritative, editable aircraft assembly**: spherical two-passenger cabin, four independently vectored ducted fans, annular primary structure, genuine two-axis bearing/actuator mounting, central-to-local mechanical power path, four protected fuel cells and six landing contacts.
