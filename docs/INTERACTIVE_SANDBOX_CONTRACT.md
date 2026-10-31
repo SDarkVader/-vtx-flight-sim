@@ -1,10 +1,12 @@
 # Physical flight-test world
 
+**Operating requirement:** Colin must fly the aircraft via live fly-by-wire controls; no preplanned flight paths, canned action traces or time-indexed replay to simulate piloting. Implement the observation/control loop and real-time pilot interface defined in [LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md](LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md).
+
 The environment must be a meaningful navigable 3D world with scale, terrain, obstacles, ground/structure collisions and multiple viable departure and landing surfaces, not a small scripted viewer. Engine choice is Colin's engineering decision; full-screen or standalone access is acceptable.
 
 Aircraft geometry and physical parameters must come from the editable VTX mechanical assembly. Forces and torques follow its actual simulated structure, joints, rotor drives and actuators. Render the physical state, including crashes and destroyed/collided configurations when modelled; do not control physical state with animation.
 
-The proprietor selects any valid departure and destination on the map, with visible reasons why a location is invalid. Flight starts on the ground and ends with actual contact and settling, or failure. Show the four independently commanded and moving rotors and relevant pilot observations/controls.
+The proprietor selects any valid departure and destination on the map, with visible reasons why a location is invalid. These only define the mission; Colin must decide and apply every flight-control intervention from permitted observations. Flight starts on the ground and ends with actual contact and settling, or failure. Show the four independently commanded and moving rotors and relevant pilot observations/controls.
 
 Do not install a flight-perfect controller as an invisible safeguard. The pilot must learn through interacting with the simulated aircraft. Flight experiments need audit logs: initial conditions, model revision, permitted observations, actions, learning updates, contact events, faults and outcomes.
 
