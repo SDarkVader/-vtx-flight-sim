@@ -100,6 +100,8 @@ for(let i=0;i<4;i++){
  for(const [key,sign] of [['ccw',1],['stop',0],['cw',-1]])$(key+'-'+i).onclick=()=>{if(sign&&+$('rad-'+i).value<.1){toast('Set this fan’s tilt magnitude before rotating its direction.');return;}tiltSpinAngle[i]=+$('az-'+i).value;tiltSpin[i]=sign;};
 }
 $('engine').oninput=()=>{command.engine=+$('engine').value;$('engine-value').value=Math.round(command.engine*100)+'%';dirty=true;};
+$('assist').oninput=()=>{$('assist-value').value=$('assist').value+'%';};
+$('assist').onchange=guard(async()=>{if(last?.active)await api('/api/operator',{stability_assist:+$('assist').value/100});});
 $('common').oninput=()=>{command.collective_deg.fill(+$('common').value);$('common-value').value=(+$('common').value).toFixed(1)+'°';for(let i=0;i<4;i++){$('p-'+i).value=command.collective_deg[i];$('pval-'+i).value=command.collective_deg[i].toFixed(1)+'°';}dirty=true;};
 for(const [key,axis] of [['common-x',0],['common-y',1]])$(key).oninput=()=>{for(let i=0;i<4;i++){command.tilt_deg[i][axis]=+$(key).value;$(axis?'y-'+i:'x-'+i).value=+$(key).value;$(axis?'yval-'+i:'xval-'+i).value=(+$(key).value).toFixed(1)+'°';limitFanTilt(i);}dirty=true;};
 for(const id of ['common-azimuth','common-radius'])$(id).oninput=()=>{const a=+$('common-azimuth').value,r=+$('common-radius').value;$('common-azimuth-value').value=a.toFixed(0)+'°';$('common-radius-value').value=r.toFixed(1)+'°';for(let i=0;i<4;i++)applyPolar(i,r,a);dirty=true;};
@@ -113,11 +115,11 @@ function setPick(p){pick=p;$('pick-a').classList.toggle('selected',p==='a');$('p
 $('pick-a').onclick=()=>setPick('a');$('pick-b').onclick=()=>setPick('b');
 for(const [id,p] of [['dep','a'],['dest','b']])$(id).onchange=guard(async()=>{const vals=$(id).value.split(',').map(Number);if(vals.length!==2||vals.some(v=>!Number.isFinite(v)))throw Error('Use two finite coordinates: east, north');setPick(p);await choosePoint(vals);});
 $('map-zoom').onclick=()=>{$('map-dialog').showModal();drawMaps();};
-$('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,reference_rpm:+$('drive').value,gear_variant:$('gear').value,airframe_variant:$('airframe').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value,label:'Map-selected live ground-to-ground attempt'});manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
+$('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,stability_assist:+$('assist').value/100,reference_rpm:+$('drive').value,gear_variant:$('gear').value,airframe_variant:$('airframe').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value,label:'Map-selected live ground-to-ground attempt'});manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
 $('end').onclick=guard(async()=>{const r=await api('/api/stop',{reason:'Operator ended the live attempt'});toast(`Recorded: ${r.outcome}. Every failed attempt is retained.`);});
 for(const authority of ['manual','colin'])$('retry-'+authority).onclick=guard(async()=>{
  replayFrames=null;
- const r=await api('/api/retry',{authority,time_scale:authority==='colin'?.02:.1,airframe_variant:$('airframe').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value});
+ const r=await api('/api/retry',{authority,time_scale:authority==='colin'?.02:.1,stability_assist:+$('assist').value/100,airframe_variant:$('airframe').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value});
  manualOwned=authority==='manual';if(manualOwned)manualChannel.postMessage('takeover');
  command.engine=0;command.collective_deg.fill(0);command.tilt_deg=[[0,0],[0,0],[0,0],[0,0]];dirty=false;
  toast(authority==='colin'?'New sortie '+r.run_id+'. Waiting for Colin to issue live commands; retry does not start an automatic pilot.':'New sortie '+r.run_id+'. The previous run and pilot checkpoint are preserved.');
@@ -220,7 +222,8 @@ function updateView(v){last=v;const o=v.observation,t=v.rendering_truth;if(v.run
  $('retry-status').textContent=t.crashed?'Crash recorded · retry starts a new aircraft at A.':'Retained mission · retry preserves the pilot checkpoint.';
  $('alt').innerHTML=o.radar_clearance_m.toFixed(2)+'<small>m</small>';$('vs').innerHTML=o.gnss_velocity_mps[2].toFixed(2)+'<small>m/s</small>';$('speed').innerHTML=Math.hypot(...o.gnss_velocity_mps.slice(0,2)).toFixed(2)+'<small>m/s</small>';$('power').innerHTML=o.engine_shaft_kw.toFixed(1)+'<small>kW</small>';$('fuel').innerHTML=o.fuel_kg.reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';
  for(let i=0;i<4;i++)$('rpm-'+i).textContent=o.rotor_rpm[i].toFixed(0)+' rpm';
- for(const el of document.querySelectorAll('.controls-panel input[type=range],#feather'))el.disabled=v.authority!=='manual'||!manualOwned;
+ if(o.assisted_collective_deg)$('assist-feedback').textContent='Shadow requests: '+o.assisted_collective_deg.map(x=>x.toFixed(2)+'°').join(' / ')+' · not applied';
+ for(const el of document.querySelectorAll('.controls-panel input[type=range]:not(#assist),#feather'))el.disabled=v.authority!=='manual'||!manualOwned;
  const cabinLocked=v.authority!=='manual'||!manualOwned;for(const el of document.querySelectorAll('.tilt-spin'))el.disabled=cabinLocked;if(cabinLocked)tiltSpin.fill(0);$('cabin-level').disabled=cabinLocked;$('cabin-face-travel').disabled=cabinLocked;$('cabin-x').disabled=cabinLocked||command.cabin_level;$('cabin-y').disabled=cabinLocked||command.cabin_level;if(o.cabin_feedback_deg)$('cabin-feedback').textContent='Actual gimbal X / Y / yaw: '+o.cabin_feedback_deg.map(x=>x.toFixed(1)+'°').join(' / ');
  for(const id of ['dep','dest','drive','gear','airframe','initial-fuel','power-limit','pilot'])$(id).disabled=v.active;
  if(v.active){$('power-limit').value=t.provenance.engine_power_limit_kw??469.8;$('initial-fuel').value=t.provenance.initial_fuel_kg??o.configuration.initial_fuel_kg;$('pilot').value=v.authority;$('scale').value=String(v.time_scale);$('drive').value=String(t.provenance.reference_rpm);$('gear').value=t.provenance.gear_variant;$('airframe').value=t.provenance.revision.endsWith('r4')?'baseline':'light';}

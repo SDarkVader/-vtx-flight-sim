@@ -59,6 +59,7 @@ class Mission(BaseModel):
     destination:list[float]
     authority:str='manual'
     time_scale:float=Field(default=1.,ge=.01,le=1)
+    stability_assist:float=Field(default=0.,ge=0,le=1,allow_inf_nan=False)
     reference_rpm:float=1200.
     gear_variant:str='baseline'
     airframe_variant:str='light'
@@ -138,6 +139,7 @@ class Laboratory:
             rotor_rpm=[round(float(abs(p.joint(f'rotor{i}_spin')[1])*60/(2*math.pi)),2) for i in range(1,5)],
             shaft_torque_nm=[round(v['torque_nm'],1) for v in p.rotors],
             collective_feedback_deg=np.round(p.pitch,3).tolist(),
+            stability_assist=p.stability_assist,assistance_applied=False,assisted_collective_deg=p.assisted_collective_deg,
             tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
             cabin_feedback_deg=[round(math.degrees(p.joint(f'cabin_{a}')[0]),3) for a in 'xyz'],
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
@@ -161,6 +163,7 @@ class Laboratory:
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw)
         self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
+        self.aircraft.stability_assist=request.stability_assist
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
         self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
         self.mission=dict(departure=request.departure,destination=request.destination,
@@ -181,7 +184,7 @@ class Laboratory:
                   runtime_source_sha256=hashlib.sha256(b''.join(p.read_bytes() for p in sorted((ROOT/'src/vtx').glob('*.py')))).hexdigest(),
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
-                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; no attitude stabilization')
+                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; experimental rate damping is shadow-only and does not control aircraft')
         (self.log_path/'metadata.json').write_text(json.dumps(meta,indent=2))
         (self.log_path/'model.xml').write_text(self.aircraft.xml)
         (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
@@ -260,6 +263,7 @@ class Laboratory:
         old=hint['request']
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
                   authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
+                  stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
                   airframe_variant=request.get('airframe_variant','light'),
                   fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
@@ -339,6 +343,11 @@ async def retry(request:dict):
     except ValueError as e:raise HTTPException(422,str(e))
 @app.post('/api/operator')
 async def operator(request:dict):
+    if 'stability_assist' in request:
+        value=float(request['stability_assist'])
+        if not math.isfinite(value) or not 0<=value<=1:raise HTTPException(422,'Stability assistance must be 0–1')
+        lab.log('stability_assist_change',dict(before=lab.aircraft.stability_assist,after=value))
+        lab.aircraft.stability_assist=value
     if 'authority' in request:
         if request['authority'] not in ['manual','colin']:raise HTTPException(422,'Unknown authority')
         if request['authority']!=lab.authority:

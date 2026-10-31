@@ -1,4 +1,4 @@
-"""Mass-bearing P0-V4 experimental multibody plant; no flight controller.
+"""Mass-bearing P0-V4 experimental multibody plant with a shadow damping study.
 
 MuJoCo integrates the free airframe, two-axis nacelles, spinning rotors/shafts,
 occupied cabin gimbal and six sliding gear bodies. Motor/constraint reactions
@@ -16,6 +16,7 @@ from scipy.spatial.transform import Rotation
 from .aero import BladeElementModel, ideal_hover
 from .world import TestWorld
 from .governor import ShaftGovernor
+from .training_assist import assisted_collective
 
 ROOT=Path(__file__).resolve().parents[2]
 LEDGER_PATH=ROOT/'evidence/source/airframe_ledger.json'
@@ -187,6 +188,9 @@ class Aircraft:
         self.vadr={n:int(self.model.jnt_dofadr[i]) for n,i in self.jids.items()}
         self.aero=BladeElementModel(self.ledger['blade'])
         self.command=dict(engine=0.,collective_deg=[0.]*4,tilt_deg=[[0.,0.] for _ in range(4)],cabin_deg=[0.,0.,0.],cabin_level=True)
+        self.stability_assist=0.;self.assisted_collective_deg=[0.]*4
+        # Offline tests alone may opt in to active control. Never exposed to the API.
+        self._bench_apply_experimental_assist=False
         self.pitch=np.zeros(4);self.target_angles=np.zeros((4,2));self.cabin_target=np.zeros(3)
         self.engine_spool=0.;self.fuel=np.full(4,fuel_kg/4)
         self.governor=ShaftGovernor(governor_mode)
@@ -296,7 +300,13 @@ class Aircraft:
         # build a large roll moment before a counter-command reached the
         # actuators. Keep the same physical ranges, but slew operator inputs
         # slowly enough to observe and counter the response.
-        self.pitch+=np.clip((np.array(self.command['collective_deg'])-self.pitch)*DT/.15,-4*DT,4*DT)
+        if self.stability_assist and self.step_count%20==0:
+            body_velocity=np.zeros(6)
+            mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,self.bids['airframe'],body_velocity,1)
+            self.assisted_collective_deg=assisted_collective(self.command['collective_deg'],np.degrees(body_velocity[:3]),self.stability_assist)
+        elif not self.stability_assist:self.assisted_collective_deg=list(self.command['collective_deg'])
+        pitch_target=self.assisted_collective_deg if self._bench_apply_experimental_assist else self.command['collective_deg']
+        self.pitch+=np.clip((np.array(pitch_target)-self.pitch)*DT/.15,-4*DT,4*DT)
         requested=np.radians(self.command['tilt_deg'])
         # Leave a small margin to the polygonal physical stop. This is an
         # actuator target limit, not a direct change to the simulated pose.
@@ -395,7 +405,9 @@ class Aircraft:
     def physical_snapshot(self):
         return dict(t_s=float(self.data.time),qpos=self.data.qpos.tolist(),qvel=self.data.qvel.tolist(),
                     body_poses={n:dict(position=self.data.xpos[b].tolist(),quaternion_wxyz=self.data.xquat[b].tolist()) for n,b in self.bids.items()},
-                    pitch_deg=self.pitch.tolist(),fuel_kg=self.fuel.tolist(),rotors=self.rotors,
+                    pitch_deg=self.pitch.tolist(),assisted_collective_deg=self.assisted_collective_deg,
+                    stability_assist=self.stability_assist,assistance_applied=self._bench_apply_experimental_assist,
+                    fuel_kg=self.fuel.tolist(),rotors=self.rotors,
                     integrity=self.integrity.tolist(),power=self.power,energy=self.energy,
                     events=self.events,flags=sorted(self.flags),mass=self.mass_properties(),
                     governor=self.governor.telemetry,
