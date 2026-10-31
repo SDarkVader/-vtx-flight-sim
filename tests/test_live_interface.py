@@ -27,6 +27,22 @@ def test_control_authority_and_observation_boundary():
     assert accepted['accepted'] and accepted['apply_t_s']==pytest.approx(.02)
     assert not {'qpos','qvel','forces','cg','inertia','contact_manifold'}&obs.keys()
 
+def test_queued_actions_are_not_lost_and_old_authority_cannot_apply():
+    lab=Laboratory();lab.active=True;lab.authority='manual';lab.mission={'destination':[100,100]}
+    def command(value,authority='manual'):
+        return Action(authority=authority,engine=0,collective_deg=[value]*4,
+                      tilt_deg=[[0,0]]*4,reason='Timing and authority check')
+    for value in range(6):lab.accept_action(command(value))
+    # More than four actions can be accepted before the simulated delay expires.
+    for _ in range(12):lab.integrate()
+    assert all(row.get('applied') for row in lab.action_log)
+    assert lab.aircraft.command['collective_deg']==[5]*4
+    lab.accept_action(command(6))
+    lab.authority='colin'
+    for _ in range(12):lab.integrate()
+    assert lab.action_log[-1].get('cancelled')
+    assert lab.aircraft.command['collective_deg']==[5]*4
+
 def test_no_time_indexed_route_command():
     with pytest.raises(ValidationError):
         Mission(departure=[0,0],destination=[30,20],waypoints=[[1,2],[3,4]])

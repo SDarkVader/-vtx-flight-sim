@@ -45,7 +45,7 @@ class Action(BaseModel):
     @field_validator('tilt_deg')
     @classmethod
     def tilt(cls,v):
-        if len(v)!=4 or any(len(t)!=2 or any(abs(x)>20 for x in t) for t in v):raise ValueError('Four X/Y tilt commands, each ±20 degrees')
+        if len(v)!=4 or any(len(t)!=2 or math.hypot(*t)>20.000001 for t in v):raise ValueError('Four X/Y tilt commands, each with a combined magnitude no greater than 20 degrees')
         return v
     @field_validator('cabin_deg')
     @classmethod
@@ -96,7 +96,7 @@ class Laboratory:
     def __init__(self):
         self.world=TestWorld();self.aircraft=Aircraft(self.world,rpm=1200.,fuel_kg=10.,engine_power_limit_kw=300.);self.aircraft.spawn(0,0,0)
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
-        self.mission=None;self.action_log=[];self.last_command_time=0.;self.lease_expired=False
+        self.mission=None;self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
         self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
@@ -168,7 +168,7 @@ class Laboratory:
                           environment=self.world.id,environment_version=self.world.version,label=request.label)
         self.log_path=ROOT/'evidence/flights'/self.run_id;self.log_path.mkdir(parents=True)
         self.audit_file=(self.log_path/'events.jsonl').open('w')
-        self.wall_started=time.monotonic();self.action_log=[];self.last_command_time=0.;self.lease_expired=False
+        self.wall_started=time.monotonic();self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.last_obs=None;self.obs_id=0;self.last_sensor_t=-1.;self.last_audit_t=-1.;self.observations={}
         self.settled_s=0.;self.left_ground=False;self.error=None;self.end_summary=None
         self.sensor_rng=np.random.default_rng(self.world.seed)
@@ -202,12 +202,20 @@ class Laboratory:
 
     def integrate(self):
         p=self.aircraft
-        if self.action_log:
-            for row in self.action_log[-4:]:
-                if not row.get('applied') and p.data.time>=row['apply_t_s']:
-                    cmd={k:row['issued'][k] for k in p.command}
-                    p.set_command(cmd);row['applied']=True
-                    self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
+        while self.next_pending_action<len(self.action_log):
+            row=self.action_log[self.next_pending_action]
+            if row.get('cancelled'):
+                self.next_pending_action+=1
+                continue
+            if p.data.time<row['apply_t_s']:break
+            self.next_pending_action+=1
+            if row['issued']['authority']!=self.authority:
+                row['cancelled']=True
+                self.log('control_cancelled',dict(sequence=row['sequence'],reason='Control authority changed before application'))
+                continue
+            cmd={k:row['issued'][k] for k in p.command}
+            p.set_command(cmd);row['applied']=True
+            self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
         if p.data.time-self.last_command_time>5 and not self.lease_expired:
             p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
             self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine idle; no flight rescue'))
@@ -333,6 +341,11 @@ async def retry(request:dict):
 async def operator(request:dict):
     if 'authority' in request:
         if request['authority'] not in ['manual','colin']:raise HTTPException(422,'Unknown authority')
+        if request['authority']!=lab.authority:
+            for row in lab.action_log[lab.next_pending_action:]:
+                if not row.get('cancelled'):
+                    row['cancelled']=True
+                    lab.log('control_cancelled',dict(sequence=row['sequence'],reason='Control authority changed before application'))
         lab.log('authority_change',dict(before=lab.authority,after=request['authority']));lab.authority=request['authority']
     if 'paused' in request:
         lab.paused=bool(request['paused']);lab.clock_epoch+=1;lab.log('explicit_operator_pause',dict(paused=lab.paused))

@@ -137,6 +137,15 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
             ET.SubElement(bodies[f'nacelle{i}'],'site',name=tip_site,pos=fmt(tip),size='.01')
             tendon=ET.SubElement(tendons,'spatial',name=f'ema{i}_{index}',width='.01')
             ET.SubElement(tendon,'site',site=root_site);ET.SubElement(tendon,'site',site=tip_site)
+    # Keep actuator tendons first; the stops couple the two tilt joints.
+    cone_limit=math.radians(20)*math.cos(math.pi/32)
+    for i in range(1,5):
+        for k in range(16):
+            a=k*math.pi/16
+            stop=ET.SubElement(tendons,'fixed',name=f'nacelle{i}_cone{k}',limited='true',
+                               range=fmt([-cone_limit,cone_limit]),solreflimit='.005 1',solimplimit='.99 .999 .001')
+            ET.SubElement(stop,'joint',joint=f'nacelle{i}_x',coef=str(math.cos(a)))
+            ET.SubElement(stop,'joint',joint=f'nacelle{i}_y',coef=str(math.sin(a)))
     eq=ET.SubElement(xml,'equality')
     senses=[1,-1,1,-1]
     for i in range(2,5):
@@ -199,7 +208,7 @@ class Aircraft:
             'hypotheses':dict(mass_distribution=self.ledger['allocation_method'],
                 polar='2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2',
                 nacelle_torque_limit_nm=1100.,nacelle_command_rate_deg_s=20.,
-                pitch_rate_deg_s=12.,pitch_lag_s=.15,engine_spool_s=2.,
+                pitch_rate_deg_s=4.,pitch_lag_s=.15,nacelle_target_rate_deg_s=5.,engine_spool_s=2.,
                 engine_continuous_w=469800.,transmission_efficiency=.95,
                 overall_ratio=6016/rpm,rotor_spin_senses=[1,-1,1,-1],
                 highspeed_shaft_topology='ideal equivalent ratio; CV/tooth compliance unmodeled',
@@ -276,9 +285,18 @@ class Aircraft:
         m,d=self.model,self.data
         d.qfrc_applied[:]=0.;d.xfrc_applied[:]=0.
         self.engine_spool+=np.clip(self.command['engine']-self.engine_spool,-DT/2,DT/2)
-        self.pitch+=np.clip((np.array(self.command['collective_deg'])-self.pitch)*DT/.15,-12*DT,12*DT)
+        # The first live lift-off showed that the original command rates could
+        # build a large roll moment before a counter-command reached the
+        # actuators. Keep the same physical ranges, but slew operator inputs
+        # slowly enough to observe and counter the response.
+        self.pitch+=np.clip((np.array(self.command['collective_deg'])-self.pitch)*DT/.15,-4*DT,4*DT)
         requested=np.radians(self.command['tilt_deg'])
-        self.target_angles+=np.clip(requested-self.target_angles,-math.radians(20)*DT,math.radians(20)*DT)
+        # Leave a small margin to the polygonal physical stop. This is an
+        # actuator target limit, not a direct change to the simulated pose.
+        max_target=math.radians(20)*math.cos(math.pi/32)
+        lengths=np.linalg.norm(requested,axis=1)
+        requested*=np.minimum(1.,max_target/np.maximum(lengths,1e-12))[:,None]
+        self.target_angles+=np.clip(requested-self.target_angles,-math.radians(5)*DT,math.radians(5)*DT)
         cabin_requested=np.radians(self.command['cabin_deg']).copy()
         if self.command['cabin_level']:
             air_rotation=Rotation.from_matrix(d.xmat[self.bids['airframe']].reshape(3,3))
