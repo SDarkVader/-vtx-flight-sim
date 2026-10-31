@@ -1,0 +1,2157 @@
+{
+  "type": "engineering assembly/contact bench; NOT a piloted flight",
+  "revision": "P0-V4A-surface-allocation-r1",
+  "initial_intersections": [
+    {
+      "geom1": "terrain",
+      "geom2": "part_370",
+      "penetration_m": 0.040999936418043885
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_370",
+      "penetration_m": 0.040999988566180895
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_370",
+      "penetration_m": 0.04100000085647103
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_370",
+      "penetration_m": 0.04100000106759054
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_370",
+      "penetration_m": 0.040999988566180895
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_370",
+      "penetration_m": 0.040999936418043885
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_375",
+      "penetration_m": 0.040999936418043885
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_375",
+      "penetration_m": 0.040999988566180895
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_375",
+      "penetration_m": 0.04100000085647103
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_375",
+      "penetration_m": 0.04100000106759054
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_375",
+      "penetration_m": 0.040999988566180895
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_375",
+      "penetration_m": 0.040999936418043885
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_380",
+      "penetration_m": 0.040999936418043885
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_380",
+      "penetration_m": 0.040999988566180895
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_380",
+      "penetration_m": 0.04100000085647103
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_380",
+      "penetration_m": 0.04100000106759054
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_380",
+      "penetration_m": 0.040999988566180895
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_380",
+      "penetration_m": 0.040999936418043885
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_385",
+      "penetration_m": 0.040999936418043885
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_385",
+      "penetration_m": 0.040999988566180895
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_385",
+      "penetration_m": 0.04100000085647103
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_385",
+      "penetration_m": 0.04100000106759054
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_385",
+      "penetration_m": 0.040999988566180895
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_385",
+      "penetration_m": 0.040999936418043885
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_387",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_387",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_387",
+      "penetration_m": 0.057999998221265406
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_387",
+      "penetration_m": 0.0579999982480824
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_387",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_387",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_389",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_389",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_389",
+      "penetration_m": 0.027000000273146287
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_389",
+      "penetration_m": 0.027000000617382718
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_389",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_389",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_390",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_390",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_390",
+      "penetration_m": 0.057999998221265406
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_390",
+      "penetration_m": 0.0579999982480824
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_390",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_390",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_392",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_392",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_392",
+      "penetration_m": 0.027000000273146287
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_392",
+      "penetration_m": 0.027000000617382718
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_392",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_392",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_397",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_397",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_397",
+      "penetration_m": 0.057999998221265406
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_397",
+      "penetration_m": 0.0579999982480824
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_397",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_397",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_399",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_399",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_399",
+      "penetration_m": 0.027000000273146287
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_399",
+      "penetration_m": 0.027000000617382718
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_399",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_399",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_400",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_400",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_400",
+      "penetration_m": 0.057999998221265406
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_400",
+      "penetration_m": 0.0579999982480824
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_400",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_400",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_402",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_402",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_402",
+      "penetration_m": 0.027000000273146287
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_402",
+      "penetration_m": 0.027000000617382718
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_402",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_402",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_407",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_407",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_407",
+      "penetration_m": 0.057999998221265406
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_407",
+      "penetration_m": 0.0579999982480824
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_407",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_407",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_409",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_409",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_409",
+      "penetration_m": 0.027000000273146287
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_409",
+      "penetration_m": 0.027000000617382718
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_409",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_409",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_410",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_410",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_410",
+      "penetration_m": 0.057999998221265406
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_410",
+      "penetration_m": 0.0579999982480824
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_410",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_410",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_412",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_412",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_412",
+      "penetration_m": 0.027000000273146287
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_412",
+      "penetration_m": 0.027000000617382718
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_412",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_412",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_417",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_417",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_417",
+      "penetration_m": 0.057999998221265406
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_417",
+      "penetration_m": 0.0579999982480824
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_417",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_417",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_419",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_419",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_419",
+      "penetration_m": 0.027000000273146287
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_419",
+      "penetration_m": 0.027000000617382718
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_419",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_419",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_420",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_420",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_420",
+      "penetration_m": 0.057999998221265406
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_420",
+      "penetration_m": 0.0579999982480824
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_420",
+      "penetration_m": 0.05799999199649841
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_420",
+      "penetration_m": 0.057999902232221436
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_422",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_422",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_422",
+      "penetration_m": 0.027000000273146287
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_422",
+      "penetration_m": 0.027000000617382718
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_422",
+      "penetration_m": 0.02699997219257025
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_422",
+      "penetration_m": 0.02699947665551402
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_441",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_441",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_441",
+      "penetration_m": 0.00999999951164302
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_441",
+      "penetration_m": 0.009999999713095684
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_441",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_441",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_442",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_442",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_442",
+      "penetration_m": 0.009999999460633449
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_442",
+      "penetration_m": 0.009999999706128446
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_442",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_442",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_443",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_443",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_443",
+      "penetration_m": 0.00999999945005253
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_443",
+      "penetration_m": 0.009999999704782332
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_443",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_443",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_444",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_444",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_444",
+      "penetration_m": 0.009999999474640846
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_444",
+      "penetration_m": 0.009999999707960765
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_444",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_444",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_445",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_445",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_445",
+      "penetration_m": 0.00999999951164302
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_445",
+      "penetration_m": 0.009999999713095684
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_445",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_445",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_446",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_446",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_446",
+      "penetration_m": 0.009999999460633449
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_446",
+      "penetration_m": 0.009999999706128446
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_446",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_446",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_447",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_447",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_447",
+      "penetration_m": 0.00999999945005253
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_447",
+      "penetration_m": 0.009999999704782332
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_447",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_447",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_448",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_448",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_448",
+      "penetration_m": 0.009999999474640846
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_448",
+      "penetration_m": 0.009999999707960765
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_448",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_448",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_449",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_449",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_449",
+      "penetration_m": 0.00999999951164302
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_449",
+      "penetration_m": 0.009999999713095684
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_449",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_449",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_450",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_450",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_450",
+      "penetration_m": 0.009999999460633449
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_450",
+      "penetration_m": 0.009999999706128446
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_450",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_450",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_451",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_451",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_451",
+      "penetration_m": 0.00999999945005253
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_451",
+      "penetration_m": 0.009999999704782332
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_451",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_451",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_452",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_452",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_452",
+      "penetration_m": 0.009999999474640846
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_452",
+      "penetration_m": 0.009999999707960765
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_452",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_452",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_453",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_453",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_453",
+      "penetration_m": 0.00999999951164302
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_453",
+      "penetration_m": 0.009999999713095684
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_453",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_453",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_454",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_454",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_454",
+      "penetration_m": 0.009999999460633449
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_454",
+      "penetration_m": 0.009999999706128446
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_454",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_454",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_455",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_455",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_455",
+      "penetration_m": 0.00999999945005253
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_455",
+      "penetration_m": 0.009999999704782332
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_455",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_455",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_456",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_456",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_456",
+      "penetration_m": 0.009999999474640846
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_456",
+      "penetration_m": 0.009999999707960765
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_456",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_456",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_457",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_457",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_457",
+      "penetration_m": 0.00999999951164302
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_457",
+      "penetration_m": 0.009999999713095684
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_457",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_457",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_458",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_458",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_458",
+      "penetration_m": 0.009999999460633449
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_458",
+      "penetration_m": 0.009999999706128446
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_458",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_458",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_459",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_459",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_459",
+      "penetration_m": 0.00999999945005253
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_459",
+      "penetration_m": 0.009999999704782332
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_459",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_459",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_460",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_460",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_460",
+      "penetration_m": 0.009999999474640846
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_460",
+      "penetration_m": 0.009999999707960765
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_460",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_460",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_461",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_461",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_461",
+      "penetration_m": 0.00999999951164302
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_461",
+      "penetration_m": 0.009999999713095684
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_461",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_461",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_462",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_462",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_462",
+      "penetration_m": 0.009999999460633449
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_462",
+      "penetration_m": 0.009999999706128446
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_462",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_462",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_463",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_463",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_463",
+      "penetration_m": 0.00999999945005253
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_463",
+      "penetration_m": 0.009999999704782332
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_463",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_463",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_464",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_464",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_464",
+      "penetration_m": 0.009999999474640846
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_464",
+      "penetration_m": 0.009999999707960765
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_464",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_464",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_465",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_465",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_465",
+      "penetration_m": 0.00999999951164302
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_465",
+      "penetration_m": 0.009999999713095684
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_465",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_465",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_466",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_466",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_466",
+      "penetration_m": 0.009999999460633449
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_466",
+      "penetration_m": 0.009999999706128446
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_466",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_466",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_467",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_467",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_467",
+      "penetration_m": 0.00999999945005253
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_467",
+      "penetration_m": 0.009999999704782332
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_467",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_467",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_468",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_468",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_468",
+      "penetration_m": 0.009999999474640846
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_468",
+      "penetration_m": 0.009999999707960765
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_468",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_468",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_469",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_469",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_469",
+      "penetration_m": 0.00999999951164302
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_469",
+      "penetration_m": 0.009999999713095684
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_469",
+      "penetration_m": 0.009999812473087663
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_469",
+      "penetration_m": 0.009999633562559583
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_470",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_470",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_470",
+      "penetration_m": 0.009999999460633449
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_470",
+      "penetration_m": 0.009999999706128446
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_470",
+      "penetration_m": 0.009999812464779248
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_470",
+      "penetration_m": 0.009999633799834021
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_471",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_471",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_471",
+      "penetration_m": 0.00999999945005253
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_471",
+      "penetration_m": 0.009999999704782332
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_471",
+      "penetration_m": 0.009999812463088039
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_471",
+      "penetration_m": 0.009999633843304505
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_472",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_472",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_472",
+      "penetration_m": 0.009999999474640846
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_472",
+      "penetration_m": 0.009999999707960765
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_472",
+      "penetration_m": 0.009999812467034186
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_472",
+      "penetration_m": 0.009999633739514251
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_369",
+      "penetration_m": 0.033999716088287835
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_369",
+      "penetration_m": 0.03399998365873387
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_369",
+      "penetration_m": 0.03400000174521351
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_369",
+      "penetration_m": 0.03400000175450714
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_369",
+      "penetration_m": 0.03399998365873387
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_369",
+      "penetration_m": 0.033999716088287835
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_374",
+      "penetration_m": 0.033999716088287835
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_374",
+      "penetration_m": 0.03399998365873387
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_374",
+      "penetration_m": 0.03400000174521351
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_374",
+      "penetration_m": 0.03400000175450714
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_374",
+      "penetration_m": 0.03399998365873387
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_374",
+      "penetration_m": 0.033999716088287835
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_379",
+      "penetration_m": 0.033999716088287835
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_379",
+      "penetration_m": 0.03399998365873387
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_379",
+      "penetration_m": 0.03400000174521351
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_379",
+      "penetration_m": 0.03400000175450714
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_379",
+      "penetration_m": 0.03399998365873387
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_379",
+      "penetration_m": 0.033999716088287835
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_384",
+      "penetration_m": 0.033999716088287835
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_384",
+      "penetration_m": 0.03399998365873387
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_384",
+      "penetration_m": 0.03400000174521351
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_384",
+      "penetration_m": 0.03400000175450714
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_384",
+      "penetration_m": 0.03399998365873387
+    },
+    {
+      "geom1": "terrain",
+      "geom2": "part_384",
+      "penetration_m": 0.033999716088287835
+    }
+  ],
+  "after_0_1_s": {
+    "t_s": 0.10000000000000005,
+    "qpos": [
+      0.010291088489845387,
+      -0.08351120832898598,
+      -0.011739826679414986,
+      0.9993336209674286,
+      0.027069947802016926,
+      0.010010744652808143,
+      -0.02234540045780272,
+      -0.22074524766955997,
+      -0.1692875788395836,
+      0.004607463020973041,
+      -0.0017747380882082854,
+      -1.1180623472962843,
+      0.022965740543106017,
+      -0.02564774178805117,
+      1.1147251863077354,
+      0.06084948861455756,
+      -0.0003838861850688225,
+      -1.120503145579991,
+      0.023922290138266127,
+      -0.022992840566732526,
+      1.1147173786009077,
+      0.19382867435828033,
+      0.19043393404226722,
+      0.1577076106813034,
+      0.13532976879143394,
+      0.11085696614273252,
+      0.058403751043901844,
+      -8.386315391599377,
+      8.400437494398005,
+      -8.40817498942996,
+      8.409457390607024
+    ],
+    "qvel": [
+      -1.1559898390602257,
+      -1.1020732229505124,
+      0.3139922464236462,
+      7.731456331894071,
+      -10.881430322656321,
+      8.398793980484378,
+      -8.589421678007723,
+      -1.490521493668279,
+      0.41985170887046436,
+      -0.45629679569493986,
+      -11.684715459231143,
+      0.3714831479982992,
+      -1.2076711229716863,
+      6.792117446189654,
+      1.0982741360016253,
+      -0.3385843399896977,
+      -16.593602722792003,
+      0.07740789292886752,
+      -1.4729635400527357,
+      6.78399420263754,
+      -22.024942218536854,
+      -5.169368184014608,
+      20.228715652668537,
+      20.426055891864113,
+      3.8829929073363196,
+      -16.60332809694281,
+      -89.95829060447848,
+      90.4013786771116,
+      -88.22856215696977,
+      85.57588032287957
+    ],
+    "body_poses": {
+      "airframe": {
+        "position": [
+          0.013181063087495951,
+          -0.0807560252716097,
+          -0.012524807295474102
+        ],
+        "quaternion_wxyz": [
+          0.9990303063827922,
+          0.01760625994425601,
+          0.024100757416083543,
+          -0.03236695894658974
+        ]
+      },
+      "cabin": {
+        "position": [
+          0.08652454412209709,
+          -0.13806810240737746,
+          1.544695812785094
+        ],
+        "quaternion_wxyz": [
+          0.9946659418231396,
+          -0.08404017471253246,
+          -0.055233407383411245,
+          -0.022938699182635504
+        ]
+      },
+      "nacelle1": {
+        "position": [
+          2.71331770932616,
+          -0.331560470765281,
+          2.1651938295993927
+        ],
+        "quaternion_wxyz": [
+          0.9990049770237387,
+          0.019373148208012947,
+          0.023726459751320407,
+          -0.03241592383348439
+        ]
+      },
+      "rotor1": {
+        "position": [
+          2.71331770932616,
+          -0.331560470765281,
+          2.1651938295993927
+        ],
+        "quaternion_wxyz": [
+          0.8377848600566176,
+          0.004283713811049002,
+          0.030330076818328215,
+          -0.5451405914955267
+        ]
+      },
+      "nacelle2": {
+        "position": [
+          0.2921372891298774,
+          2.427318399157888,
+          2.380766931125573
+        ],
+        "quaternion_wxyz": [
+          0.9989803691148198,
+          0.028241785523131467,
+          0.012440957615230985,
+          -0.032952181222181555
+        ]
+      },
+      "rotor2": {
+        "position": [
+          0.2921372891298774,
+          2.427318399157888,
+          2.380766931125573
+        ],
+        "quaternion_wxyz": [
+          0.8694354746805434,
+          0.030584210361822132,
+          -0.004120916459034783,
+          0.4930817168493467
+        ]
+      },
+      "nacelle3": {
+        "position": [
+          -2.4697460485444824,
+          0.00031650367818154834,
+          2.4215252010429267
+        ],
+        "quaternion_wxyz": [
+          0.9980919342839241,
+          0.04662612172256257,
+          0.023381244660364023,
+          -0.033042592038452355
+        ]
+      },
+      "rotor3": {
+        "position": [
+          -2.4697460485444824,
+          0.00031650367818154834,
+          2.4215252010429267
+        ],
+        "quaternion_wxyz": [
+          0.8393491962589028,
+          0.027992078531279222,
+          0.04401274097637774,
+          -0.5410843269868185
+        ]
+      },
+      "nacelle4": {
+        "position": [
+          -0.04856562834820005,
+          -2.758562366244988,
+          2.2059520995167463
+        ],
+        "quaternion_wxyz": [
+          0.9989335284949632,
+          0.029141006215992953,
+          0.014070942993839444,
+          -0.03293350829452217
+        ]
+      },
+      "rotor4": {
+        "position": [
+          -0.04856562834820005,
+          -2.758562366244988,
+          2.2059520995167463
+        ],
+        "quaternion_wxyz": [
+          0.8693826903543883,
+          0.03220173267855925,
+          -0.003199701941592196,
+          0.49307864284731334
+        ]
+      },
+      "gear1": {
+        "position": [
+          1.9229258460180072,
+          -0.21446912081620262,
+          0.23210289786349253
+        ],
+        "quaternion_wxyz": [
+          0.9990303063827922,
+          0.01760625994425601,
+          0.024100757416083543,
+          -0.03236695894658974
+        ]
+      },
+      "gear2": {
+        "position": [
+          1.081688604197467,
+          1.4888155759136708,
+          0.2887971882216791
+        ],
+        "quaternion_wxyz": [
+          0.9990303063827922,
+          0.01760625994425601,
+          0.024100757416083543,
+          -0.03236695894658974
+        ]
+      },
+      "gear3": {
+        "position": [
+          -0.8166470595581858,
+          1.6136133553473841,
+          0.2864066305544373
+        ],
+        "quaternion_wxyz": [
+          0.9990303063827922,
+          0.01760625994425601,
+          0.024100757416083543,
+          -0.03236695894658974
+        ]
+      },
+      "gear4": {
+        "position": [
+          -1.8724376795444275,
+          0.03410449519652948,
+          0.2550888879248415
+        ],
+        "quaternion_wxyz": [
+          0.9990303063827922,
+          0.01760625994425601,
+          0.024100757416083543,
+          -0.03236695894658974
+        ]
+      },
+      "gear5": {
+        "position": [
+          -1.0325473635120823,
+          -1.6681276865234176,
+          0.16979681925686607
+        ],
+        "quaternion_wxyz": [
+          0.9990303063827922,
+          0.01760625994425601,
+          0.024100757416083543,
+          -0.03236695894658974
+        ]
+      },
+      "gear6": {
+        "position": [
+          0.8612062628564393,
+          -1.7893449694158454,
+          0.07490206948343475
+        ],
+        "quaternion_wxyz": [
+          0.9990303063827922,
+          0.01760625994425601,
+          0.024100757416083543,
+          -0.03236695894658974
+        ]
+      },
+      "shaft1": {
+        "position": [
+          1.4582699177059109,
+          -0.18745236737550913,
+          0.336235757874051
+        ],
+        "quaternion_wxyz": [
+          -0.6041370247262051,
+          0.7958580205133885,
+          -0.04035285167171697,
+          -0.00033749287331902647
+        ]
+      },
+      "shaft2": {
+        "position": [
+          0.1266206865946962,
+          1.329931011085948,
+          0.45480096371374057
+        ],
+        "quaternion_wxyz": [
+          -0.5651268140682221,
+          -0.03654898290499099,
+          -0.8241808561212194,
+          0.004666076832333036
+        ]
+      },
+      "shaft3": {
+        "position": [
+          -1.3924151491299197,
+          -0.004920031431157948,
+          0.47721801216834003
+        ],
+        "quaternion_wxyz": [
+          -0.5649786193432735,
+          -0.8241181305768541,
+          0.01239365304809308,
+          0.03840395687429388
+        ]
+      },
+      "shaft4": {
+        "position": [
+          -0.06076591801870504,
+          -1.522303409892615,
+          0.3586528063286505
+        ],
+        "quaternion_wxyz": [
+          -0.5957872076741383,
+          0.01629061560531288,
+          0.8022967049350912,
+          0.033048695365289905
+        ]
+      }
+    },
+    "pitch_deg": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "fuel_kg": [
+      15.0,
+      15.0,
+      15.0,
+      15.0
+    ],
+    "rotors": [
+      {
+        "thrust_n": 2631.528745157686,
+        "torque_nm": 0.0,
+        "induced_mps": 3.858008287940235,
+        "max_alpha_deg": 88.25856487825611
+      },
+      {
+        "thrust_n": 123.566282706903,
+        "torque_nm": 3.1408822975793638,
+        "induced_mps": 0.7810222754679901,
+        "max_alpha_deg": 81.58265811731408
+      },
+      {
+        "thrust_n": 0.0,
+        "torque_nm": 0.0,
+        "induced_mps": 0.00015404746586353892,
+        "max_alpha_deg": 88.65568237399116
+      },
+      {
+        "thrust_n": 0.0,
+        "torque_nm": 2.6356358577487473,
+        "induced_mps": 3.177890290039244e-05,
+        "max_alpha_deg": 81.33048734164426
+      }
+    ],
+    "integrity": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "power": {
+      "engine_w": 0.0,
+      "rotor_aero_w": 62.08781271844728,
+      "servo_w": 0.0,
+      "gear_loss_w": 0.0,
+      "fuel_chemical_w": 0.0
+    },
+    "energy": {
+      "engine_j": 0.0,
+      "rotor_aero_j": 18.943582070122687,
+      "gear_loss_j": 0.0,
+      "servo_j": 0.0,
+      "fuel_chemical_j": 0.0
+    },
+    "events": [
+      {
+        "type": "collision",
+        "t_s": 0.0025,
+        "body": "airframe",
+        "force_n": 671021695.069483,
+        "position_m": [
+          -0.02050000056625,
+          2.753354483970721e-07,
+          -0.2985347883100882
+        ]
+      }
+    ],
+    "flags": [
+      "DESCENDING_WAKE_UNCALIBRATED",
+      "EDGEWISE_FLOW_UNCALIBRATED"
+    ],
+    "mass": {
+      "mass_kg": 1073.0,
+      "cg_world_m": [
+        0.07732483342853817,
+        -0.05254351879448982,
+        1.1256106358189162
+      ],
+      "inertia_world_kg_m2": [
+        [
+          1839.946230232901,
+          0.07855787755539012,
+          28.243476965445225
+        ],
+        [
+          0.07855787755539012,
+          1798.3355404079084,
+          36.89576953976795
+        ],
+        [
+          28.243476965445225,
+          36.89576953976793,
+          2477.973536621873
+        ]
+      ]
+    },
+    "ncon": 125,
+    "crashed": true,
+    "provenance": {
+      "revision": "P0-V4A-surface-allocation-r1",
+      "ledger_sha256": "31cbe2d38cfe2425994c3674e5135b97c0d8fd1b4cd6c8813e91768e8e4cdfa2",
+      "physics": "MuJoCo 3.17.0",
+      "dt_s": 0.0025,
+      "aero_rate_hz": 100,
+      "gear_variant": "baseline",
+      "reference_rpm": 800.0,
+      "model_xml_sha256": "b0cc7b70da732c1650055cbc3025c9894ea94ef50a3b3bbf0b2f3fb8a36e87cd",
+      "status": "CALIBRATION_BLOCKED \u2014 conditional engineering experiment",
+      "hypotheses": {
+        "mass_distribution": "uniform subsystem surface density",
+        "polar": "2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2",
+        "nacelle_torque_limit_nm": 1100.0,
+        "nacelle_command_rate_deg_s": 20.0,
+        "pitch_rate_deg_s": 12.0,
+        "pitch_lag_s": 0.15,
+        "engine_spool_s": 2.0,
+        "engine_continuous_w": 469800.0,
+        "transmission_efficiency": 0.95,
+        "overall_ratio": 7.52,
+        "rotor_spin_senses": [
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "highspeed_shaft_topology": "ideal equivalent ratio; CV/tooth compliance unmodeled",
+        "installed_torque_limit_nm": 769.3723495675698,
+        "sfc_kg_kwh": 0.4,
+        "fuel_density_kg_l": 0.8,
+        "body_CdA_m2": 1.65,
+        "gear": "linear spring: static compression quarter stroke; damping ratio 0.55",
+        "self_contact": "CAD clearance audit; no all-part multibody self-contact",
+        "structural_failure": "rigid load paths; no laminate failure allowables or FEA",
+        "rotor_map": "axial BEMT; duct gain=1; no CFD/interference/edgewise qualification"
+      }
+    }
+  },
+  "finding": "Unplaced V3 shafts/actuator rods/buses occupy origin and extend below landing feet. Confirmed independently in original GLB and stored Blendstra source evidence."
+}
