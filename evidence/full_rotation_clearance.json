@@ -1,0 +1,1025 @@
+{
+  "status": "SAMPLED_TRIANGLE_INTERSECTION_SCREEN",
+  "coverage": "4 housings, X and Y axes, 30-degree steps; source-derived R5 geometry; stationary airframe and cabin only",
+  "limitations": "Not continuous sweep; no moving fans, transmission, actuator, strength, tolerance or containment validation.",
+  "vertical_placement_sensitivity": [
+    {
+      "pivot_and_housing_raise_m": 0.5,
+      "intersecting_sampled_poses": 28,
+      "total_sampled_poses": 96
+    },
+    {
+      "pivot_and_housing_raise_m": 1.0,
+      "intersecting_sampled_poses": 28,
+      "total_sampled_poses": 96
+    },
+    {
+      "pivot_and_housing_raise_m": 1.5,
+      "intersecting_sampled_poses": 0,
+      "total_sampled_poses": 96
+    },
+    {
+      "pivot_and_housing_raise_m": 2.0,
+      "intersecting_sampled_poses": 0,
+      "total_sampled_poses": 96
+    }
+  ],
+  "results": [
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 0,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 30,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 60,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 90,
+      "intersections": 579,
+      "parts": [
+        "V2 P06 | Rotor F1 lateral diagonal L",
+        "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+        "V4 P06 | F1 UPPER nacelle tie L",
+        "V4 P06 | F1 intermediate lateral shear brace L",
+        "V4 P06 | F1 shear triangulation return L",
+        "V4 P06 | LANDING leg1 upper frame attachment -1"
+      ]
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 120,
+      "intersections": 907,
+      "parts": [
+        "V2 P06 | Rotor F1 lateral diagonal R",
+        "V3 P11 | F1 redundant digital bus B 01",
+        "V3 P11 | F1 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 0",
+        "V4 P06 | Cardinal radial cross-member 0 z1.14",
+        "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+        "V4 P06 | F1 UPPER nacelle tie R",
+        "V4 P06 | F1 intermediate lateral shear brace R",
+        "V4 P06 | F1 shear triangulation return R",
+        "V4 P06 | Frame node outer 1 upper",
+        "V4 P06 | Frame vertical web outer 1",
+        "V4 P06 | LANDING leg1 upper frame attachment 1",
+        "V4 P06 | Ring shear diagonal outer 8",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 150,
+      "intersections": 16,
+      "parts": [
+        "V2 P06 | Rotor F1 lateral diagonal R"
+      ]
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 180,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 210,
+      "intersections": 16,
+      "parts": [
+        "V2 P06 | Rotor F1 lateral diagonal L"
+      ]
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 240,
+      "intersections": 971,
+      "parts": [
+        "V2 P06 | Rotor F1 lateral diagonal L",
+        "V3 P11 | F1 redundant digital bus A 01",
+        "V3 P11 | F1 redundant digital bus A 02",
+        "V4 P06 | Cardinal oblique transfer 0",
+        "V4 P06 | Cardinal radial cross-member 0 z1.14",
+        "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+        "V4 P06 | F1 UPPER nacelle tie L",
+        "V4 P06 | F1 intermediate lateral shear brace L",
+        "V4 P06 | F1 shear triangulation return L",
+        "V4 P06 | Frame node outer 1 upper",
+        "V4 P06 | Frame vertical web outer 1",
+        "V4 P06 | LANDING leg1 upper frame attachment -1",
+        "V4 P06 | Ring shear diagonal outer 8",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 270,
+      "intersections": 555,
+      "parts": [
+        "V2 P06 | Rotor F1 lateral diagonal R",
+        "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+        "V4 P06 | F1 UPPER nacelle tie R",
+        "V4 P06 | F1 intermediate lateral shear brace R",
+        "V4 P06 | F1 shear triangulation return R",
+        "V4 P06 | LANDING leg1 upper frame attachment 1"
+      ]
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 300,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "X",
+      "angle_deg": 330,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 0,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 30,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 60,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 90,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 120,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 150,
+      "intersections": 1186,
+      "parts": [
+        "V2 P06 | Rotor F1 lateral diagonal L",
+        "V2 P06 | Rotor F1 lateral diagonal R",
+        "V3 P11 | F1 redundant digital bus A 01",
+        "V3 P11 | F1 redundant digital bus A 02",
+        "V3 P11 | F1 redundant digital bus B 01",
+        "V3 P11 | F1 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 0",
+        "V4 P06 | Cardinal radial cross-member 0 z1.14",
+        "V4 P06 | F1 UPPER nacelle tie L",
+        "V4 P06 | F1 UPPER nacelle tie R",
+        "V4 P06 | F1 intermediate lateral shear brace L",
+        "V4 P06 | F1 intermediate lateral shear brace R",
+        "V4 P06 | Frame node outer 1 upper",
+        "V4 P06 | Frame vertical web outer 1",
+        "V4 P06 | LANDING leg1 dual shear route -1",
+        "V4 P06 | LANDING leg1 dual shear route 1",
+        "V4 P06 | LANDING leg1 upper frame attachment -1",
+        "V4 P06 | LANDING leg1 upper frame attachment 1",
+        "V4 P06 | Ring shear diagonal outer 8",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 180,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 210,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 240,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 270,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 300,
+      "intersections": 964,
+      "parts": [
+        "V3 P11 | F1 redundant digital bus A 01",
+        "V3 P11 | F1 redundant digital bus A 02",
+        "V3 P11 | F1 redundant digital bus B 01",
+        "V3 P11 | F1 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 0",
+        "V4 P06 | Cardinal radial cross-member 0 z1.14",
+        "V4 P06 | F1 intermediate lateral shear brace L",
+        "V4 P06 | F1 intermediate lateral shear brace R",
+        "V4 P06 | F1 shear triangulation return L",
+        "V4 P06 | F1 shear triangulation return R",
+        "V4 P06 | Frame node outer 1 upper",
+        "V4 P06 | Frame vertical web outer 1",
+        "V4 P06 | LANDING leg1 upper frame attachment -1",
+        "V4 P06 | LANDING leg1 upper frame attachment 1",
+        "V4 P06 | Ring shear diagonal outer 8",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 1,
+      "axis": "Y",
+      "angle_deg": 330,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 0,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 30,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 60,
+      "intersections": 880,
+      "parts": [
+        "V3 P11 | F2 redundant digital bus A 01",
+        "V3 P11 | F2 redundant digital bus A 02",
+        "V3 P11 | F2 redundant digital bus B 01",
+        "V3 P11 | F2 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 2",
+        "V4 P06 | Cardinal radial cross-member 2 z1.14",
+        "V4 P06 | F2 intermediate lateral shear brace L",
+        "V4 P06 | F2 intermediate lateral shear brace R",
+        "V4 P06 | F2 shear triangulation return L",
+        "V4 P06 | F2 shear triangulation return R",
+        "V4 P06 | Frame node outer 3 upper",
+        "V4 P06 | Frame vertical web outer 3",
+        "V4 P06 | Ring shear diagonal outer 2",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 90,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 120,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 150,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 180,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 210,
+      "intersections": 1037,
+      "parts": [
+        "V2 P06 | Rotor F2 lateral diagonal L",
+        "V2 P06 | Rotor F2 lateral diagonal R",
+        "V3 P11 | F2 redundant digital bus A 01",
+        "V3 P11 | F2 redundant digital bus A 02",
+        "V3 P11 | F2 redundant digital bus B 01",
+        "V3 P11 | F2 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 2",
+        "V4 P06 | Cardinal radial cross-member 2 z1.14",
+        "V4 P06 | F2 UPPER nacelle tie L",
+        "V4 P06 | F2 UPPER nacelle tie R",
+        "V4 P06 | F2 intermediate lateral shear brace L",
+        "V4 P06 | F2 intermediate lateral shear brace R",
+        "V4 P06 | Frame node outer 3 upper",
+        "V4 P06 | Frame vertical web outer 3",
+        "V4 P06 | Ring shear diagonal outer 2",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 240,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 270,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 300,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "X",
+      "angle_deg": 330,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 0,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 30,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 60,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 90,
+      "intersections": 548,
+      "parts": [
+        "V2 P06 | Rotor F2 lateral diagonal L",
+        "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+        "V4 P06 | F2 UPPER nacelle tie L",
+        "V4 P06 | F2 intermediate lateral shear brace L",
+        "V4 P06 | F2 shear triangulation return L"
+      ]
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 120,
+      "intersections": 878,
+      "parts": [
+        "V2 P06 | Rotor F2 lateral diagonal R",
+        "V3 P11 | F2 redundant digital bus B 01",
+        "V3 P11 | F2 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 2",
+        "V4 P06 | Cardinal radial cross-member 2 z1.14",
+        "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+        "V4 P06 | F2 UPPER nacelle tie R",
+        "V4 P06 | F2 intermediate lateral shear brace R",
+        "V4 P06 | F2 shear triangulation return R",
+        "V4 P06 | Frame node outer 3 upper",
+        "V4 P06 | Frame vertical web outer 3",
+        "V4 P06 | Ring shear diagonal outer 2",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 150,
+      "intersections": 16,
+      "parts": [
+        "V2 P06 | Rotor F2 lateral diagonal R"
+      ]
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 180,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 210,
+      "intersections": 16,
+      "parts": [
+        "V2 P06 | Rotor F2 lateral diagonal L"
+      ]
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 240,
+      "intersections": 942,
+      "parts": [
+        "V2 P06 | Rotor F2 lateral diagonal L",
+        "V3 P11 | F2 redundant digital bus A 01",
+        "V3 P11 | F2 redundant digital bus A 02",
+        "V4 P06 | Cardinal oblique transfer 2",
+        "V4 P06 | Cardinal radial cross-member 2 z1.14",
+        "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+        "V4 P06 | F2 UPPER nacelle tie L",
+        "V4 P06 | F2 intermediate lateral shear brace L",
+        "V4 P06 | F2 shear triangulation return L",
+        "V4 P06 | Frame node outer 3 upper",
+        "V4 P06 | Frame vertical web outer 3",
+        "V4 P06 | Ring shear diagonal outer 2",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 270,
+      "intersections": 524,
+      "parts": [
+        "V2 P06 | Rotor F2 lateral diagonal R",
+        "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+        "V4 P06 | F2 UPPER nacelle tie R",
+        "V4 P06 | F2 intermediate lateral shear brace R",
+        "V4 P06 | F2 shear triangulation return R"
+      ]
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 300,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 2,
+      "axis": "Y",
+      "angle_deg": 330,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 0,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 30,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 60,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 90,
+      "intersections": 555,
+      "parts": [
+        "V2 P06 | Rotor F3 lateral diagonal R",
+        "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+        "V4 P06 | F3 UPPER nacelle tie R",
+        "V4 P06 | F3 intermediate lateral shear brace R",
+        "V4 P06 | F3 shear triangulation return R",
+        "V4 P06 | LANDING leg4 upper frame attachment 1"
+      ]
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 120,
+      "intersections": 971,
+      "parts": [
+        "V2 P06 | Rotor F3 lateral diagonal L",
+        "V3 P11 | F3 redundant digital bus A 01",
+        "V3 P11 | F3 redundant digital bus A 02",
+        "V4 P06 | Cardinal oblique transfer 4",
+        "V4 P06 | Cardinal radial cross-member 4 z1.14",
+        "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+        "V4 P06 | F3 UPPER nacelle tie L",
+        "V4 P06 | F3 intermediate lateral shear brace L",
+        "V4 P06 | F3 shear triangulation return L",
+        "V4 P06 | Frame node outer 5 upper",
+        "V4 P06 | Frame vertical web outer 5",
+        "V4 P06 | LANDING leg4 upper frame attachment -1",
+        "V4 P06 | Ring shear diagonal outer 4",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 150,
+      "intersections": 16,
+      "parts": [
+        "V2 P06 | Rotor F3 lateral diagonal L"
+      ]
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 180,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 210,
+      "intersections": 16,
+      "parts": [
+        "V2 P06 | Rotor F3 lateral diagonal R"
+      ]
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 240,
+      "intersections": 907,
+      "parts": [
+        "V2 P06 | Rotor F3 lateral diagonal R",
+        "V3 P11 | F3 redundant digital bus B 01",
+        "V3 P11 | F3 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 4",
+        "V4 P06 | Cardinal radial cross-member 4 z1.14",
+        "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+        "V4 P06 | F3 UPPER nacelle tie R",
+        "V4 P06 | F3 intermediate lateral shear brace R",
+        "V4 P06 | F3 shear triangulation return R",
+        "V4 P06 | Frame node outer 5 upper",
+        "V4 P06 | Frame vertical web outer 5",
+        "V4 P06 | LANDING leg4 upper frame attachment 1",
+        "V4 P06 | Ring shear diagonal outer 4",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 270,
+      "intersections": 579,
+      "parts": [
+        "V2 P06 | Rotor F3 lateral diagonal L",
+        "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+        "V4 P06 | F3 UPPER nacelle tie L",
+        "V4 P06 | F3 intermediate lateral shear brace L",
+        "V4 P06 | F3 shear triangulation return L",
+        "V4 P06 | LANDING leg4 upper frame attachment -1"
+      ]
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 300,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "X",
+      "angle_deg": 330,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 0,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 30,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 60,
+      "intersections": 968,
+      "parts": [
+        "V3 P11 | F3 redundant digital bus A 01",
+        "V3 P11 | F3 redundant digital bus A 02",
+        "V3 P11 | F3 redundant digital bus B 01",
+        "V3 P11 | F3 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 4",
+        "V4 P06 | Cardinal radial cross-member 4 z1.14",
+        "V4 P06 | F3 intermediate lateral shear brace L",
+        "V4 P06 | F3 intermediate lateral shear brace R",
+        "V4 P06 | F3 shear triangulation return L",
+        "V4 P06 | F3 shear triangulation return R",
+        "V4 P06 | Frame node outer 5 upper",
+        "V4 P06 | Frame vertical web outer 5",
+        "V4 P06 | LANDING leg4 upper frame attachment -1",
+        "V4 P06 | LANDING leg4 upper frame attachment 1",
+        "V4 P06 | Ring shear diagonal outer 4",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 90,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 120,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 150,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 180,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 210,
+      "intersections": 1191,
+      "parts": [
+        "V2 P06 | Rotor F3 lateral diagonal L",
+        "V2 P06 | Rotor F3 lateral diagonal R",
+        "V3 P11 | F3 redundant digital bus A 01",
+        "V3 P11 | F3 redundant digital bus A 02",
+        "V3 P11 | F3 redundant digital bus B 01",
+        "V3 P11 | F3 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 4",
+        "V4 P06 | Cardinal radial cross-member 4 z1.14",
+        "V4 P06 | F3 UPPER nacelle tie L",
+        "V4 P06 | F3 UPPER nacelle tie R",
+        "V4 P06 | F3 intermediate lateral shear brace L",
+        "V4 P06 | F3 intermediate lateral shear brace R",
+        "V4 P06 | Frame node outer 5 upper",
+        "V4 P06 | Frame vertical web outer 5",
+        "V4 P06 | LANDING leg4 dual shear route -1",
+        "V4 P06 | LANDING leg4 dual shear route 1",
+        "V4 P06 | LANDING leg4 upper frame attachment -1",
+        "V4 P06 | LANDING leg4 upper frame attachment 1",
+        "V4 P06 | Ring shear diagonal outer 4",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 240,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 270,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 300,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 3,
+      "axis": "Y",
+      "angle_deg": 330,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 0,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 30,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 60,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 90,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 120,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 150,
+      "intersections": 1027,
+      "parts": [
+        "V2 P06 | Rotor F4 lateral diagonal L",
+        "V2 P06 | Rotor F4 lateral diagonal R",
+        "V3 P11 | F4 redundant digital bus A 01",
+        "V3 P11 | F4 redundant digital bus A 02",
+        "V3 P11 | F4 redundant digital bus B 01",
+        "V3 P11 | F4 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 6",
+        "V4 P06 | Cardinal radial cross-member 6 z1.14",
+        "V4 P06 | F4 UPPER nacelle tie L",
+        "V4 P06 | F4 UPPER nacelle tie R",
+        "V4 P06 | F4 intermediate lateral shear brace L",
+        "V4 P06 | F4 intermediate lateral shear brace R",
+        "V4 P06 | Frame node outer 7 upper",
+        "V4 P06 | Frame vertical web outer 7",
+        "V4 P06 | Ring shear diagonal outer 6",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 180,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 210,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 240,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 270,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 300,
+      "intersections": 878,
+      "parts": [
+        "V3 P11 | F4 redundant digital bus A 01",
+        "V3 P11 | F4 redundant digital bus A 02",
+        "V3 P11 | F4 redundant digital bus B 01",
+        "V3 P11 | F4 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 6",
+        "V4 P06 | Cardinal radial cross-member 6 z1.14",
+        "V4 P06 | F4 intermediate lateral shear brace L",
+        "V4 P06 | F4 intermediate lateral shear brace R",
+        "V4 P06 | F4 shear triangulation return L",
+        "V4 P06 | F4 shear triangulation return R",
+        "V4 P06 | Frame node outer 7 upper",
+        "V4 P06 | Frame vertical web outer 7",
+        "V4 P06 | Ring shear diagonal outer 6",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 4,
+      "axis": "X",
+      "angle_deg": 330,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 0,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 30,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 60,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 90,
+      "intersections": 524,
+      "parts": [
+        "V2 P06 | Rotor F4 lateral diagonal R",
+        "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+        "V4 P06 | F4 UPPER nacelle tie R",
+        "V4 P06 | F4 intermediate lateral shear brace R",
+        "V4 P06 | F4 shear triangulation return R"
+      ]
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 120,
+      "intersections": 942,
+      "parts": [
+        "V2 P06 | Rotor F4 lateral diagonal L",
+        "V3 P11 | F4 redundant digital bus A 01",
+        "V3 P11 | F4 redundant digital bus A 02",
+        "V4 P06 | Cardinal oblique transfer 6",
+        "V4 P06 | Cardinal radial cross-member 6 z1.14",
+        "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+        "V4 P06 | F4 UPPER nacelle tie L",
+        "V4 P06 | F4 intermediate lateral shear brace L",
+        "V4 P06 | F4 shear triangulation return L",
+        "V4 P06 | Frame node outer 7 upper",
+        "V4 P06 | Frame vertical web outer 7",
+        "V4 P06 | Ring shear diagonal outer 6",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 150,
+      "intersections": 16,
+      "parts": [
+        "V2 P06 | Rotor F4 lateral diagonal L"
+      ]
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 180,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 210,
+      "intersections": 16,
+      "parts": [
+        "V2 P06 | Rotor F4 lateral diagonal R"
+      ]
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 240,
+      "intersections": 878,
+      "parts": [
+        "V2 P06 | Rotor F4 lateral diagonal R",
+        "V3 P11 | F4 redundant digital bus B 01",
+        "V3 P11 | F4 redundant digital bus B 02",
+        "V4 P06 | Cardinal oblique transfer 6",
+        "V4 P06 | Cardinal radial cross-member 6 z1.14",
+        "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+        "V4 P06 | F4 UPPER nacelle tie R",
+        "V4 P06 | F4 intermediate lateral shear brace R",
+        "V4 P06 | F4 shear triangulation return R",
+        "V4 P06 | Frame node outer 7 upper",
+        "V4 P06 | Frame vertical web outer 7",
+        "V4 P06 | Ring shear diagonal outer 6",
+        "V4 P06 | UPPER outer compression ring"
+      ]
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 270,
+      "intersections": 548,
+      "parts": [
+        "V2 P06 | Rotor F4 lateral diagonal L",
+        "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+        "V4 P06 | F4 UPPER nacelle tie L",
+        "V4 P06 | F4 intermediate lateral shear brace L",
+        "V4 P06 | F4 shear triangulation return L"
+      ]
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 300,
+      "intersections": 0,
+      "parts": []
+    },
+    {
+      "fan": 4,
+      "axis": "Y",
+      "angle_deg": 330,
+      "intersections": 0,
+      "parts": []
+    }
+  ]
+}

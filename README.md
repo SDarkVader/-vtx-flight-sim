@@ -6,6 +6,8 @@
 
 [Open the live laboratory](https://sb-6iqplfebw9l2.vercel.run) · [Run locally and use keyboard controls](docs/LIVE_ACCESS.md) · [Engineering and flight findings](evidence/EXPERIMENT_REPORT.md). Hosting is a temporary, resumable Vercel Sandbox. Keyboard controls open in a closable pop-up; crash retries retain the failed run and pilot checkpoint. R4 and the experimental lighter R5 underside are selectable.
 
+For Windows, download or clone this branch, install Python with the Windows `py` launcher, and run `launch-windows.bat` from the repository folder. The first launch installs the packages in `requirements.txt`; keep the command window open while using the game. It opens a local browser at `http://127.0.0.1:8765/`. The existing hosted URL is temporary and may no longer run the latest revision.
+
 ## Non-negotiable: Colin flies by wire
 
 [Live fly-by-wire piloting contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md). The proprietor selects start and destination; **Colin pilots through live controls from observations**, including physical takeoff and landing attempts. No autopilot pretending to be an agent, no precomputed trajectory driving motion and no playback substituted for flight. Deterministic replay is post-flight audit only.

@@ -4,6 +4,21 @@ from pydantic import ValidationError
 from fastapi import HTTPException
 import pytest
 
+@pytest.mark.parametrize('compressed',[False,True])
+def test_replay_is_bounded_and_preserves_endpoints(tmp_path,compressed):
+    import gzip,json
+    from vtx.live_server import read_replay_frames
+    path=tmp_path/('events.jsonl.gz' if compressed else 'events.jsonl')
+    with (gzip.open(path,'wt') if compressed else path.open('w')) as f:
+        for i in range(10001):
+            f.write(json.dumps({'kind':'physics_audit','payload':{'index':i}})+'\n')
+            if i%1000==0:f.write(json.dumps({'kind':'pilot_decision','payload':{}})+'\n')
+    result=read_replay_frames(path,limit=100)
+    indices=[frame['index'] for frame in result['frames']]
+    assert result['total_frames']==10001 and result['downsampled']
+    assert len(indices)<=100 and indices[0]==0 and indices[-1]==10000
+    assert indices==sorted(set(indices))
+
 def test_pose_injection_rejected():
     with pytest.raises(ValidationError):
         Action(authority='manual',engine=0,collective_deg=[0]*4,tilt_deg=[[0,0]]*4,
@@ -26,6 +41,22 @@ def test_control_authority_and_observation_boundary():
     accepted=lab.accept_action(Action(authority='colin',observation_id=obs['observation_id'],**cmd))
     assert accepted['accepted'] and accepted['apply_t_s']==pytest.approx(.02)
     assert not {'qpos','qvel','forces','cg','inertia','contact_manifold'}&obs.keys()
+
+def test_queued_actions_are_not_lost_and_old_authority_cannot_apply():
+    lab=Laboratory();lab.active=True;lab.authority='manual';lab.mission={'destination':[100,100]}
+    def command(value,authority='manual'):
+        return Action(authority=authority,engine=0,collective_deg=[value]*4,
+                      tilt_deg=[[0,0]]*4,reason='Timing and authority check')
+    for value in range(6):lab.accept_action(command(value))
+    # More than four actions can be accepted before the simulated delay expires.
+    for _ in range(12):lab.integrate()
+    assert all(row.get('applied') for row in lab.action_log)
+    assert lab.aircraft.command['collective_deg']==[5]*4
+    lab.accept_action(command(6))
+    lab.authority='colin'
+    for _ in range(12):lab.integrate()
+    assert lab.action_log[-1].get('cancelled')
+    assert lab.aircraft.command['collective_deg']==[5]*4
 
 def test_no_time_indexed_route_command():
     with pytest.raises(ValidationError):
@@ -137,3 +168,14 @@ def test_cabin_level_assistance_uses_physical_joints():
     assert aircraft.joint('cabin_x')[0]<0
     assert aircraft.joint('cabin_z')[0]>0
     assert np.isfinite(aircraft.data.qpos).all()
+
+def test_cabin_level_target_stays_upright_with_combined_attitude_and_yaw():
+    import numpy as np
+    from scipy.spatial.transform import Rotation
+    from vtx.aircraft import cabin_level_target
+    for attitude in ([10,8,30],[-9,6,-40],[5,-11,70]):
+        air=Rotation.from_euler('xyz',attitude,degrees=True)
+        for yaw in (-120,0,80,160):
+            joints=cabin_level_target(air,np.radians(yaw))
+            cabin=air*Rotation.from_euler('XYZ',joints)
+            np.testing.assert_allclose(cabin.apply([0,0,1]),[0,0,1],atol=1e-10)

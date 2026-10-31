@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "pilot": "Colin",
+  "experience_count": 10,
+  "lessons": [
+    {
+      "run_id": "20261031T060411-29e1d6",
+      "lesson": "The first live attempt remained gear-supported at about 773 rpm and 20 degrees collective. I also twice exceeded the 5 simulated-second command lease, then tried to use a stale observation and the action was rejected. Future decisions must renew controls early, use a slower explicit clock when reasoning is delayed, and cite a fresh observation. Collective demand and shaft speed alone do not guarantee takeoff.",
+      "wall_utc": "2026-10-31T06:11:24.342623+00:00",
+      "basis": [
+        "20261031T060411-29e1d6 observations 69, 180, 329; decisions 1\u20133; rejected stale-observation feather request"
+      ]
+    },
+    {
+      "run_id": "20261031T062325-eb8ab0",
+      "lesson": "On the proprietor-selected mission, low collective at about 1181 rpm unloaded the gear. At 20 degrees, an X-bank tendency appeared before full release. I reacted too late; the requested north/south correction was rejected as stale, and the craft rolled steeply and impacted. Recovery commands caused strong cross-axis rotation and tilt saturation. I must trim from measured response before leaving ground support, use body-frame rates after heading changes, and stop escalating commands when actuator feedback no longer follows targets. A clock-scale change also needs scheduler rebasing; 0.02x with a low-latency control transport is necessary for this pilot. This was a crash, not a completed A-to-B flight.",
+      "wall_utc": "2026-10-31T06:46:26.940363+00:00",
+      "basis": [
+        "20261031T062325-eb8ab0",
+        "observations 3174, 3203, 3261, 3288, 3308, 3333, 3358, 3414; actual decisions and rejected inputs"
+      ]
+    },
+    {
+      "run_id": "20261031T071731-4e6434",
+      "lesson": "The lighter-airframe retry used smaller collective steps (12, 16, 18, 19.2, 20.3 degrees) and a north/south bias before loss of gear support. This produced a slow takeoff rather than the previous immediate roll crash, but does not isolate the effect of the lighter structure because my control behaviour also changed. I then over-corrected repeatedly: strong differential collective reversed roll rate rapidly, while observation-to-command delay and pitch lag made me release the correction too late. A 0.5-degree vector test produced unequal achieved nacelle angles and coupled body rates. I need to anticipate braking release from measured rate changes and account for actuator lag; merely reacting to bank angle is too late. The final approach contacted two feet while banked and sliding; the applied flare led to another airborne state. My last feather request was stale and rejected, and hosting shutdown ended the sortie. No stable landing or A-to-B success occurred.",
+      "basis": [
+        "20261031T071731-4e6434",
+        "observations 660, 686, 702, 734, 751, 774, 791, 799, 811, 823, 846, 878, 902; 20 applied decisions; rejected feather; shutdown summary"
+      ],
+      "wall_utc": "2026-10-31T07:40:04.819146+00:00"
+    },
+    {
+      "run_id": "20261031T081204-ce4792",
+      "lesson": "With 10 kg initial fuel and the new bounded shaft regulator, the live test reached about 1181-1212 rpm under collective load, lifted free of all six feet at about 18 degrees mean collective, and stayed near A. My 1.5-degree north/south correction braked the negative X rate, but I still released too late: rate reversed and later reached plus 5.4 degrees per second. Reducing mean collective to 14.8 initiated descent; the delayed flare met the ground at about 1 m/s and contact induced a minus 15.35-degree-per-second X transient. This time I sent fresh feather/idle immediately after six-foot contact, and subsequent observations showed all six feet supported with near-zero GNSS velocity. I must release differential braking earlier from measured rate trend and begin descent flare sooner. A local contact-and-settle sequence is not completion of the proprietor's A-to-B mission, and these changes do not isolate fuel or governor effects from my changed inputs.",
+      "wall_utc": "2026-10-31T08:18:35.252028+00:00",
+      "basis": [
+        "20261031T081204-ce4792",
+        "observations 99, 182, 207, 218, 227, 232, 237, 244, 250, 255, 262, 269, 275, 281, 286, 288, 308, 339; decisions 1-18; stop summary"
+      ]
+    },
+    {
+      "run_id": "20261031T082338-71a679",
+      "lesson": "The proprietor watched the pilot lose control when the credit ran out, leading to the collision in the displayed water area. The last applied command was at 24.73 simulated seconds, first impact at 27.935, and the five-second command lease expired at 29.71. Lease expiry is a later failsafe event; pilot control can be lost earlier when credit expires. In future, preserve a safe handover plan and account for control availability, lateral speed and water clearance. Edgewise flow above 5 m/s remains uncalibrated; displayed water has no flotation or hydrodynamic impact model.",
+      "wall_utc": "2026-10-31T09:42:36.923167+00:00",
+      "basis": [
+        "Proprietor eyewitness correction: credit expired and pilot control was lost before the impact",
+        "20261031T082338-71a679 events.jsonl: last applied command, first collision, later lease expiry and final summary"
+      ]
+    },
+    {
+      "run_id": "20261031T094649-bda3b7",
+      "lesson": "During the requested 180-degree turn, the aircraft developed approximately 33 degrees nose-up attitude and descending flight while travelling north. At observation 660 clearance was 5.894 m and vertical speed -2.627 m/s; a brief requested pitch-up input was followed by steeper descent. Shaft power reached its 300 kW limit and a gear impact occurred by observation 682. In future, monitor attitude, vertical speed and power margin together and arrest a developing descent early; do not assume pitching up creates an immediate climb, especially when already steeply inclined. This records the observed sequence, not a validated aerodynamic causal diagnosis.",
+      "wall_utc": "2026-10-31T10:16:07.493754+00:00",
+      "basis": [
+        660,
+        666,
+        671,
+        679,
+        682
+      ]
+    },
+    {
+      "run_id": "20261031T102855-4e8aa8",
+      "lesson": "On this retry the aircraft reached 6.1 m clearance, but northward speed kept increasing while nose-up pitch oscillated and altitude fell. Rear-rotor tilt requested by the operator reached about 8 degrees; after simultaneous collective corrections, pitch rate reversed rapidly, so the individual effect of the tilt cannot be isolated. At observation 443 clearance was 2.895 m and vertical speed -1.864 m/s; gear contact followed, and IMPACT appeared by observation 466. Do not allow speed and attitude oscillations to build at low clearance; start correcting drift and descent earlier, and use smaller rotor-tilt changes with time to observe cross-axis response. This is a simulation observation, not a validated flight rule.",
+      "wall_utc": "2026-10-31T10:48:54.271180+00:00",
+      "basis": [
+        247,
+        376,
+        392,
+        400,
+        443,
+        455,
+        466
+      ]
+    },
+    {
+      "run_id": "20261031T105046-c050dc",
+      "lesson": "On this retry early, modest north/south collective corrections kept pitch near level during the climb and much of the turn. The last recorded observation before the host timed out showed 12.131 m clearance, pitch/roll within 3.4 degrees, and yaw -106.515 degrees. The flight ended due to server shutdown while airborne; it did not reach B, and no impact was recorded. Plan host lifetime and speed before starting, and do not claim a completed turn or landing.",
+      "wall_utc": "2026-10-31T11:14:27.512730+00:00",
+      "basis": [
+        120,
+        176,
+        247,
+        384,
+        482,
+        538
+      ]
+    },
+    {
+      "run_id": "20261031T111439-91c918",
+      "lesson": "During the attempt to reach the right side of the block, pitch and bank grew while altitude fell; corrective inputs were late and the aircraft gained excessive northward speed, touched the gear and rotated rapidly. Observation 437 showed 7.03 m clearance with -0.40 m/s vertical speed; by observation 547 clearance was 3.73 m, and gear contact was recorded by observation 599. For the user's next retry, actively keep bank within 5 degrees, address negative vertical speed immediately, level and climb before continuing, and avoid increasing bank to make the turn happen. A 5-degree limit is a pilot target, not a guaranteed physical constraint.",
+      "wall_utc": "2026-10-31T11:40:47.224968+00:00",
+      "basis": [
+        437,
+        474,
+        496,
+        530,
+        547,
+        577,
+        599,
+        612
+      ]
+    },
+    {
+      "run_id": "20261031T114125-81987f",
+      "lesson": "The connection dropped while the aircraft was drifting toward the water and losing altitude. The operator took manual control and landed it. The recorded run shows a change from Colin to manual authority and ends after server shutdown; the last sampled instruments show nearly level attitude, nearly zero velocity, and all six gear legs compressed. The screenshots were supplied by the operator as the same run; do not infer a separate flight solely from phone timestamps. The operator advises using independent fan vectors and counter-thrust to check drift, correcting any descent early, leveling and regaining altitude before clearance falls below roughly 4\u20135 m, and targeting 8\u201310 m. These are pilot instructions and observed simulator experience, not validated aircraft limits.",
+      "wall_utc": "2026-10-31T13:44:32.300836+00:00",
+      "basis": [
+        "operator account and five supplied screenshots",
+        "manual authority changes and observation 1043 in archived events"
+      ]
+    }
+  ],
+  "aircraft_familiarity": "Explicit lessons from logged live decisions; no automatic policy or environment map",
+  "stage2_accessed": false,
+  "history": [
+    {
+      "run_id": "20261031T060411-29e1d6",
+      "checkpoint": 1
+    },
+    {
+      "run_id": "20261031T062325-eb8ab0",
+      "checkpoint": 2
+    },
+    {
+      "run_id": "20261031T071731-4e6434",
+      "checkpoint": 3
+    },
+    {
+      "run_id": "20261031T081204-ce4792",
+      "checkpoint": 4
+    },
+    {
+      "run_id": "20261031T082338-71a679",
+      "checkpoint": 5
+    },
+    {
+      "run_id": "20261031T094649-bda3b7",
+      "checkpoint": 6
+    },
+    {
+      "run_id": "20261031T102855-4e8aa8",
+      "checkpoint": 7
+    },
+    {
+      "run_id": "20261031T105046-c050dc",
+      "checkpoint": 8
+    },
+    {
+      "run_id": "20261031T111439-91c918",
+      "checkpoint": 9
+    },
+    {
+      "run_id": "20261031T114125-81987f",
+      "checkpoint": 10
+    }
+  ]
+}

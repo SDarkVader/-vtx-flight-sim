@@ -1,0 +1,242 @@
+[
+  {
+    "assist": 0,
+    "axis": "roll",
+    "observations": [
+      {
+        "t": 0.003,
+        "rate_deg_s": -0.016,
+        "clearance": 20.207,
+        "pitch": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ]
+      },
+      {
+        "t": 0.5,
+        "rate_deg_s": -0.015,
+        "clearance": 19.542,
+        "pitch": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ]
+      },
+      {
+        "t": 1.0,
+        "rate_deg_s": -0.006,
+        "clearance": 17.625,
+        "pitch": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ]
+      }
+    ],
+    "crashed": false
+  },
+  {
+    "assist": 0.5,
+    "axis": "roll",
+    "observations": [
+      {
+        "t": 0.003,
+        "rate_deg_s": -0.016,
+        "clearance": 20.207,
+        "pitch": [
+          9.997,
+          10.0,
+          10.003,
+          10.0
+        ]
+      },
+      {
+        "t": 0.5,
+        "rate_deg_s": 0.056,
+        "clearance": 19.542,
+        "pitch": [
+          9.914,
+          9.999,
+          10.086,
+          10.001
+        ]
+      },
+      {
+        "t": 1.0,
+        "rate_deg_s": 0.071,
+        "clearance": 17.625,
+        "pitch": [
+          10.034,
+          9.999,
+          9.966,
+          10.001
+        ]
+      }
+    ],
+    "crashed": false
+  },
+  {
+    "assist": 1,
+    "axis": "roll",
+    "observations": [
+      {
+        "t": 0.003,
+        "rate_deg_s": -0.016,
+        "clearance": 20.207,
+        "pitch": [
+          9.993,
+          10.0,
+          10.007,
+          10.0
+        ]
+      },
+      {
+        "t": 0.5,
+        "rate_deg_s": 0.125,
+        "clearance": 19.542,
+        "pitch": [
+          9.828,
+          9.997,
+          10.172,
+          10.003
+        ]
+      },
+      {
+        "t": 1.0,
+        "rate_deg_s": 0.145,
+        "clearance": 17.626,
+        "pitch": [
+          10.069,
+          9.994,
+          9.931,
+          10.006
+        ]
+      }
+    ],
+    "crashed": false
+  },
+  {
+    "assist": 0,
+    "axis": "pitch",
+    "observations": [
+      {
+        "t": 0.003,
+        "rate_deg_s": -0.052,
+        "clearance": 20.207,
+        "pitch": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ]
+      },
+      {
+        "t": 0.5,
+        "rate_deg_s": 5.35,
+        "clearance": 19.543,
+        "pitch": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ]
+      },
+      {
+        "t": 1.0,
+        "rate_deg_s": 10.573,
+        "clearance": 17.635,
+        "pitch": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ]
+      }
+    ],
+    "crashed": false
+  },
+  {
+    "assist": 0.5,
+    "axis": "pitch",
+    "observations": [
+      {
+        "t": 0.003,
+        "rate_deg_s": -0.052,
+        "clearance": 20.207,
+        "pitch": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ]
+      },
+      {
+        "t": 0.5,
+        "rate_deg_s": 5.497,
+        "clearance": 19.543,
+        "pitch": [
+          10.074,
+          9.985,
+          9.926,
+          10.015
+        ]
+      },
+      {
+        "t": 1.0,
+        "rate_deg_s": 10.879,
+        "clearance": 17.634,
+        "pitch": [
+          10.18,
+          9.987,
+          9.82,
+          10.013
+        ]
+      }
+    ],
+    "crashed": false
+  },
+  {
+    "assist": 1,
+    "axis": "pitch",
+    "observations": [
+      {
+        "t": 0.003,
+        "rate_deg_s": -0.052,
+        "clearance": 20.207,
+        "pitch": [
+          10.0,
+          9.999,
+          10.0,
+          10.001
+        ]
+      },
+      {
+        "t": 0.5,
+        "rate_deg_s": 5.643,
+        "clearance": 19.543,
+        "pitch": [
+          10.152,
+          9.97,
+          9.848,
+          10.03
+        ]
+      },
+      {
+        "t": 1.0,
+        "rate_deg_s": 11.165,
+        "clearance": 17.633,
+        "pitch": [
+          10.37,
+          9.977,
+          9.63,
+          10.023
+        ]
+      }
+    ],
+    "crashed": false
+  }
+]

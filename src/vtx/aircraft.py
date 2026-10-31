@@ -1,4 +1,4 @@
-"""Mass-bearing P0-V4 experimental multibody plant; no flight controller.
+"""Mass-bearing P0-V4 experimental multibody plant with a shadow damping study.
 
 MuJoCo integrates the free airframe, two-axis nacelles, spinning rotors/shafts,
 occupied cabin gimbal and six sliding gear bodies. Motor/constraint reactions
@@ -16,6 +16,7 @@ from scipy.spatial.transform import Rotation
 from .aero import BladeElementModel, ideal_hover
 from .world import TestWorld
 from .governor import ShaftGovernor
+from .training_assist import assisted_collective
 
 ROOT=Path(__file__).resolve().parents[2]
 LEDGER_PATH=ROOT/'evidence/source/airframe_ledger.json'
@@ -24,6 +25,13 @@ G=9.80665
 
 
 def fmt(v):return ' '.join(f'{float(x):.12g}' for x in np.asarray(v).ravel())
+
+def cabin_level_target(air_rotation,yaw):
+    """Joint angles for an upright cabin at the requested relative heading."""
+    heading=air_rotation.as_euler('xyz')[2]+yaw
+    relative=(air_rotation.inv()*Rotation.from_euler('z',heading)).as_euler('XYZ')
+    return np.clip(relative,[-math.radians(15),-math.radians(15),-math.pi],
+                   [math.radians(15),math.radians(15),math.pi])
 
 
 def inertial(parent,info,pivot):
@@ -137,6 +145,15 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
             ET.SubElement(bodies[f'nacelle{i}'],'site',name=tip_site,pos=fmt(tip),size='.01')
             tendon=ET.SubElement(tendons,'spatial',name=f'ema{i}_{index}',width='.01')
             ET.SubElement(tendon,'site',site=root_site);ET.SubElement(tendon,'site',site=tip_site)
+    # Keep actuator tendons first; the stops couple the two tilt joints.
+    cone_limit=math.radians(20)*math.cos(math.pi/32)
+    for i in range(1,5):
+        for k in range(16):
+            a=k*math.pi/16
+            stop=ET.SubElement(tendons,'fixed',name=f'nacelle{i}_cone{k}',limited='true',
+                               range=fmt([-cone_limit,cone_limit]),solreflimit='.005 1',solimplimit='.99 .999 .001')
+            ET.SubElement(stop,'joint',joint=f'nacelle{i}_x',coef=str(math.cos(a)))
+            ET.SubElement(stop,'joint',joint=f'nacelle{i}_y',coef=str(math.sin(a)))
     eq=ET.SubElement(xml,'equality')
     senses=[1,-1,1,-1]
     for i in range(2,5):
@@ -171,6 +188,9 @@ class Aircraft:
         self.vadr={n:int(self.model.jnt_dofadr[i]) for n,i in self.jids.items()}
         self.aero=BladeElementModel(self.ledger['blade'])
         self.command=dict(engine=0.,collective_deg=[0.]*4,tilt_deg=[[0.,0.] for _ in range(4)],cabin_deg=[0.,0.,0.],cabin_level=True)
+        self.stability_assist=0.;self.assisted_collective_deg=[0.]*4
+        # Offline tests alone may opt in to active control. Never exposed to the API.
+        self._bench_apply_experimental_assist=False
         self.pitch=np.zeros(4);self.target_angles=np.zeros((4,2));self.cabin_target=np.zeros(3)
         self.engine_spool=0.;self.fuel=np.full(4,fuel_kg/4)
         self.governor=ShaftGovernor(governor_mode)
@@ -199,7 +219,7 @@ class Aircraft:
             'hypotheses':dict(mass_distribution=self.ledger['allocation_method'],
                 polar='2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2',
                 nacelle_torque_limit_nm=1100.,nacelle_command_rate_deg_s=20.,
-                pitch_rate_deg_s=12.,pitch_lag_s=.15,engine_spool_s=2.,
+                pitch_rate_deg_s=4.,pitch_lag_s=.15,nacelle_target_rate_deg_s=5.,engine_spool_s=2.,
                 engine_continuous_w=469800.,transmission_efficiency=.95,
                 overall_ratio=6016/rpm,rotor_spin_senses=[1,-1,1,-1],
                 highspeed_shaft_topology='ideal equivalent ratio; CV/tooth compliance unmodeled',
@@ -276,15 +296,28 @@ class Aircraft:
         m,d=self.model,self.data
         d.qfrc_applied[:]=0.;d.xfrc_applied[:]=0.
         self.engine_spool+=np.clip(self.command['engine']-self.engine_spool,-DT/2,DT/2)
-        self.pitch+=np.clip((np.array(self.command['collective_deg'])-self.pitch)*DT/.15,-12*DT,12*DT)
+        # The first live lift-off showed that the original command rates could
+        # build a large roll moment before a counter-command reached the
+        # actuators. Keep the same physical ranges, but slew operator inputs
+        # slowly enough to observe and counter the response.
+        if self.stability_assist and self.step_count%20==0:
+            body_velocity=np.zeros(6)
+            mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,self.bids['airframe'],body_velocity,1)
+            self.assisted_collective_deg=assisted_collective(self.command['collective_deg'],np.degrees(body_velocity[:3]),self.stability_assist)
+        elif not self.stability_assist:self.assisted_collective_deg=list(self.command['collective_deg'])
+        pitch_target=self.assisted_collective_deg if self._bench_apply_experimental_assist else self.command['collective_deg']
+        self.pitch+=np.clip((np.array(pitch_target)-self.pitch)*DT/.15,-4*DT,4*DT)
         requested=np.radians(self.command['tilt_deg'])
-        self.target_angles+=np.clip(requested-self.target_angles,-math.radians(20)*DT,math.radians(20)*DT)
+        # Leave a small margin to the polygonal physical stop. This is an
+        # actuator target limit, not a direct change to the simulated pose.
+        max_target=math.radians(20)*math.cos(math.pi/32)
+        lengths=np.linalg.norm(requested,axis=1)
+        requested*=np.minimum(1.,max_target/np.maximum(lengths,1e-12))[:,None]
+        self.target_angles+=np.clip(requested-self.target_angles,-math.radians(5)*DT,math.radians(5)*DT)
         cabin_requested=np.radians(self.command['cabin_deg']).copy()
         if self.command['cabin_level']:
             air_rotation=Rotation.from_matrix(d.xmat[self.bids['airframe']].reshape(3,3))
-            heading=air_rotation.as_euler('xyz')[2]+cabin_requested[2]
-            level_relative=(air_rotation.inv()*Rotation.from_euler('z',heading)).as_euler('XYZ')
-            cabin_requested[:2]=np.clip(level_relative[:2],-math.radians(15),math.radians(15))
+            cabin_requested=cabin_level_target(air_rotation,cabin_requested[2])
         self.cabin_target+=np.clip(cabin_requested-self.cabin_target,-math.radians(12)*DT,math.radians(12)*DT)
         servo_power=0.
         for i in range(4):
@@ -372,7 +405,9 @@ class Aircraft:
     def physical_snapshot(self):
         return dict(t_s=float(self.data.time),qpos=self.data.qpos.tolist(),qvel=self.data.qvel.tolist(),
                     body_poses={n:dict(position=self.data.xpos[b].tolist(),quaternion_wxyz=self.data.xquat[b].tolist()) for n,b in self.bids.items()},
-                    pitch_deg=self.pitch.tolist(),fuel_kg=self.fuel.tolist(),rotors=self.rotors,
+                    pitch_deg=self.pitch.tolist(),assisted_collective_deg=self.assisted_collective_deg,
+                    stability_assist=self.stability_assist,assistance_applied=self._bench_apply_experimental_assist,
+                    fuel_kg=self.fuel.tolist(),rotors=self.rotors,
                     integrity=self.integrity.tolist(),power=self.power,energy=self.energy,
                     events=self.events,flags=sorted(self.flags),mass=self.mass_properties(),
                     governor=self.governor.telemetry,

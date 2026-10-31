@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "pilot": "Colin",
+  "experience_count": 2,
+  "lessons": [
+    {
+      "run_id": "20261031T151225-52aea6",
+      "lesson": "20261031T151225-52aea6: at 8/12/16 deg equal collective gear compressed roughly 37\u201338/21\u201324/1\u20139 mm. At 17.5 nominal, a 2.58 deg side split coincided with roll rate reversal from -0.87 to +0.06 deg/s by t=15.44; after reversal and subsequent opposing inputs, roll reached +2.58 deg/s, then -15.1 deg/s, then -2.1 deg/s by t=17.27. Inputs and changing contact confound gain measurement. At t=20.085: clearance 4.128m, roll -17.055 deg, yaw -3.05 deg, Y velocity +4.381 m/s, climb +1.342 m/s; 5-degree X target had not arrested drift. Simulation paused, no impact lamp. No causal gain or stable hover established.",
+      "wall_utc": "2026-10-31T15:21:27.560504+00:00",
+      "basis": [
+        284,
+        294,
+        301,
+        309,
+        316,
+        323,
+        330,
+        337,
+        343,
+        350,
+        357,
+        364,
+        371,
+        377,
+        384,
+        391,
+        394
+      ]
+    },
+    {
+      "run_id": "20261031T151225-52aea6",
+      "lesson": "Wolfram-assisted continuation of 20261031T151225-52aea6: measured +Y speed grew from 2.206 to 4.381m/s over 1.470 simulated seconds, average +1.480m/s\u00b2; simple 17.055deg bank minus 5.054deg X tilt predicts about 12deg residual angle but omits 3D dynamics. At t=20.45 roll rate reversed positive; feedback split 4.65deg. Later +Y speed peaked 6.02m/s at t=21.10 and decreased to 1.45m/s at 22.15 under combined changing bank and tilt; do not attribute causation to a single input. Peak clearance recorded 8.253m at t=25.85, no stable hover established. At t=27.343 paused: clearance 6.491m, vertical speed -0.82m/s, horizontal velocity [-1.594,8.893] m/s, attitude [-15.629,-13.498,-23.024] deg; no impact warning. Coupled motion and actuator lag prevent reliable isolated gain estimates from these steps.",
+      "wall_utc": "2026-10-31T15:33:37.000484+00:00",
+      "basis": [
+        394,
+        395,
+        402,
+        408,
+        415,
+        421,
+        428,
+        436,
+        444,
+        452,
+        459,
+        468,
+        475,
+        482,
+        489,
+        496,
+        503,
+        510,
+        517,
+        523,
+        530,
+        536,
+        540
+      ]
+    }
+  ],
+  "aircraft_familiarity": "Explicit lessons from logged live decisions; no automatic policy or environment map",
+  "stage2_accessed": false,
+  "history": [
+    {
+      "run_id": "20261031T151225-52aea6",
+      "checkpoint": 1
+    },
+    {
+      "run_id": "20261031T151225-52aea6",
+      "checkpoint": 2
+    }
+  ]
+}

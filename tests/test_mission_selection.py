@@ -80,3 +80,18 @@ def test_replayable_mission_selection():
 def test_valid_decision_requires_terrain_height():
     with pytest.raises(ValueError, match="terrain height"):
         SurfaceDecision(True, "supported", None)
+
+
+def test_vtx_district_buildings_are_physical_and_default_endpoints_are_valid():
+    import mujoco as mj
+    from vtx.world import TestWorld
+    from vtx.aircraft import Aircraft
+    from vtx.mission_selection import MapPoint
+    world=TestWorld()
+    assert world.version=='2'
+    assert world.validate(MapPoint(0,0),'departure').valid
+    assert world.validate(MapPoint(-50,20),'destination').valid
+    model=Aircraft(world=world).model
+    for name in ('dispatch','arcade','operations','terminal'):
+        geom=mj.mj_name2id(model,mj.mjtObj.mjOBJ_GEOM,name)
+        assert geom>=0 and model.geom_contype[geom] and model.geom_conaffinity[geom]

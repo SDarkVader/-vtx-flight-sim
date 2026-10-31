@@ -45,7 +45,7 @@ class Action(BaseModel):
     @field_validator('tilt_deg')
     @classmethod
     def tilt(cls,v):
-        if len(v)!=4 or any(len(t)!=2 or any(abs(x)>20 for x in t) for t in v):raise ValueError('Four X/Y tilt commands, each ±20 degrees')
+        if len(v)!=4 or any(len(t)!=2 or math.hypot(*t)>20.000001 for t in v):raise ValueError('Four X/Y tilt commands, each with a combined magnitude no greater than 20 degrees')
         return v
     @field_validator('cabin_deg')
     @classmethod
@@ -59,6 +59,7 @@ class Mission(BaseModel):
     destination:list[float]
     authority:str='manual'
     time_scale:float=Field(default=1.,ge=.01,le=1)
+    stability_assist:float=Field(default=0.,ge=0,le=1,allow_inf_nan=False)
     reference_rpm:float=1200.
     gear_variant:str='baseline'
     airframe_variant:str='light'
@@ -96,7 +97,7 @@ class Laboratory:
     def __init__(self):
         self.world=TestWorld();self.aircraft=Aircraft(self.world,rpm=1200.,fuel_kg=10.,engine_power_limit_kw=300.);self.aircraft.spawn(0,0,0)
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
-        self.mission=None;self.action_log=[];self.last_command_time=0.;self.lease_expired=False
+        self.mission=None;self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
         self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
@@ -138,6 +139,7 @@ class Laboratory:
             rotor_rpm=[round(float(abs(p.joint(f'rotor{i}_spin')[1])*60/(2*math.pi)),2) for i in range(1,5)],
             shaft_torque_nm=[round(v['torque_nm'],1) for v in p.rotors],
             collective_feedback_deg=np.round(p.pitch,3).tolist(),
+            stability_assist=p.stability_assist,assistance_applied=False,assisted_collective_deg=p.assisted_collective_deg,
             tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
             cabin_feedback_deg=[round(math.degrees(p.joint(f'cabin_{a}')[0]),3) for a in 'xyz'],
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
@@ -161,6 +163,7 @@ class Laboratory:
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw)
         self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
+        self.aircraft.stability_assist=request.stability_assist
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
         self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
         self.mission=dict(departure=request.departure,destination=request.destination,
@@ -168,7 +171,7 @@ class Laboratory:
                           environment=self.world.id,environment_version=self.world.version,label=request.label)
         self.log_path=ROOT/'evidence/flights'/self.run_id;self.log_path.mkdir(parents=True)
         self.audit_file=(self.log_path/'events.jsonl').open('w')
-        self.wall_started=time.monotonic();self.action_log=[];self.last_command_time=0.;self.lease_expired=False
+        self.wall_started=time.monotonic();self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.last_obs=None;self.obs_id=0;self.last_sensor_t=-1.;self.last_audit_t=-1.;self.observations={}
         self.settled_s=0.;self.left_ground=False;self.error=None;self.end_summary=None
         self.sensor_rng=np.random.default_rng(self.world.seed)
@@ -181,7 +184,7 @@ class Laboratory:
                   runtime_source_sha256=hashlib.sha256(b''.join(p.read_bytes() for p in sorted((ROOT/'src/vtx').glob('*.py')))).hexdigest(),
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
-                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; no attitude stabilization')
+                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; experimental rate damping is shadow-only and does not control aircraft')
         (self.log_path/'metadata.json').write_text(json.dumps(meta,indent=2))
         (self.log_path/'model.xml').write_text(self.aircraft.xml)
         (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
@@ -202,12 +205,20 @@ class Laboratory:
 
     def integrate(self):
         p=self.aircraft
-        if self.action_log:
-            for row in self.action_log[-4:]:
-                if not row.get('applied') and p.data.time>=row['apply_t_s']:
-                    cmd={k:row['issued'][k] for k in p.command}
-                    p.set_command(cmd);row['applied']=True
-                    self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
+        while self.next_pending_action<len(self.action_log):
+            row=self.action_log[self.next_pending_action]
+            if row.get('cancelled'):
+                self.next_pending_action+=1
+                continue
+            if p.data.time<row['apply_t_s']:break
+            self.next_pending_action+=1
+            if row['issued']['authority']!=self.authority:
+                row['cancelled']=True
+                self.log('control_cancelled',dict(sequence=row['sequence'],reason='Control authority changed before application'))
+                continue
+            cmd={k:row['issued'][k] for k in p.command}
+            p.set_command(cmd);row['applied']=True
+            self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
         if p.data.time-self.last_command_time>5 and not self.lease_expired:
             p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
             self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine idle; no flight rescue'))
@@ -252,6 +263,7 @@ class Laboratory:
         old=hint['request']
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
                   authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
+                  stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
                   airframe_variant=request.get('airframe_variant','light'),
                   fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
@@ -331,8 +343,18 @@ async def retry(request:dict):
     except ValueError as e:raise HTTPException(422,str(e))
 @app.post('/api/operator')
 async def operator(request:dict):
+    if 'stability_assist' in request:
+        value=float(request['stability_assist'])
+        if not math.isfinite(value) or not 0<=value<=1:raise HTTPException(422,'Stability assistance must be 0–1')
+        lab.log('stability_assist_change',dict(before=lab.aircraft.stability_assist,after=value))
+        lab.aircraft.stability_assist=value
     if 'authority' in request:
         if request['authority'] not in ['manual','colin']:raise HTTPException(422,'Unknown authority')
+        if request['authority']!=lab.authority:
+            for row in lab.action_log[lab.next_pending_action:]:
+                if not row.get('cancelled'):
+                    row['cancelled']=True
+                    lab.log('control_cancelled',dict(sequence=row['sequence'],reason='Control authority changed before application'))
         lab.log('authority_change',dict(before=lab.authority,after=request['authority']));lab.authority=request['authority']
     if 'paused' in request:
         lab.paused=bool(request['paused']);lab.clock_epoch+=1;lab.log('explicit_operator_pause',dict(paused=lab.paused))
@@ -361,21 +383,39 @@ async def runs():
     for path in sorted((ROOT/'evidence/flights').glob('*/summary.json'),reverse=True):
         s=json.loads(path.read_text());result.append({k:v for k,v in s.items() if k!='final'})
     return result
+def read_replay_frames(path, limit=1200):
+    """Bound replay memory while retaining the first and last physical states."""
+    frames=[]; stride=1; count=0; last=None
+    with (gzip.open(path,'rt') if path.suffix=='.gz' else path.open()) as stream:
+        for line in stream:
+            row=json.loads(line)
+            if row['kind']!='physics_audit':continue
+            last=row['payload']
+            if count % stride == 0:frames.append((count,last))
+            count+=1
+            if len(frames)>limit:
+                frames=frames[::2];stride*=2
+    if count and frames[-1][0]!=count-1:
+        if len(frames)>=limit:frames.pop()
+        frames.append((count-1,last))
+    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=[v for _,v in frames],
+                total_frames=count,sampling_stride=stride,downsampled=count>len(frames))
+
 @app.get('/api/replay/{run_id}')
 async def replay(run_id:str):
     if not run_id.replace('-','').isalnum():raise HTTPException(422,'Invalid run ID')
     path=ROOT/'evidence/flights'/run_id/'events.jsonl'
     compressed=path.with_suffix('.jsonl.gz')
     if not path.exists() and not compressed.exists():raise HTTPException(404,'Run not found')
-    with (path.open() if path.exists() else gzip.open(compressed,'rt')) as stream:
-        frames=[row['payload'] for line in stream if (row:=json.loads(line))['kind']=='physics_audit']
-    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=frames)
+    # Large historical logs must not block the event loop and live physics.
+    return await asyncio.to_thread(read_replay_frames,path if path.exists() else compressed)
 @app.websocket('/ws')
 async def stream(ws:WebSocket):
     await ws.accept()
     try:
         while True:
-            await ws.send_json(lab.view());await asyncio.sleep(.05)
+            # Paused/inspection states do not need 20 full snapshots per second.
+            await ws.send_json(lab.view());await asyncio.sleep(.25 if lab.paused or not lab.active else .1)
     except (WebSocketDisconnect,RuntimeError):pass
 app.mount('/evidence',StaticFiles(directory=ROOT/'evidence'),name='evidence')
 app.mount('/',StaticFiles(directory=ROOT/'public',html=True),name='frontend')
