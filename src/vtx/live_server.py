@@ -388,7 +388,8 @@ async def stream(ws:WebSocket):
     await ws.accept()
     try:
         while True:
-            await ws.send_json(lab.view());await asyncio.sleep(.05)
+            # Paused/inspection states do not need 20 full snapshots per second.
+            await ws.send_json(lab.view());await asyncio.sleep(.25 if lab.paused or not lab.active else .1)
     except (WebSocketDisconnect,RuntimeError):pass
 app.mount('/evidence',StaticFiles(directory=ROOT/'evidence'),name='evidence')
 app.mount('/',StaticFiles(directory=ROOT/'public',html=True),name='frontend')

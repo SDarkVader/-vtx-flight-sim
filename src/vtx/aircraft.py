@@ -25,6 +25,13 @@ G=9.80665
 
 def fmt(v):return ' '.join(f'{float(x):.12g}' for x in np.asarray(v).ravel())
 
+def cabin_level_target(air_rotation,yaw):
+    """Joint angles for an upright cabin at the requested relative heading."""
+    heading=air_rotation.as_euler('xyz')[2]+yaw
+    relative=(air_rotation.inv()*Rotation.from_euler('z',heading)).as_euler('XYZ')
+    return np.clip(relative,[-math.radians(15),-math.radians(15),-math.pi],
+                   [math.radians(15),math.radians(15),math.pi])
+
 
 def inertial(parent,info,pivot):
     j=np.array(info['inertia_centroid_kg_m2'])
@@ -300,9 +307,7 @@ class Aircraft:
         cabin_requested=np.radians(self.command['cabin_deg']).copy()
         if self.command['cabin_level']:
             air_rotation=Rotation.from_matrix(d.xmat[self.bids['airframe']].reshape(3,3))
-            heading=air_rotation.as_euler('xyz')[2]+cabin_requested[2]
-            level_relative=(air_rotation.inv()*Rotation.from_euler('z',heading)).as_euler('XYZ')
-            cabin_requested[:2]=np.clip(level_relative[:2],-math.radians(15),math.radians(15))
+            cabin_requested=cabin_level_target(air_rotation,cabin_requested[2])
         self.cabin_target+=np.clip(cabin_requested-self.cabin_target,-math.radians(12)*DT,math.radians(12)*DT)
         servo_power=0.
         for i in range(4):

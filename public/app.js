@@ -182,11 +182,18 @@ $('engineering').onclick=()=>{$('engineering-dialog').showModal();updateEngineer
 $('history').onclick=guard(async()=>{const records=await api('/api/runs');$('runs').replaceChildren();for(const r of records){const a=document.createElement('article'),button=document.createElement('button');button.textContent='Inspect recorded states';button.onclick=guard(async()=>{const replay=await api('/api/replay/'+r.run_id);replayFrames=replay.frames;replayFrame=0;$('replay-time').max=Math.max(0,replayFrames.length-1);$('replay-controls').hidden=false;$('view-mode').textContent='POST-FLIGHT AUDIT · NO CONTROL';toast('Inspection only. The live physical plant remains separate.');});a.append(button,document.createTextNode(`${r.run_id} · ${r.outcome} · ${r.simulated_seconds.toFixed(1)} s · ${r.decisions} decisions`));$('runs').appendChild(a);}$('history-dialog').showModal();});
 $('replay-time').oninput=()=>replayFrame=+$('replay-time').value;
 $('return-live').onclick=()=>{replayFrames=null;$('replay-controls').hidden=true;$('view-mode').textContent='PHYSICAL STATE · LIVE';};
-function drawMap(canvas){if(!world)return;const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,n=world.heights_m.length;ctx.fillStyle='#2c4845';ctx.fillRect(0,0,w,h);const px=x=>(x/(2*world.half_m)+.5)*w,py=y=>(.5-y/(2*world.half_m))*h;
+const mapBackgrounds=new WeakMap();
+function drawMap(canvas){if(!world)return;const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,n=world.heights_m.length;const px=x=>(x/(2*world.half_m)+.5)*w,py=y=>(.5-y/(2*world.half_m))*h;
+ let bg=mapBackgrounds.get(canvas);
+ if(!bg||bg.width!==w||bg.height!==h||bg.world!==world){
+ const layer=document.createElement('canvas');layer.width=w;layer.height=h;const ctx=layer.getContext('2d');ctx.fillStyle='#2c4845';ctx.fillRect(0,0,w,h);
  for(let j=0;j<n-1;j++)for(let i=0;i<n-1;i++){const v=world.heights_m[j][i],shade=Math.round(55+v*1.0);ctx.fillStyle=`rgb(${shade},${shade+27},${shade+17})`;ctx.fillRect(i/(n-1)*w,h-(j+1)/(n-1)*h,w/(n-1)+1,h/(n-1)+1);}
  ctx.strokeStyle='#adcec420';ctx.lineWidth=1;for(let x=-500;x<=500;x+=100){ctx.beginPath();ctx.moveTo(px(x),0);ctx.lineTo(px(x),h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,py(x));ctx.lineTo(w,py(x));ctx.stroke();}
  for(const o of world.obstacles){ctx.fillStyle=o.landable?'#abbcac':'#b08d72';const [x,y]=o.center,[hx,hy]=o.half;ctx.fillRect(px(x-hx),py(y+hy),hx/world.half_m*w,hy/world.half_m*h);}
  const water=world.water;ctx.fillStyle='#6c9baf';ctx.fillRect(px(water.x-water.half_x),py(water.y+water.half_y),water.half_x/world.half_m*w,water.half_y/world.half_m*h);
+ bg={width:w,height:h,world,layer};mapBackgrounds.set(canvas,bg);
+ }
+ ctx.drawImage(bg.layer,0,0);
  if(track.length>1){ctx.strokeStyle='#d9f0eaa0';ctx.lineWidth=2;ctx.beginPath();track.forEach((p,i)=>i?ctx.lineTo(px(p[0]),py(p[1])):ctx.moveTo(px(p[0]),py(p[1])));ctx.stroke();}
  for(const [p,label,col] of [[departure,'A','#7cdfcb'],[destination,'B','#ffc88b']]){const x=px(p[0]),y=py(p[1]);ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,Math.max(6,w/85),0,Math.PI*2);ctx.fill();ctx.fillStyle='#15342e';ctx.font=`bold ${Math.max(9,w/65)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,x,y+.5);}
  if(last){const p=last.observation.gnss_xy_m;ctx.strokeStyle='#fff';ctx.lineWidth=1.7;const x=px(p[0]),y=py(p[1]);ctx.beginPath();ctx.moveTo(x,y-5);ctx.lineTo(x+4,y+4);ctx.lineTo(x-4,y+4);ctx.closePath();ctx.stroke();}
@@ -213,7 +220,8 @@ function updateView(v){last=v;const o=v.observation,t=v.rendering_truth;if(v.run
  const key=v.recent_decisions.map(a=>a.sequence).join(',');if(key!==lastDecision){lastDecision=key;$('decisions').replaceChildren();for(const d of [...v.recent_decisions].reverse()){const a=document.createElement('article'),tm=document.createElement('time'),p=document.createElement('p'),code=document.createElement('code');tm.textContent=`${d.issued_t_s.toFixed(3)} s / ${d.issued.authority.toUpperCase()}`;p.textContent=d.decision;code.textContent=`Collective ${d.issued.collective_deg.join(' / ')}° · engine ${d.issued.engine}`;a.append(tm,p,code);$('decisions').appendChild(a);}}
  if(v.active&&(!track.length||Math.hypot(o.gnss_xy_m[0]-track.at(-1)[0],o.gnss_xy_m[1]-track.at(-1)[1])>.2)){track.push(o.gnss_xy_m);if(track.length>3000)track.shift();}drawMaps();if($('engineering-dialog').open)updateEngineering();
 }
-setInterval(guard(async()=>{if(!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames)return;manualBeat++;if(dirty||manualBeat%10===0){dirty=false;await api('/api/action',{...command,authority:'manual',observation_id:last.observation.observation_id,reason:'Manual operator controls and command heartbeat'});}}),50);
+let manualRequestPending=false;
+setInterval(guard(async()=>{if(manualRequestPending||!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames)return;manualBeat++;if(dirty||manualBeat%10===0){dirty=false;manualRequestPending=true;try{await api('/api/action',{...command,authority:'manual',observation_id:last.observation.observation_id,reason:'Manual operator controls and command heartbeat'});}catch(e){dirty=true;throw e;}finally{manualRequestPending=false;}}}),50);
 function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);ws.onmessage=e=>updateView(JSON.parse(e.data));ws.onclose=()=>{toast('Live connection lost; physical command lease still applies.');setTimeout(connect,2000);};}
 api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();

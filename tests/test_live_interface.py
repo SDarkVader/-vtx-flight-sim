@@ -153,3 +153,14 @@ def test_cabin_level_assistance_uses_physical_joints():
     assert aircraft.joint('cabin_x')[0]<0
     assert aircraft.joint('cabin_z')[0]>0
     assert np.isfinite(aircraft.data.qpos).all()
+
+def test_cabin_level_target_stays_upright_with_combined_attitude_and_yaw():
+    import numpy as np
+    from scipy.spatial.transform import Rotation
+    from vtx.aircraft import cabin_level_target
+    for attitude in ([10,8,30],[-9,6,-40],[5,-11,70]):
+        air=Rotation.from_euler('xyz',attitude,degrees=True)
+        for yaw in (-120,0,80,160):
+            joints=cabin_level_target(air,np.radians(yaw))
+            cabin=air*Rotation.from_euler('XYZ',joints)
+            np.testing.assert_allclose(cabin.apply([0,0,1]),[0,0,1],atol=1e-10)
