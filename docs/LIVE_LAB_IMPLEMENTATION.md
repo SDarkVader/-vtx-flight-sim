@@ -116,6 +116,12 @@ flow, descending wake, rotor interactions, duct pressure and ground effect are
 not qualified; out-of-model flow is flagged. Blade collective changes its
 aerodynamic incidence and its displayed pose, not a prescribed thrust.
 
+Collective pitch currently uses a rate/lag-limited state rather than separate
+mass-bearing blade-pitch joints. Pitch-dependent blade inertia, pitch bearing
+torques and pitch-servo power are unresolved; recorded servo power covers
+nacelle and cabin actuation. These are mechanical-model gaps, in addition to
+missing calibration, and prevent a claim of a complete physical aircraft.
+
 EMA anchors and torque/power/rate limits are proposed mechanisms, with tendon
 forces acting through actual lever arms. Rod inertia is lumped into the source
 body partition, not a full telescoping-rod mass model. The neutral cabin servo

@@ -23,8 +23,9 @@ from stationary structure. No master source was overwritten.
 ## What actually runs
 
 One authoritative MuJoCo process integrates gravity, full multibody inertia,
-rotor/shaft angular momentum, internal drive and actuator reactions, bounded
-power, fuel depletion, provisional blade-element aerodynamics and world contact.
+rotor/shaft angular momentum, internal drive and tilt/cabin actuator reactions,
+bounded drive and tilt/cabin power, fuel depletion, provisional blade-element
+aerodynamics and world contact.
 The browser renders solver states with separately articulated nacelles, rotors,
 cabin and six sliding feet. A 1 km terrain world contains obstacles, roofs,
 water exclusions and map-selectable valid A/B coordinates. The world is Stage 1.
@@ -46,7 +47,7 @@ lineage. A live intact sortie cannot be silently reset through Retry.
 | Run | Operator and result |
 | --- | --- |
 | `20261031T060411-29e1d6` | Colin, three actual decisions, 800 rpm reference. Remained gear-supported; no takeoff. Two command leases expired and a stale action was rejected. |
-| `20261031T061653-5f6bb3` | 1200 rpm mission opened, then ended before a flying attempt when the proprietor selected a new mission. Not counted as pilot experience. |
+| `20261031T061653-5f6bb3` | Brief 1200 rpm ground trial. One Colin engine-start/feathered-blade decision was applied; the proprietor ended it before takeoff and selected a new mission. No separate learning lesson was inferred from this short trial. |
 | `20261031T062325-eb8ab0` | Colin, seven accepted decisions on proprietor-selected A (−205.7, −117.6) and B (144.3, 173.2), 1200 rpm proposal. Left ground, rolled and impacted. Recovery attempts failed. Explicit engine/collective abort followed. Collision; no completed navigation or landing. |
 | `20261031T071731-4e6434` | Colin, R5 retry at the same A/B and 1200 rpm/critical-damping configuration. Twenty applied decisions: incremental lift, slow takeoff with trim, a small vector test, repeated rate-braking corrections and return/flare attempt. Two feet contacted, then the aircraft became airborne again. Final feather request rejected as stale. Graceful hosting shutdown ended the run; no settled landing. |
 
@@ -130,7 +131,11 @@ polars and duct/wake/edgewise/descent interactions, installed engine/transmissio
 ratings, actuator dynamics and supply capacity, CV/gear compliance, all-part
 self-contact, laminate/gear failure allowables and deformable structural
 behaviour. Present contact damage is an envelope strike and loss of intact
-rotor aerodynamics, not material fracture. These limitations prevent a claim
+rotor aerodynamics, not material fracture. Collective pitch is a rate/lag-limited
+aerodynamic state and rendered blade rotation: individual blade-pitch bearing
+dynamics, pitch-servo work and pitch-dependent blade inertia are not resolved.
+Engine internal rotors, vertical shaft rotation and air/exhaust reaction loads
+are also unresolved. These limitations prevent a claim
 that the real VTX has been validated or that every original engineering
 requirement is complete. No controlled A-to-B landing has been achieved.
 
