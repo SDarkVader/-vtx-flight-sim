@@ -4,6 +4,21 @@ from pydantic import ValidationError
 from fastapi import HTTPException
 import pytest
 
+@pytest.mark.parametrize('compressed',[False,True])
+def test_replay_is_bounded_and_preserves_endpoints(tmp_path,compressed):
+    import gzip,json
+    from vtx.live_server import read_replay_frames
+    path=tmp_path/('events.jsonl.gz' if compressed else 'events.jsonl')
+    with (gzip.open(path,'wt') if compressed else path.open('w')) as f:
+        for i in range(10001):
+            f.write(json.dumps({'kind':'physics_audit','payload':{'index':i}})+'\n')
+            if i%1000==0:f.write(json.dumps({'kind':'pilot_decision','payload':{}})+'\n')
+    result=read_replay_frames(path,limit=100)
+    indices=[frame['index'] for frame in result['frames']]
+    assert result['total_frames']==10001 and result['downsampled']
+    assert len(indices)<=100 and indices[0]==0 and indices[-1]==10000
+    assert indices==sorted(set(indices))
+
 def test_pose_injection_rejected():
     with pytest.raises(ValidationError):
         Action(authority='manual',engine=0,collective_deg=[0]*4,tilt_deg=[[0,0]]*4,

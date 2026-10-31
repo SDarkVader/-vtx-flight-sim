@@ -52,19 +52,27 @@ function buildWorld(w){
  const water=plane(w.water.half_x*2,w.water.half_y*2,'#6f9fa8',w.water.x,w.water.y,surfaceZ(w.water.x,w.water.y)+.1);water.material.metalness=.3;water.material.roughness=.3;
  updateMarkers();drawMaps();console.log('VTX: terrain ready');
 }
-let loadedAsset=null;
+let loadedAsset=null,assetRetryAfter=0,modelReady=false;
+function disposeModel(root){
+ const geometries=new Set(),materials=new Set(),textures=new Set();
+ root.traverse(n=>{if(!n.isMesh)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});
+ geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());
+}
 function loadAirframe(asset){
- if(asset===loadedAsset)return;loadedAsset=asset;
+ if(asset===loadedAsset||performance.now()<assetRetryAfter)return;loadedAsset=asset;
  $('loading').hidden=false;$('loading').textContent='Loading physical revision…';
- new GLTFLoader().load(asset,g=>{
- if(asset!==loadedAsset)return;
- if(model){scene.remove(model);model.traverse(n=>{if(n.isMesh)n.geometry.dispose();});}
+ new GLTFLoader().load(asset,async g=>{
+ if(asset!==loadedAsset){disposeModel(g.scene);return;}
+ if(model){scene.remove(model);disposeModel(model);}
  for(const key of Object.keys(bodyNodes))delete bodyNodes[key];pitchMeshes.length=0;
- model=g.scene;scene.add(model);model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
+ model=g.scene;modelReady=false;scene.add(model);model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
  // Blender exports empty groups as Object3D or Group depending on loader.
  for(const name of ['airframe','cabin',...Array.from({length:4},(_,i)=>`nacelle${i+1}`),...Array.from({length:4},(_,i)=>`rotor${i+1}`),...Array.from({length:6},(_,i)=>`gear${i+1}`),...Array.from({length:4},(_,i)=>`shaft${i+1}`)]){const n=model.getObjectByName(name);if(n)bodyNodes[name]=n;}
  // Display-only batching retains every triangle and the source IDs; the mass
  // ledger/colliders remain per-part. Keep independently pitched blades separate.
+ const sourceModel=model,geometryRefs=new Map();
+ sourceModel.traverse(n=>{if(n.isMesh)geometryRefs.set(n.geometry,(geometryRefs.get(n.geometry)||0)+1);});
+ let batchStarted=performance.now();
  for(const body of Object.values(bodyNodes)){
   const batches=new Map();
   for(const n of [...body.children])if(n.isMesh&&!n.userData.pitch_axis&&!Array.isArray(n.material)){
@@ -72,12 +80,14 @@ function loadAirframe(asset){
    if(!batches.has(key))batches.set(key,[]);batches.get(key).push(n);
   }
   for(const meshes of batches.values())if(meshes.length>1){
-   const merged=mergeGeometries(meshes.map(n=>{n.updateMatrix();return n.geometry.clone().applyMatrix4(n.matrix);}));
-   if(merged){const n=new THREE.Mesh(merged,meshes[0].material);n.castShadow=true;n.receiveShadow=true;n.userData.source_ids=meshes.map(m=>m.userData.blendstra_id);meshes.forEach(m=>m.removeFromParent());body.add(n);}
+   const copies=meshes.map(n=>{n.updateMatrix();return n.geometry.clone().applyMatrix4(n.matrix);});
+   const merged=mergeGeometries(copies);copies.forEach(geometry=>geometry.dispose());
+   if(merged){const n=new THREE.Mesh(merged,meshes[0].material);n.castShadow=true;n.receiveShadow=true;n.userData.source_ids=meshes.map(m=>m.userData.blendstra_id);meshes.forEach(m=>{m.removeFromParent();const left=geometryRefs.get(m.geometry)-1;geometryRefs.set(m.geometry,left);if(!left)m.geometry.dispose();});body.add(n);}
+   if(performance.now()-batchStarted>10){await new Promise(resolve=>setTimeout(resolve,0));batchStarted=performance.now();if(model!==sourceModel||loadedAsset!==asset)return;}
   }
  }
-$('loading').hidden=true;
- },undefined,e=>{$('loading').textContent='Aircraft asset failed to load';console.error(e);});
+modelReady=true;$('loading').hidden=true;
+ },undefined,e=>{if(asset===loadedAsset){loadedAsset=null;assetRetryAfter=performance.now()+5000;$('loading').textContent='Aircraft asset failed to load; retrying…';}console.error(e);});
 }
 
 function limitFanTilt(i){const v=command.tilt_deg[i],r=Math.hypot(...v);if(r>20){v[0]*=20/r;v[1]*=20/r;}for(let j=0;j<2;j++){const k=j?'y':'x';$(k+'-'+i).value=v[j];$(k+'val-'+i).value=v[j].toFixed(1)+'°';}syncPolar(i);}
@@ -179,7 +189,7 @@ closeKeyboardGuide();addEventListener('pageshow',closeKeyboardGuide);
 $('keyboard-open').onclick=()=>{$('keyboard-help').showModal();keys.clear();};
 for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>b.closest('dialog').close();
 $('engineering').onclick=()=>{$('engineering-dialog').showModal();updateEngineering();};
-$('history').onclick=guard(async()=>{const records=await api('/api/runs');$('runs').replaceChildren();for(const r of records){const a=document.createElement('article'),button=document.createElement('button');button.textContent='Inspect recorded states';button.onclick=guard(async()=>{const replay=await api('/api/replay/'+r.run_id);replayFrames=replay.frames;replayFrame=0;$('replay-time').max=Math.max(0,replayFrames.length-1);$('replay-controls').hidden=false;$('view-mode').textContent='POST-FLIGHT AUDIT · NO CONTROL';toast('Inspection only. The live physical plant remains separate.');});a.append(button,document.createTextNode(`${r.run_id} · ${r.outcome} · ${r.simulated_seconds.toFixed(1)} s · ${r.decisions} decisions`));$('runs').appendChild(a);}$('history-dialog').showModal();});
+$('history').onclick=guard(async()=>{const records=await api('/api/runs');$('runs').replaceChildren();for(const r of records){const a=document.createElement('article'),button=document.createElement('button');button.textContent='Inspect recorded states';button.onclick=guard(async()=>{const replay=await api('/api/replay/'+r.run_id);replayFrames=replay.frames;replayFrame=0;$('replay-time').max=Math.max(0,replayFrames.length-1);$('replay-controls').hidden=false;$('view-mode').textContent='POST-FLIGHT AUDIT · NO CONTROL';toast(replay.downsampled?`Inspection uses ${replay.frames.length} of ${replay.total_frames} recorded states; full log is retained.`:'Inspection only. The live physical plant remains separate.');});a.append(button,document.createTextNode(`${r.run_id} · ${r.outcome} · ${r.simulated_seconds.toFixed(1)} s · ${r.decisions} decisions`));$('runs').appendChild(a);}$('history-dialog').showModal();});
 $('replay-time').oninput=()=>replayFrame=+$('replay-time').value;
 $('return-live').onclick=()=>{replayFrames=null;$('replay-controls').hidden=true;$('view-mode').textContent='PHYSICAL STATE · LIVE';};
 const mapBackgrounds=new WeakMap();
@@ -234,5 +244,5 @@ function animate(){requestAnimationFrame(animate);const now=performance.now();if
   if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);cameraTarget.copy(camera.position).add(new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch)).applyQuaternion(q));camera.lookAt(cameraTarget);}else{camera.up.set(0,0,1);orbit.update();}
   sun.target.position.copy(pos);sun.position.copy(pos).add(new THREE.Vector3(-70,-90,140));
  }
- if(model&&!window.__vtxNoRender)renderer.render(scene,camera);
+ if(model&&modelReady&&!window.__vtxNoRender)renderer.render(scene,camera);
 }animate();

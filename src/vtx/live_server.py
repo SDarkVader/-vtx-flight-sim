@@ -374,15 +374,32 @@ async def runs():
     for path in sorted((ROOT/'evidence/flights').glob('*/summary.json'),reverse=True):
         s=json.loads(path.read_text());result.append({k:v for k,v in s.items() if k!='final'})
     return result
+def read_replay_frames(path, limit=1200):
+    """Bound replay memory while retaining the first and last physical states."""
+    frames=[]; stride=1; count=0; last=None
+    with (gzip.open(path,'rt') if path.suffix=='.gz' else path.open()) as stream:
+        for line in stream:
+            row=json.loads(line)
+            if row['kind']!='physics_audit':continue
+            last=row['payload']
+            if count % stride == 0:frames.append((count,last))
+            count+=1
+            if len(frames)>limit:
+                frames=frames[::2];stride*=2
+    if count and frames[-1][0]!=count-1:
+        if len(frames)>=limit:frames.pop()
+        frames.append((count-1,last))
+    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=[v for _,v in frames],
+                total_frames=count,sampling_stride=stride,downsampled=count>len(frames))
+
 @app.get('/api/replay/{run_id}')
 async def replay(run_id:str):
     if not run_id.replace('-','').isalnum():raise HTTPException(422,'Invalid run ID')
     path=ROOT/'evidence/flights'/run_id/'events.jsonl'
     compressed=path.with_suffix('.jsonl.gz')
     if not path.exists() and not compressed.exists():raise HTTPException(404,'Run not found')
-    with (path.open() if path.exists() else gzip.open(compressed,'rt')) as stream:
-        frames=[row['payload'] for line in stream if (row:=json.loads(line))['kind']=='physics_audit']
-    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=frames)
+    # Large historical logs must not block the event loop and live physics.
+    return await asyncio.to_thread(read_replay_frames,path if path.exists() else compressed)
 @app.websocket('/ws')
 async def stream(ws:WebSocket):
     await ws.accept()
