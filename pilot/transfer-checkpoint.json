@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "pilot": "Colin",
-  "created_utc": "2026-10-31T08:20:32.872695+00:00",
-  "source_sha256": "b22403e17d76d31dec745449285e48e4a21824d5fd1f01babf7ea2f69006532d",
+  "created_utc": "2026-10-31T09:42:36.950033+00:00",
+  "source_sha256": "fa3a55008da8ebea2b1e0980885666005d5667f58bef4b7e032db2f1941aed3b",
   "state": {
     "schema_version": 1,
     "pilot": "Colin",
-    "experience_count": 4,
+    "experience_count": 5,
     "lessons": [
       {
         "run_id": "20261031T060411-29e1d6",
@@ -42,6 +42,14 @@
           "20261031T081204-ce4792",
           "observations 99, 182, 207, 218, 227, 232, 237, 244, 250, 255, 262, 269, 275, 281, 286, 288, 308, 339; decisions 1-18; stop summary"
         ]
+      },
+      {
+        "run_id": "20261031T082338-71a679",
+        "lesson": "The 6 m climb and northbound obstacle avoidance developed substantial northward and westward speed. I initiated the east turn with high lateral speed and insufficient clearance from the water area. The first airframe collision occurred at 27.935 simulated seconds; the command lease expired later at 29.71 seconds. Do not attribute the initial impact to the later command loss. Plan a velocity reduction and safe route earlier, and treat edgewise flow above 5 m/s as uncalibrated. The displayed water has no flotation or hydrodynamic impact model.",
+        "wall_utc": "2026-10-31T09:42:36.923167+00:00",
+        "basis": [
+          "20261031T082338-71a679 events.jsonl: decisions 39\u201343, first collision, lease expiry and final summary"
+        ]
       }
     ],
     "aircraft_familiarity": "Explicit lessons from logged live decisions; no automatic policy or environment map",
@@ -62,6 +70,10 @@
       {
         "run_id": "20261031T081204-ce4792",
         "checkpoint": 4
+      },
+      {
+        "run_id": "20261031T082338-71a679",
+        "checkpoint": 5
       }
     ]
   },
