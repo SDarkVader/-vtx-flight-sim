@@ -4,6 +4,10 @@
 
 **Current state:** repository scaffolding only. A fully coupled, interactive 3D flight simulator does not yet exist, and no VTX flightworthiness or calibrated stability result is claimed.
 
+## Required physics and source register
+
+[PHYSICS_AND_RESEARCH_BASELINE.md](docs/PHYSICS_AND_RESEARCH_BASELINE.md) is the authoritative engineering baseline. Current published repository has design requirements and physics research only; it does **not** yet contain the complete starter source or validated executable aircraft. No flight or unit-test results have been independently verified on GitHub.
+
 ## Primary engineering reference
 
 [Saved P0-V4 Blendstra aircraft](https://blendstra.com/studio?workspace=wsp_816786f2f8ced68922a0d7b529616880cf8b6f22&project=3288318a-95f4-4dda-8d0f-dbf7b8eaceb9&version=version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2)
