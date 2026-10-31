@@ -1,0 +1,271 @@
+{
+  "status": "INDEPENDENT_CONDITIONAL_POWER_REVIEW_NOT_FLIGHT_CONTROL",
+  "units": "SI unless named",
+  "assumptions": {
+    "polar": "Existing synthetic BEMT only; axial static hover, no duct gain, no interference/ground effect",
+    "fuel_sfc_kg_kwh": 0.4,
+    "transmission_efficiency": 0.95,
+    "servo_power": "Excluded from static hover table; add actual mechanical/electrical service load",
+    "reference_engine_rating_w": 469800,
+    "individual_rotor_collective": "Equal static hover; no CG trim added"
+  },
+  "mass_properties_10kg": {
+    "mass_kg": 996.6689476043953,
+    "cg_world_m": [
+      -0.0004407054456381461,
+      0.08625211417262625,
+      1.2205995607515985
+    ],
+    "inertia_world_kg_m2": [
+      [
+        1780.8441240483621,
+        -0.37497384701737646,
+        -0.7999259944711994
+      ],
+      [
+        -0.37497384701737735,
+        1745.8937619782484,
+        72.07400902972215
+      ],
+      [
+        -0.7999259944711994,
+        72.07400902972215,
+        2521.5520075793142
+      ]
+    ]
+  },
+  "mass_properties_60kg": {
+    "mass_kg": 1046.6689476043953,
+    "cg_world_m": [
+      -0.00041965263929728304,
+      0.08213179924222065,
+      1.201940386089085
+    ],
+    "inertia_world_kg_m2": [
+      [
+        1844.3098193689334,
+        -0.37316404090069,
+        -0.7917302781374511
+      ],
+      [
+        -0.37316404090069,
+        1809.0052643766353,
+        70.46997676741826
+      ],
+      [
+        -0.7917302781374511,
+        70.46997676741826,
+        2632.7912292084266
+      ]
+    ]
+  },
+  "delta_cg_10_minus_60_m": [
+    -2.1052806340863086e-05,
+    0.0041203149304056,
+    0.018659174662513545
+  ],
+  "ideal_hover_lower_bound": {
+    "weight_n": 9773.983535024643,
+    "induced_velocity_mps": 15.790384917542447,
+    "ideal_induced_power_w": 154334.96219576133
+  },
+  "equivalent_common_spin_inertia_kg_m2": 13.902072248552582,
+  "equivalent_inertia_method": "v^T M v with fixed airframe, neutral articulated configuration; rotor signs1,-1,1,-1 and shaft ratios6016/1200",
+  "static_hover": [
+    {
+      "rpm": 800,
+      "hover": false,
+      "peak_thrust_weight_ratio": 0.6526144955099604
+    },
+    {
+      "rpm": 900,
+      "hover": false,
+      "peak_thrust_weight_ratio": 0.8259652208788664
+    },
+    {
+      "rpm": 1000,
+      "hover": true,
+      "pitch_deg": 24.530921724666165,
+      "rotor_shaft_power_w": 184655.353395345,
+      "engine_power_before_servos_w": 194374.05620562634,
+      "fuel_kg_min": 1.2958270413708424,
+      "common_torque_nm": 1763.3287356749975,
+      "max_alpha_deg": 16.774321566402453,
+      "peak_thrust_weight_ratio": 1.019710149232253
+    },
+    {
+      "rpm": 1050,
+      "hover": true,
+      "pitch_deg": 21.237099268714164,
+      "rotor_shaft_power_w": 187278.66871663326,
+      "engine_power_before_servos_w": 197135.4407543508,
+      "fuel_kg_min": 1.3142362716956721,
+      "common_torque_nm": 1703.2186206812391,
+      "max_alpha_deg": 13.845650341838416,
+      "peak_thrust_weight_ratio": 1.1242304395281266
+    },
+    {
+      "rpm": 1100,
+      "hover": true,
+      "pitch_deg": 19.322152066345897,
+      "rotor_shaft_power_w": 189455.44526601682,
+      "engine_power_before_servos_w": 199426.78449054403,
+      "fuel_kg_min": 1.329511896603627,
+      "common_torque_nm": 1644.6965787143236,
+      "max_alpha_deg": 13.765865573087934,
+      "peak_thrust_weight_ratio": 1.2338492805701196
+    },
+    {
+      "rpm": 1150,
+      "hover": true,
+      "pitch_deg": 17.984250531939924,
+      "rotor_shaft_power_w": 191227.30567883718,
+      "engine_power_before_servos_w": 201291.90071456545,
+      "fuel_kg_min": 1.34194600476377,
+      "common_torque_nm": 1587.901093196442,
+      "max_alpha_deg": 13.949225390597313,
+      "peak_thrust_weight_ratio": 1.348566672358233
+    },
+    {
+      "rpm": 1200,
+      "hover": true,
+      "pitch_deg": 16.950831756609336,
+      "rotor_shaft_power_w": 192678.9898135974,
+      "engine_power_before_servos_w": 202819.98927747097,
+      "fuel_kg_min": 1.3521332618498065,
+      "common_torque_nm": 1533.290682939349,
+      "max_alpha_deg": 13.898693620036287,
+      "peak_thrust_weight_ratio": 1.468382614892467
+    }
+  ],
+  "polar_sensitivity": [
+    {
+      "cl_max_assumed": 0.8,
+      "rpm": 800,
+      "peak_collective_deg": 24.25,
+      "peak_thrust_weight_ratio": 0.45607406165282877
+    },
+    {
+      "cl_max_assumed": 0.8,
+      "rpm": 1000,
+      "peak_collective_deg": 24.25,
+      "peak_thrust_weight_ratio": 0.71261572133132
+    },
+    {
+      "cl_max_assumed": 0.8,
+      "rpm": 1100,
+      "peak_collective_deg": 24.25,
+      "peak_thrust_weight_ratio": 0.8622650228103582
+    },
+    {
+      "cl_max_assumed": 0.8,
+      "rpm": 1200,
+      "peak_collective_deg": 24.25,
+      "peak_thrust_weight_ratio": 1.026166638715925
+    },
+    {
+      "cl_max_assumed": 1.2,
+      "rpm": 800,
+      "peak_collective_deg": 26.75,
+      "peak_thrust_weight_ratio": 0.6526144955099604
+    },
+    {
+      "cl_max_assumed": 1.2,
+      "rpm": 1000,
+      "peak_collective_deg": 26.75,
+      "peak_thrust_weight_ratio": 1.019710149232253
+    },
+    {
+      "cl_max_assumed": 1.2,
+      "rpm": 1100,
+      "peak_collective_deg": 26.75,
+      "peak_thrust_weight_ratio": 1.2338492805701196
+    },
+    {
+      "cl_max_assumed": 1.2,
+      "rpm": 1200,
+      "peak_collective_deg": 26.75,
+      "peak_thrust_weight_ratio": 1.468382614892467
+    },
+    {
+      "cl_max_assumed": 1.6,
+      "rpm": 800,
+      "peak_collective_deg": 29.75,
+      "peak_thrust_weight_ratio": 0.8213708455160554
+    },
+    {
+      "cl_max_assumed": 1.6,
+      "rpm": 1000,
+      "peak_collective_deg": 29.75,
+      "peak_thrust_weight_ratio": 1.283391946116387
+    },
+    {
+      "cl_max_assumed": 1.6,
+      "rpm": 1100,
+      "peak_collective_deg": 29.75,
+      "peak_thrust_weight_ratio": 1.5529042547997502
+    },
+    {
+      "cl_max_assumed": 1.6,
+      "rpm": 1200,
+      "peak_collective_deg": 29.75,
+      "peak_thrust_weight_ratio": 1.8480844024052459
+    }
+  ],
+  "p_only_hover": {
+    "reference_rpm": 1200,
+    "achieved_rpm": 1113.5740560836502,
+    "pitch_deg": 18.91606298968311,
+    "common_torque_nm": 1629.0906629230738,
+    "engine_power_before_servos_w": 199972.08347606505,
+    "rpm_droop": 86.42594391634975
+  },
+  "proposed_pi_linearization": {
+    "kp": 180,
+    "ki": 90,
+    "aero_torque_speed_derivative_nm_s_rad": 24.403079138654544,
+    "poles_per_s": [
+      -14.248719064669377,
+      -0.454346455648001
+    ],
+    "approx_2percent_settling_s": 8.803854306060545,
+    "qualification": "Linear fixed-geometry small-signal illustration only; hardware and engine delays unknown"
+  },
+  "logged_flight": {
+    "run_id": "20261031T071731-4e6434",
+    "decision_count": 20,
+    "observation_age_min_s": 0.11049999999839599,
+    "observation_age_mean_s": 0.4202250000005307,
+    "observation_age_max_s": 0.907500000007122,
+    "specified_transport_delay_s": 0.02,
+    "airborne_window_s": [
+      37.4,
+      46.1
+    ],
+    "engine_power_kw_range": [
+      193.4515903176018,
+      223.82721265444192
+    ],
+    "engine_power_fraction_of_rating_max": 0.4764308485620305,
+    "servo_power_w_range": [
+      0.07126354857546494,
+      37.9459427583528
+    ],
+    "rpm_range": [
+      1102.27,
+      1116.62
+    ],
+    "max_abs_world_gyro_deg_s": [
+      21.178,
+      4.924,
+      2.007
+    ],
+    "max_abs_nacelle_tilt_deg": 1.853
+  },
+  "planning_fuel": {
+    "max_rating_two_minutes_kg": 6.264,
+    "planning_reserve_kg": 2,
+    "rounded_test_loading_kg": 10,
+    "qualification": "Chosen short-test envelope and reserve, not certified endurance"
+  }
+}

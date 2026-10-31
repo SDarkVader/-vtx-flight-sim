@@ -14,6 +14,7 @@ import mujoco as mj
 import numpy as np
 from .aero import BladeElementModel, ideal_hover
 from .world import TestWorld
+from .governor import ShaftGovernor
 
 ROOT=Path(__file__).resolve().parents[2]
 LEDGER_PATH=ROOT/'evidence/source/airframe_ledger.json'
@@ -151,7 +152,10 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
 
 
 class Aircraft:
-    def __init__(self,world=None,gear_variant='baseline',rpm=800.,fuel_kg=60.,airframe_variant='light'):
+    def __init__(self,world=None,gear_variant='baseline',rpm=800.,fuel_kg=60.,airframe_variant='light',governor_mode='pi',engine_power_limit_kw=469.8):
+        if not math.isfinite(fuel_kg) or not 0<fuel_kg<=110:raise ValueError('Initial fuel must be positive and at most110kg')
+        if not math.isfinite(engine_power_limit_kw) or not 10<=engine_power_limit_kw<=469.8:raise ValueError('Engine power limit must be10–469.8kW')
+        self.engine_power_limit_w=engine_power_limit_kw*1000
         ledger_path=ROOT/'evidence/source/airframe_ledger_r4.json' if airframe_variant=='baseline' else LEDGER_PATH
         self.ledger=json.loads(ledger_path.read_text())
         self.airframe_variant=airframe_variant
@@ -167,6 +171,7 @@ class Aircraft:
         self.command=dict(engine=0.,collective_deg=[0.]*4,tilt_deg=[[0.,0.] for _ in range(4)],cabin_deg=[0.,0.])
         self.pitch=np.zeros(4);self.target_angles=np.zeros((4,2));self.cabin_target=np.zeros(2)
         self.engine_spool=0.;self.fuel=np.full(4,fuel_kg/4)
+        self.governor=ShaftGovernor(governor_mode)
         self.fuel_initial=self.fuel.copy();self.fuel_bids=[mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,f'fuel{i}') for i in range(1,5)]
         self.initial_fuel_inertia=self.model.body_inertia[self.fuel_bids].copy()
         self.wind=np.zeros(3)
@@ -179,6 +184,12 @@ class Aircraft:
         self.provenance={
             'revision':self.ledger['revision'],'ledger_sha256':hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
             'airframe_variant':airframe_variant,'render_asset':'/assets/airframe-r4.glb' if airframe_variant=='baseline' else '/assets/airframe-live.glb',
+            'initial_fuel_kg':float(fuel_kg),
+            'engine_power_limit_kw':float(engine_power_limit_kw),'propulsion_revision':'P0-V4A-power-r1',
+            'exhaust_lift':dict(status='CALIBRATION_BLOCKED',applied_force_n=0.,
+                reason='Installed exhaust airflow/state, duct mass and shaft backpressure penalty unknown'),
+            'shaft_governor':dict(mode=governor_mode,kp_nm_per_rad_s=180.,integral_time_s=2.,
+                status='Proposed local RPM regulation; no attitude/height/navigation feedback'),
             'physics':'MuJoCo '+mj.__version__,'dt_s':DT,'aero_rate_hz':100,
             'gear_variant':gear_variant,'reference_rpm':rpm,'model_xml_sha256':hashlib.sha256(self.xml.encode()).hexdigest(),
             'status':'CALIBRATION_BLOCKED — conditional engineering experiment',
@@ -288,9 +299,10 @@ class Aircraft:
         # A mechanical speed governor is disclosed; it cannot command aircraft pose.
         ratio=6016/self.reference_rpm
         torque_cap=484700/(6016*2*math.pi/60)*ratio*.95*self.engine_spool
-        power_cap=max(0.,469800*self.engine_spool-servo_power)
+        power_cap=max(0.,self.engine_power_limit_w*self.engine_spool-servo_power)
         torque_cap=min(torque_cap,power_cap*.95/max(abs(omega),1.))
-        torque=float(np.clip(180*(target-omega),0.,torque_cap)) if self.fuel.sum()>.001 else 0.
+        torque=self.governor.update(target,omega,torque_cap,DT,
+            powered=self.fuel.sum()>.001 and self.command['engine']>0)
         # Nonregenerative servo supply is charged to the prime mover too.
         d.qfrc_applied[self.vadr['rotor1_spin']]+=torque
         engine_power=torque*max(omega,0)/.95+servo_power
@@ -353,4 +365,5 @@ class Aircraft:
                     pitch_deg=self.pitch.tolist(),fuel_kg=self.fuel.tolist(),rotors=self.rotors,
                     integrity=self.integrity.tolist(),power=self.power,energy=self.energy,
                     events=self.events,flags=sorted(self.flags),mass=self.mass_properties(),
+                    governor=self.governor.telemetry,
                     ncon=int(self.data.ncon),crashed=self.crashed,provenance=self.provenance)

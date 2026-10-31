@@ -17,6 +17,7 @@ async function api(path,body){
 }
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,6500);}
 function guard(fn){return async(...args)=>{try{await fn(...args);}catch(e){toast(e.message);}};}
+function selectedFuel(){const value=Number($('initial-fuel').value);if(!Number.isFinite(value)||value<1||value>110)throw Error('Use total fuel loading between 1 and 110 kg.');return value;}
 
 console.log('VTX: module ready');
 const viewport=$('viewport'),scene=new THREE.Scene();scene.background=new THREE.Color('#a9c1ca');scene.fog=new THREE.Fog('#b3c7c9',240,1000);
@@ -91,11 +92,11 @@ function setPick(p){pick=p;$('pick-a').classList.toggle('selected',p==='a');$('p
 $('pick-a').onclick=()=>setPick('a');$('pick-b').onclick=()=>setPick('b');
 for(const [id,p] of [['dep','a'],['dest','b']])$(id).onchange=guard(async()=>{const vals=$(id).value.split(',').map(Number);if(vals.length!==2||vals.some(v=>!Number.isFinite(v)))throw Error('Use two finite coordinates: east, north');setPick(p);await choosePoint(vals);});
 $('map-zoom').onclick=()=>{$('map-dialog').showModal();drawMaps();};
-$('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,reference_rpm:+$('drive').value,gear_variant:$('gear').value,airframe_variant:$('airframe').value,label:'Map-selected live ground-to-ground attempt'});manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
+$('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,reference_rpm:+$('drive').value,gear_variant:$('gear').value,airframe_variant:$('airframe').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value,label:'Map-selected live ground-to-ground attempt'});manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
 $('end').onclick=guard(async()=>{const r=await api('/api/stop',{reason:'Operator ended the live attempt'});toast(`Recorded: ${r.outcome}. Every failed attempt is retained.`);});
 for(const authority of ['manual','colin'])$('retry-'+authority).onclick=guard(async()=>{
  replayFrames=null;
- const r=await api('/api/retry',{authority,time_scale:authority==='colin'?.02:.1,airframe_variant:$('airframe').value});
+ const r=await api('/api/retry',{authority,time_scale:authority==='colin'?.02:.1,airframe_variant:$('airframe').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value});
  manualOwned=authority==='manual';if(manualOwned)manualChannel.postMessage('takeover');
  command.engine=0;command.collective_deg.fill(0);command.tilt_deg=[[0,0],[0,0],[0,0],[0,0]];dirty=false;
  toast('New sortie '+r.run_id+'. The failed run and pilot checkpoint are preserved.');
@@ -149,6 +150,9 @@ setInterval(()=>{
  $('common').value=command.collective_deg.reduce((a,b)=>a+b,0)/4;$('common-value').value=(+$('common').value).toFixed(1)+'°';
  dirty=true;
 },50);
+// Start closed, including a page restored from the browser's back/forward cache.
+const closeKeyboardGuide=()=>{$('keyboard-help').close();};
+closeKeyboardGuide();addEventListener('pageshow',closeKeyboardGuide);
 $('keyboard-open').onclick=()=>{$('keyboard-help').showModal();keys.clear();};
 for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>b.closest('dialog').close();
 $('engineering').onclick=()=>{$('engineering-dialog').showModal();updateEngineering();};
@@ -176,8 +180,8 @@ function updateView(v){last=v;const o=v.observation,t=v.rendering_truth;if(v.run
  $('alt').innerHTML=o.radar_clearance_m.toFixed(2)+'<small>m</small>';$('vs').innerHTML=o.gnss_velocity_mps[2].toFixed(2)+'<small>m/s</small>';$('speed').innerHTML=Math.hypot(...o.gnss_velocity_mps.slice(0,2)).toFixed(2)+'<small>m/s</small>';$('power').innerHTML=o.engine_shaft_kw.toFixed(1)+'<small>kW</small>';$('fuel').innerHTML=o.fuel_kg.reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';
  for(let i=0;i<4;i++)$('rpm-'+i).textContent=o.rotor_rpm[i].toFixed(0)+' rpm';
  for(const el of document.querySelectorAll('.controls-panel input[type=range],#feather'))el.disabled=v.authority!=='manual'||!manualOwned;
- for(const id of ['dep','dest','drive','gear','airframe','pilot'])$(id).disabled=v.active;
- if(v.active){$('pilot').value=v.authority;$('scale').value=String(v.time_scale);$('drive').value=String(t.provenance.reference_rpm);$('gear').value=t.provenance.gear_variant;$('airframe').value=t.provenance.revision.endsWith('r4')?'baseline':'light';}
+ for(const id of ['dep','dest','drive','gear','airframe','initial-fuel','power-limit','pilot'])$(id).disabled=v.active;
+ if(v.active){$('power-limit').value=t.provenance.engine_power_limit_kw??469.8;$('initial-fuel').value=t.provenance.initial_fuel_kg??o.configuration.initial_fuel_kg;$('pilot').value=v.authority;$('scale').value=String(v.time_scale);$('drive').value=String(t.provenance.reference_rpm);$('gear').value=t.provenance.gear_variant;$('airframe').value=t.provenance.revision.endsWith('r4')?'baseline':'light';}
  if(v.authority==='colin'||!manualOwned){const issued=v.recent_decisions.at(-1)?.issued;$('engine').value=issued?.engine??0;$('engine-value').value=Math.round((issued?.engine??0)*100)+'%';$('common').value=o.collective_feedback_deg.reduce((a,b)=>a+b,0)/4;$('common-value').value=(+$('common').value).toFixed(1)+'°';for(let i=0;i<4;i++){$('p-'+i).value=o.collective_feedback_deg[i];$('pval-'+i).value=o.collective_feedback_deg[i].toFixed(1)+'°';for(let j=0;j<2;j++){const k=j?'y':'x';$(k+'-'+i).value=o.tilt_feedback_deg[i][j];$(k+'val-'+i).value=o.tilt_feedback_deg[i][j].toFixed(1)+'°';}}}
  $('angles').textContent=o.attitude_xyz_deg.map((x,i)=>`${'XYZ'[i]} ${x.toFixed(1)}°`).join(' · ');$('horizon').style.transform=`translateY(${o.attitude_xyz_deg[1]*1.2}px) rotate(${-o.attitude_xyz_deg[0]}deg)`;
  if(t.crashed||v.error){$('consequence').hidden=false;$('consequence').textContent=v.error?'Solver stopped: '+v.error:'IMPACT RECORDED · '+(t.events[0]?.body||'aircraft')+'. Physical consequences remain active; no automatic rescue.';}else{$('consequence').hidden=true;}

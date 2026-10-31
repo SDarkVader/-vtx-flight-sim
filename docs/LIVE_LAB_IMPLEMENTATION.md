@@ -135,3 +135,5 @@ No component strength/rating, installed power, mass or rotor performance has
 been qualified. These remain `CALIBRATION_BLOCKED`, even after tests pass or
 a conditional model lifts off. The experiment can expose failures and compare
 hypotheses; it cannot establish real VTX flightworthiness.
+
+Current new-sortie defaults:10kg total fuel,300kW shaft ceiling and1200rpm proposed gearset. The bounded PI RPM regulator replaces steady P-only droop; it is not an attitude controller. See `evidence/PROPULSION_FUEL_REVISION.md` for exact assumptions, tests and the exhaust-lift calibration block. Fuel and power configuration are locked during a sortie.

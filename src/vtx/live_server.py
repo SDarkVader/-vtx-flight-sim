@@ -57,9 +57,11 @@ class Mission(BaseModel):
     destination:list[float]
     authority:str='manual'
     time_scale:float=Field(default=1.,ge=.01,le=1)
-    reference_rpm:float=800.
+    reference_rpm:float=1200.
     gear_variant:str='baseline'
     airframe_variant:str='light'
+    fuel_kg:float=Field(default=10.,ge=1.,le=110.)
+    engine_power_limit_kw:float=Field(default=300.,ge=10.,le=469.8)
     label:str='user selected mission'
     @field_validator('departure','destination')
     @classmethod
@@ -90,7 +92,7 @@ class Mission(BaseModel):
 
 class Laboratory:
     def __init__(self):
-        self.world=TestWorld();self.aircraft=Aircraft(self.world);self.aircraft.spawn(0,0,0)
+        self.world=TestWorld();self.aircraft=Aircraft(self.world,rpm=1200.,fuel_kg=10.,engine_power_limit_kw=300.);self.aircraft.spawn(0,0,0)
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
         self.mission=None;self.action_log=[];self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
@@ -138,7 +140,8 @@ class Laboratory:
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
             fuel_kg=np.round(p.fuel,4).tolist(),engine_shaft_kw=round(p.power['engine_w']/1000,2),
             warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=.001 else []),
-            configuration=dict(airframe_revision=p.ledger['revision'],reference_rpm=p.reference_rpm,gear_variant=p.gear_variant),
+            configuration=dict(airframe_revision=p.ledger['revision'],reference_rpm=p.reference_rpm,gear_variant=p.gear_variant,
+                               initial_fuel_kg=float(p.fuel_initial.sum())),
             scheduler_backlog_s=round(self.clock_lag_s,3),
             mission=self.mission,authority=self.authority,active=self.active,paused=self.paused,
             time_scale=self.time_scale,
@@ -151,7 +154,9 @@ class Laboratory:
     def start(self,request:Mission):
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
-        self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,airframe_variant=request.airframe_variant)
+        self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
+                               fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
+                               engine_power_limit_kw=request.engine_power_limit_kw)
         self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
         self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
@@ -245,9 +250,14 @@ class Laboratory:
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
                   authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
-                  airframe_variant=request.get('airframe_variant','light'),label='Explicit retry of '+hint['run_id'])
+                  airframe_variant=request.get('airframe_variant','light'),
+                  fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
+                  engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
+                  label='Explicit retry of '+hint['run_id'])
         result=self.start(m)
-        self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant))
+        self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
+                                      previous_fuel_kg=old.get('fuel_kg',60.),new_fuel_kg=m.fuel_kg,
+                                      previous_power_limit_kw=old.get('engine_power_limit_kw',469.8),new_power_limit_kw=m.engine_power_limit_kw))
         return result
 
     def view(self):

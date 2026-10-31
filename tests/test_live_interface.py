@@ -31,13 +31,69 @@ def test_no_time_indexed_route_command():
     with pytest.raises(ValidationError):
         Mission(departure=[0,0],destination=[30,20],waypoints=[[1,2],[3,4]])
 
+@pytest.mark.parametrize('fuel',[0.,-1.,110.1,float('nan'),float('inf')])
+def test_invalid_fuel_loading_rejected(fuel):
+    with pytest.raises(ValidationError):
+        Mission(departure=[0,0],destination=[30,20],fuel_kg=fuel)
+
+def test_selected_fuel_changes_real_mass_and_inertia(tmp_path,monkeypatch):
+    import vtx.live_server as server
+    import json,numpy as np
+    monkeypatch.setattr(server,'ROOT',tmp_path)
+    lab=Laboratory()
+    mission=dict(departure=[13.7,-28.4],destination=[-45,18],authority='manual')
+    lab.start(Mission(**mission))
+    light=lab.aircraft.mass_properties()
+    np.testing.assert_allclose(lab.aircraft.fuel_initial,[2.5]*4)
+    assert lab.sensor_observation()['configuration']['initial_fuel_kg']==10.
+    metadata=json.loads((lab.log_path/'metadata.json').read_text())
+    assert metadata['request']['fuel_kg']==10.
+    lab.stop('End isolated reduced-fuel mass check')
+    lab.start(Mission(**mission,fuel_kg=60.))
+    full=lab.aircraft.mass_properties()
+    assert full['mass_kg']-light['mass_kg']==pytest.approx(50.)
+    assert not np.allclose(full['cg_world_m'],light['cg_world_m'])
+    assert not np.allclose(full['inertia_world_kg_m2'],light['inertia_world_kg_m2'])
+    assert np.linalg.eigvalsh(light['inertia_world_kg_m2']).min()>0
+    lab.stop('End isolated original-fuel mass check')
+
+def test_retry_preserves_or_explicitly_changes_fuel(tmp_path,monkeypatch):
+    import vtx.live_server as server
+    import json,hashlib
+    monkeypatch.setattr(server,'ROOT',tmp_path)
+    lab=Laboratory()
+    started=lab.start(Mission(departure=[13.7,-28.4],destination=[-45,18],fuel_kg=20.))
+    lab.stop('End isolated fuel-selection check')
+    original=lab.log_path
+    summary_bytes=(original/'summary.json').read_bytes()
+    memory_hash=hashlib.sha256(lab.memory_path.read_bytes()).hexdigest()
+    preserved=lab.retry({'authority':'manual'})
+    assert preserved['run_id']!=started['run_id']
+    assert lab.aircraft.fuel_initial.sum()==pytest.approx(20.)
+    lab.stop('End isolated fuel-preserving retry')
+    changed=lab.retry({'authority':'manual','fuel_kg':10.})
+    assert changed['run_id']!=preserved['run_id']
+    assert lab.aircraft.fuel_initial.sum()==pytest.approx(10.)
+    rows=[json.loads(l) for l in (lab.log_path/'events.jsonl').read_text().splitlines()]
+    lineage=next(r['payload'] for r in rows if r['kind']=='retry_lineage')
+    assert lineage['previous_fuel_kg']==20. and lineage['new_fuel_kg']==10.
+    assert (original/'summary.json').read_bytes()==summary_bytes
+    assert hashlib.sha256(lab.memory_path.read_bytes()).hexdigest()==memory_hash
+    lab.stop('End isolated reduced-fuel retry')
+    # Historical metadata predating the fuel field always represented 60 kg.
+    lab.retry_hint['request'].pop('fuel_kg')
+    lab.retry({'authority':'manual'})
+    assert lab.aircraft.fuel_initial.sum()==pytest.approx(60.)
+    lab.stop('End isolated legacy fuel compatibility check')
+
 def test_retry_archives_crash_and_preserves_learning(tmp_path,monkeypatch):
     import vtx.live_server as server
     import json,hashlib
     monkeypatch.setattr(server,'ROOT',tmp_path)
     lab=Laboratory()
-    # A genuine finite-height rigid-body drop, solely a crash/retry bench check.
-    started=lab.start(Mission(departure=[13.7,-28.4],destination=[-45,18],authority='manual'))
+    # Keep the original 60 kg drop fixture: the lighter 10 kg case can settle
+    # without a body strike, which must not be relabelled a crash for this test.
+    started=lab.start(Mission(departure=[13.7,-28.4],destination=[-45,18],authority='manual',fuel_kg=60.))
     lab.aircraft.spawn(13.7,-28.4,4)
     for _ in range(3000):
         lab.integrate()
