@@ -47,8 +47,10 @@ for i,(x,y) in enumerate(pivots,1):
     cyl(f'F{i} reducer to sun connection',(x,y,z-.12),.035,.23,shaft)
     torus(f'F{i} electronically driven ring conceptual envelope',(x,y,z+.04),.20,.027,ring)
     cyl(f'F{i} central sun schematic',(x,y,z+.04),.045,.12,sun)
-    for j in range(3):
-        a=j*2*math.pi/3
+    # Four equally spaced planets satisfy (20+60)/4 = 20; the earlier
+    # three-planet illustration did not satisfy equal-spacing assembly.
+    for j in range(4):
+        a=j*2*math.pi/4
         cyl(f'F{i} planet schematic {j+1}',(x+.11*math.cos(a),y+.11*math.sin(a),z+.04),.046,.10,planet)
     cyl(f'F{i} carrier and rotor output',(x,y,z+.18),.075,.16,shaft)
     bar(f'F{i} fan shaft interface',(x,y,z+.25),(x,y,1.72),.034,shaft)
