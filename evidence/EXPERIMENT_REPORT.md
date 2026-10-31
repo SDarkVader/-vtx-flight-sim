@@ -48,6 +48,7 @@ lineage. A live intact sortie cannot be silently reset through Retry.
 | `20261031T060411-29e1d6` | Colin, three actual decisions, 800 rpm reference. Remained gear-supported; no takeoff. Two command leases expired and a stale action was rejected. |
 | `20261031T061653-5f6bb3` | 1200 rpm mission opened, then ended before a flying attempt when the proprietor selected a new mission. Not counted as pilot experience. |
 | `20261031T062325-eb8ab0` | Colin, seven accepted decisions on proprietor-selected A (−205.7, −117.6) and B (144.3, 173.2), 1200 rpm proposal. Left ground, rolled and impacted. Recovery attempts failed. Explicit engine/collective abort followed. Collision; no completed navigation or landing. |
+| `20261031T071731-4e6434` | Colin, R5 retry at the same A/B and 1200 rpm/critical-damping configuration. Twenty applied decisions: incremental lift, slow takeoff with trim, a small vector test, repeated rate-braking corrections and return/flare attempt. Two feet contacted, then the aircraft became airborne again. Final feather request rejected as stale. Graceful hosting shutdown ended the run; no settled landing. |
 
 The last run reached a maximum **airframe-origin height** of 4.323 m in this
 world. This is not rotor clearance or validated flight performance. Fuel use
@@ -55,6 +56,22 @@ was 0.2657 kg under the provisional SFC. Peak rigid-contact solver force was
 about 1.93 MN; no structural allowable, damage or injury interpretation follows
 from that solver peak. Events retain the rejected correction as well as actual
 applied commands. No offline command sequence was used to pilot these runs.
+
+The R5 retry reached 2.164 m maximum airframe-origin height and used 0.3550 kg
+fuel under the same provisional SFC. Peak gear/contact force was 18.84 kN.
+Its recorded outcome is **airborne attempt ended**, reason **server shutdown**;
+it is not classified as a rotor/body crash and it did not satisfy landing.
+The pilot's attempted feather/idle request was rejected and never applied.
+The final saved state is a powered airborne bounce after partial contact.
+The 45-minute hosting limit is an execution limitation, separate from the
+physical outcome. Restoring the web service starts inspection mode and offers
+an explicit new-sortie retry; it does not silently continue or reset that run.
+
+Smaller lift steps and a pre-lift trim bias improved the observed departure,
+but this is not an isolated demonstration of a better frame: pilot behaviour
+and clock scale also changed. The later alternating roll overshoots expose
+pilot latency, pitch response and gimbal/gyro coupling. The third retained
+lesson records the need to release braking earlier based on measured rates.
 
 A user clock change to 1× caused scheduling backlog in the software renderer/
 physics environment. Explicit clock/pause actions are logged. The scheduler now
@@ -117,7 +134,7 @@ rotor aerodynamics, not material fracture. These limitations prevent a claim
 that the real VTX has been validated or that every original engineering
 requirement is complete. No controlled A-to-B landing has been achieved.
 
-The pilot's two observed lessons are in `pilot/colin-memory.json`, with flight
+The pilot's three observed lessons are in `pilot/colin-memory.json`, with flight
 checkpoint copies and a transfer manifest. They are explicit learned experience,
 not pretrained VTX control weights. No unfamiliar Stage 2 world has been built
 or accessed.

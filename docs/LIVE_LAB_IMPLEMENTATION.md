@@ -62,7 +62,7 @@ The original exact-version `.blend` and GLB remain immutable local source
 artifacts. `tools/build_airframe.py` derives the current editable scene at
 `assets/derived/p0-v4-live.blend`, live GLB and component ledger together.
 Historical exact R1 code is retained at commit `288d53b`. The current builder
-also exposes `-- --baseline`, `-- --r2` and `-- --r3` repair-stage modes; those
+also exposes `-- --baseline`, `-- --r2`, `-- --r3` and `-- --r4` repair-stage modes; those
 use the current interface specification and are not byte-identical historical
 reproductions. R3 requires `r2_gear_area.json`, retained with the source evidence.
 Source object IDs are retained. Browser batching preserves triangles and keeps

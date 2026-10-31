@@ -10,5 +10,7 @@
   "runtime_log": "Uvicorn application startup complete; no browser page errors",
   "environment": "Local MuJoCo 3.17.0; no API credential required for simulation",
   "issue_fixed": "Delay terrain rendering until aircraft load and throttle repeated map painting; initial mobile load now completes",
-  "limits": "Functional verification is not an aircraft performance or structural qualification"
+  "limits": "Functional verification is not an aircraft performance or structural qualification",
+  "hosted_browser": "PASS: HTTPS host reached via local CA-verifying QA proxy, R5 revision and COLIN authority shown; no page errors. Hosted keyboard dialog open/Escape verified.",
+  "retained_learning": "Three observed lessons exported after the R5 return/hosting interruption"
 }

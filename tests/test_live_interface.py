@@ -55,3 +55,4 @@ def test_retry_archives_crash_and_preserves_learning(tmp_path,monkeypatch):
     assert next(r for r in rows if r['kind']=='retry_lineage')['payload']['previous_run_id']==first
     with pytest.raises(HTTPException):lab.retry({'authority':'manual'})
     lab.stop('End isolated retry integration check')
+    assert lab.sensor_observation()['active'] is False

@@ -31,8 +31,9 @@ The guide starts closed and can be reopened at any time. Physics continues
 while the guide is open. Select any valid A/B with the map or coordinate fields; local support
 validation does not guarantee an obstacle-free route.
 
-The displayed clock scale applies to the independent physics clock. 0.02× is
-used for Colin's reasoning latency; manual users can choose 0.1× or 1×. A
+The displayed clock scale applies to the independent physics clock. 0.01× and
+0.02× accommodate Colin's reasoning latency; 0.05×, 0.1× and 1× are also
+available. All changes are explicit and logged. A
 5-simulated-second command lease feathers/ idles if inputs cease. That event is
 logged and may cause a crash. Explicit Pause freezes physics and is logged.
 
@@ -63,3 +64,9 @@ PYTHONPATH=/vercel/src MUJOCO_GL=disable /vercel/.venv/bin/python -m uvicorn \
 Use the returned current route; do not assume an expired session URL is live.
 Resuming starts a new physical sortie only when explicitly requested; retained
 logs and Colin's checkpoint are on disk. No Stage 2 environment has been created.
+
+The session resumed at 07:38 UTC on 31 October 2026 expires around 08:23 UTC.
+An attempted extension exceeded the account's 45-minute maximum. Durable
+always-on hosting remains unavailable with the current project permissions;
+the same experiment can run continuously on a local machine with the commands
+above. Session expiry is not a landing, a crash reset or successful flight.

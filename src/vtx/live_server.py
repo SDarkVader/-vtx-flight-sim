@@ -220,7 +220,7 @@ class Laboratory:
 
     def stop(self,reason):
         if not self.active:return self.end_summary or dict(status='No active sortie')
-        self.active=False;p=self.aircraft
+        self.active=False;self.last_obs=None;p=self.aircraft
         outcome='landed' if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
         summary=dict(run_id=self.run_id,outcome=outcome,reason=reason,simulated_seconds=float(p.data.time),
                      wall_seconds=time.monotonic()-self.wall_started,decisions=len(self.action_log),
@@ -327,6 +327,7 @@ async def operator(request:dict):
         value=float(request['time_scale'])
         if not .01<=value<=1 or not math.isfinite(value):raise HTTPException(422,'Time scale must be .01–1')
         lab.time_scale=value;lab.clock_epoch+=1;lab.log('clock_scale',dict(time_scale=value))
+    lab.last_obs=None  # Operator status must update even when the physical clock is paused.
     return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale)
 @app.get('/api/memory')
 async def memory():return json.loads(lab.memory_path.read_text())

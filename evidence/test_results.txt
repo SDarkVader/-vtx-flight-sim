@@ -12,4 +12,4 @@ src/vtx/world.py:9
     class TestWorld:
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-64 passed, 2 warnings in 5.65s
+64 passed, 2 warnings in 5.98s
