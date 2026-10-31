@@ -1,0 +1,430 @@
+ORIGINAL DOCUMENT: VTX_P0_V1_Technical_Performance.pdf
+SOURCE STATUS: Extracted text from original concept PDF, not the PDF binary; images/diagrams are not included. This is P0-V1 historical reference, not a validated P0-V4 specification.
+
+<PARSED TEXT FOR PAGE: 1 / 9>
+VTX / P0-V1                                                                 TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ GEOMETRY / MASS / DYNAMICS / TEST ENVELOPE
+
+
+
+ Prototype P0-V1 Technical &
+ Performance Specification
+ VTX-P0-V1 / P0-V1 / ISSUE A / 30 OCT 2026
+
+
+ ENGINEERING CONCEPT / NOT A RELEASED DESIGN: geometry is an internally consistent concept
+ baseline; component masses, aerodynamic coefficients, engine-specific fuel consumption,
+ crashworthiness and flight-control performance are not substantiated by qualification tests.
+
+ Control definition: P0-V1 is a single-turbine, mechanically distributed, four-ducted-rotor VTOL with a two-axis
+ gimballed two-seat spherical cabin. It is a controlled analytical prototype concept, not a certified, validated or
+ flight-proven aircraft.
+
+
+
+ 01 / Configuration register
+   PARAMETER                                                 P0-V1 CONTROLLED VALUE
+
+   Cabin outer diameter                                      1.900 m (radius 0.950 m)
+
+   Cabin + gimbal outer envelope                             2.200 m (radius 1.100 m)
+
+   Rotor count / arrangement                                 Four identical ducted fans, centres on cardinal radial axes
+
+   Rotor disk diameter                                       2.2568 m (each)
+
+   Fan outer duct diameter                                   2.4068 m (each; +75 mm outer radial allowance)
+
+   Total rotor disk area                                     16.000 m²
+
+   Fan hub radius from centre                                2.600 m
+
+   Overall dimension-controlled span                         7.6068 m
+
+   Gimbal-to-duct radial clearance                           296.6 mm in top view (static)
+
+   Stated model air density                                  1.225 kg/m³ (sea level benchmark)
+
+   Vertical envelope and landing-gear height                 TBD - not dimension-controlled
+
+   3D centre-of-gravity/inertia properties                   TBD - CAD model and mass properties required
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                             PAGE 1
+<PARSED TEXT FOR PAGE: 2 / 9>
+VTX / P0-V1                                                                         TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ Schematic geometry
+
+
+
+
+ Rotor tip clearance and the radial 296.6 mm gap are different dimensions. Dynamic deflection, blade growth, cabin gimbal travel
+ and rotor-to-cabin clearances have not yet been verified.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                      PAGE 2
+<PARSED TEXT FOR PAGE: 3 / 9>
+VTX / P0-V1                                                             TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ 02 / Mass, materials and component identification
+   ID                SUBSYSTEM                                                                       MASS KG
+
+   P01               Turboshaft installation                                                         132
+
+   P02               Four ducted fan modules                                                         119
+
+   P03               Four-way transmission                                                           72
+
+   P04               Spherical cabin module                                                          88
+
+   P05               Two-axis cabin gimbal                                                           35
+
+   P06               Main structure                                                                  75
+
+   P07               Fuel installation                                                               29
+
+   P08               Flight-control avionics                                                         23
+
+   P09               Two seat/restraint systems                                                      25
+
+   P10               Landing gear                                                                    24
+
+   P11               Electrical and cooling                                                          49
+
+   -                 TOTAL EMPTY MASS                                                                671
+
+
+   OPERATING CONDITION                                   MASS KG        STATUS
+
+   Empty design target                                   671            Sum of P01-P11 allocations, not weighed
+
+   Occupant allowance                                    170            Two persons combined
+
+   Short test fuel                                       60             Jet A-1
+
+   Short mission takeoff mass                            901            Nominal model case
+
+   Alternative 110 kg fuel loading                       951            Sensitivity only; check actual volume and tank
+                                                                        structure
+
+
+
+ Design materials and assemblies
+ Cabin: 35% nominal glazed surface area, laminated aviation glazing allowance, CFRP sandwich opaque
+ structure and qualified flame-resistant internal trim. Main frame: carbon-composite load ring and stiffened box
+ supports; metallic inserts at highly concentrated load paths. Fan modules: composite blades/duct plus metallic
+ bearing and gearing elements. These statements identify candidates, not released laminate schedules.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                         PAGE 3
+<PARSED TEXT FOR PAGE: 4 / 9>
+VTX / P0-V1                                                                TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ 03 / Propulsion and power distribution
+   PARAMETER                                               VALUE / REQUIREMENT
+
+   Prime mover                                             Rolls-Royce M250-C30P reference (not procured)
+
+   Reference takeoff rating                                484.7 kW (650 shp; reference engine takeoff rating)
+
+   Installed max-continuous placeholder                    469.8 kW (630 shp reference; installed rating not validated)
+
+   Rotor reference design speed                            800 rpm study point, NOT released blade speed
+
+   Rotor tip speed at study rpm                            94.5 m/s
+
+   4-blade passing frequency at study rpm                  53.3 Hz
+
+   Transmission functional topology                        Single power source -> four-way gearbox -> four shaft
+                                                           branches; differential thrust via four independent
+                                                           collective-pitch hubs
+
+   Approx gearbox ratio if engine N2 is 6016 rpm           7.52:1 to reach 800 rpm; gearing not designed
+
+   Auxiliary distribution                                  Sensors, gimbal actuators, four pitch servo paths and
+                                                           independent flight ECU on dedicated bus
+
+   Fuel type                                               Jet A-1; compatible SAF only after turbine approval and
+                                                           property assessment
+
+
+ Reference Rolls-Royce C30P data are from [S01]. The engine output-speed 6016 rpm and dry weight
+ approximately 245 lb are reference publication values, not an installed P0 component weighing or guarantee.
+ Installed driveshaft, gearbox and rotor limits constrain available rotor power.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                               PAGE 4
+<PARSED TEXT FOR PAGE: 5 / 9>
+VTX / P0-V1                                                               TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ 04 / Formulae and numerical flight model
+ Primary hover-equivalent induced shaft power (actuator-disk approximation):
+
+ P_hover = (m g / η) × sqrt[(m g) / (2 ρ A)]
+
+ Turn reference: 27.0 km at 100.0 km/h (972 s) is modelled as an equivalent continuous-radius turn, plus 80 s
+ of hover/transition power; total 1052 s, 17 minutes 32 seconds. This is a test-energy benchmark rather than a
+ complete time-resolved control simulation.
+
+ Drag force: D = 0.5 ρ V² C_D A; baseline assumed C_D A = 1.65 m². Net turn thrust vector magnitude: T =
+ sqrt[(m g)² + (m V²/R)² + D²]. Forward-flight shaft power is approximated as induced-power-equivalent for T
+ plus D V / η_prop. This is not a blade-element-momentum or edgewise duct-performance computation.
+
+   MODEL INPUT                                                 NOMINAL
+
+   Rotor aerodynamic efficiency η                              0.72 (unverified aggregate)
+
+   Forward propulsive efficiency η_prop                        0.75 (unverified)
+
+   Engine specific fuel consumption                            0.400 kg/kWh (unverified part-load placeholder)
+
+   Fuel density                                                0.800 kg/L (planning assumption)
+
+   Fuel pump price                                             GBP 1.45/L, Brighton September 2026 [S10]
+
+   Main turn reference radius                                  500 m; stress-turn radius 200 m
+
+
+
+
+ 05 / Numerical mission results
+   CASE                                           HOVER kW    TURN kW         E kWh          FUEL kg       GBP
+
+   P0 / 500 m radius, 901 kg                      184.3       217.7           62.88          25.15         45.58
+
+   P0 / 200 m radius, 901 kg                      184.3       235.3           67.61          27.05         49.02
+
+   P0 / 500 m, full fuel 951 kg                   199.9       233.5           67.49          27.00         48.93
+
+   P0 / pessimistic envelope                      221.2       282.0           81.07          40.53         73.47
+
+
+ Pessimistic case simultaneously assumes η = 0.60, C_D A = 3.0 m² and SFC 0.50 kg/kWh. Nominal results use
+ constant starting mass, therefore do not claim fuel-burn feedback, measured thrust maps, thermal derate or
+ terrain effects. All quoted mission energy is shaft energy, not fuel chemical energy.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                           PAGE 5
+<PARSED TEXT FOR PAGE: 6 / 9>
+VTX / P0-V1                                                                     TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ 06 / Loads and design constraints
+   TEST OR LOAD CASE                          ESTIMATED QUANTITY                             RELEASE STATUS
+
+   Static hover at 901 kg                     8,839 N total; 2,210 N/rotor                   Actuator-disk estimate
+
+   1.5g collective thrust                     3,315 N/rotor                                  Structural screening only
+
+   Hover shaft power / 901 kg                 184.3 kW                                       Analytical
+
+   1.5g induced shaft power                   338.7 kW                                       Power ∝ thrust^1.5
+
+   1.5g power plus estimated drag             367.5 kW                                       Not full transient power model
+
+   500 m-radius turn                          0.157 g lateral; 8.94° nominal bank            Analytical
+
+   200 m-radius turn                          0.393 g lateral; 21.47° nominal bank           Analytical
+
+   Sample gimbal occupied-mass 1.5g load      ~4.2 kN at 283 kg example occupied capsule     Bearing moment arm /
+                                                                                             allowable TBD
+
+   2 m/s landing over 0.20 m stroke           Mean 2.02g reaction equivalent, approximate    Peak landing loads not
+                                                                                             determined
+
+   3 m/s landing over 0.20 m stroke           Mean 3.29g reaction equivalent, approximate    Ground / gear test required
+
+
+
+
+ Composite arm reference section
+ Illustrative 1.50 m cantilever from ring to rotor hub; 340 × 120 mm CFRP box section, 3.5 mm skins, two
+ internal webs. At illustrative 1.5g thrust and 900 Nm torque the simplified beam study predicted ~1.4 mm tip
+ deflection, ~0.33° twist and ~43.9 Hz bending mode. These values are NOT structural allowables; joint
+ compliance, laminate coupling, web local buckling and load concentrations were excluded.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                PAGE 6
+<PARSED TEXT FOR PAGE: 7 / 9>
+VTX / P0-V1                                                                               TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ 07 / Flight control and gimballed cabin
+   FUNCTION                                 CONCEPT CONTROL / SENSOR PATH
+
+   Vehicle attitude                         IMU feedback commands four independent collective-pitch actuators on common-speed
+                                            shaft-driven fans; vehicle roll/pitch/yaw
+
+   Translational manoeuvring                Controlled vehicle tilt and thrust magnitude; fixed planar rotors cannot independently vector
+                                            thrust
+
+   Cabin coordination                       Two-axis pitch/roll gimbal; bank to resultant acceleration in turns rather than always remain
+                                            horizontal
+
+   Occupant asymmetry                       Measured/estimated CG offset, preflight trim and bounded control corrections
+
+   Sensor suite                             Independent IMUs, rotor speed/torque measurement, air data, fuel, vibration, bus power,
+                                            gimbal position
+
+   Power interruption                       Engine-out and driveline faults are unresolved critical hazards; first programme uses
+                                            uncrewed tethered testing
+
+   Rotor-out allocation                     Four nonnegative variable-pitch lift channels cannot generally preserve all 4 thrust/moment
+                                            DOF after one fan or drive branch fails
+
+
+
+
+ Failure-mode register / assessment
+
+   ID        FAILURE MODE                        STATUS                        MITIGATION REQUIREMENT
+
+   FM01      Rotor / shaft branch loss           CONTROL AUTHORITY: FAIL       Fail-to-hold control allocation possible; system-level
+                                                 / not substantiated           redundancy needed.
+
+
+   FM02      Single engine failure               CRITICAL / unmitigated in     Common prime mover removes all nominal lift power.
+                                                 P0
+
+
+   FM03      Duct / blade damage                 OPEN                          Containment and stiffness against rotor-out deformation
+                                                                               unverified.
+
+
+   FM04      Cabin bearing / gimbal jam          OPEN                          Loads may transmit directly to occupants and disturb
+                                                                               controlled cabin attitude.
+
+
+   FM05      Composite joint debond /            OPEN                          Material data and finite-element model required; local panel
+             buckling                                                          buckling risk.
+
+
+   FM06      Inlet distortion / crosswind        OPEN                          Forward-flight fan maps and yaw side forces not yet
+                                                                               measured.
+
+
+   FM07      Asymmetric occupants/fuel           OPEN                          CG and inertia model not complete; trim/saturation study
+             CG                                                                required.
+
+
+   FM08      Rotor modal interference            OPEN                          800 rpm / 4-blade 53.3 Hz is an illustrative excitation, not
+                                                                               rotor validated.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                                  PAGE 7
+<PARSED TEXT FOR PAGE: 8 / 9>
+VTX / P0-V1                                                                        TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ 08 / Test definition and evidence gates
+   VERIFICATION           ACCEPTANCE EVIDENCE                                                      CURRENT STATUS
+   DOMAIN
+
+   Geometry               Full CAD envelopes and verified angular clearance, worst-case gimbal     NOT COMPLETE
+                          travel
+
+   Mass                   Weighed parts / CG and complete moments of inertia                       NOT COMPLETE
+
+   Structure              Orthotropic FEA, fatigue, joint coupon data, load proof and drop test    NOT COMPLETE
+
+   Aerodynamics           Measured isolated fan plus full-vehicle CFD / tunnel maps                NOT COMPLETE
+
+   Propulsion             Installed gearbox output, temperature, fuel burn and transient map       NOT COMPLETE
+
+   Control                SIL/HIL off-nominal simulations, saturations and actuator latency        NOT COMPLETE
+
+   Ground test            Rotor guard, containment, vibration, cooling, telemetry, abort logic     NOT COMPLETE
+
+   Flight                 Tethered uncrewed hover followed by supervised restricted-range          NOT STARTED
+                          manoeuvres
+
+
+
+
+ Programme hypothesis to test
+ The design may complete a 27 km 100 km/h equivalent mission for approximately 25.2 kg Jet A-1 on the
+ nominal low-order model, with adequate nominal turbine takeoff power. This is a feasibility hypothesis only.
+ Before a human-occupied or untethered prototype can be justified, the single-engine and loss-of-one-fan
+ control risks must be resolved or the test campaign redesigned to contain their consequences.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                              PAGE 8
+<PARSED TEXT FOR PAGE: 9 / 9>
+VTX / P0-V1                                                                                     TECHNICAL SPECIFICATION AND PERFORMANCE
+
+
+
+
+ 09 / Standards, research and source references
+ S01 / Rolls-Royce. M250/RR300 FIRST Network Directory (2024); C30P 650 shp takeoff, nominal 245 lb dry, published SFC table. OPEN SOURCE
+
+ S02 / Bell / 206L-4. Engine takeoff and maximum-continuous engine ratings vs installed transmission limitations (2005 product specification).
+ OPEN SOURCE
+
+ S03 / Hine et al., 2025. Design and Analysis of a Liftfan for eVTOL Aircraft. Experimental rotor/stator optimisation and nacelle forward-flight
+ losses. DOI:10.1115/1.4067673. OPEN SOURCE
+
+ S04 / Hu et al., 2021. Hovering efficiency optimization of the ducted propeller with weight penalty taken into account.
+ DOI:10.1016/j.ast.2021.106937. OPEN SOURCE
+
+ S05 / Akturk & Camci, 2014. Tip-clearance treatment experiments in ducted VTOL fans. DOI:10.1115/1.4023469. OPEN SOURCE
+
+ S06 / Critchfield & Ning, 2026. Mission-focused multidisciplinary eVTOL propulsion optimisation. DOI:10.2514/1.C038445. OPEN SOURCE
+
+ S07 / Li, Chen & Jia, 2023. Experimental investigation on hover performance of a ducted coaxial-rotor UAV; rotor location and clearance
+ influence. OPEN SOURCE
+
+ S08 / Liu et al., 2024. Impact response and crashworthy design of composite fuselage structures: An overview. OPEN SOURCE
+
+ S09 / Muniraj & Sreehari, 2021. Experimental damage evaluation of honeycomb sandwich with composite face sheets. OPEN SOURCE
+
+ S10 / Brighton City Airport. Jet A-1 gross indicative pump price GBP 1.45/L from 5 September 2026. OPEN SOURCE
+
+ S11 / Shobdon Airfield. Jet A-1 quoted GBP 1.82/L nonmember, 2 October 2026; regional price variation. OPEN SOURCE
+
+ Design maturity: first engineering prototype specification, Issue A. Not a fabrication drawing set, stress report, aircraft type
+ design, flight clearance or certification claim.
+
+
+
+
+P0-V1 / ISSUE A | 30 OCT 2026 | CONCEPTUAL ENGINEERING                                                                                        PAGE 9
