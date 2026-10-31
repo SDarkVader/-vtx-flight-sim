@@ -1,11 +1,9 @@
-# Staged environment transfer and experiential learning
+# Two-stage learning experiment
 
-**Stage 1:** Colin builds a deterministic interactive environment and trains/tests a physically bounded controller and estimator using observable flight experience. Record wind, disturbances, missions, failures and adaptations; save a versioned learning checkpoint and frozen initial controller.
+**Stage 1:** Colin constructs the VTX physical digital aircraft and a navigable first test world. The pilot begins inexperienced, attempts takeoffs, flight and landings from map-selected valid locations, crashes when physics dictates and updates its controller/policy from observed experience. Save every meaningful attempt, outcome and versioned learning checkpoint. Preserve physics/model revisions separately from learned policy changes.
 
-**Stage 2:** The proprietor supplies a different environment later. Do not create, inspect, preload, pretrain on, infer private layout of or tune for Stage 2 before its actual introduction. At first exposure, load the frozen Stage 1 checkpoint. Retain the learned state, but give the controller only sensor/environment observations it is permitted to obtain, never the full simulator truth or proprietor's privileged map view.
+**Stage 2:** The proprietor later introduces a different environment. Do not generate, load, inspect, pretrain, tune against or anticipate it now. Carry forward the Stage 1 learning checkpoint, with the same observations and actuation model; new learning must arise from observed events in Stage 2.
 
-Keep immutable ground truth physics separate from mutable controller/adaptation state. Adaptive parameters cannot rewrite mass, gravity, collision response or safety outcomes. Never suppress a crash to make the learner appear successful.
+Report learning transfer versus a true cold start under controlled, reproducible conditions. Evaluate generalisation, failure, crash frequency, adaptation and physical feasibility. Do not silently reset, use privileged access to scene truth, or fabricate successful transfer.
 
-Evaluate transfer against (a) the transferred checkpoint, (b) an identical cold-start learner and (c) a fixed non-learning baseline under the same initial conditions, environment version and seeds. Record all observations and updates, including setbacks. Measure flight completion, collision/crash, path/attitude error, energy, jerk and actuator saturation. Replays with matching software/solver/seed must agree.
-
-Save complete checkpoint hashes and audit first exposure. An online learning method and persistence must actually be implemented, not merely claimed. User decides when and what Stage 2 is.
+The experiment is intended to expose the aircraft's and pilot's limitations, not to ensure success.
