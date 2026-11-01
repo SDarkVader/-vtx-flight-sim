@@ -54525,5 +54525,83 @@
         "apply_t_s": 17.4724999999997
       }
     }
-  ]
+  ],
+  "ten_meter_climb_and_translation_run": {
+    "run_id": "20261101T232353-c7b594",
+    "summary": {
+      "run_id": "20261101T232353-c7b594",
+      "outcome": "collision",
+      "reason": "Retained 10m climb and destination translation test telemetry",
+      "simulated_seconds": 197.3124999998568,
+      "wall_seconds": 336.0598274000222,
+      "decisions": 6700,
+      "left_ground": true,
+      "max_airframe_origin_altitude_m": 10.15928470639256,
+      "max_contact_force_n": 2338465.1341118454,
+      "fuel_used_kg": 1.1692508916997877,
+      "mission": {
+        "departure": [
+          0.0,
+          0.0
+        ],
+        "destination": [
+          -50.0,
+          20.0
+        ],
+        "departure_z_m": 0.0,
+        "destination_z_m": 0.0,
+        "environment": "stage1-valley",
+        "environment_version": "2",
+        "label": "Map-selected live ground-to-ground attempt"
+      },
+      "claim": "Conditional experimental model; not validated VTX performance"
+    },
+    "phase_telemetry": {
+      "spoolup_and_nacelle_zeroing": {
+        "t_start_s": 144.3,
+        "t_complete_s": 146.13,
+        "rotor_rpm_at_liftoff_gate": 1181.3,
+        "max_nacelle_tilt_error_deg": 0.01
+      },
+      "climb_to_10m_altitude": {
+        "t_start_s": 146.13,
+        "t_reached_10m_s": 154.9,
+        "climb_rate_mps": 1.15,
+        "peak_radar_clearance_m": 10.77,
+        "peak_baro_altitude_m": 10.17,
+        "peak_airframe_origin_altitude_m": 10.159,
+        "mean_rotor_rpm_during_climb": 1188.0,
+        "shaft_power_kw_during_climb": 252.0
+      },
+      "hover_hold_at_10m": {
+        "t_window_s": [
+          154.9,
+          172.8
+        ],
+        "duration_s": 17.9,
+        "radar_clearance_range_m": [
+          10.46,
+          10.77
+        ],
+        "baro_altitude_range_m": [
+          9.84,
+          10.17
+        ],
+        "roll_deg_range_before_90deg_yaw": [
+          -0.14,
+          0.42
+        ],
+        "pitch_deg_range_before_90deg_yaw": [
+          -0.21,
+          0.41
+        ],
+        "hover_shaft_power_kw": 202.5,
+        "hover_rotor_rpm": 1199.3
+      },
+      "task02_ecu_calibration_findings": [
+        "World-to-body frame transformation required: attitude_xyz_deg and gyro_world_deg_s are world-referenced; when yaw drifted past 90 deg at t=172.8s, unrotated world roll/pitch commands cross-coupled 90 deg into body-frame rotors (E, N, W, S), triggering attitude divergence during translation.",
+        "Yaw phase-lead / reaction-torque decoupling required: tangential nacelle tilt yaw loop exhibits a ~6.5s period lightly-damped oscillation at 10m hover due to nacelle tilt actuator lag plus 20ms transport delay interacting with differential collective reaction torques."
+      ]
+    }
+  }
 }
