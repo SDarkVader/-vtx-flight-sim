@@ -1,4 +1,4 @@
-# Persistent VTX pilot station (experimental)
+﻿# Persistent VTX pilot station (experimental)
 
 The station maintains a connection to the real MuJoCo simulator, preserves
 instrument/action evidence, and retries an **actually crashed** Colin sortie.
