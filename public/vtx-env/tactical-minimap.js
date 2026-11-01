@@ -238,6 +238,40 @@ export class TacticalMinimap {
       }
     }
 
+    // 7.5 Airfield Service Road Network
+    g.save();
+    g.strokeStyle = '#2b2e32'; g.lineWidth = Math.max(1.5, scaleM(10));
+    g.beginPath();
+    const rCps = [[-720, 695], [-650, 735], [220, 735], [800, 695]];
+    for (let i = 0; i <= 32; i++) {
+      const pt = evalCubicBezier(rCps[0], rCps[1], rCps[2], rCps[3], i / 32);
+      if (i === 0) g.moveTo(px(pt[0]), py(pt[1])); else g.lineTo(px(pt[0]), py(pt[1]));
+    }
+    g.stroke();
+    g.lineWidth = Math.max(1.2, scaleM(8));
+    g.beginPath();
+    g.moveTo(px(-650), py(490));
+    g.lineTo(px(-100), py(490));
+    g.lineTo(px(40), py(520));
+    g.lineTo(px(240), py(500));
+    g.lineTo(px(475), py(530));
+    g.lineTo(px(680), py(540));
+    g.stroke();
+    g.strokeStyle = 'rgba(255, 255, 255, 0.45)'; g.lineWidth = Math.max(0.8, scaleM(0.4));
+    g.setLineDash([scaleM(4), scaleM(4)]);
+    g.beginPath();
+    for (let i = 0; i <= 32; i++) {
+      const pt = evalCubicBezier(rCps[0], rCps[1], rCps[2], rCps[3], i / 32);
+      if (i === 0) g.moveTo(px(pt[0]), py(pt[1])); else g.lineTo(px(pt[0]), py(pt[1]));
+    }
+    g.moveTo(px(-650), py(490));
+    g.lineTo(px(-100), py(490));
+    g.lineTo(px(40), py(520));
+    g.lineTo(px(240), py(500));
+    g.stroke();
+    g.setLineDash([]);
+    g.restore();
+
     // 8. Stands 1 to 6
     if (LAYOUT.stands_expanded) {
       for (let idx = 0; idx < LAYOUT.stands_expanded.length; idx++) {
