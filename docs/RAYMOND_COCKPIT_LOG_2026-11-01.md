@@ -67,3 +67,14 @@ Mission started with run ID `20261101T151650-a47d96`, departure `[0,0]` at Raymo
 A separate local process began writing approximately one pilot-facing observation per wall-clock second to `evidence/flights/20261101T151650-a47d96/raymond-flight-two-observations.jsonl`, independent of the phone connection. The recorder is designed to end after approximately fifteen minutes, or earlier if the mission ends, then commit and push its own observation log to this branch. Raw simulator audit evidence remains in the run's evidence directory.
 
 **Critical limitation:** the process is a passive recorder, not an AI pilot. The flight mission is initialized but no autonomous end-to-end flight is claimed. An actual flight requires continued observation-based control decisions; do not mistake mission creation or unattended recording for flying.
+
+## Flight Two live session and evidence preservation
+
+**Live run ID:** `20261101T151650-a47d96`  
+**Mission label:** Raymond Flight Two RW-01 instrumented trial  
+**Departure:** (0, 0) — Raymond's Patch  
+**Destination:** (35, 20) — simulation local metres  
+**Authority:** Colin interface; pilot command source must be checked from action logs  
+**Status at recorder activation:** active, at approximately 1.03 simulated seconds, no warning lamps. No takeoff or landing verified.
+
+The simulator already had this active mission when the dedicated recorder was started. A second mission request returned HTTP 409 (conflict), so the existing flight was preserved rather than reset. The recorder `tools/raymond_flight_two_recorder.py` writes UTC-stamped permitted `/api/observe` responses each second and periodic instrument-only `/api/view` snapshots to `evidence/raymond-flight-two/`. The simulator separately persists native event logs in `evidence/flights/20261101T151650-a47d96/`. The recorder does not issue flight-control commands. A phone disconnection does not itself stop this PC-local process; a PC shutdown or server failure can.
