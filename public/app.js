@@ -11,6 +11,7 @@ import {buildBuildings} from './vtx-env/buildings.js?v=1';
 import {buildAirfield} from './vtx-env/airfield.js?v=1';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=1';
+import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
 
 const $=id=>document.getElementById(id);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
@@ -54,7 +55,7 @@ function buildWorld(w){
  scene.add(buildTerrain(w));
  const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,mobile?700:1700));
  // Buildings are dressed onto the physical obstacle boxes; airfield markings are flush paint.
- environment.buildings=buildBuildings(scene,w,{ppm:mobile?14:24});buildAirfield(scene,{ppm:mobile?7:11});buildTrees(scene,w);buildForecourt(scene,w);
+ environment.buildings=buildBuildings(scene,w,{ppm:mobile?14:24});buildAirfield(scene,{ppm:mobile?7:11});buildTrees(scene,w);buildForecourt(scene,w);environment.volcano=buildVolcanoBasement(scene,w);
  scene.add(makeWater(w,surfaceZ(w.water.x,w.water.y)+.1));
  updateMarkers();drawMaps();console.log('VTX: terrain ready');
 }
@@ -270,7 +271,7 @@ function animate(){requestAnimationFrame(animate);const now=performance.now();if
   if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);cameraTarget.copy(camera.position).add(new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch)).applyQuaternion(q));camera.lookAt(cameraTarget);}else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);
  }
- sky.update(camera,now/1000);environment.buildings?.update(now/1000);
+ sky.update(camera,now/1000);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);
   aircraftFx?.update(last?.observation?.rotor_rpm,now/1000);
  if(model&&modelReady&&!window.__vtxNoRender)renderer.render(scene,camera);
 }animate();

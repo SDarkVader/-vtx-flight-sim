@@ -5,7 +5,7 @@
 // terrain entirely; markings that need transparency use alpha-to-coverage cut-outs.
 import * as THREE from 'three';
 import { LAYOUT } from './layout.js';
-import { asphaltTextures, concreteTextures, makeCanvas, toTexture, rng } from './textures.js';
+import { asphaltTextures, concreteTextures, makeCanvas, toTexture, rng, windsockTexture } from './textures.js';
 import * as F from './facade.js';
 
 const Z = 0.02;
@@ -121,9 +121,9 @@ export function buildAirfield(scene, { ppm = 11 } = {}) {
       F.hazard(g, 0, 0, w, 1, .6); F.hazard(g, 0, h - 1, w, 1, .6); F.hazard(g, 0, 0, 1, h, .6); F.hazard(g, w - 1, 0, 1, h, .6);
       g.strokeStyle = 'rgba(245,184,0,.8)'; g.lineWidth = .35;
       for (let i = 0; i < 4; i++) { const y = h - 4 - i * 5.5; g.beginPath(); g.moveTo(w / 2 - 3.4, y); g.lineTo(w / 2, y - 3); g.lineTo(w / 2 + 3.4, y); g.stroke(); }
-      F.text(g, null, 'VTX DEEP BAY', w / 2, 8.2, 1.6, { color: F.YEL, align: 'center', font: 'Impact,Arial', glow: false, spacing: .2 });
-      F.text(g, null, 'ACCESS RESERVED', w / 2, 10.4, 1.15, { color: '#e8e6d8', align: 'center', font: 'Impact,Arial', glow: false, spacing: .2 });
-      F.text(g, null, 'PHASE 2', w / 2, 12.2, .9, { color: '#9aa0a3', align: 'center', font: 'Impact,Arial', glow: false, spacing: .2 });
+      F.text(g, null, 'VTX BASEMENT & VOLCANO ASCENT', w / 2, 8.2, 1.3, { color: F.YEL, align: 'center', font: 'Impact,Arial', glow: false, spacing: .1 });
+      F.text(g, null, 'KEEP OUT STEVE · COMPLIANCE DIRECTIVE', w / 2, 10.4, 1.0, { color: '#e8e6d8', align: 'center', font: 'Impact,Arial', glow: false, spacing: .1 });
+      F.text(g, null, 'RAYMOND WINSTON & ARTHUR FINCH ONLY', w / 2, 12.2, .85, { color: '#f5b800', align: 'center', font: 'Impact,Arial', glow: false, spacing: .1 });
     }, { roughness: .5 }));
   }
 
@@ -138,6 +138,55 @@ export function buildAirfield(scene, { ppm = 11 } = {}) {
   const inst = new THREE.InstancedMesh(disc, mat, lights.length), m = new THREE.Matrix4(), col = new THREE.Color();
   lights.forEach(([x, y, c], i) => { m.makeTranslation(x, y, Z + .02); inst.setMatrixAt(i, m); inst.setColorAt(i, col.set(c).multiplyScalar(2.2)); });
   inst.renderOrder = -1; group.add(inst);
+
+  // ---- 3D Illuminated Windsock (near runway threshold)
+  const sockGroup = new THREE.Group();
+  sockGroup.position.set(-112, -38, 0);
+  const poleMat = new THREE.MeshStandardMaterial({ color: '#55595d', metalness: 0.8, roughness: 0.4 });
+  const sockPole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 6.5, 8), poleMat);
+  sockPole.position.set(0, 0, 3.25); sockGroup.add(sockPole);
+
+  const sockMat = new THREE.MeshStandardMaterial({
+    map: windsockTexture(),
+    roughness: 0.7,
+    side: THREE.DoubleSide
+  });
+  const sockCone = new THREE.Mesh(new THREE.ConeGeometry(0.55, 3.4, 12, 1, true), sockMat);
+  sockCone.rotateZ(Math.PI / 2);
+  sockCone.position.set(1.7, 0, 6.2);
+  sockGroup.add(sockCone);
+
+  const sockLamp = new THREE.PointLight('#fff2d4', 1.8, 12);
+  sockLamp.position.set(0, 0, 6.6); sockGroup.add(sockLamp);
+  group.add(sockGroup);
+
+  // ---- Ground Support Equipment (GSE) parked safely on apron edge
+  const gseMat = new THREE.MeshStandardMaterial({ color: '#f5b800', roughness: 0.5, metalness: 0.2 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: '#16191c', roughness: 0.7 });
+
+  // GPU Trailer (Ground Power Unit)
+  const gpuGroup = new THREE.Group();
+  gpuGroup.position.set(16, 12, 0);
+  const gpuBody = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.2, 0.9), gseMat);
+  gpuBody.position.set(0, 0, 0.65); gpuBody.castShadow = true; gpuGroup.add(gpuBody);
+  // Wheels
+  for (const [wx, wy] of [[-0.7, 0.65], [-0.7, -0.65], [0.7, 0.65], [0.7, -0.65]]) {
+    const wMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.16, 12), darkMat);
+    wMesh.rotateX(Math.PI / 2); wMesh.position.set(wx, wy, 0.24); gpuGroup.add(wMesh);
+  }
+  group.add(gpuGroup);
+
+  // Airframe Service Stepladder Stand
+  const ladderGroup = new THREE.Group();
+  ladderGroup.position.set(22, 16, 0);
+  const plat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.1), gseMat);
+  plat.position.set(0, 0, 2.2); ladderGroup.add(plat);
+  for (const [lx, ly] of [[-0.5, -0.6], [0.5, -0.6], [-0.5, 0.6], [0.5, 0.6]]) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.2, 6), darkMat);
+    leg.position.set(lx, ly, 1.1); ladderGroup.add(leg);
+  }
+  ladderGroup.castShadow = true;
+  group.add(ladderGroup);
 
   scene.add(group);
   return { group, lightCount: lights.length };

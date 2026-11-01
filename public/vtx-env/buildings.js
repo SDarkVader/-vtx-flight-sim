@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { BUILDINGS, LAYOUT } from './layout.js';
 import * as F from './facade.js';
-import { stoneTexture } from './textures.js';
+import { stoneTexture, transgressionTexture, depotWhiteboardTexture, citationTexture } from './textures.js';
 
 const V = THREE.Vector3, UP = new V(0, 0, 1);
 const SIDES = { S: { n: [0, -1, 0], r: [1, 0, 0] }, N: { n: [0, 1, 0], r: [-1, 0, 0] }, E: { n: [1, 0, 0], r: [0, 1, 0] }, W: { n: [-1, 0, 0], r: [0, -1, 0] } };
@@ -164,6 +164,50 @@ export function buildBuildings(scene, world, { ppm = 24, quality = 1 } = {}) {
       const signTex = F.paintTexture(38, 5.6, 40, (g, e, w, h) => F.wordmark(g, e, 0, 0, w, h, { tagline: true }), { maxDim: 2048 });
       const signMat = [dark, dark, dark, dark, F.material(signTex, 1.1, { roughness: .6 }), dark];
       const sign = new THREE.Mesh(new THREE.BoxGeometry(38, 5.6, .5), signMat); place(sign, fr, W / 2, 14.6, .25); sign.castShadow = true; group.add(sign);
+
+      // Transgression Record blackboard (VT-2887 regarding the banana incident)
+      const trTex = transgressionTexture();
+      const trMat = new THREE.MeshStandardMaterial({ map: trTex, roughness: 0.6 });
+      const trMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.4, 0.08), trMat);
+      place(trMesh, fr, 4.0, 3.2, 0.35); trMesh.castShadow = true; group.add(trMesh);
+
+      // Steve Dark's Citation Certificate for Extraordinary Altruistic Heroism (31 Oct 2026)
+      const citTex = citationTexture();
+      const citMat = new THREE.MeshStandardMaterial({ map: citTex, roughness: 0.4 });
+      const citMesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.6, 0.06), citMat);
+      place(citMesh, fr, 1.6, 3.2, 0.35); citMesh.castShadow = true; group.add(citMesh);
+
+      // The Gold Medal for Altruistic Heroism in navy velvet case
+      const medalCase = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.65, 0.12), metal('#0f1b2b', { roughness: 0.85 }));
+      const goldMedal = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.04, 24).rotateX(Math.PI / 2), metal('#d4af37', { roughness: 0.25, metalness: 0.9 }));
+      goldMedal.position.set(0, 0, 0.07);
+      medalCase.add(goldMedal);
+      place(medalCase, fr, 1.6, 1.8, 0.35); medalCase.castShadow = true; group.add(medalCase);
+
+      // Depot To-Do Whiteboard with checklist & odd parts big ideas
+      const wbTex = depotWhiteboardTexture();
+      const wbMat = new THREE.MeshStandardMaterial({ map: wbTex, roughness: 0.35 });
+      const wbMesh = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.4, 0.08), wbMat);
+      place(wbMesh, fr, 43.8, 3.2, 0.35); wbMesh.castShadow = true; group.add(wbMesh);
+
+      // EXHIBIT A: The Banana on a Plinth outside Compliance
+      const plinthGroup = new THREE.Group();
+      const ped = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.95), metal('#45484c', { roughness: 0.8 }));
+      ped.position.set(0, 0, 0.475); ped.castShadow = true; plinthGroup.add(ped);
+      const plaque = new THREE.Mesh(new THREE.PlaneGeometry(0.35, 0.15), metal('#d4af37', { roughness: 0.3 }));
+      plaque.position.set(0, -0.26, 0.5); plinthGroup.add(plaque);
+      const bananaCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-0.16, 0, 0.98),
+        new THREE.Vector3(-0.06, 0.05, 0.96),
+        new THREE.Vector3(0.06, 0.05, 0.96),
+        new THREE.Vector3(0.16, 0, 0.99),
+      ]);
+      const banana = new THREE.Mesh(new THREE.TubeGeometry(bananaCurve, 12, 0.045, 8, false), new THREE.MeshStandardMaterial({ color: '#ffdd00', roughness: 0.4 }));
+      banana.castShadow = true; plinthGroup.add(banana);
+      const bSpot = new THREE.SpotLight('#fff0d0', 2.5, 4, Math.PI / 4, 0.5);
+      bSpot.position.set(0, -0.6, 1.5); bSpot.target = banana;
+      plinthGroup.add(bSpot, bSpot.target);
+      place(plinthGroup, fr, 2.2, 0, 0.35); group.add(plinthGroup);
       for (const u0 of [5.5, 24]) { const bw = 16.5, bh = 10.5; boxAt(fr, u0 - .45, bh / 2, .5, bh, .5, trimMat); boxAt(fr, u0 + bw - .05, bh / 2, .5, bh, .5, trimMat); boxAt(fr, u0 + bw / 2, bh + .25, bw + 1.4, .5, .55, trimMat); }
       for (const [u, lines, title, checkerOn] of [[2, ['24/7 DISPATCH', 'FLEET SERVICING', 'VTOL CONVERSIONS', 'CUSTOM BUILDS', 'PROTOTYPING', 'FLIGHT SYSTEMS', 'PILOTS WELCOME'], null, false], [44, ['TAXIS', 'REPAIRS', 'MODIFICATIONS', 'DIAGNOSTICS', 'R&D'], null, true]]) {
         const pt = F.paintTexture(4, 18, 40, (g, e, w, h) => {
@@ -183,7 +227,20 @@ export function buildBuildings(scene, world, { ppm = 24, quality = 1 } = {}) {
         const sg = new THREE.Mesh(new THREE.BoxGeometry(sw, sh, .4), [dark, dark, dark, dark, F.material(st, 1.1, { roughness: .6 }), dark]); place(sg, fr, W / 2, vTop - sh / 2, .2); sg.castShadow = true; group.add(sg);
       }
       if (kind === 'workshop') for (let i = 0; i < 3; i++) boxAt(fr, 3 + i * 14.5 + 4.75, 6.65, 10.4, .3, .7, trimMat);
-      if (kind === 'office') boxAt(fr, W / 2, 4.5, 11, .35, .8, dark);
+      if (kind === 'office') {
+        boxAt(fr, W / 2, 4.5, 11, .35, .8, dark);
+        // Rooftop black cab weather vane
+        const vaneGroup = new THREE.Group();
+        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.2, 8), metal('#1a1a1a'));
+        rod.position.set(0, 0, 1.1); vaneGroup.add(rod);
+        const cabShape = new THREE.Shape();
+        cabShape.moveTo(-0.8, 0); cabShape.lineTo(0.8, 0); cabShape.lineTo(0.8, 0.3); cabShape.lineTo(0.45, 0.35); cabShape.lineTo(0.25, 0.65); cabShape.lineTo(-0.35, 0.65); cabShape.lineTo(-0.55, 0.35); cabShape.lineTo(-0.8, 0.3); cabShape.closePath();
+        const cabMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(cabShape, { depth: 0.04, bevelEnabled: false }), metal('#f5b800'));
+        cabMesh.position.set(0, 0, 2.0); vaneGroup.add(cabMesh);
+        vaneGroup.position.set(o.center[0], o.center[1], o.center[2] + o.half[2]);
+        group.add(vaneGroup);
+        updaters.push((t) => { cabMesh.rotation.z = Math.sin(t * 0.6) * 0.5; });
+      }
       if (kind === 'tower') addTowerTop(group, o, updaters);
     }
   }
@@ -214,5 +271,9 @@ function addTowerTop(group, o, updaters) {
   const slab = new THREE.Mesh(new THREE.BoxGeometry(hx * 2 + 1.6, hy * 2 + 1.6, .6), metal('#4a4f52', { roughness: .8 })); slab.position.set(cx, cy, top + .3); group.add(slab);
   const mast = new THREE.Mesh(new THREE.CylinderGeometry(.08, .12, 5, 6).rotateX(Math.PI / 2), metal('#9aa0a3')); mast.position.set(cx + 3, cy - 2, top + 2.9); group.add(mast);
   const beacon = new THREE.Mesh(new THREE.SphereGeometry(.45, 12, 8), glowMat('#ff2a1a', 4)); beacon.position.set(cx, cy, top + .8); group.add(beacon);
+  // Rotating radar scanner on mast
+  const radar = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.35, 0.4), metal('#d8dde0'));
+  radar.position.set(cx + 3, cy - 2, top + 5.5); group.add(radar);
+  updaters.push((t) => { radar.rotation.z = t * 2.4; });
   updaters.push((t) => { beacon.material.emissiveIntensity = (Math.sin(t * 3.2) > .55) ? 6 : .25; });
 }
