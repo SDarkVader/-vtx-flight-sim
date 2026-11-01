@@ -31,6 +31,8 @@ function selectedFuel(){const value=Number($('initial-fuel').value);if(!Number.i
 
 console.log('VTX: module ready');
 const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<800;
+// On phones keep retained-flight actions in the document flow, not across the view.
+if (innerWidth <= 600) document.querySelector('header').after($('retry-bar'));
 const camera=new THREE.PerspectiveCamera(48,1,.1,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.2));renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
