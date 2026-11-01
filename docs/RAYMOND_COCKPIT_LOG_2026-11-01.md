@@ -78,3 +78,16 @@ A separate local process began writing approximately one pilot-facing observatio
 **Status at recorder activation:** active, at approximately 1.03 simulated seconds, no warning lamps. No takeoff or landing verified.
 
 The simulator already had this active mission when the dedicated recorder was started. A second mission request returned HTTP 409 (conflict), so the existing flight was preserved rather than reset. The recorder `tools/raymond_flight_two_recorder.py` writes UTC-stamped permitted `/api/observe` responses each second and periodic instrument-only `/api/view` snapshots to `evidence/raymond-flight-two/`. The simulator separately persists native event logs in `evidence/flights/20261101T151650-a47d96/`. The recorder does not issue flight-control commands. A phone disconnection does not itself stop this PC-local process; a PC shutdown or server failure can.
+
+## Flight Two — active run and persistent capture
+
+**Run ID:** `20261101T151650-a47d96`  
+**Mission:** Raymond's Patch `(0,0)` to `(35,20)` in the stage1-valley environment.  
+**Operator:** `colin` authority channel used by Raymond for a single explicitly chosen action.  
+**Recording:** `evidence/flights/20261101T151650-a47d96/events.jsonl` (simulator audit) plus `raymond-monitor.jsonl` (independent one-second wall-clock pilot observations). The recorder is a detached PowerShell process, configured for up to fifteen minutes or until the sortie ends; it does **not** generate flight controls.
+
+**Initial control:** one live action accepted, sequence `1`, scheduled at simulation time `3.93 s`: engine `0.5`, symmetric collective `10°`, zero tilt. This was a spool-up test, not a flight path or autopilot.
+
+**First response:** at simulation time `4.02 s`, four rotor speeds were approximately `5.01–5.02 RPM`, radar clearance `0.752 m`, and no warning lamps. No takeoff was established. The control lease will expire without further deliberate piloting actions.
+
+The active run is a trial, not a completed end-to-end flight. Preserve the simulator's own final summary to determine actual outcome. Do not interpret unattended observation logging as autonomous piloting.
