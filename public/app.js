@@ -4,6 +4,13 @@ import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
 import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-5';
 import {zoomDistance} from './camera-zoom.js?v=1';
+// Vader's Taxis environment (visual only; physics collision comes from world.py).
+import {buildSky} from './vtx-env/sky.js?v=1';
+import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
+import {buildBuildings} from './vtx-env/buildings.js?v=1';
+import {buildAirfield} from './vtx-env/airfield.js?v=1';
+import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
+import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=1';
 
 const $=id=>document.getElementById(id);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
@@ -23,14 +30,13 @@ function guard(fn){return async(...args)=>{try{await fn(...args);}catch(e){toast
 function selectedFuel(){const value=Number($('initial-fuel').value);if(!Number.isFinite(value)||value<1||value>110)throw Error('Use total fuel loading between 1 and 110 kg.');return value;}
 
 console.log('VTX: module ready');
-const viewport=$('viewport'),scene=new THREE.Scene();scene.background=new THREE.Color('#a9c1ca');scene.fog=new THREE.Fog('#b3c7c9',240,1000);
-const camera=new THREE.PerspectiveCamera(48,1,.05,2000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.2));renderer.shadowMap.enabled=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;viewport.appendChild(renderer.domElement);
+const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<800;
+const camera=new THREE.PerspectiveCamera(48,1,.1,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.2));renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
-const hemi=new THREE.HemisphereLight('#e4f5ff','#65745a',2.3);hemi.position.set(0,0,100);scene.add(hemi);
-const sun=new THREE.DirectionalLight('#fff1d6',3.2);sun.position.set(-70,-90,140);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;sun.shadow.camera.near=1;sun.shadow.camera.far=350;sun.shadow.bias=-.0004;scene.add(sun);scene.add(sun.target);
+const sky=buildSky(scene,renderer,{shadows:!mobile,shadowSize:mobile?1024:2048}),environment={};
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 function plane(w,h,color,x,y,z){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({color,roughness:.95}));m.position.set(x,y,z);m.receiveShadow=true;scene.add(m);return m;}
 function makeLabel(text,color='#7cdfcb'){
@@ -39,82 +45,18 @@ function makeLabel(text,color='#7cdfcb'){
 const markerA=makeLabel('A'),markerB=makeLabel('B','#ffc88b');
 function surfaceZ(x,y){if(!world)return 0;const n=world.heights_m.length,half=world.half_m,u=THREE.MathUtils.clamp((x+half)/(2*half)*(n-1),0,n-1.00001),v=THREE.MathUtils.clamp((y+half)/(2*half)*(n-1),0,n-1.00001),i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j,h=world.heights_m;let z=a>b?(1-a)*h[j][i]+(a-b)*h[j][i+1]+b*h[j+1][i+1]:(1-b)*h[j][i]+(b-a)*h[j+1][i]+a*h[j+1][i+1];for(const o of world.obstacles){if(o.kind==='box'&&Math.abs(x-o.center[0])<=o.half[0]&&Math.abs(y-o.center[1])<=o.half[1])z=Math.max(z,o.center[2]+o.half[2]);}return z;}
 function updateMarkers(){markerA.position.set(departure[0]-5,departure[1]+4,surfaceZ(...departure)+1.5);markerB.position.set(destination[0]-5,destination[1]+4,surfaceZ(...destination)+1.5);}
-// Artwork is mounted on the existing physical hangar face. It is visual only;
-// no new obstacles or landing surfaces are implied by these decorations.
-function addCompanyGallery(w){
- const hangar=w.obstacles.find(o=>o.id==='hangar'&&o.kind==='box');if(!hangar)return;
- const [cx,cy,cz]=hangar.center,[hx,hy,hz]=hangar.half,face=cy-hy-.035;
- function panel(width,height,x,z,material,depth=0){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),material);mesh.rotation.x=Math.PI/2;mesh.position.set(x,face-depth,z);scene.add(mesh);return mesh;}
- function sign(message,width,height,x,z,bg,fg){
-  const c=document.createElement('canvas');c.width=1024;c.height=128;const g=c.getContext('2d');
-  g.fillStyle=bg;g.fillRect(0,0,c.width,c.height);g.strokeStyle='#d6a960';g.lineWidth=5;g.strokeRect(4,4,c.width-8,c.height-8);
-  g.fillStyle=fg;g.font='bold 50px Georgia, serif';g.textAlign='center';g.textBaseline='middle';g.fillText(message,512,66,980);
-  const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
-  return panel(width,height,x,z,new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}),.02);
- }
- sign("VADER'S TAXIS  •  THE PEOPLE BEHIND THE JOURNEY",Math.min(43,hx*2-2),2.3,cx,cz+hz-2.2,'#172927','#f4d39c');
- sign('SAME PEOPLE  •  DIFFERENT PROBLEMS',32,1.1,cx,cz-hz+2.7,'#243c38','#e1c391');
- const pictures=[
-  ['1-68021.jpg','THE INTERN'],['2-67362.jpg','FIELD TESTING'],['3-67194.jpg','THE HEARING'],
-  ['4-66709.jpg','STRATEGY ROOM'],['5-67766.jpg','THE TEAM']
- ];
- const loader=new THREE.TextureLoader();
- pictures.forEach(([file,label],i)=>{
-  const x=cx-16+i*8,z=cz+.5;
-  panel(7.6,6.3,x,z,new THREE.MeshBasicMaterial({color:'#172927',side:THREE.DoubleSide}),.01);
-  loader.load('/assets/company/'+file,texture=>{
-   texture.colorSpace=THREE.SRGBColorSpace;
-   const aspect=texture.image.width/texture.image.height, width=Math.min(7.1,5.15*aspect),height=width/aspect;
-   panel(width,height,x,z+.25,new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}),.03);
-  },undefined,e=>console.warn('Company artwork unavailable',file,e));
-  sign(label,7.2,.62,x,z-2.75,'#172927','#e6c68e');
- });
-}
-// The structures are the same obstacle boxes used by the physics engine;
-// signs, window panes and ground paint are surface details only.
-function addDistrictDetails(w){
- const labels={dispatch:'VADER’S TAXIS  /  DISPATCH',arcade:'THE STRATEGY ROOM',operations:'FLIGHT OPERATIONS',terminal:'PEOPLE  •  PLACES  •  A BRIGHTER TOMORROW',tower:'VTX  /  CONTROL',workshop:'VTX  /  ENGINEERING',freight:'VADER’S TAXIS  /  CARGO'};
- const windowMaterial=new THREE.MeshBasicMaterial({color:'#87c5c1',side:THREE.DoubleSide});
- const pane=new THREE.PlaneGeometry(2.3,1.45),matrix=new THREE.Matrix4(),rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI/2,0,0));
- for(const o of w.obstacles){
-  const label=labels[o.id];if(!label)continue;
-  const [x,y,z]=o.center,[hx,hy,hz]=o.half,front=y-hy-.04;
-  const rows=Math.min(5,Math.max(1,Math.floor((hz*2-4)/3.2))),cols=Math.min(8,Math.max(1,Math.floor((hx*2-2)/3.6)));
-  const inst=new THREE.InstancedMesh(pane,windowMaterial,rows*cols);let n=0;
-  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
-   const px=x+(col-(cols-1)/2)*3.5,pz=z-hz+2.2+row*3.1;
-   matrix.compose(new THREE.Vector3(px,front,pz),rot,new THREE.Vector3(1,1,1));inst.setMatrixAt(n++,matrix);
-  }
-  scene.add(inst);
-  const c=document.createElement('canvas');c.width=1024;c.height=128;const ctx=c.getContext('2d');
-  ctx.fillStyle='#162c2b';ctx.fillRect(0,0,1024,128);ctx.strokeStyle='#d8a965';ctx.lineWidth=5;ctx.strokeRect(4,4,1016,120);
-  ctx.fillStyle='#f1d4a0';ctx.font='bold 48px Georgia,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,512,66,980);
-  const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
-  const plate=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(hx*2-1,27),1.8),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}));
-  plate.rotation.x=Math.PI/2;plate.position.set(x,front-.02,z+hz-1.2);scene.add(plate);
- }
- // A painted apron and taxiway help navigation without adding physical objects.
- plane(54,24,'#576766',25,-32,.022);
- plane(2,85,'#d5c189',25,-9,.029);
- for(let y=-47;y<=27;y+=10)plane(1.1,5,'#e5d7a7',25,y,.033);
-}
 function buildWorld(w){
  console.log('VTX: terrain building');
- world=w;const n=w.heights_m.length,vertices=[],indices=[],colors=[];
- for(let j=0;j<n;j++)for(let i=0;i<n;i++){const x=-w.half_m+i/(n-1)*w.half_m*2,y=-w.half_m+j/(n-1)*w.half_m*2,z=w.heights_m[j][i];vertices.push(x,y,z);const col=new THREE.Color(z>25?'#8a9273':'#7b9674');col.multiplyScalar(.96+.04*Math.sin(x/27)*Math.cos(y/33));colors.push(col.r,col.g,col.b);}
- for(let j=0;j<n-1;j++)for(let i=0;i<n-1;i++){const a=j*n+i;indices.push(a,a+1,a+n+1,a,a+n+1,a+n);}
- const geom=new THREE.BufferGeometry();geom.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geom.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geom.setIndex(indices);geom.computeVertexNormals();const terrain=new THREE.Mesh(geom,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}));terrain.receiveShadow=true;scene.add(terrain);
- for(const o of w.obstacles){let geometry;if(o.kind==='box')geometry=new THREE.BoxGeometry(...o.half.map(v=>v*2));else{geometry=new THREE.CylinderGeometry(o.half[0],o.half[0],o.half[2]*2,10);geometry.rotateX(Math.PI/2);}const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color:o.color,roughness:.86}));mesh.position.set(...o.center);mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
-  if(o.kind==='cylinder'){const crown=new THREE.Mesh(new THREE.ConeGeometry(o.half[0]*2.2,o.half[2]*1.2,7),new THREE.MeshStandardMaterial({color:'#405f4c',roughness:1}));crown.rotation.x=Math.PI/2;crown.position.set(o.center[0],o.center[1],o.center[2]+o.half[2]*.7);crown.castShadow=true;scene.add(crown);}else if(o.landable){const roof=plane(8,8,'#9cb4aa',o.center[0],o.center[1],o.center[2]+o.half[2]+.015);const ring=new THREE.Mesh(new THREE.RingGeometry(2.7,2.9,48),new THREE.MeshBasicMaterial({color:'#c1d4c7',side:THREE.DoubleSide}));ring.position.copy(roof.position);ring.position.z+=.01;scene.add(ring);}
- }
- // Survey paint and service strips are visual markings on the same physical ground.
- plane(95,16,'#626d6a',-42,-65,.015);plane(2,320,'#a9ad96',-27,0,.012);
- for(let x=-80;x<10;x+=12)plane(5,.15,'#c7ccb8',x,-65,.021);
- const grid=new THREE.GridHelper(180,18,'#a9b5a5','#a8b3a1');grid.rotation.x=Math.PI/2;grid.position.z=.025;grid.material.transparent=true;grid.material.opacity=.2;scene.add(grid);
- const water=plane(w.water.half_x*2,w.water.half_y*2,'#6f9fa8',w.water.x,w.water.y,surfaceZ(w.water.x,w.water.y)+.1);water.material.metalness=.3;water.material.roughness=.3;
- addDistrictDetails(w);addCompanyGallery(w);updateMarkers();drawMaps();console.log('VTX: terrain ready');
+ world=w;
+ // Ground uses the same heightfield samples as the physics terrain; the distant landscape lies outside the +/-500 m test area.
+ scene.add(buildTerrain(w));
+ const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,mobile?700:1700));
+ // Buildings are dressed onto the physical obstacle boxes; airfield markings are flush paint.
+ environment.buildings=buildBuildings(scene,w,{ppm:mobile?14:24});buildAirfield(scene,{ppm:mobile?7:11});buildTrees(scene,w);buildForecourt(scene,w);
+ scene.add(makeWater(w,surfaceZ(w.water.x,w.water.y)+.1));
+ updateMarkers();drawMaps();console.log('VTX: terrain ready');
 }
-let loadedAsset=null,assetRetryAfter=0,modelReady=false;
+let aircraftFx=null,loadedAsset=null,assetRetryAfter=0,modelReady=false;
 function disposeModel(root){
  const geometries=new Set(),materials=new Set(),textures=new Set();
  root.traverse(n=>{if(!n.isMesh)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});
@@ -130,6 +72,7 @@ function loadAirframe(asset){
  model=g.scene;modelReady=false;scene.add(model);model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
  // Blender exports empty groups as Object3D or Group depending on loader.
  for(const name of ['airframe','cabin',...Array.from({length:4},(_,i)=>`nacelle${i+1}`),...Array.from({length:4},(_,i)=>`rotor${i+1}`),...Array.from({length:6},(_,i)=>`gear${i+1}`),...Array.from({length:4},(_,i)=>`shaft${i+1}`)]){const n=model.getObjectByName(name);if(n)bodyNodes[name]=n;}
+  aircraftFx=enhanceAircraft(model,scene.environment);
  // Display-only batching retains every triangle and the source IDs; the mass
  // ledger/colliders remain per-part. Keep independently pitched blades separate.
  const sourceModel=model,geometryRefs=new Map();
@@ -316,13 +259,16 @@ function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:'
 api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
+if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;}};
 function animate(){requestAnimationFrame(animate);const now=performance.now();if(now-lastFrameMs<80)return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
  if(truth)loadAirframe(truth.provenance.render_asset||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb'));
  if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);}for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
   const base=truth.body_poses.airframe,posArray=base.position;pos.set(posArray[0],posArray[1],posArray[2]+1.5);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);}
   if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);cameraTarget.copy(camera.position).add(new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch)).applyQuaternion(q));camera.lookAt(cameraTarget);}else{camera.up.set(0,0,1);orbit.update();}
-  sun.target.position.copy(pos);sun.position.copy(pos).add(new THREE.Vector3(-70,-90,140));
+  sky.follow(pos);
  }
+ sky.update(camera,now/1000);environment.buildings?.update(now/1000);
+  aircraftFx?.update(last?.observation?.rotor_rpm,now/1000);
  if(model&&modelReady&&!window.__vtxNoRender)renderer.render(scene,camera);
 }animate();
