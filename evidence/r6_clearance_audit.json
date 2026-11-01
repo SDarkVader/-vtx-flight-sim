@@ -1,0 +1,2775 @@
+{
+  "baseline_revision": "P0-V4A-assembly-r5",
+  "proposed_revision": "P0-V4A-assembly-r6",
+  "r5_key_pair_audit": [
+    {
+      "check": "Central 4-way gearbox vs P05 Outer pitch ring YZ",
+      "part_a": "P03 | Four way reduction gearbox",
+      "id_a": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "part_b": "P05 | Outer pitch ring YZ",
+      "id_b": "f8357c88-3ba2-4234-94a2-8b7a2e022770",
+      "overlap_triangles": 26,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "Central 4-way gearbox vs P05 Inner roll ring XZ",
+      "part_a": "P03 | Four way reduction gearbox",
+      "id_a": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "part_b": "P05 | Inner roll ring XZ",
+      "id_b": "609814f7-9857-43d2-a91b-59b18e99e094",
+      "overlap_triangles": 28,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "Central 4-way gearbox vs P01 M250 turboshaft",
+      "part_a": "P03 | Four way reduction gearbox",
+      "id_a": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 20,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "Central 4-way gearbox vs P01 Turbine heat shielding",
+      "part_a": "P03 | Four way reduction gearbox",
+      "id_a": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "part_b": "P01 | Turbine heat shielding",
+      "id_b": "aa4fa54b-5a73-4b8d-bbec-bec39a87fc8a",
+      "overlap_triangles": 27,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "Input flexible guard vs P05 Outer pitch ring YZ",
+      "part_a": "V2 P03 | Transmission input flexible guard",
+      "id_a": "81b634c8-c2fa-4578-9847-ac5a8e1e3ea6",
+      "part_b": "P05 | Outer pitch ring YZ",
+      "id_b": "f8357c88-3ba2-4234-94a2-8b7a2e022770",
+      "overlap_triangles": 30,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F1 radial drive shaft vs LANDING leg1 pressure body",
+      "part_a": "P03 | F1 radial drive shaft",
+      "id_a": "8cd0240b-cc3a-41e4-9271-82e3d1ca2ef7",
+      "part_b": "V4 P10 | LANDING leg1 energy-absorber pressure body",
+      "id_b": "896afd0a-85e6-4f89-b4ab-efce333647d9",
+      "overlap_triangles": 165,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F1 carbon shaft enclosure vs LANDING leg1 lower impact pivot",
+      "part_a": "P03 | F1 carbon shaft enclosure",
+      "id_a": "d71cb3a0-523c-4445-84e5-0d41eeb73277",
+      "part_b": "V4 P06 | LANDING leg1 lower impact pivot",
+      "id_b": "e5b22ef0-1779-41b7-b2b4-08d163fb23f5",
+      "overlap_triangles": 46,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F1 carbon shaft enclosure vs LANDING leg1 dual shear route 1",
+      "part_a": "P03 | F1 carbon shaft enclosure",
+      "id_a": "d71cb3a0-523c-4445-84e5-0d41eeb73277",
+      "part_b": "V4 P06 | LANDING leg1 dual shear route 1",
+      "id_b": "5868fbd7-4c8c-436f-b1f1-bd0dfce2db58",
+      "overlap_triangles": 78,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F3 radial drive shaft vs LANDING leg4 pressure body",
+      "part_a": "P03 | F3 radial drive shaft",
+      "id_a": "8cdf9c4d-4ea1-4e06-a1b5-1b89d358545d",
+      "part_b": "V4 P10 | LANDING leg4 energy-absorber pressure body",
+      "id_b": "f6eb9887-48ca-4a74-a981-411e4eb40beb",
+      "overlap_triangles": 164,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F3 carbon shaft enclosure vs LANDING leg4 lower impact pivot",
+      "part_a": "P03 | F3 carbon shaft enclosure",
+      "id_a": "31153a93-2709-4a1b-9288-516729ebd188",
+      "part_b": "V4 P06 | LANDING leg4 lower impact pivot",
+      "id_b": "d93a8b10-3447-426f-9c05-ea16e0924b3e",
+      "overlap_triangles": 46,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F2 radial drive shaft vs P01 M250 turboshaft",
+      "part_a": "P03 | F2 radial drive shaft",
+      "id_a": "1cd1ce8f-c288-41b0-b571-992b55357d03",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 36,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F2 carbon shaft enclosure vs P01 M250 turboshaft",
+      "part_a": "P03 | F2 carbon shaft enclosure",
+      "id_a": "12e4b3df-cc67-4f85-9d37-9b59f2cea29c",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 36,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F2 radial drive shaft vs P01 Turbine heat shielding",
+      "part_a": "P03 | F2 radial drive shaft",
+      "id_a": "1cd1ce8f-c288-41b0-b571-992b55357d03",
+      "part_b": "P01 | Turbine heat shielding",
+      "id_b": "aa4fa54b-5a73-4b8d-bbec-bec39a87fc8a",
+      "overlap_triangles": 36,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F2 carbon shaft enclosure vs P01 Mount A",
+      "part_a": "P03 | F2 carbon shaft enclosure",
+      "id_a": "12e4b3df-cc67-4f85-9d37-9b59f2cea29c",
+      "part_b": "P01 | Mount A",
+      "id_b": "68eb7107-7cca-4516-a97a-21c5606caf0c",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 154.74,
+      "clear": true
+    },
+    {
+      "check": "F1 vertical torque shaft vs F1 transverse hub support",
+      "part_a": "V3 P03 | F1 vertical torque shaft extension",
+      "id_a": "421cf512-8eb4-411c-bb1c-ef6f1613ba09",
+      "part_b": "V4 P06 | F1 transverse hub support",
+      "id_b": "35958258-d257-4096-97be-f307ab65b28c",
+      "overlap_triangles": 137,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F2 vertical torque shaft vs F2 transverse hub support",
+      "part_a": "V3 P03 | F2 vertical torque shaft extension",
+      "id_a": "6713773c-00a5-4faf-aec7-76028685eaaa",
+      "part_b": "V4 P06 | F2 transverse hub support",
+      "id_b": "811dd923-f35b-4b31-b5e8-701018051310",
+      "overlap_triangles": 137,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F3 vertical torque shaft vs F3 transverse hub support",
+      "part_a": "V3 P03 | F3 vertical torque shaft extension",
+      "id_a": "4f2e74e7-d1ee-4bb3-b5e9-0f2a536941c2",
+      "part_b": "V4 P06 | F3 transverse hub support",
+      "id_b": "6b3f1fe3-a594-4978-80b1-24672433f980",
+      "overlap_triangles": 137,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F4 vertical torque shaft vs F4 transverse hub support",
+      "part_a": "V3 P03 | F4 vertical torque shaft extension",
+      "id_a": "88cd0c46-d11a-4ba9-ab98-8f383c29a1d9",
+      "part_b": "V4 P06 | F4 transverse hub support",
+      "id_b": "77ca1829-f6d0-4732-aace-c7d65666fee9",
+      "overlap_triangles": 137,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F1 nacelle-local gearbox vs F1 blade1 pitch link",
+      "part_a": "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+      "id_a": "1c8325df-0733-4430-8c38-08ddeaf0b0c3",
+      "part_b": "V2 P02 | F1 blade1 pitch link",
+      "id_b": "dda969c1-3ad7-4978-879c-05e23c1a828d",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 3.95,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs Ring shear diagonal outer 1",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | Ring shear diagonal outer 1",
+      "id_b": "47c54e94-7723-4586-a8ae-818aa5bf55aa",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 77.09,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs Ring shear diagonal outer 2",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | Ring shear diagonal outer 2",
+      "id_b": "f2f7cb29-29d3-4f0b-be19-d354a17f8bb5",
+      "overlap_triangles": 88,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F1 protected fuel cell vs Frame vertical web outer 1",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | Frame vertical web outer 1",
+      "id_b": "b5d8b71e-bb50-4655-a6f5-19739197357b",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 972.72,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs Frame vertical web outer 2",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | Frame vertical web outer 2",
+      "id_b": "246e45e5-863e-4c19-9241-d854bfb6e3a0",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 76.83,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs BAY1 saddle1 link inner lower",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | BAY1 saddle1 triangulated link inner lower",
+      "id_b": "f2bdef08-945a-4bc1-8c07-66e7792caca4",
+      "overlap_triangles": 60,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F1 protected fuel cell vs BAY1 saddle1 clevis-1",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P07 | BAY1 saddle1 clevis-1",
+      "id_b": "9dfa00d0-7e63-40b4-96ad-c582846e5eeb",
+      "overlap_triangles": 70,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "F2 protected fuel cell vs Ring shear diagonal outer 3",
+      "part_a": "P07 | F2 protected fuel cell",
+      "id_a": "9437eb40-2ec3-464f-940e-bd4b2b482862",
+      "part_b": "V4 P06 | Ring shear diagonal outer 3",
+      "id_b": "9b084d70-c796-416d-83c0-698b35eeb467",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 77.09,
+      "clear": true
+    },
+    {
+      "check": "F3 protected fuel cell vs Ring shear diagonal outer 5",
+      "part_a": "P07 | F3 protected fuel cell",
+      "id_a": "3bef8dbc-5ecb-4093-90d6-1f516145fdb5",
+      "part_b": "V4 P06 | Ring shear diagonal outer 5",
+      "id_b": "3009bf6b-730b-4cd9-afd6-b0c56401232b",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 77.09,
+      "clear": true
+    },
+    {
+      "check": "F4 protected fuel cell vs Ring shear diagonal outer 7",
+      "part_a": "P07 | F4 protected fuel cell",
+      "id_a": "3a2d3ed8-906c-493b-b741-3bba571d2a14",
+      "part_b": "V4 P06 | Ring shear diagonal outer 7",
+      "id_b": "f5cf434c-6ac4-4202-96a2-3fab0aa55c76",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 77.09,
+      "clear": true
+    },
+    {
+      "check": "Central fuel-feed manifold vs P03 Four way reduction gearbox",
+      "part_a": "V2 P07 | Central fuel-feed manifold (schematic)",
+      "id_a": "5fac2477-76c7-43aa-bb1a-3e0e3dd371d1",
+      "part_b": "P03 | Four way reduction gearbox",
+      "id_b": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "overlap_triangles": 3,
+      "min_clearance_mm": 0.0,
+      "clear": false
+    },
+    {
+      "check": "BAY1 supply pipe seg2 vs P01 M250 turboshaft",
+      "part_a": "V4 P07 | BAY1 protected supply pipe / segment2",
+      "id_a": "6f4565d6-8cab-4291-8dac-000d416dd217",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 212.24,
+      "clear": true
+    },
+    {
+      "check": "BAY2 supply pipe seg2 vs P01 M250 turboshaft",
+      "part_a": "V4 P07 | BAY2 protected supply pipe / segment2",
+      "id_a": "7e32fc9b-0168-45a3-8497-6b330711779a",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 212.24,
+      "clear": true
+    },
+    {
+      "check": "BAY1 supply pipe seg3 vs P11 Thermal radiator",
+      "part_a": "V4 P07 | BAY1 protected supply pipe / segment3",
+      "id_a": "34da8091-f471-477c-a6fd-593972d89b2f",
+      "part_b": "P11 | Thermal radiator",
+      "id_b": "236667ab-f00b-4f7b-8e84-5a620389f8e1",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 493.51,
+      "clear": true
+    }
+  ],
+  "r6_key_pair_audit": [
+    {
+      "check": "Central 4-way gearbox vs P05 Outer pitch ring YZ",
+      "part_a": "P03 | Four way reduction gearbox",
+      "id_a": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "part_b": "P05 | Outer pitch ring YZ",
+      "id_b": "f8357c88-3ba2-4234-94a2-8b7a2e022770",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 82.0,
+      "clear": true
+    },
+    {
+      "check": "Central 4-way gearbox vs P05 Inner roll ring XZ",
+      "part_a": "P03 | Four way reduction gearbox",
+      "id_a": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "part_b": "P05 | Inner roll ring XZ",
+      "id_b": "609814f7-9857-43d2-a91b-59b18e99e094",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 125.0,
+      "clear": true
+    },
+    {
+      "check": "Central 4-way gearbox vs P01 M250 turboshaft",
+      "part_a": "P03 | Four way reduction gearbox",
+      "id_a": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 25.0,
+      "clear": true
+    },
+    {
+      "check": "Central 4-way gearbox vs P01 Turbine heat shielding",
+      "part_a": "P03 | Four way reduction gearbox",
+      "id_a": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "part_b": "P01 | Turbine heat shielding",
+      "id_b": "aa4fa54b-5a73-4b8d-bbec-bec39a87fc8a",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 20.0,
+      "clear": true
+    },
+    {
+      "check": "Input flexible guard vs P05 Outer pitch ring YZ",
+      "part_a": "V2 P03 | Transmission input flexible guard",
+      "id_a": "81b634c8-c2fa-4578-9847-ac5a8e1e3ea6",
+      "part_b": "P05 | Outer pitch ring YZ",
+      "id_b": "f8357c88-3ba2-4234-94a2-8b7a2e022770",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 71.54,
+      "clear": true
+    },
+    {
+      "check": "F1 radial drive shaft vs LANDING leg1 pressure body",
+      "part_a": "P03 | F1 radial drive shaft",
+      "id_a": "8cd0240b-cc3a-41e4-9271-82e3d1ca2ef7",
+      "part_b": "V4 P10 | LANDING leg1 energy-absorber pressure body",
+      "id_b": "896afd0a-85e6-4f89-b4ab-efce333647d9",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 87.78,
+      "clear": true
+    },
+    {
+      "check": "F1 carbon shaft enclosure vs LANDING leg1 lower impact pivot",
+      "part_a": "P03 | F1 carbon shaft enclosure",
+      "id_a": "d71cb3a0-523c-4445-84e5-0d41eeb73277",
+      "part_b": "V4 P06 | LANDING leg1 lower impact pivot",
+      "id_b": "e5b22ef0-1779-41b7-b2b4-08d163fb23f5",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 62.01,
+      "clear": true
+    },
+    {
+      "check": "F1 carbon shaft enclosure vs LANDING leg1 dual shear route 1",
+      "part_a": "P03 | F1 carbon shaft enclosure",
+      "id_a": "d71cb3a0-523c-4445-84e5-0d41eeb73277",
+      "part_b": "V4 P06 | LANDING leg1 dual shear route 1",
+      "id_b": "5868fbd7-4c8c-436f-b1f1-bd0dfce2db58",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 99.76,
+      "clear": true
+    },
+    {
+      "check": "F3 radial drive shaft vs LANDING leg4 pressure body",
+      "part_a": "P03 | F3 radial drive shaft",
+      "id_a": "8cdf9c4d-4ea1-4e06-a1b5-1b89d358545d",
+      "part_b": "V4 P10 | LANDING leg4 energy-absorber pressure body",
+      "id_b": "f6eb9887-48ca-4a74-a981-411e4eb40beb",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 87.78,
+      "clear": true
+    },
+    {
+      "check": "F3 carbon shaft enclosure vs LANDING leg4 lower impact pivot",
+      "part_a": "P03 | F3 carbon shaft enclosure",
+      "id_a": "31153a93-2709-4a1b-9288-516729ebd188",
+      "part_b": "V4 P06 | LANDING leg4 lower impact pivot",
+      "id_b": "d93a8b10-3447-426f-9c05-ea16e0924b3e",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 62.01,
+      "clear": true
+    },
+    {
+      "check": "F2 radial drive shaft vs P01 M250 turboshaft",
+      "part_a": "P03 | F2 radial drive shaft",
+      "id_a": "1cd1ce8f-c288-41b0-b571-992b55357d03",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 43.67,
+      "clear": true
+    },
+    {
+      "check": "F2 carbon shaft enclosure vs P01 M250 turboshaft",
+      "part_a": "P03 | F2 carbon shaft enclosure",
+      "id_a": "12e4b3df-cc67-4f85-9d37-9b59f2cea29c",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 28.72,
+      "clear": true
+    },
+    {
+      "check": "F2 radial drive shaft vs P01 Turbine heat shielding",
+      "part_a": "P03 | F2 radial drive shaft",
+      "id_a": "1cd1ce8f-c288-41b0-b571-992b55357d03",
+      "part_b": "P01 | Turbine heat shielding",
+      "id_b": "aa4fa54b-5a73-4b8d-bbec-bec39a87fc8a",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 24.73,
+      "clear": true
+    },
+    {
+      "check": "F2 carbon shaft enclosure vs P01 Mount A",
+      "part_a": "P03 | F2 carbon shaft enclosure",
+      "id_a": "12e4b3df-cc67-4f85-9d37-9b59f2cea29c",
+      "part_b": "P01 | Mount A",
+      "id_b": "68eb7107-7cca-4516-a97a-21c5606caf0c",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 21.58,
+      "clear": true
+    },
+    {
+      "check": "F1 vertical torque shaft vs F1 transverse hub support",
+      "part_a": "V3 P03 | F1 vertical torque shaft extension",
+      "id_a": "421cf512-8eb4-411c-bb1c-ef6f1613ba09",
+      "part_b": "V4 P06 | F1 transverse hub support",
+      "id_b": "35958258-d257-4096-97be-f307ab65b28c",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 60.61,
+      "clear": true
+    },
+    {
+      "check": "F2 vertical torque shaft vs F2 transverse hub support",
+      "part_a": "V3 P03 | F2 vertical torque shaft extension",
+      "id_a": "6713773c-00a5-4faf-aec7-76028685eaaa",
+      "part_b": "V4 P06 | F2 transverse hub support",
+      "id_b": "811dd923-f35b-4b31-b5e8-701018051310",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 60.61,
+      "clear": true
+    },
+    {
+      "check": "F3 vertical torque shaft vs F3 transverse hub support",
+      "part_a": "V3 P03 | F3 vertical torque shaft extension",
+      "id_a": "4f2e74e7-d1ee-4bb3-b5e9-0f2a536941c2",
+      "part_b": "V4 P06 | F3 transverse hub support",
+      "id_b": "6b3f1fe3-a594-4978-80b1-24672433f980",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 60.61,
+      "clear": true
+    },
+    {
+      "check": "F4 vertical torque shaft vs F4 transverse hub support",
+      "part_a": "V3 P03 | F4 vertical torque shaft extension",
+      "id_a": "88cd0c46-d11a-4ba9-ab98-8f383c29a1d9",
+      "part_b": "V4 P06 | F4 transverse hub support",
+      "id_b": "77ca1829-f6d0-4732-aace-c7d65666fee9",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 60.61,
+      "clear": true
+    },
+    {
+      "check": "F1 nacelle-local gearbox vs F1 blade1 pitch link",
+      "part_a": "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+      "id_a": "1c8325df-0733-4430-8c38-08ddeaf0b0c3",
+      "part_b": "V2 P02 | F1 blade1 pitch link",
+      "id_b": "dda969c1-3ad7-4978-879c-05e23c1a828d",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 8.95,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs Ring shear diagonal outer 1",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | Ring shear diagonal outer 1",
+      "id_b": "47c54e94-7723-4586-a8ae-818aa5bf55aa",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 10.44,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs Ring shear diagonal outer 2",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | Ring shear diagonal outer 2",
+      "id_b": "f2f7cb29-29d3-4f0b-be19-d354a17f8bb5",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 10.44,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs Frame vertical web outer 1",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | Frame vertical web outer 1",
+      "id_b": "b5d8b71e-bb50-4655-a6f5-19739197357b",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 972.41,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs Frame vertical web outer 2",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | Frame vertical web outer 2",
+      "id_b": "246e45e5-863e-4c19-9241-d854bfb6e3a0",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 136.28,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs BAY1 saddle1 link inner lower",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P06 | BAY1 saddle1 triangulated link inner lower",
+      "id_b": "f2bdef08-945a-4bc1-8c07-66e7792caca4",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 36.61,
+      "clear": true
+    },
+    {
+      "check": "F1 protected fuel cell vs BAY1 saddle1 clevis-1",
+      "part_a": "P07 | F1 protected fuel cell",
+      "id_a": "d5f56fa0-f3f1-4f39-8a71-b9ba7dbf2e57",
+      "part_b": "V4 P07 | BAY1 saddle1 clevis-1",
+      "id_b": "9dfa00d0-7e63-40b4-96ad-c582846e5eeb",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 5.64,
+      "clear": true
+    },
+    {
+      "check": "F2 protected fuel cell vs Ring shear diagonal outer 3",
+      "part_a": "P07 | F2 protected fuel cell",
+      "id_a": "9437eb40-2ec3-464f-940e-bd4b2b482862",
+      "part_b": "V4 P06 | Ring shear diagonal outer 3",
+      "id_b": "9b084d70-c796-416d-83c0-698b35eeb467",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 10.44,
+      "clear": true
+    },
+    {
+      "check": "F3 protected fuel cell vs Ring shear diagonal outer 5",
+      "part_a": "P07 | F3 protected fuel cell",
+      "id_a": "3bef8dbc-5ecb-4093-90d6-1f516145fdb5",
+      "part_b": "V4 P06 | Ring shear diagonal outer 5",
+      "id_b": "3009bf6b-730b-4cd9-afd6-b0c56401232b",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 10.44,
+      "clear": true
+    },
+    {
+      "check": "F4 protected fuel cell vs Ring shear diagonal outer 7",
+      "part_a": "P07 | F4 protected fuel cell",
+      "id_a": "3a2d3ed8-906c-493b-b741-3bba571d2a14",
+      "part_b": "V4 P06 | Ring shear diagonal outer 7",
+      "id_b": "f5cf434c-6ac4-4202-96a2-3fab0aa55c76",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 10.44,
+      "clear": true
+    },
+    {
+      "check": "Central fuel-feed manifold vs P03 Four way reduction gearbox",
+      "part_a": "V2 P07 | Central fuel-feed manifold (schematic)",
+      "id_a": "5fac2477-76c7-43aa-bb1a-3e0e3dd371d1",
+      "part_b": "P03 | Four way reduction gearbox",
+      "id_b": "2b0d1641-e808-4021-a186-89ac0e8876e8",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 15.0,
+      "clear": true
+    },
+    {
+      "check": "BAY1 supply pipe seg2 vs P01 M250 turboshaft",
+      "part_a": "V4 P07 | BAY1 protected supply pipe / segment2",
+      "id_a": "6f4565d6-8cab-4291-8dac-000d416dd217",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 396.08,
+      "clear": true
+    },
+    {
+      "check": "BAY2 supply pipe seg2 vs P01 M250 turboshaft",
+      "part_a": "V4 P07 | BAY2 protected supply pipe / segment2",
+      "id_a": "7e32fc9b-0168-45a3-8497-6b330711779a",
+      "part_b": "P01 | M250 C30P class turboshaft schematic",
+      "id_b": "6ee83dae-2671-492e-8ae5-c095b13c7302",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 396.08,
+      "clear": true
+    },
+    {
+      "check": "BAY1 supply pipe seg3 vs P11 Thermal radiator",
+      "part_a": "V4 P07 | BAY1 protected supply pipe / segment3",
+      "id_a": "34da8091-f471-477c-a6fd-593972d89b2f",
+      "part_b": "P11 | Thermal radiator",
+      "id_b": "236667ab-f00b-4f7b-8e84-5a620389f8e1",
+      "overlap_triangles": 0,
+      "min_clearance_mm": 705.81,
+      "clear": true
+    }
+  ],
+  "r6_tilt_cone_360deg_x_20deg_audit": {
+    "F1": {
+      "pivot_m": [
+        2.5999999046325684,
+        0.0,
+        1.9799998998641968
+      ],
+      "total_overlaps_across_cone": 0,
+      "min_clearance_mm": 14.52,
+      "min_clearance_pose": {
+        "cone_deg": 20.0,
+        "azimuth_deg": 120,
+        "pair": [
+          "V3 P06 | F1 actuator 2 pivot clevis",
+          "V3 P06 | F1 static trunnion boss 1"
+        ]
+      },
+      "cone_20deg_azimuth_sweep": [
+        {
+          "azimuth_deg": 0,
+          "tx_deg": 20.0,
+          "ty_deg": 0.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 38.25,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 tensile piston",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 10,
+          "tx_deg": 19.7,
+          "ty_deg": 3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 34.07,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 tensile piston",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 20,
+          "tx_deg": 18.79,
+          "ty_deg": 6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 27.34,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 30,
+          "tx_deg": 17.32,
+          "ty_deg": 10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 21.02,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 40,
+          "tx_deg": 15.32,
+          "ty_deg": 12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 17.44,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 50,
+          "tx_deg": 12.86,
+          "ty_deg": 15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.07,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 60,
+          "tx_deg": 10.0,
+          "ty_deg": 17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 14.52,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 70,
+          "tx_deg": 6.84,
+          "ty_deg": 18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.56,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 80,
+          "tx_deg": 3.47,
+          "ty_deg": 19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.3,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 90,
+          "tx_deg": 0.0,
+          "ty_deg": 20.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.47,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 100,
+          "tx_deg": -3.47,
+          "ty_deg": 19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.3,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 110,
+          "tx_deg": -6.84,
+          "ty_deg": 18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.56,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 120,
+          "tx_deg": -10.0,
+          "ty_deg": 17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 14.52,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 130,
+          "tx_deg": -12.86,
+          "ty_deg": 15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.06,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 140,
+          "tx_deg": -15.32,
+          "ty_deg": 12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 17.44,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 150,
+          "tx_deg": -17.32,
+          "ty_deg": 10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 21.02,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 pivot clevis",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 160,
+          "tx_deg": -18.79,
+          "ty_deg": 6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 26.33,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 170,
+          "tx_deg": -19.7,
+          "ty_deg": 3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.95,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 180,
+          "tx_deg": -20.0,
+          "ty_deg": 0.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.45,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 190,
+          "tx_deg": -19.7,
+          "ty_deg": -3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.95,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 200,
+          "tx_deg": -18.79,
+          "ty_deg": -6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 26.33,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 210,
+          "tx_deg": -17.32,
+          "ty_deg": -10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 24.36,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 220,
+          "tx_deg": -15.32,
+          "ty_deg": -12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 24.25,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 230,
+          "tx_deg": -12.86,
+          "ty_deg": -15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 27.69,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 240,
+          "tx_deg": -10.0,
+          "ty_deg": -17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 30.96,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 250,
+          "tx_deg": -6.84,
+          "ty_deg": -18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 37.12,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 pivot clevis",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 260,
+          "tx_deg": -3.47,
+          "ty_deg": -19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 43.12,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 1 tensile piston",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 270,
+          "tx_deg": -0.0,
+          "ty_deg": -20.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 47.49,
+          "closest_pair": [
+            "P02 | F1 lower stator boss",
+            "V3 P06 | F1 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 280,
+          "tx_deg": 3.47,
+          "ty_deg": -19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 48.61,
+          "closest_pair": [
+            "P02 | F1 lower stator boss",
+            "V3 P06 | F1 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 290,
+          "tx_deg": 6.84,
+          "ty_deg": -18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 51.91,
+          "closest_pair": [
+            "P02 | F1 lower stator boss",
+            "V3 P06 | F1 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 300,
+          "tx_deg": 10.0,
+          "ty_deg": -17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 56.89,
+          "closest_pair": [
+            "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+            "V3 P06 | F1 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 310,
+          "tx_deg": 12.86,
+          "ty_deg": -15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 62.1,
+          "closest_pair": [
+            "P02 | F1 fixed stator vane 4",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 320,
+          "tx_deg": 15.32,
+          "ty_deg": -12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 63.45,
+          "closest_pair": [
+            "P02 | F1 fixed stator vane 4",
+            "V3 P06 | F1 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 330,
+          "tx_deg": 17.32,
+          "ty_deg": -10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 64.03,
+          "closest_pair": [
+            "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+            "V3 P06 | F1 fixed Y ring trunnion"
+          ]
+        },
+        {
+          "azimuth_deg": 340,
+          "tx_deg": 18.79,
+          "ty_deg": -6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 55.59,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 tensile piston",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 350,
+          "tx_deg": 19.7,
+          "ty_deg": -3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 45.92,
+          "closest_pair": [
+            "V3 P06 | F1 actuator 2 tensile piston",
+            "V3 P06 | F1 static trunnion boss 1"
+          ]
+        }
+      ],
+      "fine_2deg_sweep_around_min": [
+        {
+          "azimuth_deg": 110,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 112,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 114,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 116,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 118,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 120,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 122,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 124,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 126,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 128,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 130,
+          "overlap_triangles": 0
+        }
+      ]
+    },
+    "F2": {
+      "pivot_m": [
+        0.0,
+        2.5999999046325684,
+        1.9799998998641968
+      ],
+      "total_overlaps_across_cone": 0,
+      "min_clearance_mm": 14.52,
+      "min_clearance_pose": {
+        "cone_deg": 20.0,
+        "azimuth_deg": 60,
+        "pair": [
+          "V3 P06 | F2 actuator 2 pivot clevis",
+          "V3 P06 | F2 static trunnion boss 1"
+        ]
+      },
+      "cone_20deg_azimuth_sweep": [
+        {
+          "azimuth_deg": 0,
+          "tx_deg": 20.0,
+          "ty_deg": 0.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 38.25,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 tensile piston",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 10,
+          "tx_deg": 19.7,
+          "ty_deg": 3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 34.07,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 tensile piston",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 20,
+          "tx_deg": 18.79,
+          "ty_deg": 6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 27.34,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 30,
+          "tx_deg": 17.32,
+          "ty_deg": 10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 21.02,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 40,
+          "tx_deg": 15.32,
+          "ty_deg": 12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 17.44,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 50,
+          "tx_deg": 12.86,
+          "ty_deg": 15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.07,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 60,
+          "tx_deg": 10.0,
+          "ty_deg": 17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 14.52,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 70,
+          "tx_deg": 6.84,
+          "ty_deg": 18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.56,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 80,
+          "tx_deg": 3.47,
+          "ty_deg": 19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.3,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 90,
+          "tx_deg": 0.0,
+          "ty_deg": 20.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.47,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 100,
+          "tx_deg": -3.47,
+          "ty_deg": 19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.3,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 110,
+          "tx_deg": -6.84,
+          "ty_deg": 18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.56,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 120,
+          "tx_deg": -10.0,
+          "ty_deg": 17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 14.52,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 130,
+          "tx_deg": -12.86,
+          "ty_deg": 15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.07,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 140,
+          "tx_deg": -15.32,
+          "ty_deg": 12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 17.44,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 150,
+          "tx_deg": -17.32,
+          "ty_deg": 10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 21.02,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 pivot clevis",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 160,
+          "tx_deg": -18.79,
+          "ty_deg": 6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 26.33,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 170,
+          "tx_deg": -19.7,
+          "ty_deg": 3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.95,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 180,
+          "tx_deg": -20.0,
+          "ty_deg": 0.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.45,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 190,
+          "tx_deg": -19.7,
+          "ty_deg": -3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.95,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 200,
+          "tx_deg": -18.79,
+          "ty_deg": -6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 26.33,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 210,
+          "tx_deg": -17.32,
+          "ty_deg": -10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 24.36,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 220,
+          "tx_deg": -15.32,
+          "ty_deg": -12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 24.25,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 230,
+          "tx_deg": -12.86,
+          "ty_deg": -15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 27.69,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 240,
+          "tx_deg": -10.0,
+          "ty_deg": -17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 30.96,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 250,
+          "tx_deg": -6.84,
+          "ty_deg": -18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 37.12,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 pivot clevis",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 260,
+          "tx_deg": -3.47,
+          "ty_deg": -19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 43.12,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 1 tensile piston",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 270,
+          "tx_deg": -0.0,
+          "ty_deg": -20.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 47.49,
+          "closest_pair": [
+            "P02 | F2 lower stator boss",
+            "V3 P06 | F2 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 280,
+          "tx_deg": 3.47,
+          "ty_deg": -19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 48.61,
+          "closest_pair": [
+            "P02 | F2 lower stator boss",
+            "V3 P06 | F2 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 290,
+          "tx_deg": 6.84,
+          "ty_deg": -18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 51.91,
+          "closest_pair": [
+            "P02 | F2 lower stator boss",
+            "V3 P06 | F2 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 300,
+          "tx_deg": 10.0,
+          "ty_deg": -17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 56.89,
+          "closest_pair": [
+            "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+            "V3 P06 | F2 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 310,
+          "tx_deg": 12.86,
+          "ty_deg": -15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 62.1,
+          "closest_pair": [
+            "P02 | F2 fixed stator vane 4",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 320,
+          "tx_deg": 15.32,
+          "ty_deg": -12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 63.45,
+          "closest_pair": [
+            "P02 | F2 fixed stator vane 4",
+            "V3 P06 | F2 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 330,
+          "tx_deg": 17.32,
+          "ty_deg": -10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 64.03,
+          "closest_pair": [
+            "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+            "V3 P06 | F2 fixed Y ring trunnion"
+          ]
+        },
+        {
+          "azimuth_deg": 340,
+          "tx_deg": 18.79,
+          "ty_deg": -6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 55.59,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 tensile piston",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 350,
+          "tx_deg": 19.7,
+          "ty_deg": -3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 45.92,
+          "closest_pair": [
+            "V3 P06 | F2 actuator 2 tensile piston",
+            "V3 P06 | F2 static trunnion boss 1"
+          ]
+        }
+      ],
+      "fine_2deg_sweep_around_min": [
+        {
+          "azimuth_deg": 50,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 52,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 54,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 56,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 58,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 60,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 62,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 64,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 66,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 68,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 70,
+          "overlap_triangles": 0
+        }
+      ]
+    },
+    "F3": {
+      "pivot_m": [
+        -2.5999999046325684,
+        0.0,
+        1.9799998998641968
+      ],
+      "total_overlaps_across_cone": 0,
+      "min_clearance_mm": 14.52,
+      "min_clearance_pose": {
+        "cone_deg": 20.0,
+        "azimuth_deg": 120,
+        "pair": [
+          "V3 P06 | F3 actuator 2 pivot clevis",
+          "V3 P06 | F3 static trunnion boss 1"
+        ]
+      },
+      "cone_20deg_azimuth_sweep": [
+        {
+          "azimuth_deg": 0,
+          "tx_deg": 20.0,
+          "ty_deg": 0.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 38.25,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 tensile piston",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 10,
+          "tx_deg": 19.7,
+          "ty_deg": 3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 34.07,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 tensile piston",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 20,
+          "tx_deg": 18.79,
+          "ty_deg": 6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 27.34,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 30,
+          "tx_deg": 17.32,
+          "ty_deg": 10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 21.02,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 40,
+          "tx_deg": 15.32,
+          "ty_deg": 12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 17.44,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 50,
+          "tx_deg": 12.86,
+          "ty_deg": 15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.07,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 60,
+          "tx_deg": 10.0,
+          "ty_deg": 17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 14.52,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 70,
+          "tx_deg": 6.84,
+          "ty_deg": 18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.56,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 80,
+          "tx_deg": 3.47,
+          "ty_deg": 19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.3,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 90,
+          "tx_deg": 0.0,
+          "ty_deg": 20.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.47,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 100,
+          "tx_deg": -3.47,
+          "ty_deg": 19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.3,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 110,
+          "tx_deg": -6.84,
+          "ty_deg": 18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.56,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 120,
+          "tx_deg": -10.0,
+          "ty_deg": 17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 14.52,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 130,
+          "tx_deg": -12.86,
+          "ty_deg": 15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.07,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 140,
+          "tx_deg": -15.32,
+          "ty_deg": 12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 17.44,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 150,
+          "tx_deg": -17.32,
+          "ty_deg": 10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 21.02,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 pivot clevis",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 160,
+          "tx_deg": -18.79,
+          "ty_deg": 6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 26.33,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 170,
+          "tx_deg": -19.7,
+          "ty_deg": 3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.95,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 180,
+          "tx_deg": -20.0,
+          "ty_deg": 0.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.45,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 190,
+          "tx_deg": -19.7,
+          "ty_deg": -3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.95,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 200,
+          "tx_deg": -18.79,
+          "ty_deg": -6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 26.33,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 210,
+          "tx_deg": -17.32,
+          "ty_deg": -10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 24.36,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 220,
+          "tx_deg": -15.32,
+          "ty_deg": -12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 24.25,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 230,
+          "tx_deg": -12.86,
+          "ty_deg": -15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 27.69,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 240,
+          "tx_deg": -10.0,
+          "ty_deg": -17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 30.96,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 250,
+          "tx_deg": -6.84,
+          "ty_deg": -18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 37.12,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 pivot clevis",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 260,
+          "tx_deg": -3.47,
+          "ty_deg": -19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 43.12,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 1 tensile piston",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 270,
+          "tx_deg": -0.0,
+          "ty_deg": -20.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 47.49,
+          "closest_pair": [
+            "P02 | F3 lower stator boss",
+            "V3 P06 | F3 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 280,
+          "tx_deg": 3.47,
+          "ty_deg": -19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 48.61,
+          "closest_pair": [
+            "P02 | F3 lower stator boss",
+            "V3 P06 | F3 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 290,
+          "tx_deg": 6.84,
+          "ty_deg": -18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 51.91,
+          "closest_pair": [
+            "P02 | F3 lower stator boss",
+            "V3 P06 | F3 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 300,
+          "tx_deg": 10.0,
+          "ty_deg": -17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 56.89,
+          "closest_pair": [
+            "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+            "V3 P06 | F3 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 310,
+          "tx_deg": 12.86,
+          "ty_deg": -15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 62.1,
+          "closest_pair": [
+            "P02 | F3 fixed stator vane 4",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 320,
+          "tx_deg": 15.32,
+          "ty_deg": -12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 63.45,
+          "closest_pair": [
+            "P02 | F3 fixed stator vane 4",
+            "V3 P06 | F3 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 330,
+          "tx_deg": 17.32,
+          "ty_deg": -10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 64.03,
+          "closest_pair": [
+            "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+            "V3 P06 | F3 fixed Y ring trunnion"
+          ]
+        },
+        {
+          "azimuth_deg": 340,
+          "tx_deg": 18.79,
+          "ty_deg": -6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 55.59,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 tensile piston",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 350,
+          "tx_deg": 19.7,
+          "ty_deg": -3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 45.92,
+          "closest_pair": [
+            "V3 P06 | F3 actuator 2 tensile piston",
+            "V3 P06 | F3 static trunnion boss 1"
+          ]
+        }
+      ],
+      "fine_2deg_sweep_around_min": [
+        {
+          "azimuth_deg": 110,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 112,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 114,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 116,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 118,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 120,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 122,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 124,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 126,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 128,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 130,
+          "overlap_triangles": 0
+        }
+      ]
+    },
+    "F4": {
+      "pivot_m": [
+        0.0,
+        -2.5999999046325684,
+        1.9799998998641968
+      ],
+      "total_overlaps_across_cone": 0,
+      "min_clearance_mm": 14.52,
+      "min_clearance_pose": {
+        "cone_deg": 20.0,
+        "azimuth_deg": 60,
+        "pair": [
+          "V3 P06 | F4 actuator 2 pivot clevis",
+          "V3 P06 | F4 static trunnion boss 1"
+        ]
+      },
+      "cone_20deg_azimuth_sweep": [
+        {
+          "azimuth_deg": 0,
+          "tx_deg": 20.0,
+          "ty_deg": 0.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 38.25,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 tensile piston",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 10,
+          "tx_deg": 19.7,
+          "ty_deg": 3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 34.07,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 tensile piston",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 20,
+          "tx_deg": 18.79,
+          "ty_deg": 6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 27.34,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 30,
+          "tx_deg": 17.32,
+          "ty_deg": 10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 21.02,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 40,
+          "tx_deg": 15.32,
+          "ty_deg": 12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 17.44,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 50,
+          "tx_deg": 12.86,
+          "ty_deg": 15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.07,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 60,
+          "tx_deg": 10.0,
+          "ty_deg": 17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 14.52,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 70,
+          "tx_deg": 6.84,
+          "ty_deg": 18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.56,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 80,
+          "tx_deg": 3.47,
+          "ty_deg": 19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.3,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 90,
+          "tx_deg": 0.0,
+          "ty_deg": 20.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.47,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 100,
+          "tx_deg": -3.47,
+          "ty_deg": 19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 16.3,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 110,
+          "tx_deg": -6.84,
+          "ty_deg": 18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.56,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 120,
+          "tx_deg": -10.0,
+          "ty_deg": 17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 14.52,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 130,
+          "tx_deg": -12.86,
+          "ty_deg": 15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 15.07,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 140,
+          "tx_deg": -15.32,
+          "ty_deg": 12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 17.44,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 150,
+          "tx_deg": -17.32,
+          "ty_deg": 10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 21.02,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 pivot clevis",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 160,
+          "tx_deg": -18.79,
+          "ty_deg": 6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 26.33,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 170,
+          "tx_deg": -19.7,
+          "ty_deg": 3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.95,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 180,
+          "tx_deg": -20.0,
+          "ty_deg": 0.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.45,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 190,
+          "tx_deg": -19.7,
+          "ty_deg": -3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 25.95,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 200,
+          "tx_deg": -18.79,
+          "ty_deg": -6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 26.33,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 210,
+          "tx_deg": -17.32,
+          "ty_deg": -10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 24.36,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 220,
+          "tx_deg": -15.32,
+          "ty_deg": -12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 24.25,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 230,
+          "tx_deg": -12.86,
+          "ty_deg": -15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 27.69,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 240,
+          "tx_deg": -10.0,
+          "ty_deg": -17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 30.96,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 250,
+          "tx_deg": -6.84,
+          "ty_deg": -18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 37.12,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 pivot clevis",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 260,
+          "tx_deg": -3.47,
+          "ty_deg": -19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 43.12,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 1 tensile piston",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 270,
+          "tx_deg": -0.0,
+          "ty_deg": -20.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 47.49,
+          "closest_pair": [
+            "P02 | F4 lower stator boss",
+            "V3 P06 | F4 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 280,
+          "tx_deg": 3.47,
+          "ty_deg": -19.7,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 48.61,
+          "closest_pair": [
+            "P02 | F4 lower stator boss",
+            "V3 P06 | F4 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 290,
+          "tx_deg": 6.84,
+          "ty_deg": -18.79,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 51.91,
+          "closest_pair": [
+            "P02 | F4 lower stator boss",
+            "V3 P06 | F4 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 300,
+          "tx_deg": 10.0,
+          "ty_deg": -17.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 56.89,
+          "closest_pair": [
+            "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+            "V3 P06 | F4 static trunnion boss -1"
+          ]
+        },
+        {
+          "azimuth_deg": 310,
+          "tx_deg": 12.86,
+          "ty_deg": -15.32,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 62.1,
+          "closest_pair": [
+            "P02 | F4 fixed stator vane 4",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 320,
+          "tx_deg": 15.32,
+          "ty_deg": -12.86,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 63.45,
+          "closest_pair": [
+            "P02 | F4 fixed stator vane 4",
+            "V3 P06 | F4 fixed X bearing support ring"
+          ]
+        },
+        {
+          "azimuth_deg": 330,
+          "tx_deg": 17.32,
+          "ty_deg": -10.0,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 64.03,
+          "closest_pair": [
+            "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate",
+            "V3 P06 | F4 fixed Y ring trunnion"
+          ]
+        },
+        {
+          "azimuth_deg": 340,
+          "tx_deg": 18.79,
+          "ty_deg": -6.84,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 55.59,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 tensile piston",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        },
+        {
+          "azimuth_deg": 350,
+          "tx_deg": 19.7,
+          "ty_deg": -3.47,
+          "overlap_triangles": 0,
+          "min_duct_blade_to_ring_clearance_mm": 45.92,
+          "closest_pair": [
+            "V3 P06 | F4 actuator 2 tensile piston",
+            "V3 P06 | F4 static trunnion boss 1"
+          ]
+        }
+      ],
+      "fine_2deg_sweep_around_min": [
+        {
+          "azimuth_deg": 50,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 52,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 54,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 56,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 58,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 60,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 62,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 64,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 66,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 68,
+          "overlap_triangles": 0
+        },
+        {
+          "azimuth_deg": 70,
+          "overlap_triangles": 0
+        }
+      ]
+    }
+  },
+  "r6_landing_gear_stroke_audit": {
+    "leg1": {
+      "stroke_range_m": [
+        0.0,
+        0.25
+      ],
+      "overlaps_with_transmission_or_fuel": 0,
+      "min_clearance_to_transmission_or_fuel_mm": 67.02,
+      "closest_approach": {
+        "stroke_m": 0.25,
+        "gear_part": "V4 P10 | LANDING leg1 replaceable contact foot",
+        "system_part": "V2 P03 | F1 shaft bearing at R2.15"
+      }
+    },
+    "leg2": {
+      "stroke_range_m": [
+        0.0,
+        0.25
+      ],
+      "overlaps_with_transmission_or_fuel": 0,
+      "min_clearance_to_transmission_or_fuel_mm": 331.4,
+      "closest_approach": {
+        "stroke_m": 0.25,
+        "gear_part": "V4 P10 | LANDING leg2 sliding piston and hardstop",
+        "system_part": "P07 | F1 protected fuel cell"
+      }
+    },
+    "leg3": {
+      "stroke_range_m": [
+        0.0,
+        0.25
+      ],
+      "overlaps_with_transmission_or_fuel": 0,
+      "min_clearance_to_transmission_or_fuel_mm": 331.4,
+      "closest_approach": {
+        "stroke_m": 0.25,
+        "gear_part": "V4 P10 | LANDING leg3 sliding piston and hardstop",
+        "system_part": "P07 | F2 protected fuel cell"
+      }
+    },
+    "leg4": {
+      "stroke_range_m": [
+        0.0,
+        0.25
+      ],
+      "overlaps_with_transmission_or_fuel": 0,
+      "min_clearance_to_transmission_or_fuel_mm": 67.02,
+      "closest_approach": {
+        "stroke_m": 0.25,
+        "gear_part": "V4 P10 | LANDING leg4 replaceable contact foot",
+        "system_part": "V2 P03 | F3 shaft bearing at R2.15"
+      }
+    },
+    "leg5": {
+      "stroke_range_m": [
+        0.0,
+        0.25
+      ],
+      "overlaps_with_transmission_or_fuel": 0,
+      "min_clearance_to_transmission_or_fuel_mm": 331.4,
+      "closest_approach": {
+        "stroke_m": 0.25,
+        "gear_part": "V4 P10 | LANDING leg5 sliding piston and hardstop",
+        "system_part": "P07 | F3 protected fuel cell"
+      }
+    },
+    "leg6": {
+      "stroke_range_m": [
+        0.0,
+        0.25
+      ],
+      "overlaps_with_transmission_or_fuel": 0,
+      "min_clearance_to_transmission_or_fuel_mm": 331.4,
+      "closest_approach": {
+        "stroke_m": 0.25,
+        "gear_part": "V4 P10 | LANDING leg6 sliding piston and hardstop",
+        "system_part": "P07 | F4 protected fuel cell"
+      }
+    }
+  },
+  "r6_proposed_variator_envelope_audit": [
+    {
+      "component": "PROPOSED P03 | F1 20:60 4-planet epicyclic variator",
+      "center_m": [
+        2.6,
+        0.0,
+        0.48
+      ],
+      "envelope_m": {
+        "diameter_m": 0.22,
+        "length_m": 0.12
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 10.0,
+      "closest_part": "P03 | F1 bevel gearhead"
+    },
+    {
+      "component": "PROPOSED P03 | F1 EMRAX 268 motor-generator",
+      "center_m": [
+        2.6,
+        0.0,
+        0.5955
+      ],
+      "envelope_m": {
+        "diameter_m": 0.268,
+        "length_m": 0.091
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 140.0,
+      "closest_part": "P03 | F1 bevel gearhead"
+    },
+    {
+      "component": "PROPOSED P03 | F2 20:60 4-planet epicyclic variator",
+      "center_m": [
+        0.0,
+        2.6,
+        0.48
+      ],
+      "envelope_m": {
+        "diameter_m": 0.22,
+        "length_m": 0.12
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 130.0,
+      "closest_part": "P03 | F2 bevel gearhead"
+    },
+    {
+      "component": "PROPOSED P03 | F2 EMRAX 268 motor-generator",
+      "center_m": [
+        0.0,
+        2.6,
+        0.5955
+      ],
+      "envelope_m": {
+        "diameter_m": 0.268,
+        "length_m": 0.091
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 260.0,
+      "closest_part": "P03 | F2 bevel gearhead"
+    },
+    {
+      "component": "PROPOSED P03 | F3 20:60 4-planet epicyclic variator",
+      "center_m": [
+        -2.6,
+        0.0,
+        0.48
+      ],
+      "envelope_m": {
+        "diameter_m": 0.22,
+        "length_m": 0.12
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 10.0,
+      "closest_part": "P03 | F3 bevel gearhead"
+    },
+    {
+      "component": "PROPOSED P03 | F3 EMRAX 268 motor-generator",
+      "center_m": [
+        -2.6,
+        0.0,
+        0.5955
+      ],
+      "envelope_m": {
+        "diameter_m": 0.268,
+        "length_m": 0.091
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 140.0,
+      "closest_part": "P03 | F3 bevel gearhead"
+    },
+    {
+      "component": "PROPOSED P03 | F4 20:60 4-planet epicyclic variator",
+      "center_m": [
+        0.0,
+        -2.6,
+        0.48
+      ],
+      "envelope_m": {
+        "diameter_m": 0.22,
+        "length_m": 0.12
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 130.0,
+      "closest_part": "P03 | F4 bevel gearhead"
+    },
+    {
+      "component": "PROPOSED P03 | F4 EMRAX 268 motor-generator",
+      "center_m": [
+        0.0,
+        -2.6,
+        0.5955
+      ],
+      "envelope_m": {
+        "diameter_m": 0.268,
+        "length_m": 0.091
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 260.0,
+      "closest_part": "P03 | F4 bevel gearhead"
+    },
+    {
+      "component": "PROPOSED P11 | Dual SiC trim inverter F1/F4",
+      "center_m": [
+        0.82,
+        -0.38,
+        0.38
+      ],
+      "envelope_m": {
+        "dimensions_m": [
+          0.3,
+          0.22,
+          0.12
+        ]
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 104.0,
+      "closest_part": "P03 | F1 carbon shaft enclosure"
+    },
+    {
+      "component": "PROPOSED P11 | Dual SiC trim inverter F2/F3",
+      "center_m": [
+        -0.82,
+        0.38,
+        0.38
+      ],
+      "envelope_m": {
+        "dimensions_m": [
+          0.3,
+          0.22,
+          0.12
+        ]
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 104.0,
+      "closest_part": "P03 | F3 carbon shaft enclosure"
+    },
+    {
+      "component": "PROPOSED P03 | Regenerative DC link & oil/coolant pump A",
+      "center_m": [
+        -0.82,
+        -0.38,
+        0.38
+      ],
+      "envelope_m": {
+        "dimensions_m": [
+          0.26,
+          0.2,
+          0.14
+        ]
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 171.12,
+      "closest_part": "V4 P07 | BAY3 protected supply pipe / segment2"
+    },
+    {
+      "component": "PROPOSED P03 | Regenerative DC link & oil/coolant pump B",
+      "center_m": [
+        0.82,
+        0.38,
+        0.38
+      ],
+      "envelope_m": {
+        "dimensions_m": [
+          0.26,
+          0.2,
+          0.14
+        ]
+      },
+      "non_coaxial_overlaps": 0,
+      "min_structural_clearance_mm": 171.12,
+      "closest_part": "V4 P07 | BAY1 protected supply pipe / segment2"
+    }
+  ],
+  "summary": {
+    "r5_failing_key_pairs": 21,
+    "r6_failing_key_pairs": 0,
+    "r6_tilt_cone_overlaps": 0,
+    "r6_gear_stroke_overlaps": 0,
+    "r6_variator_envelope_overlaps": 0
+  }
+}
