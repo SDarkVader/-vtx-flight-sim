@@ -21,6 +21,6 @@ def open_when_ready(server):
 
 if __name__=='__main__':
     import uvicorn
-    server=uvicorn.Server(uvicorn.Config('vtx.live_server:app',host='127.0.0.1',port=8765,log_level='warning'))
+    server=uvicorn.Server(uvicorn.Config('vtx.live_server:app',host='0.0.0.0',port=8765,log_level='warning'))
     threading.Thread(target=open_when_ready,args=(server,),daemon=True).start()
     server.run()

@@ -12,7 +12,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 import mujoco as mj
 import numpy as np
-from scipy.spatial.transform import Rotation
+from ._rotation import Rotation
 from .aero import BladeElementModel, ideal_hover
 from .world import TestWorld
 from .governor import ShaftGovernor
