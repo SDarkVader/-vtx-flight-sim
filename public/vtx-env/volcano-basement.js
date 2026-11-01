@@ -1,8 +1,9 @@
-// The Volcanic Above-Ground "Vader's Taxi's Basement"
-// A surreal volcanic caldera soaring above the landscape, housing the eccentric
-// underground headquarters with its steampunk signage, flowing molten lava falls,
-// Victorian iron/glass vault arches, swimming sky-whale, blooming cherry blossom tree,
-// subway station platform, and hanging robot masks with fiery glowing eyes.
+// The Volcanic Above-Ground Mountain housing the Subterranean "Vader's Taxi's Basement"
+// The volcano is a towering mountain on the terrain, but inside is a fully enclosed
+// underground cavernous headquarters: an enclosed subterranean subway flight chamber
+// with steampunk signage, roaring molten lava falls, Victorian cast-iron and glass vault arches,
+// swimming sky-whale, blooming cherry blossom tree, subway station platform (地下鉄 Platform 3),
+// and hanging robot masks with fiery glowing eyes.
 
 import * as THREE from 'three';
 import {
@@ -19,73 +20,212 @@ export function buildVolcanoBasement(scene, world) {
   const group = new THREE.Group();
   group.name = 'vtx-volcano-basement';
 
-  // Position: North of the airfield on the ascending ridge, directly in view from Stand 1 and runway
+  // Position: North of the airfield on the ascending ridge (in full view from Stand 1 and runway)
   const CX = -30, CY = 350, BASE_Z = 12;
   group.position.set(CX, CY, BASE_Z);
 
   const updaters = [];
 
   // =========================================================================
-  // 1. Outer Volcanic Caldera & Stepped Basalt Cone
+  // 1. Exterior Volcanic Mountain (Enclosed peak, rugged basalt crags & glowing fissures)
   // =========================================================================
   const basaltMat = new THREE.MeshStandardMaterial({
     map: volcanoBasaltTexture(),
-    roughness: 0.88,
+    roughness: 0.9,
     metalness: 0.15,
   });
-  basaltMat.map.repeat.set(4, 2);
+  basaltMat.map.repeat.set(4, 3);
 
-  // Outer cone geometry with an open top and a massive South-facing cavern mouth portal
-  const outerR = 82, innerR = 46, rimZ = 58;
-  const coneGeom = new THREE.CylinderGeometry(innerR, outerR, rimZ, 48, 12, true);
-  coneGeom.rotateX(Math.PI / 2);
-  coneGeom.translate(0, 0, rimZ / 2);
+  // Outer mountain geometry: a massive volcanic mountain cone rising to a craggy closed dome peak
+  const mountainBaseR = 88, mountainPeakR = 14, mountainH = 64;
+  const mountainGeom = new THREE.CylinderGeometry(mountainPeakR, mountainBaseR, mountainH, 48, 16, false);
+  mountainGeom.rotateX(Math.PI / 2);
+  mountainGeom.translate(0, 0, mountainH / 2);
 
-  // Carve out jagged basalt crags and a giant southern arch entrance
-  const pos = coneGeom.attributes.position;
-  const rGen = rng(991);
-  for (let i = 0; i < pos.count; i++) {
-    let x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+  // Deform mountain surface into crags and carve out the South entrance tunnel portal
+  const mPos = mountainGeom.attributes.position;
+  const rGen = rng(337);
+  for (let i = 0; i < mPos.count; i++) {
+    let x = mPos.getX(i), y = mPos.getY(i), z = mPos.getZ(i);
     const angle = Math.atan2(y, x);
-    const rad = Math.hypot(x, y);
+    const dist2D = Math.hypot(x, y);
 
-    // Southern arch entrance portal facing airfield (angle ~ -Math.PI / 2)
-    const isSouthPortal = Math.abs(angle - (-Math.PI / 2)) < 0.42 && z < 38;
-    if (isSouthPortal) {
-      const archFactor = Math.cos((angle - (-Math.PI / 2)) / 0.42 * Math.PI / 2);
-      if (z < 34 * archFactor) {
-        // Push vertices outward/upward to open the giant portal arch
-        pos.setZ(i, Math.max(z, 32 * archFactor));
+    // Carve out tunnel mouth portal on South slope (angle ~ -Math.PI / 2, y < -40)
+    const isSouthTunnel = Math.abs(angle - (-Math.PI / 2)) < 0.28 && z < 22;
+    if (isSouthTunnel) {
+      const arch = Math.cos((angle - (-Math.PI / 2)) / 0.28 * Math.PI / 2);
+      if (z < 18 * arch) {
+        // Open the tunnel entrance portal
+        mPos.setZ(i, Math.max(z, 18 * arch));
       }
     }
 
-    // Basalt column faceted noise
-    const noise = (rGen() - 0.5) * 4.5;
-    pos.setXYZ(i, x + Math.cos(angle) * noise, y + Math.sin(angle) * noise, pos.getZ(i));
+    // Basalt ridge crags and jagged mountain facets
+    const crag = (rGen() - 0.5) * 5.2;
+    mPos.setXYZ(i, x + Math.cos(angle) * crag, y + Math.sin(angle) * crag, mPos.getZ(i));
   }
-  coneGeom.computeVertexNormals();
+  mountainGeom.computeVertexNormals();
 
-  const outerCone = new THREE.Mesh(coneGeom, basaltMat);
-  outerCone.castShadow = true;
-  outerCone.receiveShadow = true;
-  group.add(outerCone);
+  const outerMountain = new THREE.Mesh(mountainGeom, basaltMat);
+  outerMountain.castShadow = true;
+  outerMountain.receiveShadow = true;
+  group.add(outerMountain);
 
-  // Rim basalt crags and jagged crest
-  const rimRingGeom = new THREE.TorusGeometry(innerR + 1, 3.8, 10, 48);
-  rimRingGeom.translate(0, 0, rimZ);
-  const rimRing = new THREE.Mesh(rimRingGeom, basaltMat);
-  rimRing.castShadow = true;
-  group.add(rimRing);
+  // Mountain peak craggy dome cap (completely closing the volcano on top)
+  const peakCapGeom = new THREE.ConeGeometry(mountainPeakR + 2, 8, 24);
+  peakCapGeom.rotateX(Math.PI / 2);
+  peakCapGeom.translate(0, 0, mountainH + 4);
+  const peakCap = new THREE.Mesh(peakCapGeom, basaltMat);
+  peakCap.castShadow = true;
+  group.add(peakCap);
 
-  // Caldera interior floor: basalt slab with cracks
-  const floorGeom = new THREE.CircleGeometry(innerR + 4, 36);
-  floorGeom.translate(0, 0, 0.4);
-  const floor = new THREE.Mesh(floorGeom, basaltMat);
-  floor.receiveShadow = true;
-  group.add(floor);
+  // Glowing lava fissure running down the exterior mountain ridge
+  const fissureMat = new THREE.MeshStandardMaterial({
+    color: '#ff3300',
+    emissive: '#ff5500',
+    emissiveIntensity: 3.5,
+    roughness: 0.2,
+  });
+  const extFissureGeom = new THREE.BoxGeometry(1.6, 52, 0.4);
+  extFissureGeom.rotateZ(Math.PI / 6);
+  extFissureGeom.translate(32, 28, 30);
+  group.add(new THREE.Mesh(extFissureGeom, fissureMat));
 
   // =========================================================================
-  // 2. Molten Lava Waterfall & Boiling Magma Pool
+  // 2. Industrial Tunnel Entrance Portal (Leading into the Underground Cavern)
+  // =========================================================================
+  const portalGroup = new THREE.Group();
+  portalGroup.position.set(0, -62, 0);
+
+  const ironMat = new THREE.MeshStandardMaterial({
+    color: '#24282c',
+    metalness: 0.8,
+    roughness: 0.4,
+  });
+
+  // Reinforced tunnel portal frame
+  const portalW = 24, portalH = 18, portalD = 4;
+  const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(2.4, portalD, portalH), ironMat);
+  frameLeft.position.set(-portalW / 2 + 1.2, 0, portalH / 2);
+  portalGroup.add(frameLeft);
+
+  const frameRight = new THREE.Mesh(new THREE.BoxGeometry(2.4, portalD, portalH), ironMat);
+  frameRight.position.set(portalW / 2 - 1.2, 0, portalH / 2);
+  portalGroup.add(frameRight);
+
+  const frameArch = new THREE.Mesh(new THREE.BoxGeometry(portalW, portalD, 2.5), ironMat);
+  frameArch.position.set(0, 0, portalH - 1.25);
+  portalGroup.add(frameArch);
+
+  // Entrance Hazard Striping Header & Sign
+  const portalCanvas = document.createElement('canvas');
+  portalCanvas.width = 1024; portalCanvas.height = 256;
+  const pc = portalCanvas.getContext('2d');
+  pc.fillStyle = '#111315'; pc.fillRect(0, 0, 1024, 256);
+  // Yellow/black diagonal hazard stripes
+  pc.fillStyle = '#f5b800'; pc.fillRect(0, 0, 1024, 40); pc.fillRect(0, 216, 1024, 40);
+  pc.fillStyle = '#000000';
+  for (let x = -40; x < 1060; x += 60) {
+    pc.beginPath(); pc.moveTo(x, 0); pc.lineTo(x + 30, 0); pc.lineTo(x + 10, 40); pc.lineTo(x - 20, 40); pc.fill();
+    pc.beginPath(); pc.moveTo(x, 216); pc.lineTo(x + 30, 216); pc.lineTo(x + 10, 256); pc.lineTo(x - 20, 256); pc.fill();
+  }
+  // Title
+  pc.font = 'bold 58px "Arial Black", Impact, sans-serif';
+  pc.fillStyle = '#f5b800'; pc.textAlign = 'center';
+  pc.fillText("VADER'S TAXIS · VOLCANO BASEMENT", 512, 115);
+  pc.font = 'bold 28px monospace';
+  pc.fillStyle = '#ffffff';
+  pc.fillText("SUBTERRANEAN FLIGHT FACILITY · CLEARANCE 16M", 512, 168);
+  pc.font = 'bold 20px monospace';
+  pc.fillStyle = '#ff4422';
+  pc.fillText("CAUTION: ACTIVE GEOTHERMAL DRAFT & LEVIATHAN CROSSING", 512, 202);
+
+  const portalSignTex = new THREE.CanvasTexture(portalCanvas);
+  const portalSignMat = new THREE.MeshStandardMaterial({
+    map: portalSignTex,
+    emissiveMap: portalSignTex,
+    emissive: new THREE.Color('#ffffff'),
+    emissiveIntensity: 0.9,
+    roughness: 0.3,
+  });
+  const portalSignMesh = new THREE.Mesh(new THREE.PlaneGeometry(portalW - 2, 4.5), portalSignMat);
+  portalSignMesh.position.set(0, -portalD / 2 - 0.05, portalH - 2.25);
+  portalGroup.add(portalSignMesh);
+
+  // Portal Entrance Sodium Floodlights
+  for (const lx of [-portalW / 2 + 2, portalW / 2 - 2]) {
+    const pLamp = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: '#111', emissive: '#ffd28a', emissiveIntensity: 4 }));
+    pLamp.position.set(lx, -portalD / 2 - 0.2, portalH - 0.5);
+    portalGroup.add(pLamp);
+  }
+  const portalLight = new THREE.PointLight('#ffd28a', 4.5, 45, 1.2);
+  portalLight.position.set(0, -portalD - 2, portalH / 2);
+  portalGroup.add(portalLight);
+
+  // Rock-cut Entrance Tunnel Throat connecting outer portal to inner cavern
+  const tunnelL = 36, tunnelW = 22, tunnelH = 17;
+  const tunnelGeom = new THREE.BoxGeometry(tunnelW, tunnelL, tunnelH);
+  // Invert normals for interior tunnel walls
+  const tunnelMat = new THREE.MeshStandardMaterial({
+    map: volcanoBasaltTexture(),
+    roughness: 0.9,
+    side: THREE.BackSide,
+  });
+  const tunnel = new THREE.Mesh(tunnelGeom, tunnelMat);
+  tunnel.position.set(0, -42, tunnelH / 2);
+  portalGroup.add(tunnel);
+
+  // Tunnel Floor with yellow centerline guidance marking
+  const tFloorCanvas = document.createElement('canvas');
+  tFloorCanvas.width = 256; tFloorCanvas.height = 512;
+  const tfc = tFloorCanvas.getContext('2d');
+  tfc.fillStyle = '#222528'; tfc.fillRect(0, 0, 256, 512);
+  tfc.fillStyle = '#f5b800';
+  for (let y = 20; y < 512; y += 60) tfc.fillRect(124, y, 8, 35);
+  const tunnelFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(tunnelW, tunnelL),
+    new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(tFloorCanvas), roughness: 0.6 })
+  );
+  tunnelFloor.position.set(0, -42, 0.2);
+  portalGroup.add(tunnelFloor);
+
+  group.add(portalGroup);
+
+  // =========================================================================
+  // 3. The Enclosed Underground Cavern (Vaulted Rock Ceiling, No Sky Overhead!)
+  // =========================================================================
+  // Cavern Dimensions: 92m wide, 96m long, vaulting up to 50m height
+  const cavernW = 90, cavernL = 94, cavernVaultH = 50;
+
+  // Inverted rocky cavern ceiling dome (completely encloses the underground chamber)
+  const cavernVaultGeom = new THREE.SphereGeometry(cavernW * 0.55, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.48);
+  cavernVaultGeom.scale(1.0, 1.05, 0.95);
+  cavernVaultGeom.rotateX(Math.PI);
+  cavernVaultGeom.translate(0, 6, cavernVaultH);
+
+  const cavernMat = new THREE.MeshStandardMaterial({
+    map: volcanoBasaltTexture(),
+    roughness: 0.92,
+    metalness: 0.1,
+    side: THREE.FrontSide, // Since geometry was scaled/inverted to face inward
+  });
+  cavernMat.map.repeat.set(6, 4);
+
+  const cavernCeiling = new THREE.Mesh(cavernVaultGeom, cavernMat);
+  cavernCeiling.receiveShadow = true;
+  group.add(cavernCeiling);
+
+  // Cavern basalt floor
+  const cavernFloor = new THREE.Mesh(
+    new THREE.CircleGeometry(cavernW * 0.52, 40),
+    new THREE.MeshStandardMaterial({ map: volcanoBasaltTexture(), roughness: 0.85 })
+  );
+  cavernFloor.position.set(0, 6, 0.4);
+  cavernFloor.receiveShadow = true;
+  group.add(cavernFloor);
+
+  // =========================================================================
+  // 4. Molten Lava Waterfall & Boiling Magma Pool (Inside the Underground Cavern)
   // =========================================================================
   const lavaTex = lavaTexture();
   const lavaEmissiveTex = lavaTexture();
@@ -93,87 +233,76 @@ export function buildVolcanoBasement(scene, world) {
     map: lavaTex,
     emissiveMap: lavaEmissiveTex,
     emissive: new THREE.Color('#ff4800'),
-    emissiveIntensity: 2.8,
+    emissiveIntensity: 3.2,
     roughness: 0.35,
     metalness: 0.2,
   });
   lavaTex.repeat.set(2, 4);
   lavaEmissiveTex.repeat.set(2, 4);
 
-  // Massive vertical curved lava cascade pouring down the northern interior wall
-  const fallW = 32, fallH = 54, fallR = innerR - 2;
-  const fallGeom = new THREE.CylinderGeometry(fallR, fallR, fallH, 24, 16, true, Math.PI * 0.25, Math.PI * 0.5);
-  fallGeom.rotateX(Math.PI / 2);
+  // Vertical molten lava cascade pouring down the underground basalt back wall from an upper fissure
+  const fallW = 34, fallH = 46;
+  const fallGeom = new THREE.PlaneGeometry(fallW, fallH, 20, 20);
   fallGeom.translate(0, 0, fallH / 2 + 1);
   const lavaFall = new THREE.Mesh(fallGeom, lavaMat);
-  lavaFall.castShadow = false;
+  lavaFall.position.set(0, 42, 0);
+  lavaFall.rotation.y = Math.PI; // Face South into the cavern
   group.add(lavaFall);
 
-  // Boiling Magma Plunge Pool at base
-  const poolGeom = new THREE.PlaneGeometry(36, 22, 16, 16);
+  // Boiling Magma Pool at the foot of the underground waterfall
+  const poolGeom = new THREE.PlaneGeometry(42, 24, 16, 16);
   const pool = new THREE.Mesh(poolGeom, lavaMat);
-  pool.position.set(0, 20, 0.8);
+  pool.position.set(0, 34, 0.8);
   pool.receiveShadow = true;
   group.add(pool);
 
-  // Point light for dramatic volcanic illumination inside the chamber
-  const lavaLight = new THREE.PointLight('#ff5511', 8.0, 95, 1.2);
-  lavaLight.position.set(0, 15, 14);
+  // Powerful volcanic geothermal point light casting fiery orange light through the underground hall
+  const lavaLight = new THREE.PointLight('#ff5511', 9.5, 110, 1.1);
+  lavaLight.position.set(0, 28, 16);
   group.add(lavaLight);
 
-  // Secondary amber ambient glow
-  const rimLight = new THREE.PointLight('#ff8822', 4.5, 75, 1.4);
-  rimLight.position.set(0, -10, 32);
-  group.add(rimLight);
+  // Ambient cavern fill light (deep embers)
+  const cavernAmber = new THREE.PointLight('#ff8822', 4.8, 80, 1.3);
+  cavernAmber.position.set(0, -10, 28);
+  group.add(cavernAmber);
 
   // Animate lava flow downwards in UV coordinates
   updaters.push((t, dt) => {
-    lavaTex.offset.y -= dt * 0.22;
-    lavaEmissiveTex.offset.y -= dt * 0.22;
-    // Molten light pulse
-    lavaLight.intensity = 7.5 + Math.sin(t * 5.0) * 1.2 + Math.cos(t * 8.3) * 0.8;
+    lavaTex.offset.y -= dt * 0.25;
+    lavaEmissiveTex.offset.y -= dt * 0.25;
+    lavaLight.intensity = 8.8 + Math.sin(t * 4.8) * 1.5 + Math.cos(t * 7.5) * 0.9;
   });
 
   // =========================================================================
-  // 3. Victorian Arched Iron & Glass Vault Structure
+  // 5. Victorian Arched Cast-Iron Vault Ribs (Spanning the Underground Ceiling)
   // =========================================================================
-  const ironMat = new THREE.MeshStandardMaterial({
-    color: '#22272c',
-    metalness: 0.75,
-    roughness: 0.45,
-  });
-  const glassMat = new THREE.MeshPhysicalMaterial({
-    color: '#659ea8',
-    transmission: 0.72,
-    opacity: 0.85,
-    transparent: true,
-    roughness: 0.22,
-    metalness: 0.1,
-    ior: 1.5,
+  const vaultIronMat = new THREE.MeshStandardMaterial({
+    color: '#1a1e22',
+    metalness: 0.85,
+    roughness: 0.4,
   });
 
-  // 5 Curved cast-iron structural rib arches spanning the caldera
-  const ribCount = 5;
+  // 6 Massive cast-iron structural rib arches spanning the underground cavern
+  const ribCount = 6;
   for (let r = 0; r < ribCount; r++) {
-    const ry = -24 + r * 12;
+    const ry = -28 + r * 14;
     const archRadius = 38;
-    const ribGeom = new THREE.TorusGeometry(archRadius, 0.45, 8, 32, Math.PI);
+    const ribGeom = new THREE.TorusGeometry(archRadius, 0.5, 8, 36, Math.PI);
     ribGeom.rotateY(Math.PI / 2);
     ribGeom.translate(0, ry, 0);
 
-    const rib = new THREE.Mesh(ribGeom, ironMat);
-    rib.position.set(0, 0, 0);
+    const rib = new THREE.Mesh(ribGeom, vaultIronMat);
     rib.castShadow = true;
     group.add(rib);
 
-    // Cross struts and lattice trusses connecting the arches
+    // Cross-struts and lattice girders
     if (r < ribCount - 1) {
-      for (let a = 0.2; a < Math.PI; a += 0.45) {
-        const strutGeom = new THREE.CylinderGeometry(0.18, 0.18, 12, 6);
-        const strut = new THREE.Mesh(strutGeom, ironMat);
+      for (let a = 0.25; a < Math.PI; a += 0.4) {
+        const strutGeom = new THREE.CylinderGeometry(0.18, 0.18, 14, 6);
+        const strut = new THREE.Mesh(strutGeom, vaultIronMat);
         const sx = Math.cos(a) * archRadius;
         const sz = Math.sin(a) * archRadius;
-        strut.position.set(sx, ry + 6, sz);
+        strut.position.set(sx, ry + 7, sz);
         strut.rotateX(Math.PI / 2);
         group.add(strut);
       }
@@ -181,51 +310,49 @@ export function buildVolcanoBasement(scene, world) {
   }
 
   // =========================================================================
-  // 4. Steampunk "Vader's Taxi's Basement" Sign with Rotating Brass Gears
+  // 6. Steampunk "Vader's Taxi's Basement" Sign with Rotating Brass Gears
   // =========================================================================
   const signTex = basementSignTexture();
   const signMat = new THREE.MeshStandardMaterial({
     map: signTex,
-    roughness: 0.5,
-    metalness: 0.35,
+    roughness: 0.45,
+    metalness: 0.4,
     emissiveMap: signTex,
     emissive: new THREE.Color('#ffffff'),
-    emissiveIntensity: 0.65,
+    emissiveIntensity: 0.75,
   });
 
   const signW = 28, signH = 14;
   const signMesh = new THREE.Mesh(new THREE.PlaneGeometry(signW, signH), signMat);
-  signMesh.position.set(0, 16, 36);
-  signMesh.rotation.y = Math.PI; // Face South toward the entrance portal!
+  signMesh.position.set(0, 24, 32);
+  signMesh.rotation.y = Math.PI; // Face South toward the entrance tunnel
   signMesh.castShadow = true;
   group.add(signMesh);
 
-  // Steampunk Brass Gears mounted on the corners that actually rotate
+  // Rotating brass gears mounted on the sign corners
   const gearMat = new THREE.MeshStandardMaterial({
     color: '#d4af37',
-    metalness: 0.8,
-    roughness: 0.3,
+    metalness: 0.85,
+    roughness: 0.28,
   });
 
   const gears = [];
   const gearCoords = [
-    { x: -12.5, z: 41, r: 2.2, speed: 0.8, teeth: 12 },
-    { x: -10.2, z: 43.5, r: 1.4, speed: -1.25, teeth: 8 },
-    { x: 12.5, z: 41, r: 2.2, speed: -0.8, teeth: 12 },
-    { x: 10.2, z: 43.5, r: 1.4, speed: 1.25, teeth: 8 },
+    { x: -12.5, z: 37, r: 2.2, speed: 0.8, teeth: 12 },
+    { x: -10.2, z: 39.5, r: 1.4, speed: -1.25, teeth: 8 },
+    { x: 12.5, z: 37, r: 2.2, speed: -0.8, teeth: 12 },
+    { x: 10.2, z: 39.5, r: 1.4, speed: 1.25, teeth: 8 },
   ];
 
   for (const gc of gearCoords) {
     const gearGroup = new THREE.Group();
-    gearGroup.position.set(gc.x, 15.9, gc.z);
+    gearGroup.position.set(gc.x, 23.9, gc.z);
     gearGroup.rotation.y = Math.PI;
 
-    // Center disc
     const disc = new THREE.Mesh(new THREE.CylinderGeometry(gc.r, gc.r, 0.25, 16), gearMat);
     disc.rotateX(Math.PI / 2);
     gearGroup.add(disc);
 
-    // Teeth
     for (let t = 0; t < gc.teeth; t++) {
       const ta = (t / gc.teeth) * Math.PI * 2;
       const tooth = new THREE.Mesh(new THREE.BoxGeometry(gc.r * 0.28, gc.r * 0.45, 0.22), gearMat);
@@ -239,36 +366,33 @@ export function buildVolcanoBasement(scene, world) {
   }
 
   updaters.push((t, dt) => {
-    for (const g of gears) {
-      g.mesh.rotation.z += g.speed * dt;
-    }
+    for (const g of gears) g.mesh.rotation.z += g.speed * dt;
   });
 
-  // Hanging heavy iron chains holding the sign
+  // Heavy suspension chains anchored to the underground cavern vault
   const chainMat = new THREE.MeshStandardMaterial({ color: '#16191c', metalness: 0.9, roughness: 0.4 });
   for (const cx of [-11, 11]) {
-    const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 16, 6), chainMat);
-    chain.position.set(cx, 16, 46);
+    const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 14, 6), chainMat);
+    chain.position.set(cx, 24, 41);
     group.add(chain);
   }
 
   // =========================================================================
-  // 5. The Majestic Swimming SKY-WHALE ("Nordeus" / VTX Leviathan)
+  // 7. The Majestic Swimming SKY-WHALE ("Nordeus" / VTX Leviathan)
   // =========================================================================
   const whaleGroup = new THREE.Group();
   whaleGroup.name = 'vtx-sky-whale';
 
   const whaleSkinMat = new THREE.MeshStandardMaterial({
-    color: '#283642',
-    roughness: 0.4,
-    metalness: 0.15,
+    color: '#263440',
+    roughness: 0.38,
+    metalness: 0.18,
   });
   const bellyMat = new THREE.MeshStandardMaterial({
-    color: '#d0d8dc',
-    roughness: 0.5,
+    color: '#d4dde2',
+    roughness: 0.48,
   });
 
-  // Torpedo whale body
   const bodyLen = 22, bodyRad = 4.2;
   const whaleBodyGeom = new THREE.SphereGeometry(bodyRad, 24, 16);
   whaleBodyGeom.scale(1.0, 2.6, 0.9);
@@ -282,8 +406,7 @@ export function buildVolcanoBasement(scene, world) {
   bellyGeom.scale(0.95, 2.2, 0.85);
   bellyGeom.rotateX(Math.PI / 2);
   bellyGeom.translate(0, 0, -0.4);
-  const belly = new THREE.Mesh(bellyGeom, bellyMat);
-  whaleGroup.add(belly);
+  whaleGroup.add(new THREE.Mesh(bellyGeom, bellyMat));
 
   // Dorsal fin
   const dorsalGeom = new THREE.ConeGeometry(1.2, 3.2, 6);
@@ -291,24 +414,22 @@ export function buildVolcanoBasement(scene, world) {
   dorsalGeom.translate(0, -2, bodyRad + 0.6);
   whaleGroup.add(new THREE.Mesh(dorsalGeom, whaleSkinMat));
 
-  // Pectoral flippers (wings that gently stroke)
+  // Pectoral flippers (wings that stroke)
   const leftFlipperGroup = new THREE.Group();
   leftFlipperGroup.position.set(bodyRad * 0.8, 3.5, -1.0);
   const flipperGeom = new THREE.BoxGeometry(6.5, 1.8, 0.35);
   flipperGeom.translate(3.25, -0.2, 0);
-  const leftFlipper = new THREE.Mesh(flipperGeom, whaleSkinMat);
-  leftFlipperGroup.add(leftFlipper);
+  leftFlipperGroup.add(new THREE.Mesh(flipperGeom, whaleSkinMat));
   whaleGroup.add(leftFlipperGroup);
 
   const rightFlipperGroup = new THREE.Group();
   rightFlipperGroup.position.set(-bodyRad * 0.8, 3.5, -1.0);
   const rightFlipperGeom = flipperGeom.clone();
   rightFlipperGeom.scale(-1, 1, 1);
-  const rightFlipper = new THREE.Mesh(rightFlipperGeom, whaleSkinMat);
-  rightFlipperGroup.add(rightFlipper);
+  rightFlipperGroup.add(new THREE.Mesh(rightFlipperGeom, whaleSkinMat));
   whaleGroup.add(rightFlipperGroup);
 
-  // Tail peduncle & flukes that undulate
+  // Tail peduncle & undulating flukes
   const tailGroup = new THREE.Group();
   tailGroup.position.set(0, -bodyLen * 0.48, 0);
 
@@ -319,11 +440,10 @@ export function buildVolcanoBasement(scene, world) {
 
   const flukesGeom = new THREE.BoxGeometry(9.0, 2.4, 0.4);
   flukesGeom.translate(0, -7.5, 0);
-  const flukes = new THREE.Mesh(flukesGeom, whaleSkinMat);
-  tailGroup.add(flukes);
+  tailGroup.add(new THREE.Mesh(flukesGeom, whaleSkinMat));
   whaleGroup.add(tailGroup);
 
-  // Nordeus / VTX flank lettering
+  // Nordeus flank lettering
   const flankCanvas = document.createElement('canvas');
   flankCanvas.width = 512; flankCanvas.height = 128;
   const fg = flankCanvas.getContext('2d');
@@ -352,66 +472,64 @@ export function buildVolcanoBasement(scene, world) {
 
   group.add(whaleGroup);
 
-  // Whale swimming motion in a lazy ellipse inside the caldera
+  // Whale swimming motion in a lazy subterranean orbit inside the cavern
   updaters.push((t, dt) => {
-    const swimSpeed = 0.28;
+    const swimSpeed = 0.26;
     const a = t * swimSpeed;
-    const orbitR_x = 24;
-    const orbitR_y = 20;
+    const orbitR_x = 22;
+    const orbitR_y = 18;
 
     whaleGroup.position.set(
       Math.cos(a) * orbitR_x,
-      Math.sin(a) * orbitR_y,
-      30 + Math.sin(a * 2.0) * 4.5
+      6 + Math.sin(a) * orbitR_y,
+      27 + Math.sin(a * 2.0) * 3.8
     );
 
-    // Tangent orientation
     const heading = a + Math.PI / 2;
     whaleGroup.rotation.set(
-      Math.sin(a * 2.0) * 0.15,
-      Math.cos(a) * 0.2,
+      Math.sin(a * 2.0) * 0.14,
+      Math.cos(a) * 0.18,
       heading
     );
 
-    // Swimming strokes
     const stroke = Math.sin(t * 2.5);
     tailGroup.rotation.x = stroke * 0.35;
-    leftFlipperGroup.rotation.y = stroke * 0.25;
-    rightFlipperGroup.rotation.y = -stroke * 0.25;
+    leftFlipperGroup.rotation.y = stroke * 0.22;
+    rightFlipperGroup.rotation.y = -stroke * 0.22;
   });
 
   // =========================================================================
-  // 6. Subway Platform ("地下鉄" / Platform 3) with Flooded Tracks
+  // 8. Subterranean Subway Platform ("地下鉄" / Platform 3) with Flooded Tracks
   // =========================================================================
-  const platformW = 12, platformL = 38, platformH = 1.4;
+  const platformW = 12, platformL = 42, platformH = 1.4;
   const platformMat = new THREE.MeshStandardMaterial({
-    color: '#34383c',
-    roughness: 0.75,
+    color: '#303438',
+    roughness: 0.78,
   });
 
   const platform = new THREE.Mesh(new THREE.BoxGeometry(platformW, platformL, platformH), platformMat);
-  platform.position.set(-22, -4, platformH / 2);
+  platform.position.set(-24, 4, platformH / 2);
   platform.receiveShadow = true;
   group.add(platform);
 
-  // Platform tactile edge paving & yellow hazard line
+  // Platform tactile yellow hazard line
   const edgePaving = new THREE.Mesh(new THREE.BoxGeometry(0.8, platformL, 0.05), new THREE.MeshStandardMaterial({ color: '#f5b800' }));
-  edgePaving.position.set(-22 + platformW / 2 - 0.5, -4, platformH + 0.03);
+  edgePaving.position.set(-24 + platformW / 2 - 0.5, 4, platformH + 0.03);
   group.add(edgePaving);
 
-  // Flooded submerged subway rails running alongside platform
-  const railMat = new THREE.MeshStandardMaterial({ color: '#1a1d20', metalness: 0.9, roughness: 0.2 });
-  for (const rx of [-14.5, -12.5]) {
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.18, platformL + 12, 0.25), railMat);
-    rail.position.set(rx, -4, 0.3);
+  // Flooded submerged subway rails alongside platform
+  const railMat = new THREE.MeshStandardMaterial({ color: '#16191c', metalness: 0.9, roughness: 0.2 });
+  for (const rx of [-16.5, -14.5]) {
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.18, platformL + 14, 0.25), railMat);
+    rail.position.set(rx, 4, 0.3);
     group.add(rail);
   }
 
-  // Wooden sleepers under tracks
-  const sleeperMat = new THREE.MeshStandardMaterial({ color: '#382b20', roughness: 0.9 });
+  // Wooden sleepers under flooded tracks
+  const sleeperMat = new THREE.MeshStandardMaterial({ color: '#32251c', roughness: 0.95 });
   for (let sy = -platformL / 2 - 4; sy <= platformL / 2 + 4; sy += 1.8) {
     const sleeper = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.45, 0.2), sleeperMat);
-    sleeper.position.set(-13.5, sy, 0.15);
+    sleeper.position.set(-15.5, sy + 4, 0.15);
     group.add(sleeper);
   }
 
@@ -427,28 +545,25 @@ export function buildVolcanoBasement(scene, world) {
   const stationSign = new THREE.Mesh(new THREE.BoxGeometry(0.15, 6.5, 3.2), [
     stationSignMat, stationSignMat, ironMat, ironMat, ironMat, ironMat
   ]);
-  stationSign.position.set(-22 + platformW / 2 - 1.2, -6, platformH + 3.2);
+  stationSign.position.set(-24 + platformW / 2 - 1.2, 2, platformH + 3.2);
   group.add(stationSign);
 
-  // Platform steel post for sign
-  const postGeom = new THREE.CylinderGeometry(0.12, 0.12, 3.2, 8);
-  const post = new THREE.Mesh(postGeom, ironMat);
-  post.position.set(-22 + platformW / 2 - 1.2, -6, platformH + 1.6);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 8), ironMat);
+  post.position.set(-24 + platformW / 2 - 1.2, 2, platformH + 1.6);
   group.add(post);
 
-  // Vintage Station Lantern casting warm pool of light
-  const lanternLight = new THREE.PointLight('#ffc57a', 2.8, 18, 1.4);
-  lanternLight.position.set(-22 + platformW / 2 - 1.2, -6, platformH + 3.8);
+  // Warm Victorian Station Lantern
+  const lanternLight = new THREE.PointLight('#ffc57a', 3.0, 20, 1.4);
+  lanternLight.position.set(-24 + platformW / 2 - 1.2, 2, platformH + 3.8);
   group.add(lanternLight);
 
   // =========================================================================
-  // 7. Glowing Blooming Japanese Cherry Blossom Tree (Sakura)
+  // 9. Blooming Japanese Cherry Blossom Tree (Sakura)
   // =========================================================================
   const treeGroup = new THREE.Group();
-  treeGroup.position.set(-22, -12, platformH);
+  treeGroup.position.set(-24, -4, platformH);
 
-  // Sculptured twisted dark trunk
-  const trunkMat = new THREE.MeshStandardMaterial({ color: '#322521', roughness: 0.95 });
+  const trunkMat = new THREE.MeshStandardMaterial({ color: '#2c221e', roughness: 0.95 });
   const trunk1 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.75, 4.2, 8), trunkMat);
   trunk1.position.set(0, 0, 2.1);
   trunk1.rotation.x = 0.15;
@@ -460,13 +575,12 @@ export function buildVolcanoBasement(scene, world) {
   trunk2.rotation.x = 0.25;
   treeGroup.add(trunk2);
 
-  // Cherry Blossom Bloom clusters
   const petalTex = cherryBlossomTexture();
   const blossomMat = new THREE.MeshStandardMaterial({
     map: petalTex,
     color: '#ffc4dc',
     emissive: new THREE.Color('#ff80aa'),
-    emissiveIntensity: 0.65,
+    emissiveIntensity: 0.75,
     roughness: 0.6,
   });
 
@@ -489,14 +603,13 @@ export function buildVolcanoBasement(scene, world) {
   group.add(treeGroup);
 
   // =========================================================================
-  // 8. Lone Figure in Yellow Taxi Mackintosh Coat with Umbrella
+  // 10. Figure in Yellow Taxi Mackintosh Coat with Umbrella
   // =========================================================================
   const figureGroup = new THREE.Group();
-  figureGroup.position.set(-22, -2, platformH);
+  figureGroup.position.set(-24, 6, platformH);
 
-  // Yellow coat body
   const coatMat = new THREE.MeshStandardMaterial({ color: '#f5b800', roughness: 0.45 });
-  const pantsMat = new THREE.MeshStandardMaterial({ color: '#16191c', roughness: 0.8 });
+  const pantsMat = new THREE.MeshStandardMaterial({ color: '#141618', roughness: 0.8 });
 
   const legs = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 1.0, 8), pantsMat);
   legs.position.set(0, 0, 0.5);
@@ -510,20 +623,18 @@ export function buildVolcanoBasement(scene, world) {
   head.position.set(0, 0, 2.15);
   figureGroup.add(head);
 
-  // Umbrella (Black with red Nordeus / Taxi badge)
   const umbrellaPole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.6, 6), ironMat);
   umbrellaPole.position.set(0.25, 0.15, 1.8);
   figureGroup.add(umbrellaPole);
 
   const umbrellaCanopy = new THREE.Mesh(
     new THREE.ConeGeometry(1.2, 0.45, 12, 1, true),
-    new THREE.MeshStandardMaterial({ color: '#181b1e', roughness: 0.5, side: THREE.DoubleSide })
+    new THREE.MeshStandardMaterial({ color: '#16191c', roughness: 0.5, side: THREE.DoubleSide })
   );
   umbrellaCanopy.position.set(0.25, 0.15, 2.6);
   umbrellaCanopy.rotateX(Math.PI);
   figureGroup.add(umbrellaCanopy);
 
-  // Red badge on umbrella
   const badge = new THREE.Mesh(new THREE.PlaneGeometry(0.35, 0.18), new THREE.MeshBasicMaterial({ color: '#d4281b' }));
   badge.position.set(0.25, 0.15 - 0.85, 2.45);
   badge.rotation.x = -Math.PI / 4;
@@ -532,7 +643,7 @@ export function buildVolcanoBasement(scene, world) {
   group.add(figureGroup);
 
   // =========================================================================
-  // 9. Hanging Robot Mask Faces with Fiery Glowing Red Eyes
+  // 11. Hanging Robot Mask Faces with Fiery Glowing Red Eyes
   // =========================================================================
   const maskTex = robotMaskTexture();
   const maskMat = new THREE.MeshStandardMaterial({
@@ -541,15 +652,15 @@ export function buildVolcanoBasement(scene, world) {
     metalness: 0.6,
     emissiveMap: maskTex,
     emissive: new THREE.Color('#ffffff'),
-    emissiveIntensity: 1.4,
+    emissiveIntensity: 1.5,
   });
 
   const maskOffsets = [
-    [-15, 8, 38],
-    [14, 6, 36],
-    [-8, -16, 34],
-    [12, -18, 35],
-    [0, -26, 32],
+    [-15, 14, 34],
+    [14, 12, 33],
+    [-8, -12, 31],
+    [12, -14, 32],
+    [0, -20, 29],
   ];
 
   const maskMeshes = [];
@@ -557,21 +668,18 @@ export function buildVolcanoBasement(scene, world) {
     const maskHolder = new THREE.Group();
     maskHolder.position.set(mx, my, mz);
 
-    // Hanging wire
     const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 14, 4), chainMat);
     wire.position.set(0, 0, 7);
     maskHolder.add(wire);
 
-    // Mask plane
     const mMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), maskMat);
-    mMesh.rotation.x = Math.PI / 12; // tilt slightly downward to peer at aircraft
+    mMesh.rotation.x = Math.PI / 12;
     maskHolder.add(mMesh);
 
     group.add(maskHolder);
     maskMeshes.push(maskHolder);
   }
 
-  // Gentle swaying in geothermal updrafts
   updaters.push((t) => {
     maskMeshes.forEach((mh, i) => {
       mh.rotation.z = Math.sin(t * 1.5 + i * 1.2) * 0.08;
@@ -580,38 +688,33 @@ export function buildVolcanoBasement(scene, world) {
   });
 
   // =========================================================================
-  // 10. Volcanic Basement Landing Platform
+  // 12. Subterranean Helipad / Landing Pad (Inside the Underground Cavern)
   // =========================================================================
   const padGroup = new THREE.Group();
-  padGroup.position.set(16, -6, 0.6);
+  padGroup.position.set(16, 2, 0.6);
 
-  // Basalt octagonal helipad
   const padGeom = new THREE.CylinderGeometry(11, 11.5, 0.8, 8);
   padGeom.rotateX(Math.PI / 2);
   const padMesh = new THREE.Mesh(padGeom, basaltMat);
   padMesh.receiveShadow = true;
   padGroup.add(padMesh);
 
-  // Painted hazard ring & logo
   const padCanvas = document.createElement('canvas');
   padCanvas.width = 512; padCanvas.height = 512;
-  const pc = padCanvas.getContext('2d');
-  pc.fillStyle = '#222528'; pc.fillRect(0, 0, 512, 512);
+  const pc2 = padCanvas.getContext('2d');
+  pc2.fillStyle = '#1c2024'; pc2.fillRect(0, 0, 512, 512);
 
-  // Hazard perimeter
-  pc.strokeStyle = '#f5b800'; pc.lineWidth = 14;
-  pc.strokeRect(20, 20, 472, 472);
+  pc2.strokeStyle = '#f5b800'; pc2.lineWidth = 14;
+  pc2.strokeRect(20, 20, 472, 472);
 
-  // Inner ring
-  pc.beginPath(); pc.arc(256, 256, 180, 0, Math.PI * 2);
-  pc.strokeStyle = '#ffffff'; pc.lineWidth = 6; pc.stroke();
+  pc2.beginPath(); pc2.arc(256, 256, 180, 0, Math.PI * 2);
+  pc2.strokeStyle = '#ffffff'; pc2.lineWidth = 6; pc2.stroke();
 
-  // VTX Basement Text
-  pc.font = 'bold 54px Impact, Arial, sans-serif';
-  pc.fillStyle = '#f5b800'; pc.textAlign = 'center';
-  pc.fillText('VTX BASEMENT', 256, 240);
-  pc.font = 'bold 24px monospace'; pc.fillStyle = '#e8e6d8';
-  pc.fillText('VOLCANO LZ · CAUTION LAVA', 256, 285);
+  pc2.font = 'bold 50px Impact, Arial, sans-serif';
+  pc2.fillStyle = '#f5b800'; pc2.textAlign = 'center';
+  pc2.fillText('VTX BASEMENT', 256, 240);
+  pc2.font = 'bold 24px monospace'; pc2.fillStyle = '#e8e6d8';
+  pc2.fillText('SUBTERRANEAN LZ · VOLCANO', 256, 285);
 
   const padDecal = new THREE.Mesh(
     new THREE.PlaneGeometry(16, 16),
@@ -627,7 +730,7 @@ export function buildVolcanoBasement(scene, world) {
   return {
     group,
     update: (now) => {
-      const dt = 0.05; // standard delta
+      const dt = 0.05;
       updaters.forEach((fn) => fn(now, dt));
     },
   };
