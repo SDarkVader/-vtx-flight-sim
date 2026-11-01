@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "name": "Gloucestershire runways from OurAirports, closed 18/36 retained as historical",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "EGBJ",
+        "ends": [
+          "03",
+          "21"
+        ],
+        "surface": "Asphalt",
+        "closed": false,
+        "length_m": 982.98,
+        "width_m": 22.86,
+        "source": "OurAirports Oct 31 2026"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -2.16813,
+            51.888599
+          ],
+          [
+            -2.16008,
+            51.895901
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "EGBJ",
+        "ends": [
+          "08",
+          "26"
+        ],
+        "surface": "Asphalt",
+        "closed": false,
+        "length_m": 1431.04,
+        "width_m": 29.87,
+        "source": "OurAirports Oct 31 2026"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -2.17722,
+            51.8936
+          ],
+          [
+            -2.15669,
+            51.894699
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "icao": "EGBJ",
+        "ends": [
+          "18",
+          "36"
+        ],
+        "surface": "Asphalt",
+        "closed": true,
+        "length_m": 800.1,
+        "width_m": 17.98,
+        "source": "OurAirports Oct 31 2026"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -2.16611,
+            51.896702
+          ],
+          [
+            -2.165,
+            51.889702
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -5,3 +5,61 @@
 #cockpit-look{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:5px}#cockpit-look[hidden]{display:none}#cockpit-look button{font-size:11px;padding:9px 12px;background:#102932e8;color:#e5f5f2;border:1px solid #75a49f;border-radius:5px;touch-action:manipulation}
 
 #viewport>canvas{touch-action:none}#view-tools{position:absolute;right:16px;top:112px;z-index:3;display:flex;gap:4px}#view-tools button{background:#142d36e8;color:#e5f5f2;border-color:#81adad80;font-size:12px;min-width:38px;padding:8px;touch-action:manipulation}
+
+
+/* Phone visual-review layout: full-width scene, then independently readable controls.
+   No changes to simulation logic, flight authority or physical collision. */
+@media (max-width: 600px) {
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+  header { height: auto; min-height: 0; padding: 8px 12px 9px; display: flex;
+    flex-wrap: wrap; column-gap: 10px; row-gap: 6px; }
+  .brand { font-size: 22px; letter-spacing: 3px; gap: 0; }
+  .status { margin: 0; gap: 7px; font-size: 9px; letter-spacing: .5px; min-width: 0; }
+  .status #clock { white-space: nowrap; }
+  .header-actions { width: 100%; margin-left: 0; display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; }
+  .header-actions button { white-space: normal; overflow-wrap: anywhere; min-height: 34px;
+    padding: 5px 2px; font-size: 10px; line-height: 1.15; }
+  main { width: 100%; height: auto; min-height: 0; display: flex; flex-direction: column;
+    flex-wrap: nowrap; overflow: visible; }
+  #viewport { width: 100%; height: 56svh; min-height: 320px; max-height: 680px;
+    flex: 0 0 auto; order: 0; }
+  aside.mission-panel, aside.controls-panel { width: 100%; height: auto; overflow: visible;
+    padding: 18px 16px; border-left: 0; border-right: 0; border-top: 1px solid var(--line); }
+  aside.mission-panel { order: 1; }
+  aside.controls-panel { order: 2; }
+  #map { height: 220px; }
+  .coordinates { flex-direction: row; }
+  .coordinates label { width: 50%; min-width: 0; }
+  .paired { display: flex; }
+  .paired label { width: 50%; }
+  #retry-bar { position: relative; top: auto; bottom: auto; left: auto; right: auto;
+    transform: none; width: 100%; max-width: 100%; padding: 8px 10px; gap: 6px;
+    border-left: 0; border-right: 0; border-radius: 0; box-shadow: none; flex-wrap: wrap; }
+  #retry-bar span { flex: 1 1 100%; max-width: none; font-size: 11px; }
+  #retry-bar button { flex: 1 1 0; min-width: 0; padding: 8px 5px; min-height: 32px;
+    white-space: normal; font-size: 11px; }
+  #keyboard-open { right: 8px; top: 10px; font-size: 10px; padding: 6px; }
+  #view-tools { right: 8px; top: 46px; }
+  #view-tools button { font-size: 10px; min-width: 32px; padding: 7px 6px; }
+  #scene-caption { top: 12px; left: 12px; right: 132px;
+    max-width: calc(100% - 144px); color: #e8f5f4;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .88); }
+  #scene-caption span, #scene-caption p { font-size: 9px; }
+  #scene-caption p { opacity: .92; }
+  #attitude { left: 8px; bottom: 8px; width: 94px; height: 76px; }
+  #view-mode { right: 8px; bottom: 10px; font-size: 7px; }
+  #cockpit-look { bottom: 12px; }
+  #cockpit-look button { padding: 8px; font-size: 10px; }
+  footer { position: sticky; bottom: 0; z-index: 5; display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr)); min-height: 64px;
+    padding: 8px 6px; gap: 5px; align-items: center; }
+  footer>div { min-width: 0; overflow: hidden; }
+  footer span { font-size: 7px; letter-spacing: 0; line-height: 1.1;
+    min-height: 18px; margin-bottom: 3px; }
+  footer strong { font-size: 13px; }
+  footer strong small { font-size: 7px; margin-left: 2px; }
+  #toast { max-width: calc(100% - 20px); bottom: 72px; }
+  dialog { max-width: calc(100% - 12px); width: calc(100vw - 12px); padding: 14px;
+    max-height: calc(100svh - 16px); }
+}
