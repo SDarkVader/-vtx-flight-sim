@@ -2,9 +2,29 @@
 # The live simulator uses MuJoCo and a persistent physics clock;
 # a successful serverless build does not validate full flight operation.
 
+[project]
+name = "vtx-flight-sim"
+version = "0.1.0"
+description = "VTX — Vader's Taxis 3D VTOL flight simulation laboratory"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26,<3",
+    "mujoco==3.17.0",
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.30,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "scipy>=1.12,<2",
+    "pytest>=8,<11",
+]
+
+[tool.uv]
+package = false
+
 [tool.vercel]
 entrypoint = "src.vtx.live_server:app"
-
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
