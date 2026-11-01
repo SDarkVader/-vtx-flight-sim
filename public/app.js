@@ -30,8 +30,8 @@ const viewport=$('viewport'),scene=new THREE.Scene();scene.background=new THREE.
 const camera=new THREE.PerspectiveCamera(48,1,.05,2000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
 const mobileView=matchMedia('(pointer: coarse)').matches;
 // Optional display-only lightweight mode. No simulation or collision changes.
-const lightweightView=mobileView||new URLSearchParams(location.search).has('lite');
-const renderer=new THREE.WebGLRenderer({antialias:!mobileView,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileView ? 0.7 : 1.2));renderer.shadowMap.enabled=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;viewport.appendChild(renderer.domElement);
+const lightweightView=new URLSearchParams(location.search).has('lite');
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileView ? 1.0 : 1.2));renderer.shadowMap.enabled=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
