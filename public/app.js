@@ -320,10 +320,7 @@ function updateView(v){last=v;latestTruthReceivedMs=performance.now();
 }
 let manualRequestPending=false;
 setInterval(guard(async()=>{if(manualRequestPending||!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames)return;manualBeat++;if(dirty||manualBeat%10===0){dirty=false;manualRequestPending=true;try{await api('/api/action',{...command,authority:'manual',observation_id:last.observation.observation_id,reason:'Manual operator controls and command heartbeat'});}catch(e){dirty=true;throw e;}finally{manualRequestPending=false;}}}),50);
-// Always retain the freshest physics packet for the 3D view, but avoid
-// rewriting the entire controls/map DOM twenty times a second on phones.
-let lastHudMs=0;
-function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);ws.onmessage=e=>{const v=JSON.parse(e.data);last=v;latestTruthReceivedMs=performance.now();const now=performance.now();if(now-lastHudMs>=250||v.run_id!==lastRun){lastHudMs=now;updateView(v);}};ws.onclose=()=>{toast('Live connection lost; physical command lease still applies.');setTimeout(connect,2000);};}
+function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);ws.onmessage=e=>updateView(JSON.parse(e.data));ws.onclose=()=>{toast('Live connection lost; physical command lease still applies.');setTimeout(connect,2000);};}
 api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
