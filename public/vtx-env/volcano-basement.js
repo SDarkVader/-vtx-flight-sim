@@ -21,7 +21,7 @@ export function buildVolcanoBasement(scene, world) {
   group.name = 'vtx-volcano-basement';
 
   // Position: North of the airfield on the ascending ridge (in full view from Stand 1 and runway)
-  const CX = -30, CY = 350, BASE_Z = 12;
+  const CX = -30, CY = 220, BASE_Z = 0;
   group.position.set(CX, CY, BASE_Z);
 
   const updaters = [];
@@ -215,6 +215,19 @@ export function buildVolcanoBasement(scene, world) {
   cavernCeiling.receiveShadow = true;
   group.add(cavernCeiling);
 
+  // Enclosed vertical basalt rock walls
+  const wallGeom = new THREE.CylinderGeometry(cavernW * 0.52, cavernW * 0.52, 36, 48, 1, true);
+  wallGeom.rotateX(Math.PI / 2);
+  wallGeom.translate(0, 6, 18);
+  const wallMat = new THREE.MeshStandardMaterial({
+    map: volcanoBasaltTexture(),
+    roughness: 0.92,
+    side: THREE.BackSide,
+  });
+  wallMat.map.repeat.set(6, 2);
+  const cavernWall = new THREE.Mesh(wallGeom, wallMat);
+  group.add(cavernWall);
+
   // Cavern basalt floor
   const cavernFloor = new THREE.Mesh(
     new THREE.CircleGeometry(cavernW * 0.52, 40),
@@ -243,10 +256,10 @@ export function buildVolcanoBasement(scene, world) {
   // Vertical molten lava cascade pouring down the underground basalt back wall from an upper fissure
   const fallW = 34, fallH = 46;
   const fallGeom = new THREE.PlaneGeometry(fallW, fallH, 20, 20);
+  fallGeom.rotateX(-Math.PI / 2); // Stand vertically facing South (-Y)
   fallGeom.translate(0, 0, fallH / 2 + 1);
   const lavaFall = new THREE.Mesh(fallGeom, lavaMat);
   lavaFall.position.set(0, 42, 0);
-  lavaFall.rotation.y = Math.PI; // Face South into the cavern
   group.add(lavaFall);
 
   // Boiling Magma Pool at the foot of the underground waterfall
@@ -323,9 +336,10 @@ export function buildVolcanoBasement(scene, world) {
   });
 
   const signW = 28, signH = 14;
-  const signMesh = new THREE.Mesh(new THREE.PlaneGeometry(signW, signH), signMat);
+  const signGeom = new THREE.PlaneGeometry(signW, signH);
+  signGeom.rotateX(-Math.PI / 2); // Stand vertically facing South (-Y)
+  const signMesh = new THREE.Mesh(signGeom, signMat);
   signMesh.position.set(0, 24, 32);
-  signMesh.rotation.y = Math.PI; // Face South toward the entrance tunnel
   signMesh.castShadow = true;
   group.add(signMesh);
 
@@ -672,8 +686,9 @@ export function buildVolcanoBasement(scene, world) {
     wire.position.set(0, 0, 7);
     maskHolder.add(wire);
 
-    const mMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), maskMat);
-    mMesh.rotation.x = Math.PI / 12;
+    const mGeom = new THREE.PlaneGeometry(3.2, 3.2);
+    mGeom.rotateX(-Math.PI / 2); // Stand vertically facing South (-Y)
+    const mMesh = new THREE.Mesh(mGeom, maskMat);
     maskHolder.add(mMesh);
 
     group.add(maskHolder);

@@ -305,7 +305,7 @@ export class TacticalMinimap {
       { id: 'TOWER', label: '📡 ATC TOWER', pt: [240, 555], col: '#ff5533' },
       { id: 'FIRE', label: '🚒 FIRE STN 9', pt: [475, 600], col: '#ff3322' },
       { id: 'CARGO', label: '📦 CARGO HUB', pt: [680, 600], col: '#e0c038' },
-      { id: 'VOLCANO', label: '🌋 VOLCANO / BASEMENT', pt: [-30, 290], col: '#ff4400' }
+      { id: 'VOLCANO', label: '🌋 VOLCANO / BASEMENT', pt: [-30, 220], col: '#ff4400' }
     ];
     for (const f of facilities) {
       const fx = px(f.pt[0]), fy = py(f.pt[1]);
