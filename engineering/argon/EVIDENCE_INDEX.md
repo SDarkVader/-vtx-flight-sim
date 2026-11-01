@@ -66,3 +66,13 @@ This is a map to existing sources. Work from the actual files, not from this sum
 - Nominal-motion planetary demo project `57fa3690-f5bd-44cf-90c9-d4f22c02f24e`; version `version_de1642bda77e3639e100b7e74e5920df73ebcccf1733132ee4babd98f34c87a9`.
 
 Model parts are source geometry, not automatically fitted geartrains, measured masses, validated stress allowables or physical flightworthiness. Keep a provenance ledger.
+
+## Task 01 derived assets and engineering evidence (`P0-V4A-assembly-r6`)
+
+- `engineering/argon/TASK_01_REPORT.md` — complete Task 01 engineering report covering transmission positioning, `z = 1.980 m` gimbal pivot alignment, `z = 0.945 m` diagonal fuel-tank arrangement, candidate variable-ratio transmission envelope (`+149.0 kg ± 4.69 kg RSS`), 3D BVH clearance matrix, symmetric/asymmetric fuel mass/CG/full 3×3 inertia audit, NASA SP-106 slosh bounds, hover power (`1,200 rpm` vs `800 rpm`), 6-DOF wrench controllability, and open qualification blockers.
+- `evidence/source/airframe_ledger_r6.json` — derived mass, 3-D centroid, full 3×3 inertia, nacelle pivot (`z = 1.980 m`), and fuel tank (`z = 0.945 m`) ledger for `P0-V4A-assembly-r6` (731 mapped parts, `816.66895 kg` empty allocation).
+- `evidence/source/assembly_repairs_r6.json` — complete `before_world_matrix` and `after_world_matrix` provenance for all 731 source CAD objects in `P0-V4A-assembly-r6`.
+- `public/assets/airframe-r6.glb` and `assets/derived/p0-v4-r6.blend` — derived visual GLB and Blender scene for `P0-V4A-assembly-r6` (`assets/source/p0-v4.blend` and `public/assets/airframe-live.glb` untouched).
+- `tools/check_r6_clearance.py` and `evidence/r6_clearance_audit.json` — 3D BVH collision and clearance audit proving `0` static key-pair overlaps (`21` failing pairs in `R5` -> `0` in `R6`), `0` overlaps across the full $360^\circ \times 20^\circ$ nacelle tilt cone sweep on all four fans (`min_clearance_mm = 14.52 mm`), `0` overlaps across all 6 landing gear legs (`0..0.25 m` stroke), and `0` overlaps for the 12 candidate variable-ratio transmission components.
+- `tools/argon_task01_study.py` and `evidence/argon_task01_transmission_tanks.json` — full analytical + MuJoCo mass, 3-D CG, symmetric 3×3 inertia, fuel slosh, hover power, wrench controllability, and dynamic ground-settle / open-loop spool comparison across `R4`, `R5`, `R6`, and `R6 + Variator`.
+- `tests/test_argon_task01.py` — automated pytest regression suite for Task 01 (`98 passed` across full repository test suite).

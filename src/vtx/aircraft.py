@@ -20,8 +20,90 @@ from .training_assist import assisted_collective
 
 ROOT=Path(__file__).resolve().parents[2]
 LEDGER_PATH=ROOT/'evidence/source/airframe_ledger.json'
+LEDGER_R4_PATH=ROOT/'evidence/source/airframe_ledger_r4.json'
+LEDGER_R6_PATH=ROOT/'evidence/source/airframe_ledger_r6.json'
 DT=.0025
 G=9.80665
+
+
+def _cylinder_inertia(mass,r,h):
+    ixx=mass*(3*r*r+h*h)/12.
+    izz=.5*mass*r*r
+    return [[ixx,0.,0.],[0.,ixx,0.],[0.,0.,izz]]
+
+
+def _box_inertia(mass,lx,ly,lz):
+    return [
+        [mass*(ly*ly+lz*lz)/12.,0.,0.],
+        [0.,mass*(lx*lx+lz*lz)/12.,0.],
+        [0.,0.,mass*(lx*lx+ly*ly)/12.],
+    ]
+
+
+def proposed_variator_components():
+    """Candidate variable-ratio drive hardware envelope & mass/inertia ledger (Task 01).
+
+    Status: PROPOSED_VARIATOR_ARCHITECTURE_CANDIDATE (not in source CAD).
+    Places coaxial 20:60 4-planet epicyclic variator (Ø220x120mm, 8.5kg) +
+    EMRAX 268 axial-flux motor-generator (Ø268x91mm, 20.5kg) at the base of
+    each vertical column F1..F4 (r=2.600m, z=0.420..0.641m), plus twin dual-channel
+    SiC inverters (2x9.5kg) and twin DC-bus/cooling/lube modules (2x7.0kg) in
+    the lower truss bay at (±0.650, ±0.650, 0.300m). Total net delta: +149.0 kg.
+    """
+    items=[]
+    cols=[(1,2.6,0.),(2,0.,2.6),(3,-2.6,0.),(4,0.,-2.6)]
+    for i,px,py in cols:
+        items.append(dict(
+            id=f'proposed-variator-diff-f{i}',
+            name=f'PROPOSED P03 | F{i} 20:60 4-planet epicyclic variator',
+            body='airframe',
+            kind='cylinder',
+            centroid_m=[px,py,0.480],
+            radius_m=0.110,
+            length_m=0.120,
+            bounds_m=[[px-0.110,py-0.110,0.420],[px+0.110,py+0.110,0.540]],
+            mass_kg=8.50,
+            uncertainty_kg=1.50,
+            inertia_centroid_kg_m2=_cylinder_inertia(8.50,0.110,0.120),
+            status='PROPOSED_CANDIDATE_ENVELOPE_UNQUALIFIED',
+        ))
+        items.append(dict(
+            id=f'proposed-variator-mg-f{i}',
+            name=f'PROPOSED P03 | F{i} EMRAX 268 motor-generator',
+            body='airframe',
+            kind='cylinder',
+            centroid_m=[px,py,0.5955],
+            radius_m=0.134,
+            length_m=0.091,
+            bounds_m=[[px-0.134,py-0.134,0.550],[px+0.134,py+0.134,0.641]],
+            mass_kg=20.50,
+            uncertainty_kg=1.00,
+            inertia_centroid_kg_m2=_cylinder_inertia(20.50,0.134,0.091),
+            status='PROPOSED_CANDIDATE_DATASHEET_EMRAX268',
+        ))
+    bay_boxes=[
+        ('proposed-variator-inv-1','PROPOSED P11 | Dual SiC trim inverter F1/F4',[+0.820,-0.380,0.380],[0.300,0.220,0.120],9.50,1.50),
+        ('proposed-variator-inv-2','PROPOSED P11 | Dual SiC trim inverter F2/F3',[-0.820,+0.380,0.380],[0.300,0.220,0.120],9.50,1.50),
+        ('proposed-variator-aux-1','PROPOSED P03 | Regenerative DC link & oil/coolant pump A',[-0.820,-0.380,0.380],[0.260,0.200,0.140],7.00,1.50),
+        ('proposed-variator-aux-2','PROPOSED P03 | Regenerative DC link & oil/coolant pump B',[+0.820,+0.380,0.380],[0.260,0.200,0.140],7.00,1.50),
+    ]
+    for cid,cname,center,dims,mass,unc in bay_boxes:
+        lx,ly,lz=dims
+        cx,cy,cz=center
+        items.append(dict(
+            id=cid,
+            name=cname,
+            body='airframe',
+            kind='box',
+            centroid_m=center,
+            dimensions_m=dims,
+            bounds_m=[[cx-lx/2,cy-ly/2,cz-lz/2],[cx+lx/2,cy+ly/2,cz+lz/2]],
+            mass_kg=mass,
+            uncertainty_kg=unc,
+            inertia_centroid_kg_m2=_box_inertia(mass,lx,ly,lz),
+            status='PROPOSED_CANDIDATE_ENVELOPE_UNQUALIFIED',
+        ))
+    return items
 
 
 def fmt(v):return ' '.join(f'{float(x):.12g}' for x in np.asarray(v).ravel())
@@ -41,7 +123,7 @@ def inertial(parent,info,pivot):
                   fullinertia=fmt([j[0,0],j[1,1],j[2,2],j[0,1],j[0,2],j[1,2]]))
 
 
-def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
+def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_fuel_kg=None,variator_package=False):
     xml=ET.Element('mujoco',model='VTX-P0-V4A-experimental')
     ET.SubElement(xml,'compiler',angle='radian',autolimits='true',inertiafromgeom='false',fusestatic='false')
     ET.SubElement(xml,'option',timestep=str(DT),gravity=f'0 0 {-G}',integrator='implicitfast',
@@ -95,14 +177,20 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
         b=ET.SubElement(bodies['cabin'],'body',name=f'occupant{i+1}',pos=fmt(np.array([x,.02,1.445])-pivots['cabin']))
         radii=np.array([.2,.16,.45]);j=85/5*(np.sum(radii*radii)-radii*radii)
         ET.SubElement(b,'inertial',mass='85',pos='0 0 0',diaginertia=fmt(j))
+    tank_masses=[fuel_kg/4.]*4 if tank_fuel_kg is None else [float(x) for x in tank_fuel_kg]
     for i,t in enumerate(ledger['tanks']):
-        pos=np.array(t['centroid_m']);axis=np.array(t['axis']);mass=fuel_kg/4
+        pos=np.array(t['centroid_m']);axis=np.array(t['axis']);mass=max(tank_masses[i],1e-9)
         r,L=.18,.48
         jp=.5*mass*r*r; jt=mass*(3*r*r+L*L)/12
         tensor=jt*np.eye(3)+(jp-jt)*np.outer(axis,axis)
         info=dict(mass_kg=mass,centroid_m=pos.tolist(),inertia_centroid_kg_m2=tensor.tolist())
         b=ET.SubElement(air,'body',name=f'fuel{i+1}',pos=fmt(pos))
         inertial(b,info,pos)
+    if variator_package:
+        for comp in proposed_variator_components():
+            pos=np.array(comp['centroid_m'])
+            b=ET.SubElement(air,'body',name=comp['id'],pos=fmt(pos))
+            inertial(b,comp,pos)
     # Colliders are traceable, disclosed OBB/capsule/swept-envelope derivatives.
     # Aircraft self-contact is screened separately; assembly interfaces overlap
     # intentionally in concept geometry, so blanket convex self-contact is invalid.
@@ -171,16 +259,29 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.):
 
 
 class Aircraft:
-    def __init__(self,world=None,gear_variant='baseline',rpm=800.,fuel_kg=60.,airframe_variant='light',governor_mode='pi',engine_power_limit_kw=469.8):
+    def __init__(self,world=None,gear_variant='baseline',rpm=800.,fuel_kg=60.,airframe_variant='light',governor_mode='pi',engine_power_limit_kw=469.8,tank_fuel_kg=None):
+        if tank_fuel_kg is not None:
+            if len(tank_fuel_kg)!=4 or any((not math.isfinite(x) or x<0 or x>27.5) for x in tank_fuel_kg):
+                raise ValueError('Each tank fuel load must be finite and between 0 and 27.5 kg')
+            fuel_kg=float(sum(tank_fuel_kg))
         if not math.isfinite(fuel_kg) or not 0<fuel_kg<=110:raise ValueError('Initial fuel must be positive and at most110kg')
         if not math.isfinite(engine_power_limit_kw) or not 10<=engine_power_limit_kw<=469.8:raise ValueError('Engine power limit must be10–469.8kW')
         self.engine_power_limit_w=engine_power_limit_kw*1000
-        ledger_path=ROOT/'evidence/source/airframe_ledger_r4.json' if airframe_variant=='baseline' else LEDGER_PATH
+        if airframe_variant=='baseline':
+            ledger_path=LEDGER_R4_PATH
+            render_asset='/assets/airframe-r4.glb'
+        elif airframe_variant in ('r6','r6_variator'):
+            ledger_path=LEDGER_R6_PATH
+            render_asset='/assets/airframe-r6.glb'
+        else:
+            ledger_path=LEDGER_PATH
+            render_asset='/assets/airframe-live.glb'
+        self.variator_package=(airframe_variant=='r6_variator')
         self.ledger=json.loads(ledger_path.read_text())
         self.airframe_variant=airframe_variant
         self.world=world or TestWorld()
         self.gear_variant=gear_variant;self.reference_rpm=float(rpm)
-        self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm)
+        self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm,tank_fuel_kg=tank_fuel_kg,variator_package=self.variator_package)
         self.data=mj.MjData(self.model)
         self.bids={name:mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,name) for name in self.ledger['bodies']}
         self.jids={mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_JOINT,i):i for i in range(self.model.njnt)}
@@ -192,9 +293,10 @@ class Aircraft:
         # Offline tests alone may opt in to active control. Never exposed to the API.
         self._bench_apply_experimental_assist=False
         self.pitch=np.zeros(4);self.target_angles=np.zeros((4,2));self.cabin_target=np.zeros(3)
-        self.engine_spool=0.;self.fuel=np.full(4,fuel_kg/4)
+        self.engine_spool=0.
+        self.fuel=np.full(4,fuel_kg/4) if tank_fuel_kg is None else np.array([float(x) for x in tank_fuel_kg],dtype=float)
         self.governor=ShaftGovernor(governor_mode)
-        self.fuel_initial=self.fuel.copy();self.fuel_bids=[mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,f'fuel{i}') for i in range(1,5)]
+        self.fuel_initial=np.maximum(self.fuel.copy(),1e-9);self.fuel_bids=[mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,f'fuel{i}') for i in range(1,5)]
         self.initial_fuel_inertia=self.model.body_inertia[self.fuel_bids].copy()
         self.wind=np.zeros(3)
         self.rotors=[dict(thrust_n=0.,torque_nm=0.,induced_mps=0.,max_alpha_deg=0.) for _ in range(4)]
@@ -204,9 +306,12 @@ class Aircraft:
         self.events=[];self.flags=set();self.crashed=False;self.max_alt=0.;self.max_impact_n=0.
         self.step_count=0;self.last_mass_update=0.;self.last_collision=None
         self.provenance={
-            'revision':self.ledger['revision'],'ledger_sha256':hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
-            'airframe_variant':airframe_variant,'render_asset':'/assets/airframe-r4.glb' if airframe_variant=='baseline' else '/assets/airframe-live.glb',
+            'revision':self.ledger['revision']+('+variator-candidate' if self.variator_package else ''),
+            'ledger_sha256':hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
+            'airframe_variant':airframe_variant,'render_asset':render_asset,
+            'variator_package':self.variator_package,
             'initial_fuel_kg':float(fuel_kg),
+            'initial_tank_fuel_kg':self.fuel.tolist(),
             'cabin_gimbal':'Proposed yaw ±180°, roll/pitch ±15°, powered level assistance; travel, torque and power limits prevent guaranteed leveling',
             'engine_power_limit_kw':float(engine_power_limit_kw),'propulsion_revision':'P0-V4A-power-r1',
             'exhaust_lift':dict(status='CALIBRATION_BLOCKED',applied_force_n=0.,
