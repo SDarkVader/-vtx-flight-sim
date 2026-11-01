@@ -1,0 +1,4 @@
+# Vercel's FastAPI adapter needs the explicit ASGI export because this
+# application is under src/vtx rather than the framework's default paths.
+[tool.vercel]
+entrypoint = "src.vtx.live_server:app"
