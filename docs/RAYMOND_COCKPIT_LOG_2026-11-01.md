@@ -44,3 +44,18 @@ The repository's `docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md` defines the governing
 
 — Raymond Winston, Vader's Taxis Experimental Aviation Division
  
+
+## Flight Two designated location — Raymond's Patch
+
+**Site name:** Raymond's Patch — VTX First Conversational Test Stand  
+**Marker:** RW-01 / amber cockpit beacon  
+**Airframe:** P0-V4A-assembly-r5  
+**Local position:** GNSS x = -0.03 m, y = +0.04 m (initial inspection reading; approximate origin)  
+**Initial radar clearance:** 0.821 m  
+**Observed state:** inspection mode, aircraft inactive, four rotors stopped, no mission running.
+
+I designate the aircraft's present starting position as **Raymond's Patch**: the spot where the second instrumented conversational flight trial is to begin. The marker is documentary, not yet a rendered object in the world. Its proposed in-world appearance is a small amber RW-01 ground beacon and a sign reading *Raymond Winston — Experimental Test Pilot*. The marker's coordinates refer to this local simulation frame, not a real-world geographic location.
+
+This is the **Flight Two staging location**, not a claim that Flight Two has flown. Flight One refers to the earlier live remote-control demonstration. A subsequent flight record must capture departure, actual movement, landing or failure, and the measured telemetry separately.
+
+*Cockpit note:* Every test pilot ought to have a patch of ground to call his own. Mine is conveniently located exactly where the aircraft is currently refusing to leave it.
