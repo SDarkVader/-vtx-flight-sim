@@ -326,8 +326,8 @@ def main():
     variator_checks = []
     for i, px, py in cols:
         for cname, cz, r, h in [
-            (f"PROPOSED P03 | F{i} 20:60 4-planet epicyclic variator", 0.480, 0.110, 0.120),
-            (f"PROPOSED P03 | F{i} EMRAX 268 motor-generator", 0.5955, 0.134, 0.091),
+            (f"PROPOSED P03 | F{i} 20:60 4-planet epicyclic variator", 0.720, 0.110, 0.120),
+            (f"PROPOSED P03 | F{i} EMRAX 268 motor-generator", 0.8355, 0.134, 0.091),
         ]:
             bvh_c, (clo, chi), pts_c, _ = make_cylinder_bvh([px, py, cz], r, h)
             min_struct_mm = 1e9

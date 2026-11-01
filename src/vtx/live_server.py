@@ -90,7 +90,7 @@ class Mission(BaseModel):
     @field_validator('airframe_variant')
     @classmethod
     def airframe(cls,v):
-        if v not in ['baseline','light']:raise ValueError('Unknown airframe revision')
+        if v not in ['baseline','light','r6','r6_variator']:raise ValueError('Unknown airframe revision')
         return v
 
 

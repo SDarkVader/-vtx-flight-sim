@@ -210,9 +210,6 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode) {
 
   function activate(currentAimTarget) {
     active = true;
-    hud.style.display = 'flex';
-    touchNavRow.style.display = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (innerWidth <= 800)) ? 'flex' : 'none';
-
     pos.copy(camera.position);
 
     if (currentAimTarget) {

@@ -53,25 +53,25 @@
     "R6": {
       "mass_kg": 816.6689476043954,
       "centroid_m": [
-        -0.00033380216159312903,
-        0.09255096120575558,
-        1.1548410888094518
+        -0.00033380215673747626,
+        0.09164187509819016,
+        1.1553686316542437
       ],
       "inertia_centroid_kg_m2": [
         [
-          1779.0993310295923,
-          10.993248657378944,
-          -0.8574573839682069
+          1785.1767789678265,
+          12.150333575875518,
+          -0.8576011901362237
         ],
         [
-          10.993248657378945,
-          1730.1749953441747,
-          63.49579042769591
+          12.150333575875516,
+          1736.6759864043509,
+          72.03603232131165
         ],
         [
-          -0.8574573839682105,
-          63.495790427695894,
-          2498.389581824141
+          -0.857601190136229,
+          72.03603232131164,
+          2501.2755091401473
         ]
       ]
     }
@@ -257,8 +257,8 @@
         "mass_kg": 462.6332,
         "centroid_m": [
           0.00031,
-          0.17505,
-          0.77038
+          0.17288,
+          0.76372
         ]
       },
       "cabin": {
@@ -385,24 +385,24 @@
         "mass_kg": 3.9904,
         "centroid_m": [
           1.36,
-          -0.125,
-          0.26
+          -0.155,
+          0.42
         ]
       },
       "shaft2": {
         "mass_kg": 3.9904,
         "centroid_m": [
           -0.21,
-          1.295,
-          0.14
+          1.36,
+          0.42
         ]
       },
       "shaft3": {
         "mass_kg": 3.9904,
         "centroid_m": [
           -1.36,
-          0.125,
-          0.26
+          0.155,
+          0.42
         ]
       },
       "shaft4": {
@@ -410,7 +410,7 @@
         "centroid_m": [
           0.21,
           -1.42,
-          0.14
+          0.42
         ]
       }
     }
@@ -425,7 +425,7 @@
         "centroid_m": [
           2.6,
           0.0,
-          0.48
+          0.72
         ],
         "radius_m": 0.11,
         "length_m": 0.12,
@@ -433,12 +433,12 @@
           [
             2.49,
             -0.11,
-            0.42
+            0.66
           ],
           [
             2.71,
             0.11,
-            0.54
+            0.78
           ]
         ],
         "mass_kg": 8.5,
@@ -470,7 +470,7 @@
         "centroid_m": [
           2.6,
           0.0,
-          0.5955
+          0.8355
         ],
         "radius_m": 0.134,
         "length_m": 0.091,
@@ -478,12 +478,12 @@
           [
             2.466,
             -0.134,
-            0.55
+            0.79
           ],
           [
             2.734,
             0.134,
-            0.641
+            0.881
           ]
         ],
         "mass_kg": 20.5,
@@ -515,7 +515,7 @@
         "centroid_m": [
           0.0,
           2.6,
-          0.48
+          0.72
         ],
         "radius_m": 0.11,
         "length_m": 0.12,
@@ -523,12 +523,12 @@
           [
             -0.11,
             2.49,
-            0.42
+            0.66
           ],
           [
             0.11,
             2.71,
-            0.54
+            0.78
           ]
         ],
         "mass_kg": 8.5,
@@ -560,7 +560,7 @@
         "centroid_m": [
           0.0,
           2.6,
-          0.5955
+          0.8355
         ],
         "radius_m": 0.134,
         "length_m": 0.091,
@@ -568,12 +568,12 @@
           [
             -0.134,
             2.466,
-            0.55
+            0.79
           ],
           [
             0.134,
             2.734,
-            0.641
+            0.881
           ]
         ],
         "mass_kg": 20.5,
@@ -605,7 +605,7 @@
         "centroid_m": [
           -2.6,
           0.0,
-          0.48
+          0.72
         ],
         "radius_m": 0.11,
         "length_m": 0.12,
@@ -613,12 +613,12 @@
           [
             -2.71,
             -0.11,
-            0.42
+            0.66
           ],
           [
             -2.49,
             0.11,
-            0.54
+            0.78
           ]
         ],
         "mass_kg": 8.5,
@@ -650,7 +650,7 @@
         "centroid_m": [
           -2.6,
           0.0,
-          0.5955
+          0.8355
         ],
         "radius_m": 0.134,
         "length_m": 0.091,
@@ -658,12 +658,12 @@
           [
             -2.734,
             -0.134,
-            0.55
+            0.79
           ],
           [
             -2.466,
             0.134,
-            0.641
+            0.881
           ]
         ],
         "mass_kg": 20.5,
@@ -695,7 +695,7 @@
         "centroid_m": [
           0.0,
           -2.6,
-          0.48
+          0.72
         ],
         "radius_m": 0.11,
         "length_m": 0.12,
@@ -703,12 +703,12 @@
           [
             -0.11,
             -2.71,
-            0.42
+            0.66
           ],
           [
             0.11,
             -2.49,
-            0.54
+            0.78
           ]
         ],
         "mass_kg": 8.5,
@@ -740,7 +740,7 @@
         "centroid_m": [
           0.0,
           -2.6,
-          0.5955
+          0.8355
         ],
         "radius_m": 0.134,
         "length_m": 0.091,
@@ -748,12 +748,12 @@
           [
             -0.134,
             -2.734,
-            0.55
+            0.79
           ],
           [
             0.134,
             -2.466,
-            0.641
+            0.881
           ]
         ],
         "mass_kg": 20.5,
@@ -1917,57 +1917,57 @@
         "weight_n": 9773.98,
         "cg_m": [
           -0.00027,
-          0.07925,
-          1.20223
+          0.0785,
+          1.20266
         ],
         "inertia_cg_kg_m2": [
           [
-            1811.2547,
-            10.9969,
-            -0.8704
+            1817.2717,
+            12.1539,
+            -0.8705
           ],
           [
-            10.9969,
-            1777.3159,
-            66.252
+            12.1539,
+            1783.7761,
+            74.7514
           ],
           [
-            -0.8704,
-            66.252,
-            2538.7238
+            -0.8705,
+            74.7514,
+            2541.5901
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 3.552713678800501e-15,
+          "symmetry_max_abs_err": 2.842170943040401e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1768.7325223345936,
-            1814.116321963686,
-            2544.4456045289216
+            1773.112886282458,
+            1820.6316543164944,
+            2548.893431581255
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1038.4032397693582,
+          "triangle_inequality_margin_kg_m2": 1044.8511090176976,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.1368683772161603e-13,
-          "cg_max_diff_m": 8.353318037279678e-13,
-          "inertia_max_diff_kg_m2": 9.89325599221047e-09
+          "cg_max_diff_m": 5.400124791776761e-13,
+          "inertia_max_diff_kg_m2": 1.0372787073720247e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2443.5,
           "cg_trimmed_fan_thrusts_n": [
             2442.98,
-            2592.45,
+            2591.05,
             2444.01,
-            2294.54
+            2295.94
           ],
           "equal_thrust_collective_deg": 16.951,
           "cg_trimmed_collectives_deg": [
             16.948,
-            17.655,
+            17.648,
             16.953,
-            16.237
+            16.244
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 154.33,
@@ -1985,14 +1985,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2056,
-            4.4403,
-            4.4343,
+            5.2055,
+            4.4398,
+            4.4339,
             2.0,
-            1.6573,
-            1.6566
+            1.6575,
+            1.6568
           ],
-          "condition_number": 3.1423,
+          "condition_number": 3.1419,
           "max_roll_moment_diff_thrust_nm": 4115.2,
           "max_pitch_moment_diff_thrust_nm": 4115.2,
           "max_yaw_moment_20deg_vector_nm": 8691.5
@@ -2012,62 +2012,62 @@
         "weight_n": 9872.05,
         "cg_m": [
           -0.00027,
-          0.07846,
-          1.19967
+          0.07772,
+          1.2001
         ],
         "inertia_cg_kg_m2": [
           [
-            1823.0529,
-            10.9971,
-            -0.8697
+            1829.0709,
+            12.1541,
+            -0.8698
           ],
           [
-            10.9971,
-            1789.0519,
-            66.0502
+            12.1541,
+            1795.5143,
+            74.5511
           ],
           [
-            -0.8697,
-            66.0502,
-            2560.7858
+            -0.8698,
+            74.5511,
+            2563.6509
           ]
         ],
         "inertia_verification": {
           "symmetry_max_abs_err": 1.4210854715202004e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1780.5749265899458,
-            1825.9175838310337,
-            2566.397992708345
+            1784.9800725759749,
+            1832.4363763171834,
+            2570.8196579286273
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1040.0945177126346,
+          "triangle_inequality_margin_kg_m2": 1046.596790964531,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.1368683772161603e-13,
-          "cg_max_diff_m": 8.293365993949919e-13,
-          "inertia_max_diff_kg_m2": 1.7357479009660892e-08
+          "cg_max_diff_m": 5.369038547087257e-13,
+          "inertia_max_diff_kg_m2": 1.7782667782739736e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2468.01,
           "cg_trimmed_fan_thrusts_n": [
             2467.5,
-            2616.97,
+            2615.57,
             2468.53,
-            2319.06
+            2320.46
           ],
           "equal_thrust_collective_deg": 17.067,
           "cg_trimmed_collectives_deg": [
             17.065,
-            17.773,
+            17.766,
             17.07,
-            16.356
+            16.363
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 156.66,
-          "bemt_aero_power_kw": 195.54,
-          "engine_shaft_power_kw": 205.83,
+          "bemt_aero_power_kw": 195.53,
+          "engine_shaft_power_kw": 205.82,
           "within_300kw_derated": true,
           "within_469p8kw_continuous": true,
           "max_fan_thrust_margin_n": 3067.51
@@ -2080,14 +2080,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2055,
-            4.4432,
-            4.4373,
+            5.2054,
+            4.4427,
+            4.4369,
             2.0,
-            1.6562,
-            1.6555
+            1.6564,
+            1.6557
           ],
-          "condition_number": 3.1443,
+          "condition_number": 3.1439,
           "max_roll_moment_diff_thrust_nm": 3987.8,
           "max_pitch_moment_diff_thrust_nm": 3987.8,
           "max_yaw_moment_20deg_vector_nm": 8778.7
@@ -2107,57 +2107,57 @@
         "weight_n": 10264.32,
         "cg_m": [
           -0.00026,
-          0.07546,
-          1.18994
+          0.07475,
+          1.19035
         ],
         "inertia_cg_kg_m2": [
           [
-            1870.1084,
-            10.9979,
-            -0.867
+            1876.1304,
+            12.1549,
+            -0.8671
           ],
           [
-            10.9979,
-            1835.8706,
-            65.2815
+            12.1549,
+            1842.3414,
+            73.7884
           ],
           [
-            -0.867,
-            65.2815,
-            2649.0217
+            -0.8671,
+            73.7884,
+            2651.8824
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 1.5987211554602254e-14,
+          "symmetry_max_abs_err": 1.4210854715202004e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1827.787227048304,
-            1872.9841391118553,
-            2654.229240439384
+            1832.285075711545,
+            1879.5159061250156,
+            2658.55315229703
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1046.5421257207754,
+          "triangle_inequality_margin_kg_m2": 1053.2478295395308,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 0.0,
-          "cg_max_diff_m": 8.060219158778636e-13,
-          "inertia_max_diff_kg_m2": 4.7216190068866126e-08
+          "cg_max_diff_m": 5.24913446042774e-13,
+          "inertia_max_diff_kg_m2": 4.743151293951087e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2566.08,
           "cg_trimmed_fan_thrusts_n": [
             2565.56,
-            2715.03,
+            2713.63,
             2566.59,
-            2417.12
+            2418.52
           ],
           "equal_thrust_collective_deg": 17.53,
           "cg_trimmed_collectives_deg": [
             17.527,
-            18.258,
+            18.251,
             17.532,
-            16.825
+            16.832
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 166.09,
@@ -2175,14 +2175,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2052,
-            4.4543,
-            4.4488,
+            5.2051,
+            4.4538,
+            4.4483,
             2.0,
-            1.652,
-            1.6514
+            1.6522,
+            1.6516
           ],
-          "condition_number": 3.152,
+          "condition_number": 3.1516,
           "max_roll_moment_diff_thrust_nm": 3477.8,
           "max_pitch_moment_diff_thrust_nm": 3477.8,
           "max_yaw_moment_20deg_vector_nm": 9127.6
@@ -2202,61 +2202,61 @@
         "weight_n": 10754.65,
         "cg_m": [
           -0.00025,
-          0.07202,
-          1.17877
+          0.07134,
+          1.17917
         ],
         "inertia_cg_kg_m2": [
           [
-            1928.6475,
-            10.9988,
-            -0.864
+            1934.6741,
+            12.1559,
+            -0.8641
           ],
           [
-            10.9988,
-            1894.138,
-            64.3994
+            12.1559,
+            1900.6184,
+            72.9131
           ],
           [
-            -0.864,
-            64.3994,
-            2759.2922
+            -0.8641,
+            72.9131,
+            2762.1478
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 8.881784197001252e-16,
+          "symmetry_max_abs_err": 1.4210854715202004e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1886.4837524518496,
-            1931.534328380723,
-            2764.059638217475
+            1891.0846878729747,
+            1938.0805686994934,
+            2768.2750819592047
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1053.9584426150977,
+          "triangle_inequality_margin_kg_m2": 1060.8901746132633,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 0.0,
-          "cg_max_diff_m": 7.791545186819349e-13,
-          "inertia_max_diff_kg_m2": 8.454162525595166e-08
+          "cg_max_diff_m": 5.10702591327572e-13,
+          "inertia_max_diff_kg_m2": 8.449455890513491e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2688.66,
           "cg_trimmed_fan_thrusts_n": [
             2688.15,
-            2837.62,
+            2836.22,
             2689.18,
-            2539.71
+            2541.11
           ],
           "equal_thrust_collective_deg": 18.126,
           "cg_trimmed_collectives_deg": [
             18.123,
-            18.917,
+            18.909,
             18.128,
-            17.406
+            17.412
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 178.14,
-          "bemt_aero_power_kw": 220.55,
+          "bemt_aero_power_kw": 220.54,
           "engine_shaft_power_kw": 232.15,
           "within_300kw_derated": true,
           "within_469p8kw_continuous": true,
@@ -2270,14 +2270,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2049,
-            4.4671,
-            4.462,
+            5.2048,
+            4.4666,
+            4.4616,
             2.0,
-            1.6472,
-            1.6467
+            1.6474,
+            1.6469
           ],
-          "condition_number": 3.1609,
+          "condition_number": 3.1604,
           "max_roll_moment_diff_thrust_nm": 2840.4,
           "max_pitch_moment_diff_thrust_nm": 2840.4,
           "max_yaw_moment_20deg_vector_nm": 9563.6
@@ -2299,57 +2299,57 @@
         "weight_n": 11235.17,
         "cg_m": [
           -0.00024,
-          0.06894,
-          1.11368
+          0.06829,
+          1.13836
         ],
         "inertia_cg_kg_m2": [
           [
-            2270.8998,
-            12.5577,
-            -0.8462
+            2252.2246,
+            13.7147,
+            -0.853
           ],
           [
-            12.5577,
-            2253.6691,
-            59.2586
+            13.7147,
+            2235.4522,
+            69.7206
           ],
           [
-            -0.8462,
-            59.2586,
-            3351.9389
+            -0.853,
+            69.7206,
+            3354.7899
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 7.105427357601002e-15,
+          "symmetry_max_abs_err": 2.842170943040401e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2244.4849646725297,
-            2276.8957665780626,
-            3355.127005176292
+            2224.351865612619,
+            2258.9989816044513,
+            3359.1159156331328
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1166.2537260743002,
+          "triangle_inequality_margin_kg_m2": 1124.2349315839379,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 0.0,
-          "cg_max_diff_m": 7.267519919196275e-13,
-          "inertia_max_diff_kg_m2": 1.0042185749625787e-08
+          "cg_max_diff_m": 4.698463840213662e-13,
+          "inertia_max_diff_kg_m2": 1.0438725439598784e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2808.79,
           "cg_trimmed_fan_thrusts_n": [
             2808.28,
-            2957.75,
+            2956.35,
             2809.31,
-            2659.84
+            2661.24
           ],
           "equal_thrust_collective_deg": 18.755,
           "cg_trimmed_collectives_deg": [
             18.752,
-            19.62,
+            19.612,
             18.757,
-            17.981
+            17.988
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 190.21,
@@ -2367,14 +2367,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2049,
-            4.5443,
-            4.5393,
+            5.2047,
+            4.5146,
+            4.5098,
             2.0,
-            1.6192,
-            1.6187
+            1.6298,
+            1.6293
           ],
-          "condition_number": 3.2155,
+          "condition_number": 3.1944,
           "max_roll_moment_diff_thrust_nm": 2215.7,
           "max_pitch_moment_diff_thrust_nm": 2215.7,
           "max_yaw_moment_20deg_vector_nm": 9990.9
@@ -2394,57 +2394,57 @@
         "weight_n": 11333.24,
         "cg_m": [
           -0.00024,
-          0.06834,
-          1.11222
+          0.0677,
+          1.13669
         ],
         "inertia_cg_kg_m2": [
           [
-            2282.3099,
-            12.5578,
-            -0.8458
+            2263.7224,
+            13.7149,
+            -0.8525
           ],
           [
-            12.5578,
-            2265.032,
-            59.1433
+            13.7149,
+            2246.9038,
+            69.5897
           ],
           [
-            -0.8458,
-            59.1433,
-            3373.9857
+            -0.8525,
+            69.5897,
+            3376.8359
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 7.105427357601002e-15,
+          "symmetry_max_abs_err": 0.0,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2255.8914840491225,
-            2288.3050695712705,
-            3377.1311066390736
+            2235.8576041083843,
+            2270.4988117138337,
+            3381.1056401053675
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1167.0654469813198,
+          "triangle_inequality_margin_kg_m2": 1125.2507757168505,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 0.0,
-          "cg_max_diff_m": 7.225331444260519e-13,
-          "inertia_max_diff_kg_m2": 1.7504589777672663e-08
+          "cg_max_diff_m": 4.67847982577041e-13,
+          "inertia_max_diff_kg_m2": 1.784837877494283e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2833.31,
           "cg_trimmed_fan_thrusts_n": [
             2832.8,
-            2982.26,
+            2980.86,
             2833.82,
-            2684.36
+            2685.76
           ],
           "equal_thrust_collective_deg": 18.893,
           "cg_trimmed_collectives_deg": [
             18.89,
-            19.776,
+            19.767,
             18.896,
-            18.104
+            18.111
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 192.7,
@@ -2462,14 +2462,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2049,
-            4.546,
-            4.5411,
+            5.2046,
+            4.5166,
+            4.5119,
             2.0,
-            1.6185,
-            1.6181
+            1.6291,
+            1.6286
           ],
-          "condition_number": 3.2167,
+          "condition_number": 3.1957,
           "max_roll_moment_diff_thrust_nm": 2088.2,
           "max_pitch_moment_diff_thrust_nm": 2088.2,
           "max_yaw_moment_20deg_vector_nm": 10078.1
@@ -2489,57 +2489,57 @@
         "weight_n": 11725.51,
         "cg_m": [
           -0.00023,
-          0.06606,
-          1.10663
+          0.06544,
+          1.13027
         ],
         "inertia_cg_kg_m2": [
           [
-            2327.8952,
-            12.5585,
-            -0.8443
+            2309.6437,
+            13.7155,
+            -0.8508
           ],
           [
-            12.5585,
-            2310.4367,
-            58.7014
+            13.7155,
+            2292.6479,
+            69.0879
           ],
           [
-            -0.8443,
-            58.7014,
-            3462.1654
+            -0.8508,
+            69.0879,
+            3465.0122
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 7.105427357601002e-15,
+          "symmetry_max_abs_err": 1.0658141036401503e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2301.4608405731824,
-            2333.8868045878594,
-            3465.1495794060165
+            2281.8068708532437,
+            2316.42737270231,
+            3469.0695195784842
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1170.1980657550257,
+          "triangle_inequality_margin_kg_m2": 1129.1647239770696,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 0.0,
-          "cg_max_diff_m": 7.056577544517495e-13,
-          "inertia_max_diff_kg_m2": 4.736011760542169e-08
+          "cg_max_diff_m": 4.594102875898898e-13,
+          "inertia_max_diff_kg_m2": 4.7494722821284086e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2931.38,
           "cg_trimmed_fan_thrusts_n": [
             2930.86,
-            3080.33,
+            3078.93,
             2931.89,
-            2782.42
+            2783.82
           ],
           "equal_thrust_collective_deg": 19.462,
           "cg_trimmed_collectives_deg": [
             19.459,
-            20.425,
+            20.415,
             19.465,
-            18.613
+            18.62
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 202.79,
@@ -2557,14 +2557,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2046,
-            4.5526,
-            4.548,
+            5.2044,
+            4.5241,
+            4.5197,
             2.0,
-            1.6162,
-            1.6157
+            1.6264,
+            1.6259
           ],
-          "condition_number": 3.2212,
+          "condition_number": 3.2009,
           "max_roll_moment_diff_thrust_nm": 1578.3,
           "max_pitch_moment_diff_thrust_nm": 1578.3,
           "max_yaw_moment_20deg_vector_nm": 10426.9
@@ -2584,57 +2584,57 @@
         "weight_n": 12215.84,
         "cg_m": [
           -0.00022,
-          0.06341,
-          1.10014
+          0.06281,
+          1.12284
         ],
         "inertia_cg_kg_m2": [
           [
-            2384.7628,
-            12.5592,
-            -0.8425
+            2366.9011,
+            13.7162,
+            -0.8487
           ],
           [
-            12.5592,
-            2367.0949,
-            58.189
+            13.7162,
+            2349.6997,
+            68.5061
           ],
           [
-            -0.8425,
-            58.189,
-            3572.3736
+            -0.8487,
+            68.5061,
+            3575.2165
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 0.0,
+          "symmetry_max_abs_err": 3.552713678800501e-15,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2358.305584713933,
-            2390.74927909679,
-            3575.1764138481367
+            2339.091444863125,
+            2373.691767490446,
+            3579.034079308003
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1173.8784499625863,
+          "triangle_inequality_margin_kg_m2": 1133.7491330455687,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 0.0,
-          "cg_max_diff_m": 6.858957846134217e-13,
-          "inertia_max_diff_kg_m2": 8.46780494612176e-08
+          "cg_max_diff_m": 4.4941828036826337e-13,
+          "inertia_max_diff_kg_m2": 8.455799616058357e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 3053.96,
           "cg_trimmed_fan_thrusts_n": [
             3053.45,
-            3202.91,
+            3201.51,
             3054.47,
-            2905.01
+            2906.41
           ],
           "equal_thrust_collective_deg": 20.241,
           "cg_trimmed_collectives_deg": [
             20.237,
-            21.324,
+            21.313,
             20.245,
-            19.304
+            19.313
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 215.65,
@@ -2652,14 +2652,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2044,
-            4.5603,
-            4.556,
+            5.2042,
+            4.5329,
+            4.5287,
             2.0,
-            1.6134,
-            1.613
+            1.6232,
+            1.6228
           ],
-          "condition_number": 3.2265,
+          "condition_number": 3.2069,
           "max_roll_moment_diff_thrust_nm": 940.8,
           "max_pitch_moment_diff_thrust_nm": 940.8,
           "max_yaw_moment_20deg_vector_nm": 10863.0
@@ -2683,57 +2683,57 @@
         "weight_n": 9945.6,
         "cg_m": [
           0.02799,
-          0.10614,
-          1.19779
+          0.10541,
+          1.19821
         ],
         "inertia_cg_kg_m2": [
           [
-            1826.6176,
-            -15.6898,
-            6.3764
+            1832.6784,
+            -14.5538,
+            6.3885
           ],
           [
-            -15.6898,
-            1797.0507,
-            73.147
+            -14.5538,
+            1803.5147,
+            81.6613
           ],
           [
-            6.3764,
-            73.147,
-            2571.2622
+            6.3885,
+            81.6613,
+            2574.1685
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 3.552713678800501e-15,
+          "symmetry_max_abs_err": 1.7763568394002505e-15,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1784.0226070816113,
-            1832.7636878445358,
-            2578.1442728352004
+            1789.628266936948,
+            1837.9756078368277,
+            2582.7577597629565
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1038.6420220909467,
+          "triangle_inequality_margin_kg_m2": 1044.8461150108192,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 2.999854586960282e-09,
-          "cg_max_diff_m": 1.5800694086465228e-12,
-          "inertia_max_diff_kg_m2": 2.1640207847895e-08
+          "cg_max_diff_m": 1.291189377639057e-12,
+          "inertia_max_diff_kg_m2": 2.1648599357604326e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2486.4,
           "cg_trimmed_fan_thrusts_n": [
             2539.94,
-            2689.41,
+            2688.01,
             2432.86,
-            2283.39
+            2284.79
           ],
           "equal_thrust_collective_deg": 17.154,
           "cg_trimmed_collectives_deg": [
             17.407,
-            18.129,
+            18.123,
             16.9,
-            16.183
+            16.19
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 158.42,
@@ -2751,14 +2751,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2101,
-            4.4485,
-            4.4369,
+            5.21,
+            4.4479,
+            4.4365,
             2.0,
-            1.6549,
-            1.6536
+            1.6551,
+            1.6538
           ],
-          "condition_number": 3.1509,
+          "condition_number": 3.1504,
           "max_roll_moment_diff_thrust_nm": 3892.1,
           "max_pitch_moment_diff_thrust_nm": 3892.1,
           "max_yaw_moment_20deg_vector_nm": 8844.1
@@ -2778,57 +2778,57 @@
         "weight_n": 10215.28,
         "cg_m": [
           -0.00026,
-          0.13086,
-          1.19112
+          0.13014,
+          1.19153
         ],
         "inertia_cg_kg_m2": [
           [
-            1852.3899,
-            10.9828,
-            -0.8673
+            1858.4932,
+            12.1398,
+            -0.8675
           ],
           [
-            10.9828,
-            1830.0287,
-            79.4829
+            12.1398,
+            1836.4985,
+            88.0128
           ],
           [
-            -0.8673,
-            79.4829,
-            2626.1452
+            -0.8675,
+            88.0128,
+            2629.0882
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 8.881784197001252e-16,
+          "symmetry_max_abs_err": 3.552713678800501e-15,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1818.5821015014012,
-            1855.9786190881632,
-            2634.003148277079
+            1822.7091968897278,
+            1862.6265204769925,
+            2638.744149856173
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1040.5575723124853,
+          "triangle_inequality_margin_kg_m2": 1046.591567510547,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 2.186639758150477e-12,
-          "inertia_max_diff_kg_m2": 4.11951077694539e-08
+          "cg_max_diff_m": 1.9696189124118746e-12,
+          "inertia_max_diff_kg_m2": 4.102639650227502e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2553.82,
           "cg_trimmed_fan_thrusts_n": [
             2553.31,
-            2810.88,
+            2809.48,
             2554.33,
-            2296.76
+            2298.16
           ],
           "equal_thrust_collective_deg": 17.472,
           "cg_trimmed_collectives_deg": [
             17.47,
-            18.766,
+            18.758,
             17.475,
-            16.248
+            16.255
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 164.9,
@@ -2846,14 +2846,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2142,
-            4.4589,
-            4.4424,
+            5.214,
+            4.4583,
+            4.442,
             2.0,
-            1.6515,
-            1.6497
+            1.6517,
+            1.6499
           ],
-          "condition_number": 3.1607,
+          "condition_number": 3.1602,
           "max_roll_moment_diff_thrust_nm": 3541.6,
           "max_pitch_moment_diff_thrust_nm": 3541.6,
           "max_yaw_moment_20deg_vector_nm": 9084.0
@@ -2873,57 +2873,57 @@
         "weight_n": 10215.28,
         "cg_m": [
           -0.00026,
-          0.02079,
-          1.19112
+          0.02008,
+          1.19153
         ],
         "inertia_cg_kg_m2": [
           [
-            1869.7764,
-            11.0128,
-            -0.8673
+            1875.7163,
+            12.1698,
+            -0.8675
           ],
           [
-            11.0128,
-            1830.0287,
-            51.2657
+            12.1698,
+            1836.4985,
+            59.7482
           ],
           [
-            -0.8673,
-            51.2657,
-            2643.5317
+            -0.8675,
+            59.7482,
+            2646.3112
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 2.6645352591003757e-15,
+          "symmetry_max_abs_err": 1.3322676295501878e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1824.137520103397,
-            1872.4496284586949,
-            2646.7496921827415
+            1828.9322109202967,
+            1878.8980555955573,
+            2650.695716540547
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1049.8374563793504,
+          "triangle_inequality_margin_kg_m2": 1057.134549975307,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 1.8045356875440177e-12,
-          "inertia_max_diff_kg_m2": 4.1100520320469514e-08
+          "cg_max_diff_m": 2.0215357166009085e-12,
+          "inertia_max_diff_kg_m2": 4.128605723963119e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2553.82,
           "cg_trimmed_fan_thrusts_n": [
             2553.31,
-            2594.67,
+            2593.27,
             2554.33,
-            2512.98
+            2514.38
           ],
           "equal_thrust_collective_deg": 17.472,
           "cg_trimmed_collectives_deg": [
             17.47,
-            17.666,
+            17.659,
             17.475,
-            17.28
+            17.286
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 164.9,
@@ -2942,13 +2942,13 @@
           "rank": 6,
           "singular_values": [
             5.201,
-            4.4502,
-            4.4498,
+            4.4497,
+            4.4493,
             2.0,
-            1.653,
-            1.6529
+            1.6532,
+            1.6531
           ],
-          "condition_number": 3.1466,
+          "condition_number": 3.1462,
           "max_roll_moment_diff_thrust_nm": 3541.6,
           "max_pitch_moment_diff_thrust_nm": 3541.6,
           "max_yaw_moment_20deg_vector_nm": 9084.0
@@ -2968,61 +2968,61 @@
         "weight_n": 10215.28,
         "cg_m": [
           0.05477,
-          0.07582,
-          1.19112
+          0.07511,
+          1.19153
         ],
         "inertia_cg_kg_m2": [
           [
-            1864.2379,
-            15.3444,
-            13.2413
+            1870.2595,
+            16.4606,
+            13.2648
           ],
           [
-            15.3444,
-            1826.904,
-            65.3743
+            16.4606,
+            1833.3738,
+            73.8805
           ],
           [
-            13.2413,
-            65.3743,
-            2634.8685
+            13.2648,
+            73.8805,
+            2637.7297
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 1.2434497875801753e-14,
+          "symmetry_max_abs_err": 1.4210854715202004e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1817.3079431140577,
-            1868.3102600452055,
-            2640.392160019995
+            1821.851921247234,
+            1874.7724197718435,
+            2644.73859249328
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1045.2260431392683,
+          "triangle_inequality_margin_kg_m2": 1051.8857485257972,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 2.2866222804118763e-12,
-          "inertia_max_diff_kg_m2": 4.125649866182357e-08
+          "cg_max_diff_m": 2.2863724802313357e-12,
+          "inertia_max_diff_kg_m2": 4.152093424636405e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2553.82,
           "cg_trimmed_fan_thrusts_n": [
             2661.42,
-            2702.78,
+            2701.38,
             2446.23,
-            2404.87
+            2406.27
           ],
           "equal_thrust_collective_deg": 17.472,
           "cg_trimmed_collectives_deg": [
             17.988,
-            18.197,
+            18.19,
             16.964,
-            16.767
+            16.773
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 164.9,
-          "bemt_aero_power_kw": 205.22,
+          "bemt_aero_power_kw": 205.21,
           "engine_shaft_power_kw": 216.02,
           "within_300kw_derated": true,
           "within_469p8kw_continuous": true,
@@ -3036,14 +3036,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2076,
-            4.4545,
-            4.4461,
+            5.2075,
+            4.454,
+            4.4456,
             2.0,
-            1.6523,
-            1.6513
+            1.6524,
+            1.6515
           ],
-          "condition_number": 3.1536,
+          "condition_number": 3.1532,
           "max_roll_moment_diff_thrust_nm": 3541.6,
           "max_pitch_moment_diff_thrust_nm": 3541.6,
           "max_yaw_moment_20deg_vector_nm": 9084.0
@@ -3063,57 +3063,57 @@
         "weight_n": 10215.28,
         "cg_m": [
           -0.05529,
-          0.07582,
-          1.19112
+          0.07511,
+          1.19153
         ],
         "inertia_cg_kg_m2": [
           [
-            1864.2379,
-            6.6512,
-            -14.9759
+            1870.2595,
+            7.8491,
+            -14.9998
           ],
           [
-            6.6512,
-            1826.844,
-            65.3743
+            7.8491,
+            1833.3138,
+            73.8805
           ],
           [
-            -14.9759,
-            65.3743,
-            2634.8084
+            -14.9998,
+            73.8805,
+            2637.6697
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 2.842170943040401e-14,
+          "symmetry_max_abs_err": 1.7763568394002505e-15,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1820.1887793394744,
-            1865.3706950268045,
-            2640.3308720537148
+            1824.7243712289412,
+            1871.8578357874953,
+            2644.660709738272
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1045.228602312564,
+          "triangle_inequality_margin_kg_m2": 1051.9214972781647,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 1.952542294514359e-12,
-          "inertia_max_diff_kg_m2": 4.0565964809502475e-08
+          "cg_max_diff_m": 1.9528059724827074e-12,
+          "inertia_max_diff_kg_m2": 4.123603503103368e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2553.82,
           "cg_trimmed_fan_thrusts_n": [
             2445.2,
-            2702.78,
+            2701.38,
             2662.44,
-            2404.87
+            2406.27
           ],
           "equal_thrust_collective_deg": 17.472,
           "cg_trimmed_collectives_deg": [
             16.959,
-            18.197,
+            18.19,
             17.993,
-            16.767
+            16.773
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 164.9,
@@ -3131,14 +3131,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2077,
-            4.4546,
-            4.446,
+            5.2076,
+            4.454,
+            4.4456,
             2.0,
-            1.6522,
-            1.6513
+            1.6524,
+            1.6515
           ],
-          "condition_number": 3.1537,
+          "condition_number": 3.1532,
           "max_roll_moment_diff_thrust_nm": 3541.6,
           "max_pitch_moment_diff_thrust_nm": 3541.6,
           "max_yaw_moment_20deg_vector_nm": 9084.0
@@ -3158,57 +3158,57 @@
         "weight_n": 10215.28,
         "cg_m": [
           -0.00026,
-          0.07582,
-          1.19112
+          0.07511,
+          1.19153
         ],
         "inertia_cg_kg_m2": [
           [
-            1864.2379,
-            -48.4455,
-            -0.8673
+            1870.2595,
+            -47.2885,
+            -0.8675
           ],
           [
-            -48.4455,
-            1830.0287,
-            65.3743
+            -47.2885,
+            1836.4985,
+            73.8805
           ],
           [
-            -0.8673,
-            65.3743,
-            2637.9932
+            -0.8675,
+            73.8805,
+            2640.8544
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 8.881784197001252e-16,
+          "symmetry_max_abs_err": 1.4210854715202004e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1792.3959777854238,
-            1896.586212108439,
-            2643.2776026489705
+            1798.8161306581922,
+            1901.1778820472282,
+            2647.6183501712653
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1045.704587244892,
+          "triangle_inequality_margin_kg_m2": 1052.3756625341553,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 1.2898571100095069e-12,
-          "inertia_max_diff_kg_m2": 4.32304076980472e-08
+          "cg_max_diff_m": 1.0078604617547171e-12,
+          "inertia_max_diff_kg_m2": 4.323165825326214e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2553.82,
           "cg_trimmed_fan_thrusts_n": [
             2553.31,
-            2702.78,
+            2701.38,
             2554.33,
-            2404.87
+            2406.27
           ],
           "equal_thrust_collective_deg": 17.472,
           "cg_trimmed_collectives_deg": [
             17.47,
-            18.197,
+            18.19,
             17.475,
-            16.767
+            16.773
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 164.9,
@@ -3226,14 +3226,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2053,
-            4.453,
-            4.4474,
+            5.2052,
+            4.4524,
+            4.447,
             2.0,
-            1.6525,
-            1.6519
+            1.6527,
+            1.6521
           ],
-          "condition_number": 3.1511,
+          "condition_number": 3.1506,
           "max_roll_moment_diff_thrust_nm": 3541.6,
           "max_pitch_moment_diff_thrust_nm": 3541.6,
           "max_yaw_moment_20deg_vector_nm": 9084.0
@@ -3253,57 +3253,57 @@
         "weight_n": 10484.97,
         "cg_m": [
           -0.02706,
-          0.10068,
-          1.18479
+          0.09999,
+          1.18519
         ],
         "inertia_cg_kg_m2": [
           [
-            1891.4841,
-            -21.6164,
-            -7.7385
+            1897.548,
+            -20.4395,
+            -7.7501
           ],
           [
-            -21.6164,
-            1861.341,
-            71.7472
+            -20.4395,
+            1867.8163,
+            80.2688
           ],
           [
-            -7.7385,
-            71.7472,
-            2692.8603
+            -7.7501,
+            80.2688,
+            2695.7585
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 1.4210854715202004e-14,
+          "symmetry_max_abs_err": 8.881784197001252e-16,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            1845.6616432870499,
-            1900.9050831009442,
-            2699.1186927277404
+            1851.7023573285003,
+            1905.835622672696,
+            2703.5847755116024
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1047.4480336602537,
+          "triangle_inequality_margin_kg_m2": 1053.9532044895936,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 9.999894245993346e-10,
-          "cg_max_diff_m": 1.0796502580845413e-12,
-          "inertia_max_diff_kg_m2": 6.271238817134872e-08
+          "cg_max_diff_m": 8.688882946472631e-13,
+          "inertia_max_diff_kg_m2": 6.28658654022729e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2621.24,
           "cg_trimmed_fan_thrusts_n": [
             2566.67,
-            2824.25,
+            2822.85,
             2675.81,
-            2418.23
+            2419.63
           ],
           "equal_thrust_collective_deg": 17.794,
           "cg_trimmed_collectives_deg": [
             17.533,
-            18.842,
+            18.834,
             18.061,
-            16.83
+            16.837
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 171.48,
@@ -3321,14 +3321,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2094,
-            4.463,
-            4.4524,
+            5.2093,
+            4.4625,
+            4.452,
             2.0,
-            1.6493,
-            1.6482
+            1.6495,
+            1.6484
           ],
-          "condition_number": 3.1607,
+          "condition_number": 3.1602,
           "max_roll_moment_diff_thrust_nm": 3191.0,
           "max_pitch_moment_diff_thrust_nm": 3191.0,
           "max_yaw_moment_20deg_vector_nm": 9323.8
@@ -3350,57 +3350,57 @@
         "weight_n": 11406.79,
         "cg_m": [
           0.02441,
-          0.09255,
-          1.11115
+          0.09191,
+          1.13545
         ],
         "inertia_cg_kg_m2": [
           [
-            2286.2649,
-            -14.5178,
-            3.9166
+            2267.7787,
+            -13.3791,
+            4.6067
           ],
           [
-            -14.5178,
-            2272.8582,
-            63.8203
+            -13.3791,
+            2254.7954,
+            74.9518
           ],
           [
-            3.9166,
-            63.8203,
-            3385.2286
+            4.6067,
+            74.9518,
+            3388.1147
           ]
         ],
         "inertia_verification": {
           "symmetry_max_abs_err": 3.552713678800501e-15,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2260.724584174692,
-            2294.7402545449513,
-            3388.886834379751
+            2242.486520961678,
+            2275.139827053607,
+            3393.0624473455455
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1166.5780043398922,
+          "triangle_inequality_margin_kg_m2": 1124.5639006697393,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 2.9999682737980038e-09,
-          "cg_max_diff_m": 1.1728534810018232e-12,
-          "inertia_max_diff_kg_m2": 2.1662261318056153e-08
+          "cg_max_diff_m": 1.0766491864711014e-12,
+          "inertia_max_diff_kg_m2": 2.166972912220899e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2851.7,
           "cg_trimmed_fan_thrusts_n": [
             2905.24,
-            3054.71,
+            3053.31,
             2798.16,
-            2648.69
+            2650.09
           ],
           "equal_thrust_collective_deg": 18.996,
           "cg_trimmed_collectives_deg": [
             19.305,
-            20.246,
+            20.237,
             18.697,
-            17.925
+            17.932
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 194.58,
@@ -3418,14 +3418,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2089,
-            4.5496,
-            4.5399,
+            5.2085,
+            4.5203,
+            4.511,
             2.0,
-            1.6177,
-            1.6168
+            1.6282,
+            1.6273
           ],
-          "condition_number": 3.2217,
+          "condition_number": 3.2007,
           "max_roll_moment_diff_thrust_nm": 1992.6,
           "max_pitch_moment_diff_thrust_nm": 1992.6,
           "max_yaw_moment_20deg_vector_nm": 10143.5
@@ -3445,57 +3445,57 @@
         "weight_n": 11676.47,
         "cg_m": [
           -0.00023,
-          0.11448,
-          1.10731
+          0.11386,
+          1.13105
         ],
         "inertia_cg_kg_m2": [
           [
-            2311.8363,
-            12.5453,
-            -0.8445
+            2293.6156,
+            13.7023,
+            -0.851
           ],
           [
-            12.5453,
-            2304.7651,
-            68.0594
+            13.7023,
+            2286.9351,
+            79.8143
           ],
           [
-            -0.8445,
-            68.0594,
-            3440.7783
+            -0.851,
+            79.8143,
+            3443.697
           ]
         ],
         "inertia_verification": {
           "symmetry_max_abs_err": 3.552713678800501e-15,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2292.5185622020026,
-            2320.019873603957,
-            3444.841243551185
+            2272.5199999215615,
+            2302.549602816876,
+            3449.1780437334155
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1167.697192254775,
+          "triangle_inequality_margin_kg_m2": 1125.891559005022,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 1.885519518296519e-12,
-          "inertia_max_diff_kg_m2": 4.140611054026522e-08
+          "cg_max_diff_m": 1.6957962811758875e-12,
+          "inertia_max_diff_kg_m2": 4.1212388168787584e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2919.12,
           "cg_trimmed_fan_thrusts_n": [
             2918.6,
-            3176.18,
+            3174.78,
             2919.63,
-            2662.05
+            2663.45
           ],
           "equal_thrust_collective_deg": 19.389,
           "cg_trimmed_collectives_deg": [
             19.386,
-            21.121,
+            21.11,
             19.392,
-            17.992
+            17.999
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 201.52,
@@ -3513,14 +3513,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2124,
-            4.5562,
-            4.5423,
+            5.2119,
+            4.5276,
+            4.5142,
             2.0,
-            1.6158,
-            1.6145
+            1.626,
+            1.6247
           ],
-          "condition_number": 3.2286,
+          "condition_number": 3.208,
           "max_roll_moment_diff_thrust_nm": 1642.0,
           "max_pitch_moment_diff_thrust_nm": 1642.0,
           "max_yaw_moment_20deg_vector_nm": 10383.3
@@ -3540,57 +3540,57 @@
         "weight_n": 11676.47,
         "cg_m": [
           -0.00023,
-          0.01819,
-          1.10731
+          0.01757,
+          1.13105
         ],
         "inertia_cg_kg_m2": [
           [
-            2327.0471,
-            12.5715,
-            -0.8445
+            2308.6833,
+            13.7285,
+            -0.851
           ],
           [
-            12.5715,
-            2304.7651,
-            49.4506
+            13.7285,
+            2286.9351,
+            58.4833
           ],
           [
-            -0.8445,
-            49.4506,
-            3455.989
+            -0.851,
+            58.4833,
+            3458.7647
           ]
         ],
         "inertia_verification": {
           "symmetry_max_abs_err": 2.842170943040401e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2297.3093995085287,
-            2332.3824324708426,
-            3458.109338672915
+            2277.8819906748126,
+            2314.824895146561,
+            3461.6762985759933
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1171.5824933064564,
+          "triangle_inequality_margin_kg_m2": 1131.03058724538,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 1.5830843580477705e-12,
-          "inertia_max_diff_kg_m2": 4.1311068343929946e-08
+          "cg_max_diff_m": 1.772800656274498e-12,
+          "inertia_max_diff_kg_m2": 4.139565135119483e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2919.12,
           "cg_trimmed_fan_thrusts_n": [
             2918.6,
-            2959.96,
+            2958.56,
             2919.63,
-            2878.27
+            2879.67
           ],
           "equal_thrust_collective_deg": 19.389,
           "cg_trimmed_collectives_deg": [
             19.386,
-            19.634,
+            19.625,
             19.392,
-            19.145
+            19.153
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 201.52,
@@ -3608,14 +3608,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.201,
-            4.5498,
-            4.5494,
+            5.2009,
+            4.5212,
+            4.5208,
             2.0,
-            1.6168,
-            1.6167
+            1.627,
+            1.627
           ],
-          "condition_number": 3.2169,
+          "condition_number": 3.1967,
           "max_roll_moment_diff_thrust_nm": 1642.0,
           "max_pitch_moment_diff_thrust_nm": 1642.0,
           "max_yaw_moment_20deg_vector_nm": 10383.3
@@ -3635,57 +3635,57 @@
         "weight_n": 11676.47,
         "cg_m": [
           0.04792,
-          0.06634,
-          1.10731
+          0.06571,
+          1.13105
         ],
         "inertia_cg_kg_m2": [
           [
-            2322.2016,
-            16.3611,
-            8.4599
+            2303.9094,
+            17.4823,
+            9.8145
           ],
           [
-            16.3611,
-            2302.0314,
-            58.755
+            17.4823,
+            2284.2014,
+            69.1488
           ],
           [
-            8.4599,
-            58.755,
-            3448.4099
+            9.8145,
+            69.1488,
+            3451.2571
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 0.0,
+          "symmetry_max_abs_err": 7.105427357601002e-15,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2290.919149341498,
-            2330.2340509043725,
-            3451.4897237001587
+            2271.3479972332375,
+            2312.5781437741202,
+            3455.441773374246
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1169.663476545711,
+          "triangle_inequality_margin_kg_m2": 1128.4843676331116,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 1.988964548615968e-12,
-          "inertia_max_diff_kg_m2": 4.149933374719694e-08
+          "cg_max_diff_m": 1.988735565117139e-12,
+          "inertia_max_diff_kg_m2": 4.1643033910077065e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2919.12,
           "cg_trimmed_fan_thrusts_n": [
             3026.71,
-            3068.07,
+            3066.67,
             2811.52,
-            2770.16
+            2771.56
           ],
           "equal_thrust_collective_deg": 19.389,
           "cg_trimmed_collectives_deg": [
             20.061,
-            20.34,
+            20.33,
             18.77,
-            18.548
+            18.556
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 201.52,
@@ -3703,14 +3703,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2067,
-            4.553,
-            4.5458,
+            5.2064,
+            4.5244,
+            4.5175,
             2.0,
-            1.6163,
-            1.6156
+            1.6265,
+            1.6258
           ],
-          "condition_number": 3.2227,
+          "condition_number": 3.2023,
           "max_roll_moment_diff_thrust_nm": 1642.0,
           "max_pitch_moment_diff_thrust_nm": 1642.0,
           "max_yaw_moment_20deg_vector_nm": 10383.3
@@ -3730,57 +3730,57 @@
         "weight_n": 11676.47,
         "cg_m": [
           -0.04837,
-          0.06634,
-          1.10731
+          0.06571,
+          1.13105
         ],
         "inertia_cg_kg_m2": [
           [
-            2322.2016,
-            8.7557,
-            -10.1489
+            2303.9094,
+            9.9485,
+            -11.5165
           ],
           [
-            8.7557,
-            2301.9789,
-            58.755
+            9.9485,
+            2284.1489,
+            69.1488
           ],
           [
-            -10.1489,
-            58.755,
-            3448.3574
+            -11.5165,
+            69.1488,
+            3451.2046
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 0.0,
+          "symmetry_max_abs_err": 1.4210854715202004e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2295.725114261783,
-            2325.3687965915947,
-            3451.4440151993317
+            2276.01569702617,
+            2307.8564019769146,
+            3455.3908174738317
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1169.6498956540458,
+          "triangle_inequality_margin_kg_m2": 1128.4812815292535,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 1.6965734372931252e-12,
-          "inertia_max_diff_kg_m2": 4.080402504769154e-08
+          "cg_max_diff_m": 1.696809359685858e-12,
+          "inertia_max_diff_kg_m2": 4.1353814594913274e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2919.12,
           "cg_trimmed_fan_thrusts_n": [
             2810.5,
-            3068.07,
+            3066.67,
             3027.74,
-            2770.16
+            2771.56
           ],
           "equal_thrust_collective_deg": 19.389,
           "cg_trimmed_collectives_deg": [
             18.764,
-            20.34,
+            20.33,
             20.068,
-            18.548
+            18.556
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 201.52,
@@ -3798,14 +3798,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2068,
-            4.553,
-            4.5458,
+            5.2065,
+            4.5244,
+            4.5175,
             2.0,
-            1.6163,
-            1.6156
+            1.6265,
+            1.6258
           ],
-          "condition_number": 3.2228,
+          "condition_number": 3.2024,
           "max_roll_moment_diff_thrust_nm": 1642.0,
           "max_pitch_moment_diff_thrust_nm": 1642.0,
           "max_yaw_moment_20deg_vector_nm": 10383.3
@@ -3825,57 +3825,57 @@
         "weight_n": 11676.47,
         "cg_m": [
           -0.00023,
-          0.06634,
-          1.10731
+          0.06571,
+          1.13105
         ],
         "inertia_cg_kg_m2": [
           [
-            2322.2016,
-            -46.8849,
-            -0.8445
+            2303.9094,
+            -45.7279,
+            -0.851
           ],
           [
-            -46.8849,
-            2304.7651,
-            58.755
+            -45.7279,
+            2286.9351,
+            69.1488
           ],
           [
-            -0.8445,
-            58.755,
-            3451.1436
+            -0.851,
+            69.1488,
+            3453.9908
           ]
         ],
         "inertia_verification": {
           "symmetry_max_abs_err": 1.4210854715202004e-14,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2264.094100144264,
-            2359.8598586629732,
-            3454.1563425466557
+            2246.5787993520926,
+            2340.171963597859,
+            3458.084528836855
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1169.797616260581,
+          "triangle_inequality_margin_kg_m2": 1128.6662341130964,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 1.999978849198669e-09,
-          "cg_max_diff_m": 9.876544027065393e-13,
-          "inertia_max_diff_kg_m2": 4.323227642544225e-08
+          "cg_max_diff_m": 7.8026474170656e-13,
+          "inertia_max_diff_kg_m2": 4.3233505664375116e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2919.12,
           "cg_trimmed_fan_thrusts_n": [
             2918.6,
-            3068.07,
+            3066.67,
             2919.63,
-            2770.16
+            2771.56
           ],
           "equal_thrust_collective_deg": 19.389,
           "cg_trimmed_collectives_deg": [
             19.386,
-            20.34,
+            20.33,
             19.392,
-            18.548
+            18.556
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 201.52,
@@ -3893,14 +3893,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2047,
-            4.5518,
-            4.5471,
+            5.2044,
+            4.5232,
+            4.5187,
             2.0,
-            1.6165,
-            1.616
+            1.6267,
+            1.6262
           ],
-          "condition_number": 3.2207,
+          "condition_number": 3.2003,
           "max_roll_moment_diff_thrust_nm": 1642.0,
           "max_pitch_moment_diff_thrust_nm": 1642.0,
           "max_yaw_moment_20deg_vector_nm": 10383.3
@@ -3920,57 +3920,57 @@
         "weight_n": 11946.16,
         "cg_m": [
           -0.02375,
-          0.08837,
-          1.10365
+          0.08776,
+          1.12685
         ],
         "inertia_cg_kg_m2": [
           [
-            2349.1092,
-            -19.7021,
-            -5.3907
+            2331.072,
+            -18.5276,
+            -6.0622
           ],
           [
-            -19.7021,
-            2335.2584,
-            63.0128
+            -18.5276,
+            2317.6507,
+            74.0326
           ],
           [
-            -5.3907,
-            63.0128,
-            3506.6827
+            -6.0622,
+            74.0326,
+            3509.5627
           ]
         ],
         "inertia_verification": {
-          "symmetry_max_abs_err": 0.0,
+          "symmetry_max_abs_err": 7.105427357601002e-15,
           "is_symmetric": true,
           "principal_moments_kg_m2": [
-            2319.270197630474,
-            2361.681864515971,
-            3510.0982427717618
+            2301.8285610909643,
+            2342.269678846218,
+            3514.1871604443536
           ],
           "positive_definite": true,
-          "triangle_inequality_margin_kg_m2": 1170.8538193746836,
+          "triangle_inequality_margin_kg_m2": 1129.9110794928288,
           "satisfies_triangle_inequality": true
         },
         "mujoco_agreement": {
           "mass_diff_kg": 9.999894245993346e-10,
-          "cg_max_diff_m": 9.3748619978129e-13,
-          "inertia_max_diff_kg_m2": 6.288973963819444e-08
+          "cg_max_diff_m": 7.525646772421624e-13,
+          "inertia_max_diff_kg_m2": 6.297932486631908e-08
         },
         "hover_1200rpm": {
           "per_fan_equal_thrust_n": 2986.54,
           "cg_trimmed_fan_thrusts_n": [
             2931.97,
-            3189.55,
+            3188.15,
             3041.11,
-            2783.53
+            2784.93
           ],
           "equal_thrust_collective_deg": 19.803,
           "cg_trimmed_collectives_deg": [
             19.466,
-            21.222,
+            21.211,
             20.154,
-            18.619
+            18.626
           ],
           "can_hover_1200rpm": true,
           "ideal_induced_power_kw": 208.54,
@@ -3988,14 +3988,14 @@
         "wrench_controllability": {
           "rank": 6,
           "singular_values": [
-            5.2083,
-            4.5582,
-            4.5493,
+            5.2079,
+            4.5302,
+            4.5216,
             2.0,
-            1.6146,
-            1.6137
+            1.6246,
+            1.6237
           ],
-          "condition_number": 3.2274,
+          "condition_number": 3.2074,
           "max_roll_moment_diff_thrust_nm": 1291.4,
           "max_pitch_moment_diff_thrust_nm": 1291.4,
           "max_yaw_moment_20deg_vector_nm": 10623.1
@@ -4044,16 +4044,16 @@
       "ground_settle_3s": {
         "crashed": false,
         "non_gear_collisions": 0,
-        "mean_gear_stroke_m": 0.0589,
-        "max_gear_stroke_m": 0.0602,
-        "equilibrium_roll_deg": 0.0,
+        "mean_gear_stroke_m": 0.0592,
+        "max_gear_stroke_m": 0.0599,
+        "equilibrium_roll_deg": -0.0,
         "equilibrium_pitch_deg": 0.0,
-        "cg_z_world_m": 1.3276
+        "cg_z_world_m": 1.3282
       },
       "powered_1200rpm_open_loop_4s": {
         "max_altitude_m": 0.207,
-        "peak_engine_power_kw": 125.08,
-        "max_attitude_tilt_deg": 0.05,
+        "peak_engine_power_kw": 124.48,
+        "max_attitude_tilt_deg": 0.03,
         "time_to_15deg_tilt_s": null,
         "crashed": false
       }
@@ -4062,16 +4062,16 @@
       "ground_settle_3s": {
         "crashed": false,
         "non_gear_collisions": 0,
-        "mean_gear_stroke_m": 0.0674,
-        "max_gear_stroke_m": 0.0683,
-        "equilibrium_roll_deg": -0.002,
-        "equilibrium_pitch_deg": -0.001,
-        "cg_z_world_m": 1.2359
+        "mean_gear_stroke_m": 0.0673,
+        "max_gear_stroke_m": 0.0686,
+        "equilibrium_roll_deg": -0.005,
+        "equilibrium_pitch_deg": 0.004,
+        "cg_z_world_m": 1.2595
       },
       "powered_1200rpm_open_loop_4s": {
         "max_altitude_m": 0.207,
-        "peak_engine_power_kw": 125.04,
-        "max_attitude_tilt_deg": 0.02,
+        "peak_engine_power_kw": 124.48,
+        "max_attitude_tilt_deg": 0.01,
         "time_to_15deg_tilt_s": null,
         "crashed": false
       }

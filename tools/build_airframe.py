@@ -125,41 +125,50 @@ if revision>=6:
         dict(axis=1,root_m=[0.0,0.385,-0.280],tip_m=[0.0,0.365,0.180]),
         dict(axis=2,root_m=[0.385,0.0,-0.280],tip_m=[0.365,0.0,0.180]),
     ]
-    # 1. Central 4-way reduction gearbox & turbine input coupling
-    translate_part(byname['P03 | Four way reduction gearbox'],0.0,-0.025,-0.210,
-                   'R6: lower central 4-way splitter 0.210m and shift -0.025m Y to clear P05 cabin gimbal rings (82mm) and P01 turbine heat shield (20mm)')
-    fit_segment(byname['V2 P03 | Power turbine flexible coupling (schematic)'],[0.0,0.060,0.300],[0.0,0.140,0.300],
-                'R6: align turbine output flexible coupling coaxially at z=0.300m between P01 M250 and lowered 4-way gearbox')
-    fit_segment(byname['V2 P03 | Transmission input flexible guard'],[0.0,0.116,0.300],[0.0,0.140,0.300],
-                'R6: align transmission input flexible guard over turbine-to-splitter coupling below P05 outer pitch ring')
+    # 1. Central 4-way reduction gearbox, P01 turboshaft & turbine input coupling
+    for p01_name in [
+        'P01 | M250 C30P class turboshaft schematic',
+        'P01 | Compressor shell',
+        'P01 | Turbine heat shielding',
+    ]:
+        translate_part(byname[p01_name],0.0,0.0,-0.120,
+                       f'R6: lower {p01_name} 0.120m at x=0 to clear F2 radial shaft (z=0.420m) and P05 cabin gimbal rings while preserving lateral CG symmetry')
+    translate_part(byname['P01 | Mount A'],-0.165,0.0,-0.120,
+                   'R6: shift P01 Mount A -0.165m X and -0.120m Z outboard of F2 carbon shaft enclosure')
+    translate_part(byname['P01 | Mount B'],+0.165,0.0,-0.120,
+                   'R6: shift P01 Mount B +0.165m X and -0.120m Z symmetrically with Mount A')
+    translate_part(byname['P03 | Four way reduction gearbox'],0.0,-0.025,-0.145,
+                   'R6: lower central 4-way splitter 0.145m and shift -0.025m Y to clear P05 cabin gimbal rings while enclosing z=0.420m radial drive shafts')
+    translate_part(byname['V2 P03 | Power turbine flexible coupling (schematic)'],0.0,-0.025,-0.120,
+                   'R6: translate turbine output flexible coupling coaxially with lowered P01 M250 output shaft')
+    translate_part(byname['V2 P03 | Transmission input flexible guard'],0.0,+0.040,-0.120,
+                   'R6: translate transmission input flexible guard over turbine-to-splitter coupling without rotating local axis')
 
-    # 2. Four point-symmetric radial transmission branches (F1..F4)
+    # 2. Four point-symmetric radial transmission branches (F1..F4) seated in the z=0.420m lower truss plane
     branch_cfg={
-        1:dict(axis='x',sign=+1,off=-0.125,z_shaft=0.260,r_in=0.260,r_out=2.460,bg_dx=0.0,bg_dy=-0.040,bg_dz=-0.240,z_spindle_lo=0.415),
-        3:dict(axis='x',sign=-1,off=+0.125,z_shaft=0.260,r_in=0.260,r_out=2.460,bg_dx=0.0,bg_dy=+0.040,bg_dz=-0.240,z_spindle_lo=0.415),
-        2:dict(axis='y',sign=+1,off=-0.210,z_shaft=0.140,r_in=0.130,r_out=2.460,bg_dx=-0.105,bg_dy=0.0,bg_dz=-0.360,z_spindle_lo=0.295),
-        4:dict(axis='y',sign=-1,off=+0.210,z_shaft=0.140,r_in=0.380,r_out=2.460,bg_dx=+0.105,bg_dy=0.0,bg_dz=-0.360,z_spindle_lo=0.295),
+        1:dict(axis='x',sign=+1,off=-0.155,z_shaft=0.420,r_in=0.260,r_out=2.460,bg_dx=0.0,bg_dy=-0.060,bg_dz=0.0,z_spindle_lo=0.600),
+        3:dict(axis='x',sign=-1,off=+0.155,z_shaft=0.420,r_in=0.260,r_out=2.460,bg_dx=0.0,bg_dy=+0.060,bg_dz=0.0,z_spindle_lo=0.600),
+        2:dict(axis='y',sign=+1,off=-0.210,z_shaft=0.420,r_in=0.260,r_out=2.460,bg_dx=-0.105,bg_dy=0.0,bg_dz=0.0,z_spindle_lo=0.600),
+        4:dict(axis='y',sign=-1,off=+0.210,z_shaft=0.420,r_in=0.380,r_out=2.460,bg_dx=+0.105,bg_dy=0.0,bg_dz=0.0,z_spindle_lo=0.600),
     }
     for i,cfg in branch_cfg.items():
         s,off,zs=cfg['sign'],cfg['off'],cfg['z_shaft']
         if cfg['axis']=='x':
             p_shaft_a,p_shaft_b=[s*cfg['r_in'],off,zs],[s*cfg['r_out'],off,zs]
             p_enc_a,p_enc_b=[s*0.450,off,zs],[s*2.350,off,zs]
-            p_r1_a,p_r1_b=[s*1.110,off,zs],[s*1.270,off,zs]
-            p_r2_a,p_r2_b=[s*2.070,off,zs],[s*2.230,off,zs]
+            b_dx,b_dy,b_dz=0.0,off,zs-0.420
         else:
             p_shaft_a,p_shaft_b=[off,s*cfg['r_in'],zs],[off,s*cfg['r_out'],zs]
             p_enc_a,p_enc_b=[off,s*0.450,zs],[off,s*2.350,zs]
-            p_r1_a,p_r1_b=[off,s*1.110,zs],[off,s*1.270,zs]
-            p_r2_a,p_r2_b=[off,s*2.070,zs],[off,s*2.230,zs]
+            b_dx,b_dy,b_dz=off,0.0,zs-0.420
         fit_segment(byname[f'P03 | F{i} radial drive shaft'],p_shaft_a,p_shaft_b,
                     f'R6: point-symmetric radial drive shaft F{i} offset to clear P10 landing gear legs and P01 M250 turboshaft')
         fit_segment(byname[f'P03 | F{i} carbon shaft enclosure'],p_enc_a,p_enc_b,
                     f'R6: coaxial carbon shaft enclosure for offset radial branch F{i}')
-        fit_segment(byname[f'V2 P03 | F{i} shaft bearing at R1.19'],p_r1_a,p_r1_b,
-                    f'R6: inner radial shaft support bearing R1.19 aligned with branch F{i}')
-        fit_segment(byname[f'V2 P03 | F{i} shaft bearing at R2.15'],p_r2_a,p_r2_b,
-                    f'R6: outer radial shaft support bearing R2.15 aligned with branch F{i}')
+        translate_part(byname[f'V2 P03 | F{i} shaft bearing at R1.19'],b_dx,b_dy,b_dz,
+                       f'R6: inner radial shaft support bearing R1.19 co-translated with branch F{i}')
+        translate_part(byname[f'V2 P03 | F{i} shaft bearing at R2.15'],b_dx,b_dy,b_dz,
+                       f'R6: outer radial shaft support bearing R2.15 co-translated with branch F{i}')
         translate_part(byname[f'P03 | F{i} bevel gearhead'],cfg['bg_dx'],cfg['bg_dy'],cfg['bg_dz'],
                        f'R6: position F{i} 90-deg bevel gearhead to bridge offset radial shaft (z={zs:.3f}m) and vertical column axis (r=2.600m)')
 
@@ -242,8 +251,8 @@ if revision>=6:
     # 4. Four Protected Fuel Tanks (P07), Saddle Links (P06) & Protected Supply Plumbing
     bay_signs={1:(+1,+1),2:(-1,+1),3:(-1,-1),4:(+1,-1)}
     dr_tank,dz_tank=-0.006,+0.115
-    translate_part(byname['V2 P07 | Central fuel-feed manifold (schematic)'],0.0,0.0,-0.035-0.320,
-                   'R6: lower central fuel-feed manifold to z=-0.035m below 4-way gearbox and clear of hot P01 turbine section')
+    translate_part(byname['V2 P07 | Central fuel-feed manifold (schematic)'],0.0,-0.520,-0.020,
+                   'R6: position central fuel-feed manifold at y=-0.520m, z=0.300m inside lower truss frame aft of 4-way gearbox and clear of P01 turbine')
     for bay,(sx,sy) in bay_signs.items():
         ur=Vector((sx/math.sqrt(2),sy/math.sqrt(2),0.0))
         dx,dy=dr_tank*ur.x,dr_tank*ur.y
@@ -288,8 +297,8 @@ if revision>=6:
         valve_pos=byname[f'V4 P07 | BAY{bay} accessible pickup and shutoff valve'].matrix_world.translation.copy()
         w0=valve_pos+Vector((0,0,-0.030))
         w1=Vector((sx*0.860,sy*0.860,0.650))
-        w2=Vector((sx*0.540,sy*0.540,0.060))
-        w3=Vector((sx*0.115,sy*0.115,-0.020))
+        w2=Vector((sx*0.540,sy*0.540-0.180,0.340))
+        w3=Vector((sx*0.105,-0.520+sy*0.095,0.300))
         fit_segment(byname[f'V4 P07 | BAY{bay} protected supply pipe / segment1'],w0,w1,
                     f'R6: route BAY{bay} fuel supply pipe segment 1 from tank bottom valve below lower inner ring')
         fit_segment(byname[f'V4 P07 | BAY{bay} protected supply pipe / segment2'],w1,w2,

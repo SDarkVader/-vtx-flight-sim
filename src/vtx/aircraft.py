@@ -58,10 +58,10 @@ def proposed_variator_components():
             name=f'PROPOSED P03 | F{i} 20:60 4-planet epicyclic variator',
             body='airframe',
             kind='cylinder',
-            centroid_m=[px,py,0.480],
+            centroid_m=[px,py,0.720],
             radius_m=0.110,
             length_m=0.120,
-            bounds_m=[[px-0.110,py-0.110,0.420],[px+0.110,py+0.110,0.540]],
+            bounds_m=[[px-0.110,py-0.110,0.660],[px+0.110,py+0.110,0.780]],
             mass_kg=8.50,
             uncertainty_kg=1.50,
             inertia_centroid_kg_m2=_cylinder_inertia(8.50,0.110,0.120),
@@ -72,10 +72,10 @@ def proposed_variator_components():
             name=f'PROPOSED P03 | F{i} EMRAX 268 motor-generator',
             body='airframe',
             kind='cylinder',
-            centroid_m=[px,py,0.5955],
+            centroid_m=[px,py,0.8355],
             radius_m=0.134,
             length_m=0.091,
-            bounds_m=[[px-0.134,py-0.134,0.550],[px+0.134,py+0.134,0.641]],
+            bounds_m=[[px-0.134,py-0.134,0.790],[px+0.134,py+0.134,0.881]],
             mass_kg=20.50,
             uncertainty_kg=1.00,
             inertia_centroid_kg_m2=_cylinder_inertia(20.50,0.134,0.091),
@@ -162,7 +162,10 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
         elif name.startswith('rotor'):
             ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis='0 0 1',limited='false')
         elif name.startswith('shaft'):
-            a=np.array(info['centroid_m']);a[2]=0;a/=np.linalg.norm(a)
+            j_mat=np.array(info['inertia_centroid_kg_m2'])
+            _,vecs=np.linalg.eigh(j_mat)
+            a=vecs[:,0].copy();a[2]=0;a/=np.linalg.norm(a)
+            if np.dot(a[:2],info['centroid_m'][:2])<0:a=-a
             ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis=fmt(a),limited='false')
         elif name.startswith('gear'):
             # Same physical gear hardware across loading/lightening studies.
