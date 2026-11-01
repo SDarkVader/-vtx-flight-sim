@@ -1,0 +1,23 @@
+# Exclude offline Blender CAD files and bulky non-runtime artifacts from
+# the Vercel Serverless Function bundle (250 MB unzipped limit).
+# All files remain tracked in Git for local engineering and pytest.
+
+assets/
+archive/
+refs/
+scratch/
+tests/
+tools/
+engineering/
+docs/
+inputs/
+results/
+evidence/*.tar.gz
+evidence/flights/*/events.jsonl
+evidence/flights/*/events.jsonl.gz
+evidence/flights/*/model.xml
+evidence/source/assembly_repairs*.json
+evidence/source/native_inventory.json
+evidence/r6_clearance_audit.json
+evidence/argon_task01_transmission_tanks.json
+public/assets/airframe-r6.glb
