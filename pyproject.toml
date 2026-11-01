@@ -1,0 +1,6 @@
+# Vercel FastAPI application discovery for the VTX preview build.
+# The live simulator uses MuJoCo and a persistent physics clock;
+# a successful serverless build does not validate full flight operation.
+
+[tool.vercel]
+entrypoint = "src.vtx.live_server:app"
