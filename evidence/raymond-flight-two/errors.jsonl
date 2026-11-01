@@ -1,0 +1,4 @@
+{"utc": "2026-11-01T15:25:29.710445+00:00", "error": "URLError(ConnectionRefusedError(10061, 'No connection could be made because the target machine actively refused it', None, 10061, None))"}
+{"utc": "2026-11-01T15:25:32.749414+00:00", "error": "URLError(ConnectionRefusedError(10061, 'No connection could be made because the target machine actively refused it', None, 10061, None))"}
+{"utc": "2026-11-01T15:25:35.798863+00:00", "error": "URLError(ConnectionRefusedError(10061, 'No connection could be made because the target machine actively refused it', None, 10061, None))"}
+{"utc": "2026-11-01T15:25:38.866320+00:00", "error": "URLError(ConnectionRefusedError(10061, 'No connection could be made because the target machine actively refused it', None, 10061, None))"}

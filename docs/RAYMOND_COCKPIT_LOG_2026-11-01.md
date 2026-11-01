@@ -91,3 +91,11 @@ The simulator already had this active mission when the dedicated recorder was st
 **First response:** at simulation time `4.02 s`, four rotor speeds were approximately `5.01–5.02 RPM`, radar clearance `0.752 m`, and no warning lamps. No takeoff was established. The control lease will expire without further deliberate piloting actions.
 
 The active run is a trial, not a completed end-to-end flight. Preserve the simulator's own final summary to determine actual outcome. Do not interpret unattended observation logging as autonomous piloting.
+
+## Flight Two closure — 2026-11-01
+
+User requested stop. The observation recorder and periodic sync were stopped, followed by explicit simulator `/api/stop` on active recovery run `20261101T152613-3de759`. This was **not** the initial run `20261101T151650-a47d96`; the session was restarted during the recording interval. Keep run identities distinct.
+
+The recovery run's native `summary.json` reports **collision**, 98 decisions, 50.2725 simulated seconds, 205.4165 wall seconds, `left_ground: true`, maximum airframe-origin altitude 4.9166 m, maximum contact force 1,043,282.86 N, and fuel used 0.23385 kg. It did not complete a destination landing. The summary's stated stop reason was the user's request; outcome was collision, so neither should be silently rewritten.
+
+Raw UTC-stamped instrument samples and periodic view snapshots were captured in `evidence/raymond-flight-two/`. Native run event logs and summary remain in `evidence/flights/20261101T152613-3de759/` locally; these may be large. Existing logs must be reviewed before claiming which decisions were made by a human, Raymond, Colin, or an automated process. A reported takeoff is based on the native `left_ground` flag and is not independently certified.
