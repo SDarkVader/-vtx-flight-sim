@@ -43,8 +43,10 @@
   #view-tools { right: 8px; top: 46px; }
   #view-tools button { font-size: 10px; min-width: 32px; padding: 7px 6px; }
   #scene-caption { top: 12px; left: 12px; right: 132px;
-    max-width: calc(100% - 144px); }
+    max-width: calc(100% - 144px); color: #e8f5f4;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .88); }
   #scene-caption span, #scene-caption p { font-size: 9px; }
+  #scene-caption p { opacity: .92; }
   #attitude { left: 8px; bottom: 8px; width: 94px; height: 76px; }
   #view-mode { right: 8px; bottom: 10px; font-size: 7px; }
   #cockpit-look { bottom: 12px; }
