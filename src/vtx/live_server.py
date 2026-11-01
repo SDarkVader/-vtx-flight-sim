@@ -22,7 +22,7 @@ from fastapi import FastAPI,HTTPException,WebSocket,WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel,Field,field_validator,ConfigDict
-from scipy.spatial.transform import Rotation
+from ._rotation import Rotation
 from .aircraft import Aircraft,DT,ROOT
 from .mission_selection import MapPoint,select_mission
 from .world import TestWorld

@@ -1,0 +1,245 @@
+{
+  "schema": "vtx.real-airport-reference.v1",
+  "as_of": "2026-11-01",
+  "purpose": "Reference measurements only, NOT a simulator collision or navigation network",
+  "airports": [
+    {
+      "id": "2392",
+      "icao": "EGBJ",
+      "iata": "GLO",
+      "name": "Gloucestershire Airport",
+      "latitude_deg": 51.894199,
+      "longitude_deg": -2.16722,
+      "elevation_ft": 101,
+      "country": "GB",
+      "area": "Staverton, Gloucestershire",
+      "source": "OurAirports airports.csv, 2026-10-31"
+    },
+    {
+      "id": "29175",
+      "icao": "EGPT",
+      "iata": "PSL",
+      "name": "Perth/Scone Airport",
+      "latitude_deg": 56.439201,
+      "longitude_deg": -3.37222,
+      "elevation_ft": 397,
+      "country": "GB",
+      "area": "Scone, Scotland",
+      "source": "OurAirports airports.csv, 2026-10-31"
+    }
+  ],
+  "runways": [
+    {
+      "airport_icao": "EGBJ",
+      "ends": [
+        "03",
+        "21"
+      ],
+      "length_m": 982.98,
+      "width_m": 22.86,
+      "length_ft": 3225,
+      "width_ft": 75,
+      "surface": "Asphalt",
+      "lighted": true,
+      "closed": false,
+      "low_end": {
+        "name": "03",
+        "lat": 51.888599,
+        "lon": -2.16813,
+        "true_heading_deg": 35,
+        "displaced_threshold_m": 0.0
+      },
+      "high_end": {
+        "name": "21",
+        "lat": 51.895901,
+        "lon": -2.16008,
+        "true_heading_deg": 215,
+        "displaced_threshold_m": 88.1
+      },
+      "source": "OurAirports runways.csv 2026-10-31; supplemental published operator dimensions in notes"
+    },
+    {
+      "airport_icao": "EGBJ",
+      "ends": [
+        "08",
+        "26"
+      ],
+      "length_m": 1431.04,
+      "width_m": 29.87,
+      "length_ft": 4695,
+      "width_ft": 98,
+      "surface": "Asphalt",
+      "lighted": true,
+      "closed": false,
+      "low_end": {
+        "name": "08",
+        "lat": 51.8936,
+        "lon": -2.17722,
+        "true_heading_deg": 85,
+        "displaced_threshold_m": 118.0
+      },
+      "high_end": {
+        "name": "26",
+        "lat": 51.894699,
+        "lon": -2.15669,
+        "true_heading_deg": 265,
+        "displaced_threshold_m": 312.1
+      },
+      "source": "OurAirports runways.csv 2026-10-31; supplemental published operator dimensions in notes"
+    },
+    {
+      "airport_icao": "EGBJ",
+      "ends": [
+        "18",
+        "36"
+      ],
+      "length_m": 800.1,
+      "width_m": 17.98,
+      "length_ft": 2625,
+      "width_ft": 59,
+      "surface": "Asphalt",
+      "lighted": false,
+      "closed": true,
+      "low_end": {
+        "name": "18",
+        "lat": 51.896702,
+        "lon": -2.16611,
+        "true_heading_deg": 174,
+        "displaced_threshold_m": 0.0
+      },
+      "high_end": {
+        "name": "36",
+        "lat": 51.889702,
+        "lon": -2.165,
+        "true_heading_deg": 354,
+        "displaced_threshold_m": 0.0
+      },
+      "source": "OurAirports runways.csv 2026-10-31; supplemental published operator dimensions in notes"
+    },
+    {
+      "airport_icao": "EGPT",
+      "ends": [
+        "03",
+        "21"
+      ],
+      "length_m": 852.83,
+      "width_m": 26.82,
+      "length_ft": 2798,
+      "width_ft": 88,
+      "surface": "Asphalt",
+      "lighted": true,
+      "closed": false,
+      "low_end": {
+        "name": "03",
+        "lat": null,
+        "lon": null,
+        "true_heading_deg": 32,
+        "displaced_threshold_m": 0.0
+      },
+      "high_end": {
+        "name": "21",
+        "lat": null,
+        "lon": null,
+        "true_heading_deg": 212,
+        "displaced_threshold_m": 0.0
+      },
+      "source": "OurAirports runways.csv 2026-10-31; supplemental published operator dimensions in notes"
+    },
+    {
+      "airport_icao": "EGPT",
+      "ends": [
+        "09",
+        "27"
+      ],
+      "length_m": 608.99,
+      "width_m": 21.95,
+      "length_ft": 1998,
+      "width_ft": 72,
+      "surface": "Asphalt",
+      "lighted": true,
+      "closed": false,
+      "low_end": {
+        "name": "09",
+        "lat": null,
+        "lon": null,
+        "true_heading_deg": 92,
+        "displaced_threshold_m": 0.0
+      },
+      "high_end": {
+        "name": "27",
+        "lat": null,
+        "lon": null,
+        "true_heading_deg": 272,
+        "displaced_threshold_m": 0.0
+      },
+      "source": "OurAirports runways.csv 2026-10-31; supplemental published operator dimensions in notes"
+    },
+    {
+      "airport_icao": "EGPT",
+      "ends": [
+        "15",
+        "33"
+      ],
+      "length_m": 619.96,
+      "width_m": 35.97,
+      "length_ft": 2034,
+      "width_ft": 118,
+      "surface": "Grass",
+      "lighted": false,
+      "closed": false,
+      "low_end": {
+        "name": "15",
+        "lat": null,
+        "lon": null,
+        "true_heading_deg": 153,
+        "displaced_threshold_m": 0.0
+      },
+      "high_end": {
+        "name": "33",
+        "lat": null,
+        "lon": null,
+        "true_heading_deg": 333,
+        "displaced_threshold_m": 0.0
+      },
+      "source": "OurAirports runways.csv 2026-10-31; supplemental published operator dimensions in notes"
+    }
+  ],
+  "interpretation": {
+    "runway_designation_change": "EGBJ 09/27 -> 08/26 and 04/22 -> 03/21 in August 2026. Retired runway 18/36 is CLOSED; do not mark active.",
+    "georeferencing": "Runway endpoints are WGS84 lat/lon when provided. EGPT CSV lacks threshold coordinates; do not invent.",
+    "data_note": "OurAirports values are community compiled; operator/CAA AIP controls if discrepancy. Perth official lengths 853, 609, 622 metres; Gloucester commonly stated lengths 1432 x 30 and 980 x 23 metres.",
+    "copyright": "OurAirports open data public domain. Do not redistribute UK AIP chart scans as original assets. If importing OSM geometric data later, follow ODbL attribution/sharealike."
+  },
+  "sources": [
+    {
+      "name": "OurAirports open data downloads",
+      "url": "https://ourairports.com/data/",
+      "license": "Public Domain"
+    },
+    {
+      "name": "Gloucestershire Airport AIP chart (latest link)",
+      "url": "https://www.gloucestershireairport.co.uk/flying/information-for-pilots/uk-aip-aerodrome-chart",
+      "license": "Publisher terms; link only"
+    },
+    {
+      "name": "NATS AIP current publications",
+      "url": "https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/AIP",
+      "license": "Publisher terms; link only"
+    },
+    {
+      "name": "Perth Airport technical data",
+      "url": "https://www.perthairport.co.uk/pilot-information/technical-data",
+      "license": "Publisher terms; link only"
+    },
+    {
+      "name": "FAA Airport Design advisory circular landing page",
+      "url": "https://www.faa.gov/airports/resources/advisory_circulars/index.cfm/go/document.current/documentnumber/150_5300-13",
+      "license": "Government reference"
+    },
+    {
+      "name": "OpenStreetMap licence for optional future network imports",
+      "url": "https://www.openstreetmap.org/copyright",
+      "license": "ODbL"
+    }
+  ]
+}

@@ -1,0 +1,399 @@
+{
+  "schema": "vtx.fictional-airport-plan.v1",
+  "status": "PROPOSAL, not measured site plan or physically validated",
+  "basis": "EGBJ runway size and two-runway operational topology; original fictional layout for Vader's Taxis. Not an accurate digitization of EGBJ.",
+  "units": "metres",
+  "coordinate_frame": {
+    "axes": {
+      "x": "east",
+      "y": "north",
+      "z": "up"
+    },
+    "origin": "fictional airport runway 08/26 centre intersection; NOT WGS84",
+    "terrain": "provisional; extend MuJoCo world after clearance / collider review"
+  },
+  "design_runways": [
+    {
+      "id": "RWY-08-26",
+      "centre_xy": [
+        0,
+        0
+      ],
+      "length_m": 1432,
+      "width_m": 30,
+      "surface": "asphalt",
+      "heading": 90,
+      "status": "open simulated",
+      "note": "Aligned with local X for easy deterministic layout; designator from EGBJ reference, actual bearing differs"
+    },
+    {
+      "id": "RWY-03-21",
+      "centre_xy": [
+        235,
+        0
+      ],
+      "length_m": 980,
+      "width_m": 23,
+      "axis_unit_xy": [
+        0.57357644,
+        0.81915204
+      ],
+      "status": "open simulated"
+    }
+  ],
+  "taxiways": [
+    {
+      "id": "TWY-A",
+      "kind": "polyline",
+      "points_xy": [
+        [
+          -650,
+          100
+        ],
+        [
+          650,
+          100
+        ]
+      ],
+      "width_m": 14,
+      "holdpoints": [
+        [
+          -625,
+          100
+        ],
+        [
+          625,
+          100
+        ]
+      ]
+    },
+    {
+      "id": "TWY-A-WEST-ENTRY",
+      "kind": "cubic_bezier",
+      "control_points_xy": [
+        [
+          -625,
+          0
+        ],
+        [
+          -625,
+          60
+        ],
+        [
+          -700,
+          100
+        ],
+        [
+          -650,
+          100
+        ]
+      ],
+      "width_m": 14,
+      "note": "Cubic Bezier is a geometry prototype; test curvature and swept footprint before activation"
+    },
+    {
+      "id": "TWY-A-EAST-ENTRY",
+      "kind": "cubic_bezier",
+      "control_points_xy": [
+        [
+          625,
+          0
+        ],
+        [
+          625,
+          60
+        ],
+        [
+          700,
+          100
+        ],
+        [
+          650,
+          100
+        ]
+      ],
+      "width_m": 14,
+      "note": "Cubic Bezier is a geometry prototype; test curvature and swept footprint before activation"
+    },
+    {
+      "id": "TWY-B-SCHOOL",
+      "kind": "cubic_bezier",
+      "control_points_xy": [
+        [
+          -450,
+          100
+        ],
+        [
+          -450,
+          160
+        ],
+        [
+          -450,
+          200
+        ],
+        [
+          -450,
+          260
+        ]
+      ],
+      "width_m": 14,
+      "note": "Cubic Bezier is a geometry prototype; test curvature and swept footprint before activation"
+    },
+    {
+      "id": "TWY-C-APRON",
+      "kind": "cubic_bezier",
+      "control_points_xy": [
+        [
+          -245,
+          100
+        ],
+        [
+          -245,
+          150
+        ],
+        [
+          -245,
+          210
+        ],
+        [
+          -245,
+          260
+        ]
+      ],
+      "width_m": 14,
+      "note": "Cubic Bezier is a geometry prototype; test curvature and swept footprint before activation"
+    },
+    {
+      "id": "TWY-D-REMOTE",
+      "kind": "cubic_bezier",
+      "control_points_xy": [
+        [
+          585,
+          100
+        ],
+        [
+          585,
+          145
+        ],
+        [
+          630,
+          170
+        ],
+        [
+          630,
+          260
+        ]
+      ],
+      "width_m": 14,
+      "note": "Cubic Bezier is a geometry prototype; test curvature and swept footprint before activation"
+    },
+    {
+      "id": "TWY-APRON-CURVE",
+      "kind": "cubic_bezier",
+      "control_points_xy": [
+        [
+          -480,
+          280
+        ],
+        [
+          -500,
+          350
+        ],
+        [
+          -350,
+          402
+        ],
+        [
+          -260,
+          340
+        ]
+      ],
+      "width_m": 14,
+      "note": "Cubic Bezier is a geometry prototype; test curvature and swept footprint before activation"
+    }
+  ],
+  "aprons": [
+    {
+      "id": "VTX-ACADEMY-APRON",
+      "centre_xy": [
+        -425,
+        305
+      ],
+      "size_xy": [
+        560,
+        225
+      ]
+    },
+    {
+      "id": "VTX-REMOTE-APRON",
+      "centre_xy": [
+        700,
+        355
+      ],
+      "size_xy": [
+        340,
+        205
+      ]
+    }
+  ],
+  "stands": [
+    {
+      "id": "VTX-STAND-1",
+      "centre_xy": [
+        -610,
+        285
+      ],
+      "radius_m": 14
+    },
+    {
+      "id": "VTX-STAND-2",
+      "centre_xy": [
+        -470,
+        285
+      ],
+      "radius_m": 14
+    },
+    {
+      "id": "VTX-STAND-3",
+      "centre_xy": [
+        -340,
+        285
+      ],
+      "radius_m": 14
+    },
+    {
+      "id": "VTX-STAND-4",
+      "centre_xy": [
+        -210,
+        285
+      ],
+      "radius_m": 14
+    },
+    {
+      "id": "VTX-STAND-5",
+      "centre_xy": [
+        590,
+        330
+      ],
+      "radius_m": 14
+    },
+    {
+      "id": "VTX-STAND-6",
+      "centre_xy": [
+        730,
+        330
+      ],
+      "radius_m": 14
+    }
+  ],
+  "landside_roads": [
+    {
+      "id": "SERVICE-LOOP",
+      "kind": "cubic_bezier",
+      "control_points_xy": [
+        [
+          -720,
+          695
+        ],
+        [
+          -650,
+          735
+        ],
+        [
+          220,
+          735
+        ],
+        [
+          800,
+          695
+        ]
+      ],
+      "width_m": 13
+    }
+  ],
+  "facilities": [
+    {
+      "id": "VTX-SCHOOL",
+      "xy": [
+        -555,
+        635
+      ],
+      "purpose": "flight academy and simulation training"
+    },
+    {
+      "id": "VTX-HQ",
+      "xy": [
+        -200,
+        620
+      ],
+      "purpose": "dispatch and passenger terminal"
+    },
+    {
+      "id": "VTX-ENGINEERING",
+      "xy": [
+        40,
+        590
+      ],
+      "purpose": "MRO and engineering"
+    },
+    {
+      "id": "VTX-TOWER",
+      "xy": [
+        240,
+        555
+      ],
+      "purpose": "ATC"
+    },
+    {
+      "id": "VTX-FIRE",
+      "xy": [
+        475,
+        600
+      ],
+      "purpose": "airport rescue and fire"
+    },
+    {
+      "id": "VTX-CARGO",
+      "xy": [
+        680,
+        600
+      ],
+      "purpose": "cargo hangar"
+    }
+  ],
+  "navigation_icons": {
+    "aircraft": "world-state position + actual body yaw, not hardcoded",
+    "stand": "pad",
+    "taxiway": "taxi route",
+    "runway": "RWY",
+    "tower": "ATC",
+    "hangar": "MRO",
+    "school": "school",
+    "volcano": "cavern (locked until physically excavated)"
+  },
+  "validation": {
+    "aircraft_outer_radius_m": "derive from real model bounding/swept geometry, not assumed",
+    "taxiway_width_m": 14,
+    "taxi_curve_radius_m": "derive from max feasible undercarriage steering/control and swept footprint; 25 m is illustration only",
+    "swept_clearance": "check all aircraft components including rotor ducts and landing gear at all poses",
+    "exterior_obstacle_synchronisation": "new visible collidable props must have matching backend colliders",
+    "pass_through_violation": "FAIL",
+    "unintended_aircraft_mass_or_transform_delta": "FAIL",
+    "taxiway_collision_checks": "continuous mesh path offsets and swept path sampling",
+    "ui_minimap": "use simulator local x,y,z pose and yaw for live icon; labels can be culled with zoom level"
+  },
+  "volcano": {
+    "status": "PENDING PHYSICAL EXCAVATION",
+    "requirement": "Cavern basement must be hollow inside basalt mass; roof/entrance physical geometry, heightfield modification, clearance and whole-route flight test. Visual-only mountain doesn't constitute a flyable tunnel.",
+    "placement": "north of airport and runway protection/approach paths; exact bounds after world expansion"
+  },
+  "training_scenarios": [
+    "stand-to-taxiway taxi without crossing grass",
+    "curved turn with stop before runway holding point",
+    "runway entrance after clearance",
+    "ground vehicle right-of-way",
+    "helipad precision hover",
+    "taxi to hangar",
+    "volcano entrance approach only after real collision/terrain support"
+  ]
+}
