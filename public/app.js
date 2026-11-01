@@ -29,6 +29,8 @@ console.log('VTX: module ready');
 const viewport=$('viewport'),scene=new THREE.Scene();scene.background=new THREE.Color('#a9c1ca');scene.fog=new THREE.Fog('#b3c7c9',240,1000);
 const camera=new THREE.PerspectiveCamera(48,1,.05,2000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
 const mobileView=matchMedia('(pointer: coarse)').matches;
+// Optional display-only lightweight mode. No simulation or collision changes.
+const lightweightView=mobileView||new URLSearchParams(location.search).has('lite');
 const renderer=new THREE.WebGLRenderer({antialias:!mobileView,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileView ? 0.7 : 1.2));renderer.shadowMap.enabled=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
@@ -116,7 +118,7 @@ function buildWorld(w){
  for(let x=-80;x<10;x+=12)plane(5,.15,'#c7ccb8',x,-65,.021);
  const grid=new THREE.GridHelper(180,18,'#a9b5a5','#a8b3a1');grid.rotation.x=Math.PI/2;grid.position.z=.025;grid.material.transparent=true;grid.material.opacity=.2;scene.add(grid);
  const water=plane(w.water.half_x*2,w.water.half_y*2,'#6f9fa8',w.water.x,w.water.y,surfaceZ(w.water.x,w.water.y)+.1);water.material.metalness=.3;water.material.roughness=.3;
- addDistrictDetails(w);addCompanyGallery(w);updateMarkers();drawMaps();console.log('VTX: terrain ready');
+ if(!lightweightView){addDistrictDetails(w);addCompanyGallery(w);}updateMarkers();drawMaps();console.log('VTX: terrain ready');
 }
 let loadedAsset=null,assetRetryAfter=0,modelReady=false;
 function disposeModel(root){
@@ -298,7 +300,7 @@ function updateEngineering(){if(!last)return;const t=last.rendering_truth;$('eng
 function updateView(v){last=v;latestTruthReceivedMs=performance.now();
  // Always ingest the latest physical pose; avoid repainting the entire HUD at
  // the websocket rate on low-powered phones. 3D rendering is independent.
- if(mobileView&&latestTruthReceivedMs-lastHudUpdateMs<250&&v.run_id===lastRun)return;
+ if(lightweightView&&latestTruthReceivedMs-lastHudUpdateMs<500&&v.run_id===lastRun)return;
  lastHudUpdateMs=latestTruthReceivedMs;const o=v.observation,t=v.rendering_truth;if(v.run_id!==lastRun){lastRun=v.run_id;track=[];if(v.mission){departure=[...v.mission.departure];destination=[...v.mission.destination];$('dep').value=departure.join(', ');$('dest').value=destination.join(', ');updateMarkers();}}
  $('state').textContent=v.active?(v.paused?'PHYSICS PAUSED':'LIVE EXPERIMENT'):'INSPECTION';$('lamp').style.background=v.active?'#7cdfcb':'#8a9a9d';$('clock').textContent=`${Math.floor(o.t_s/60).toString().padStart(2,'0')}:${(o.t_s%60).toFixed(2).padStart(5,'0')} / ${v.time_scale}×`;
  const latestPilot=v.recent_decisions.at(-1),pilotWaiting=v.active&&v.authority==='colin'&&(!latestPilot||o.warning_lamps.includes('COMMAND_LEASE_EXPIRED')||o.t_s-latestPilot.issued_t_s>1);$('colin-wait').hidden=!pilotWaiting;$('colin-wait').textContent=pilotWaiting?'Waiting for live Colin commands. The retry button does not start an automatic pilot.':'';
@@ -324,7 +326,7 @@ function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:'
 api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
-function animate(){requestAnimationFrame(animate);const now=performance.now();if(now-lastFrameMs<(mobileView?67:50))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
+function animate(){requestAnimationFrame(animate);const now=performance.now();if(now-lastFrameMs<(lightweightView?67:50))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
  if(truth)loadAirframe(truth.provenance.render_asset||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb'));
  if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);
    // The authoritative rotor pose is sampled at 20 Hz. At 1200 RPM one full
@@ -344,7 +346,7 @@ function animate(){requestAnimationFrame(animate);const now=performance.now();if
  if(model&&modelReady&&!window.__vtxNoRender)renderer.render(scene,camera);
  const status=$('view-sync');if(status&&now-(status._last||0)>400){status._last=now;
   const age=now-latestTruthReceivedMs;
-  status.textContent=!last?'WAITING FOR DATA':age>2000?'DISPLAY STALE':!modelReady?'LOADING AIRCRAFT':`LIVE VIEW · ${Math.round(age)} ms`;
+  status.textContent=!last?'WAITING FOR DATA':age>2000?'DISPLAY STALE':!modelReady?'LOADING AIRCRAFT':`LIVE VIEW · ${Math.round(age)} ms · ${Math.round(last?.observation?.rotor_rpm?.[0]||0)} RPM · t ${last?.observation?.t_s?.toFixed(1)??'--'}s`;
   status.style.color=age>2000?'#ffb19d':'#b6f6d8';
  }
 }animate();
