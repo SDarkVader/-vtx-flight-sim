@@ -13,6 +13,8 @@ docs/
 inputs/
 results/
 evidence/*.tar.gz
+evidence/*.zip
+evidence/raymond-flight-two/*.jsonl
 evidence/flights/*/events.jsonl
 evidence/flights/*/events.jsonl.gz
 evidence/flights/*/model.xml

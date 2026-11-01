@@ -12,6 +12,7 @@ import hashlib
 import gzip
 import json
 import math
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -36,7 +37,7 @@ class Action(BaseModel):
     collective_deg:list[float]
     tilt_deg:list[list[float]]
     cabin_deg:list[float]=[0.,0.,0.]
-    cabin_level:bool=True
+    cabin_level:bool=False
     @field_validator('collective_deg')
     @classmethod
     def pitch(cls,v):
@@ -102,16 +103,188 @@ class Laboratory:
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
         self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
         self.retry_hint=None
+        self.checkpoint_path=ROOT/'pilot/live-flight-checkpoint.json'
+        self.last_checkpoint_t=-1.
         self.memory_path=ROOT/'pilot/colin-memory.json'
         self.memory_path.parent.mkdir(exist_ok=True)
         if not self.memory_path.exists():self.memory_path.write_text(json.dumps(dict(schema_version=1,pilot='Colin',experience_count=0,lessons=[],aircraft_familiarity='cold start; no VTX-specific solution',stage2_accessed=False,history=[]),indent=2))
+        restored=self.restore_checkpoint()
         completed=sorted((ROOT/'evidence/flights').glob('*/summary.json'))
-        if completed:
+        if completed and not restored:
             last=json.loads(completed[-1].read_text())
             meta_path=completed[-1].parent/'metadata.json'
             if meta_path.exists():
                 self.retry_hint=dict(run_id=last['run_id'],mission=last['mission'],request=json.loads(meta_path.read_text())['request'])
                 self.end_summary={k:v for k,v in last.items() if k!='final'}
+        # If the process died without stop(), the latest metadata is still
+        # enough to retry at the departure point. Never reconstruct mid-flight
+        # physics from a render frame or claim the interrupted flight landed.
+        unfinished=sorted(p for p in (ROOT/'evidence/flights').glob('*/metadata.json')
+                          if not (p.parent/'summary.json').exists())
+        if not restored and unfinished and (not completed or unfinished[-1].parent.name>completed[-1].parent.name):
+            path=unfinished[-1]
+            try:
+                meta=json.loads(path.read_text())
+                interrupted=dict(run_id=meta['run_id'],mission=meta['mission'],
+                                 outcome='interrupted',authority=meta.get('operator'),
+                                 reason='Server exited before the sortie ended; physical state not recoverable',
+                                 previous_evidence=path.parent.name)
+                (path.parent/'summary.json').write_text(json.dumps(interrupted,indent=2))
+                self.retry_hint=dict(run_id=meta['run_id'],mission=meta['mission'],
+                                     request=meta['request'])
+                self.end_summary=interrupted
+            except (ValueError,KeyError,OSError):
+                pass
+
+    def checkpoint(self, force=False):
+        """Crash-consistent physics checkpoint, never a flight-control decision."""
+        if not self.active or not self.run_id or not self.log_path:
+            return
+        p=self.aircraft
+        if not force and p.data.time-self.last_checkpoint_t < .5:
+            return
+        d=p.data
+        state=dict(schema=1,run_id=self.run_id,
+                   model_xml_sha256=p.provenance['model_xml_sha256'],
+                   mission=self.mission,authority=self.authority,
+                   time_scale=self.time_scale,paused=self.paused,
+                   physics=dict(time=float(d.time),qpos=d.qpos.tolist(),
+                                qvel=d.qvel.tolist(),act=d.act.tolist(),
+                                ctrl=d.ctrl.tolist(),
+                                qacc_warmstart=d.qacc_warmstart.tolist()),
+                   plant=dict(command=p.command,pitch=p.pitch.tolist(),
+                              target_angles=p.target_angles.tolist(),
+                              cabin_target=p.cabin_target.tolist(),
+                              engine_spool=p.engine_spool,fuel=p.fuel.tolist(),
+                              wind=p.wind.tolist(),rotors=p.rotors,
+                              integrity=p.integrity.tolist(),power=p.power,
+                              energy=p.energy,events=p.events,flags=list(p.flags),
+                              crashed=p.crashed,max_alt=p.max_alt,
+                              max_impact_n=p.max_impact_n,
+                              step_count=p.step_count,last_mass_update=p.last_mass_update,
+                              last_collision=p.last_collision,
+                              stability_assist=p.stability_assist,
+                              assisted_collective_deg=p.assisted_collective_deg,
+                              experimental_assist=p._bench_apply_experimental_assist,
+                              governor_integral_nm=p.governor.integral_nm,
+                              governor_telemetry=p.governor.telemetry),
+                   session=dict(action_log=self.action_log,
+                                next_pending_action=self.next_pending_action,
+                                last_command_time=self.last_command_time,
+                                lease_expired=self.lease_expired,obs_id=self.obs_id,
+                                settled_s=self.settled_s,left_ground=self.left_ground,
+                                last_audit_t=self.last_audit_t,
+                                sensor_rng_state=self.sensor_rng.bit_generator.state))
+        payload=json.dumps(state,allow_nan=False,separators=(',',':'))
+        target=self.checkpoint_path
+        target.parent.mkdir(parents=True,exist_ok=True)
+        temporary=target.with_suffix('.tmp')
+        with temporary.open('w',encoding='utf-8') as f:
+            f.write(payload)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temporary,target)
+        self.last_checkpoint_t=float(d.time)
+
+    def restore_checkpoint(self):
+        """Restore exact persisted plant state, held until explicit operator resume."""
+        path=self.checkpoint_path
+        if not path.exists():
+            return False
+        try:
+            state=json.loads(path.read_text(encoding='utf-8'))
+            if state['schema']!=1:
+                raise ValueError('Unsupported checkpoint schema')
+            run_id=state['run_id']
+            evidence=ROOT/'evidence/flights'/run_id
+            metadata=json.loads((evidence/'metadata.json').read_text())
+            if (metadata['run_id']!=run_id or
+                    (evidence/'summary.json').exists()):
+                raise ValueError('Checkpoint does not identify an unfinished sortie')
+            request=Mission(**metadata['request'])
+            candidate=Aircraft(self.world,request.gear_variant,request.reference_rpm,
+                               fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
+                               engine_power_limit_kw=request.engine_power_limit_kw)
+            if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:
+                raise ValueError('Checkpoint model differs from current physics model')
+            d=candidate.data
+            physics=state['physics']
+            for name in ('qpos','qvel','act','ctrl','qacc_warmstart'):
+                arr=np.asarray(physics[name],dtype=float)
+                target=getattr(d,name)
+                if arr.shape!=target.shape or not np.all(np.isfinite(arr)):
+                    raise ValueError('Invalid checkpoint physics array: '+name)
+                target[:]=arr
+            d.time=float(physics['time'])
+            if not math.isfinite(d.time) or d.time<0:
+                raise ValueError('Invalid checkpoint physics time')
+            plant=state['plant']
+            candidate.command=plant['command']
+            candidate.pitch[:]=plant['pitch']
+            candidate.target_angles[:]=plant['target_angles']
+            candidate.cabin_target[:]=plant['cabin_target']
+            candidate.engine_spool=float(plant['engine_spool'])
+            candidate.fuel[:]=plant['fuel']
+            candidate.wind[:]=plant['wind']
+            candidate.rotors=plant['rotors']
+            candidate.integrity[:]=plant['integrity']
+            candidate.power=plant['power']
+            candidate.energy=plant['energy']
+            candidate.events=plant['events']
+            candidate.flags=set(plant['flags'])
+            candidate.crashed=plant['crashed']
+            candidate.max_alt=plant['max_alt']
+            candidate.max_impact_n=plant['max_impact_n']
+            candidate.step_count=plant['step_count']
+            candidate.last_mass_update=plant['last_mass_update']
+            candidate.last_collision=plant['last_collision']
+            candidate.stability_assist=plant['stability_assist']
+            candidate.assisted_collective_deg=plant['assisted_collective_deg']
+            candidate._bench_apply_experimental_assist=plant['experimental_assist']
+            candidate.governor.integral_nm=plant['governor_integral_nm']
+            candidate.governor.telemetry=plant['governor_telemetry']
+            for i,bid in enumerate(candidate.fuel_bids):
+                candidate.model.body_mass[bid]=max(float(candidate.fuel[i]),1e-9)
+                candidate.model.body_inertia[bid]=(candidate.initial_fuel_inertia[i]*
+                    max(float(candidate.fuel[i]/candidate.fuel_initial[i]),1e-9))
+            mj.mj_setConst(candidate.model,mj.MjData(candidate.model))
+            mj.mj_forward(candidate.model,d)
+            session=state['session']
+            self.sensor_rng.bit_generator.state=session['sensor_rng_state']
+            self.aircraft=candidate
+            self.run_id=run_id
+            self.log_path=evidence
+            self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
+            self.mission=state['mission']
+            self.authority=state['authority']
+            self.time_scale=state['time_scale']
+            self.active=True
+            self.paused=True
+            self.wall_started=time.monotonic()
+            self.action_log=session['action_log']
+            self.next_pending_action=session['next_pending_action']
+            for action in self.action_log[self.next_pending_action:]:
+                action['cancelled']=True
+            self.next_pending_action=len(self.action_log)
+            self.last_command_time=session['last_command_time']
+            self.lease_expired=session['lease_expired']
+            self.obs_id=session['obs_id']
+            self.last_obs=None
+            self.observations={}
+            self.last_sensor_t=-1.
+            self.last_audit_t=session['last_audit_t']
+            self.settled_s=session['settled_s']
+            self.left_ground=session['left_ground']
+            self.last_checkpoint_t=float(d.time)
+            self.end_summary=None
+            self.log('flight_checkpoint_restored',
+                     dict(checkpoint_t_s=d.time,paused=True,
+                          pending_actions_cancelled=True,
+                          reason='Explicit operator resume required; physics position and velocity retained'))
+            return True
+        except (OSError,ValueError,KeyError,TypeError,IndexError) as exc:
+            self.error='Flight checkpoint unavailable: '+str(exc)
+            return False
 
     def log(self,kind,payload):
         if self.audit_file:
@@ -139,7 +312,7 @@ class Laboratory:
             rotor_rpm=[round(float(abs(p.joint(f'rotor{i}_spin')[1])*60/(2*math.pi)),2) for i in range(1,5)],
             shaft_torque_nm=[round(v['torque_nm'],1) for v in p.rotors],
             collective_feedback_deg=np.round(p.pitch,3).tolist(),
-            stability_assist=p.stability_assist,assistance_applied=False,assisted_collective_deg=p.assisted_collective_deg,
+            stability_assist=p.stability_assist,assistance_applied=bool(p.stability_assist and p._bench_apply_experimental_assist),assisted_collective_deg=p.assisted_collective_deg,
             tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
             cabin_feedback_deg=[round(math.degrees(p.joint(f'cabin_{a}')[0]),3) for a in 'xyz'],
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
@@ -189,6 +362,7 @@ class Laboratory:
         (self.log_path/'model.xml').write_text(self.aircraft.xml)
         (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
         self.log('mission_start',meta)
+        self.checkpoint(force=True)
         return dict(run_id=self.run_id,observation=self.sensor_observation())
 
     def accept_action(self,a:Action):
@@ -227,6 +401,7 @@ class Laboratory:
             self.last_audit_t=float(p.data.time)
             self.log('physics_audit',p.physical_snapshot())
             self.sensor_observation()
+            self.checkpoint()
             support=sum(1 for i in range(1,7) if p.joint(f'gear{i}_stroke')[0]>.002)
             if support==0 and p.data.time>1:self.left_ground=True
             dest=np.array(self.mission['destination'])
@@ -240,6 +415,7 @@ class Laboratory:
     def stop(self,reason):
         if not self.active:return self.end_summary or dict(status='No active sortie')
         self.active=False;self.last_obs=None;p=self.aircraft
+        self.checkpoint_path.unlink(missing_ok=True)
         outcome='landed' if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
         summary=dict(run_id=self.run_id,outcome=outcome,reason=reason,simulated_seconds=float(p.data.time),
                      wall_seconds=time.monotonic()-self.wall_started,decisions=len(self.action_log),
@@ -311,7 +487,10 @@ async def physical_clock():
 async def lifespan(app):
     task=asyncio.create_task(physical_clock())
     yield
-    if lab.active:lab.stop('server shutdown')
+    if lab.active:
+        lab.checkpoint(force=True)
+        if lab.audit_file:
+            lab.audit_file.close();lab.audit_file=None
     task.cancel()
 
 app=FastAPI(title='VTX live engineering laboratory',lifespan=lifespan)
@@ -343,6 +522,12 @@ async def retry(request:dict):
     except ValueError as e:raise HTTPException(422,str(e))
 @app.post('/api/operator')
 async def operator(request:dict):
+    if 'experimental_assist_wire' in request:
+        enabled=request['experimental_assist_wire']
+        if not isinstance(enabled,bool):raise HTTPException(422,'Experimental assist wire requires boolean')
+        lab.aircraft._bench_apply_experimental_assist=enabled
+        lab.log('experimental_assist_wire_change',dict(enabled=enabled))
+        lab.last_obs=None
     if 'stability_assist' in request:
         value=float(request['stability_assist'])
         if not math.isfinite(value) or not 0<=value<=1:raise HTTPException(422,'Stability assistance must be 0–1')
@@ -358,12 +543,14 @@ async def operator(request:dict):
         lab.log('authority_change',dict(before=lab.authority,after=request['authority']));lab.authority=request['authority']
     if 'paused' in request:
         lab.paused=bool(request['paused']);lab.clock_epoch+=1;lab.log('explicit_operator_pause',dict(paused=lab.paused))
+        if lab.active:lab.checkpoint(force=True)
     if 'time_scale' in request:
         value=float(request['time_scale'])
         if not .01<=value<=1 or not math.isfinite(value):raise HTTPException(422,'Time scale must be .01–1')
         lab.time_scale=value;lab.clock_epoch+=1;lab.log('clock_scale',dict(time_scale=value))
+    if lab.active:lab.checkpoint(force=True)
     lab.last_obs=None  # Operator status must update even when the physical clock is paused.
-    return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale)
+    return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale,stability_assist=lab.aircraft.stability_assist,experimental_assist_wire=lab.aircraft._bench_apply_experimental_assist)
 @app.get('/api/memory')
 async def memory():return json.loads(lab.memory_path.read_text())
 @app.post('/api/lesson')

@@ -4,6 +4,7 @@ import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
 import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-5';
 import {zoomDistance} from './camera-zoom.js?v=1';
+import {rotorVisualOffset} from './rotor-visual.js?v=1';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
 import {buildSky} from './vtx-env/sky.js?v=1';
 import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
@@ -20,7 +21,9 @@ const $=id=>document.getElementById(id);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
 let departure=[0,0],destination=[-50,20],track=[],lastDecision='',lastRun=null;
 const bodyNodes={},pitchMeshes=[];
-const command={engine:0,collective_deg:[0,0,0,0],tilt_deg:[[0,0],[0,0],[0,0],[0,0]],cabin_deg:[0,0,0],cabin_level:true};
+const rotorSpinAxis=new THREE.Vector3(0,0,1),rotorSpinQ=new THREE.Quaternion();
+let latestTruthReceivedMs=0,lastHudUpdateMs=0;
+const command={engine:0,collective_deg:[0,0,0,0],tilt_deg:[[0,0],[0,0],[0,0],[0,0]],cabin_deg:[0,0,0],cabin_level:false};
 let dirty=false,manualBeat=0,manualOwned=false;
 const tiltSpin=[0,0,0,0],tiltSpinAngle=[0,0,0,0];
 const manualChannel=new BroadcastChannel('vtx-manual-authority');
@@ -35,10 +38,13 @@ function selectedFuel(){const value=Number($('initial-fuel').value);if(!Number.i
 
 console.log('VTX: module ready');
 const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<800;
+const mobileView=mobile;
+// Optional display-only lightweight mode. No simulation or collision changes.
+const lightweightView=new URLSearchParams(location.search).has('lite');
 // On phones keep retained-flight actions in the document flow, not across the view.
 if (innerWidth <= 600) document.querySelector('header').after($('retry-bar'));
 const camera=new THREE.PerspectiveCamera(48,1,.1,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.2));renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;viewport.appendChild(renderer.domElement);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileView ? 1.0 : 1.2));renderer.shadowMap.enabled=!mobile&&!lightweightView;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
@@ -57,9 +63,9 @@ function buildWorld(w){
  world=w;
  // Ground uses the same heightfield samples as the physics terrain; the distant landscape lies outside the +/-500 m test area.
  scene.add(buildTerrain(w));
- const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,mobile?700:1700));
+ const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,mobile||lightweightView?700:1700));
  // Buildings are dressed onto the physical obstacle boxes; airfield markings are flush paint.
- environment.buildings=buildBuildings(scene,w,{ppm:mobile?14:24});buildAirfield(scene,{ppm:mobile?7:11});buildTrees(scene,w);buildForecourt(scene,w);environment.volcano=buildVolcanoBasement(scene,w);environment.serviceRoads=buildServiceRoads(scene,w,surfaceZ);
+ environment.buildings=buildBuildings(scene,w,{ppm:mobile||lightweightView?14:24});buildAirfield(scene,{ppm:mobile||lightweightView?7:11});buildTrees(scene,w);buildForecourt(scene,w);environment.volcano=buildVolcanoBasement(scene,w);environment.serviceRoads=buildServiceRoads(scene,w,surfaceZ);
  scene.add(makeWater(w,surfaceZ(w.water.x,w.water.y)+.1));
  updateMarkers();drawMaps();console.log('VTX: terrain ready');
 }
@@ -118,7 +124,7 @@ $('common').oninput=()=>{command.collective_deg.fill(+$('common').value);$('comm
 for(const [key,axis] of [['common-x',0],['common-y',1]])$(key).oninput=()=>{for(let i=0;i<4;i++){command.tilt_deg[i][axis]=+$(key).value;$(axis?'y-'+i:'x-'+i).value=+$(key).value;$(axis?'yval-'+i:'xval-'+i).value=(+$(key).value).toFixed(1)+'°';limitFanTilt(i);}dirty=true;};
 for(const id of ['common-azimuth','common-radius'])$(id).oninput=()=>{const a=+$('common-azimuth').value,r=+$('common-radius').value;$('common-azimuth-value').value=a.toFixed(0)+'°';$('common-radius-value').value=r.toFixed(1)+'°';for(let i=0;i<4;i++)applyPolar(i,r,a);dirty=true;};
 for(const [id,axis] of [['cabin-x',0],['cabin-y',1],['cabin-yaw',2]])$(id).oninput=()=>{command.cabin_deg[axis]=+$(id).value;if(axis===2)$('cabin-yaw-value').value=command.cabin_deg[2].toFixed(0)+'°';dirty=true;};
-$('cabin-level').onchange=()=>{command.cabin_level=$('cabin-level').checked;dirty=true;};
+$('cabin-level').onchange=()=>{if(last?.active&&(last.authority!=='manual'||!manualOwned)){$('cabin-level').checked=command.cabin_level;toast('Take manual authority explicitly before changing cabin controls.');return;}command.cabin_level=$('cabin-level').checked;dirty=true;};
 $('cabin-face-travel').onclick=()=>{const o=last?.observation;if(!o){toast('Flight instruments are not available.');return;}const [vx,vy]=o.gnss_velocity_mps;if(Math.hypot(vx,vy)<.5){toast('Direction of travel is unavailable at this speed.');return;}const heading=THREE.MathUtils.radToDeg(Math.atan2(vx,-vy));const yaw=THREE.MathUtils.euclideanModulo(heading-o.attitude_xyz_deg[2]+180,360)-180;command.cabin_deg[2]=yaw;$('cabin-yaw').value=yaw;$('cabin-yaw-value').value=yaw.toFixed(0)+'°';dirty=true;};
 let miniMap=null,largeMinimap=null;
 function getMinimap(canvas){
@@ -183,7 +189,7 @@ $('takeover').onclick=guard(async()=>{
  if(last){const o=last.observation,issued=last.recent_decisions.at(-1)?.issued;
   command.engine=issued?.engine??(Math.max(...o.rotor_rpm)>300?1:0);
   command.collective_deg=[...o.collective_feedback_deg];command.tilt_deg=o.tilt_feedback_deg.map(v=>[...v]);
-  command.cabin_deg=[...(issued?.cabin_deg??o.cabin_feedback_deg??[0,0,0])];if(command.cabin_deg.length===2)command.cabin_deg.push(0);command.cabin_level=issued?.cabin_level??true;$('cabin-level').checked=command.cabin_level;for(const [id,axis] of [['cabin-x',0],['cabin-y',1],['cabin-yaw',2]])$(id).value=command.cabin_deg[axis];$('cabin-yaw-value').value=command.cabin_deg[2].toFixed(0)+'°';
+  command.cabin_deg=[...(issued?.cabin_deg??o.cabin_feedback_deg??[0,0,0])];if(command.cabin_deg.length===2)command.cabin_deg.push(0);command.cabin_level=issued?.cabin_level??false;$('cabin-level').checked=command.cabin_level;for(const [id,axis] of [['cabin-x',0],['cabin-y',1],['cabin-yaw',2]])$(id).value=command.cabin_deg[axis];$('cabin-yaw-value').value=command.cabin_deg[2].toFixed(0)+'°';
   $('engine').value=command.engine;$('engine-value').value=Math.round(command.engine*100)+'%';
   for(let i=0;i<4;i++){$('p-'+i).value=command.collective_deg[i];$('pval-'+i).value=command.collective_deg[i].toFixed(1)+'°';}
  }
@@ -284,8 +290,12 @@ function drawMap(canvas){
 
 let lastMapMs=0;
 function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return;lastMapMs=performance.now();drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
-function updateEngineering(){if(!last)return;const t=last.rendering_truth;$('engineering-content').textContent=JSON.stringify({revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses},null,2);}
-function updateView(v){last=v;const o=v.observation,t=v.rendering_truth;if(v.run_id!==lastRun){lastRun=v.run_id;track=[];if(v.mission){departure=[...v.mission.departure];destination=[...v.mission.destination];$('dep').value=departure.join(', ');$('dest').value=destination.join(', ');updateMarkers();}}
+function updateEngineering(){if(!last)return;const t=last.rendering_truth,o=last.observation;$('engineering-content').textContent=JSON.stringify({live:{simulation_time_s:o.t_s,observation_id:o.observation_id,clock_scale:last.time_scale,active:last.active,paused:last.paused,authority:last.authority,command_warnings:o.warning_lamps,rotor_rpm:o.rotor_rpm,shaft_torque_nm:o.shaft_torque_nm,shaft_power_kw:o.engine_shaft_kw,collective_deg:o.collective_feedback_deg,fan_tilt_deg:o.tilt_feedback_deg,cabin_gimbal_deg:o.cabin_feedback_deg,attitude_deg:o.attitude_xyz_deg,angular_rate_deg_s:o.gyro_world_deg_s,velocity_m_s:o.gnss_velocity_mps,clearance_m:o.radar_clearance_m,fuel_kg:o.fuel_kg,scheduler_backlog_s:o.scheduler_backlog_s},engineering:{revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses}},null,2);}
+function updateView(v){last=v;latestTruthReceivedMs=performance.now();
+ // Always ingest the latest physical pose; avoid repainting the entire HUD at
+ // the websocket rate on low-powered phones. 3D rendering is independent.
+ if(lightweightView&&latestTruthReceivedMs-lastHudUpdateMs<500&&v.run_id===lastRun)return;
+ lastHudUpdateMs=latestTruthReceivedMs;const o=v.observation,t=v.rendering_truth;if(v.run_id!==lastRun){lastRun=v.run_id;track=[];if(v.mission){departure=[...v.mission.departure];destination=[...v.mission.destination];$('dep').value=departure.join(', ');$('dest').value=destination.join(', ');updateMarkers();}}
  $('state').textContent=v.active?(v.paused?'PHYSICS PAUSED':'LIVE EXPERIMENT'):'INSPECTION';$('lamp').style.background=v.active?'#7cdfcb':'#8a9a9d';$('clock').textContent=`${Math.floor(o.t_s/60).toString().padStart(2,'0')}:${(o.t_s%60).toFixed(2).padStart(5,'0')} / ${v.time_scale}×`;
  const latestPilot=v.recent_decisions.at(-1),pilotWaiting=v.active&&v.authority==='colin'&&(!latestPilot||o.warning_lamps.includes('COMMAND_LEASE_EXPIRED')||o.t_s-latestPilot.issued_t_s>1);$('colin-wait').hidden=!pilotWaiting;$('colin-wait').textContent=pilotWaiting?'Waiting for live Colin commands. The retry button does not start an automatic pilot.':'';
  $('authority').textContent=v.authority.toUpperCase();$('start').disabled=v.active;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('pause').textContent=v.paused?'Resume physics':'Pause physics';$('revision').textContent=t.provenance.revision.toUpperCase();$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';
@@ -293,7 +303,7 @@ function updateView(v){last=v;const o=v.observation,t=v.rendering_truth;if(v.run
  $('retry-status').textContent=t.crashed?'Crash recorded · retry starts a new aircraft at A.':'Retained mission · retry preserves the pilot checkpoint.';
  $('alt').innerHTML=o.radar_clearance_m.toFixed(2)+'<small>m</small>';$('vs').innerHTML=o.gnss_velocity_mps[2].toFixed(2)+'<small>m/s</small>';$('speed').innerHTML=Math.hypot(...o.gnss_velocity_mps.slice(0,2)).toFixed(2)+'<small>m/s</small>';$('power').innerHTML=o.engine_shaft_kw.toFixed(1)+'<small>kW</small>';$('fuel').innerHTML=o.fuel_kg.reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';
  for(let i=0;i<4;i++)$('rpm-'+i).textContent=o.rotor_rpm[i].toFixed(0)+' rpm';
- if(o.assisted_collective_deg)$('assist-feedback').textContent='Shadow requests: '+o.assisted_collective_deg.map(x=>x.toFixed(2)+'°').join(' / ')+' · not applied';
+ if(o.assisted_collective_deg)$('assist-feedback').textContent=(o.assistance_applied?'Experimental collective targets: ':'Shadow requests: ')+o.assisted_collective_deg.map(x=>x.toFixed(2)+'°').join(' / ')+(o.assistance_applied?' · applied':' · not applied');
  for(const el of document.querySelectorAll('.controls-panel input[type=range]:not(#assist),#feather'))el.disabled=v.authority!=='manual'||!manualOwned;
  const cabinLocked=v.authority!=='manual'||!manualOwned;for(const el of document.querySelectorAll('.tilt-spin'))el.disabled=cabinLocked;if(cabinLocked)tiltSpin.fill(0);$('cabin-level').disabled=cabinLocked;$('cabin-face-travel').disabled=cabinLocked;$('cabin-x').disabled=cabinLocked||command.cabin_level;$('cabin-y').disabled=cabinLocked||command.cabin_level;if(o.cabin_feedback_deg)$('cabin-feedback').textContent='Actual gimbal X / Y / yaw: '+o.cabin_feedback_deg.map(x=>x.toFixed(1)+'°').join(' / ');
  for(const id of ['dep','dest','drive','gear','airframe','initial-fuel','power-limit','pilot'])$(id).disabled=v.active;
@@ -311,9 +321,18 @@ api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
 if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;}};
-function animate(){requestAnimationFrame(animate);const now=performance.now();if(now-lastFrameMs<80)return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
+function animate(){requestAnimationFrame(animate);const now=performance.now();if(now-lastFrameMs<(lightweightView?67:50))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
  if(truth)loadAirframe(truth.provenance.render_asset||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb'));
- if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);}for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
+ if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);
+   // The authoritative rotor pose is sampled at 20 Hz. At 1200 RPM one full
+   // revolution occurs between samples, so drawing snapshots alone looks static.
+   // Use measured signed angular velocity solely for sub-frame presentation.
+   if(!replayFrames&&name.startsWith('rotor')&&/^rotor[1-4]$/.test(name)){
+    const i=Number(name.slice(-1))-1;
+    const angle=rotorVisualOffset(truth.rotor_spin_rad_s?.[i],now-latestTruthReceivedMs,last?.time_scale,last?.active,last?.paused);
+    if(angle)n.quaternion.multiply(rotorSpinQ.setFromAxisAngle(rotorSpinAxis,angle));
+   }
+  }for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
   const base=truth.body_poses.airframe,posArray=base.position;pos.set(posArray[0],posArray[1],posArray[2]+1.5);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
   else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);cameraTarget.copy(camera.position).add(new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch)).applyQuaternion(q));camera.lookAt(cameraTarget);}
@@ -324,4 +343,9 @@ function animate(){requestAnimationFrame(animate);const now=performance.now();if
  sky.update(camera,now/1000);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);environment.serviceRoads?.update(now/1000,last?.observation?.gnss_xy_m);
   aircraftFx?.update(last?.observation?.rotor_rpm,now/1000);
  if(model&&modelReady&&!window.__vtxNoRender)renderer.render(scene,camera);
+ const status=$('view-sync');if(status&&now-(status._last||0)>400){status._last=now;
+  const age=now-latestTruthReceivedMs;
+  status.textContent=!last?'WAITING FOR DATA':age>2000?'DISPLAY STALE':!modelReady?'LOADING AIRCRAFT':`LIVE VIEW · ${Math.round(age)} ms · ${Math.round(last?.observation?.rotor_rpm?.[0]||0)} RPM · t ${last?.observation?.t_s?.toFixed(1)??'--'}s`;
+  status.style.color=age>2000?'#ffb19d':'#b6f6d8';
+ }
 }animate();
