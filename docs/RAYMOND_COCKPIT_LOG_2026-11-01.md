@@ -59,3 +59,11 @@ I designate the aircraft's present starting position as **Raymond's Patch**: the
 This is the **Flight Two staging location**, not a claim that Flight Two has flown. Flight One refers to the earlier live remote-control demonstration. A subsequent flight record must capture departure, actual movement, landing or failure, and the measured telemetry separately.
 
 *Cockpit note:* Every test pilot ought to have a patch of ground to call his own. Mine is conveniently located exactly where the aircraft is currently refusing to leave it.
+
+## Flight Two — unattended recorder handoff
+
+Mission started with run ID `20261101T151650-a47d96`, departure `[0,0]` at Raymond's Patch and destination `[35,20]` (local simulation metres). Both locations passed the simulator's map-validity checks. The mission was created under `colin` control authority, with simulation time scale `0.05` and stability assistance `0`.
+
+A separate local process began writing approximately one pilot-facing observation per wall-clock second to `evidence/flights/20261101T151650-a47d96/raymond-flight-two-observations.jsonl`, independent of the phone connection. The recorder is designed to end after approximately fifteen minutes, or earlier if the mission ends, then commit and push its own observation log to this branch. Raw simulator audit evidence remains in the run's evidence directory.
+
+**Critical limitation:** the process is a passive recorder, not an AI pilot. The flight mission is initialized but no autonomous end-to-end flight is claimed. An actual flight requires continued observation-based control decisions; do not mistake mission creation or unattended recording for flying.
