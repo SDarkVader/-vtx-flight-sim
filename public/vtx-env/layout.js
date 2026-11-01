@@ -10,7 +10,12 @@ export const LAYOUT = {
   spawn: [0, 0],               // default sortie departure (A) – VTX stand 1
   destination: [-50, 20],      // default sortie destination (B)
   apron: { x0: -60, x1: 110, y0: -22, y1: 28 },
-  runway: { x0: -120, x1: 100, yc: -65, width: 30, heading: 'E-W' },
+  runways: [
+    { id: '08/26', name: 'Runway 08/26', center: [0, 0], length: 1432, width: 30, heading: 90, status: 'open' },
+    { id: '03/21', name: 'Runway 03/21', center: [235, 0], length: 980, width: 23, heading: 55, axis: [0.57357644, 0.81915204], status: 'open' },
+    { id: '18/36', name: 'Former Runway 18/36 (Closed)', center: [-180, 0], length: 800, width: 18, heading: 0, axis: [0, 1], status: 'closed' },
+  ],
+  runway: { x0: -716, x1: 716, yc: 0, width: 30, heading: 'E-W' },
   taxiways: [ // north-south connectors from runway edge to apron edge
     { x: -45, y0: -50, y1: -22, width: 12, id: 'A' },
     { x: 30, y0: -50, y1: -22, width: 12, id: 'B' },
