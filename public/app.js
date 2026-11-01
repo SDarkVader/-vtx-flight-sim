@@ -12,6 +12,7 @@ import {buildAirfield} from './vtx-env/airfield.js?v=6';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
+import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=2';
 
 const $=id=>document.getElementById(id);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
@@ -116,13 +117,55 @@ for(const id of ['common-azimuth','common-radius'])$(id).oninput=()=>{const a=+$
 for(const [id,axis] of [['cabin-x',0],['cabin-y',1],['cabin-yaw',2]])$(id).oninput=()=>{command.cabin_deg[axis]=+$(id).value;if(axis===2)$('cabin-yaw-value').value=command.cabin_deg[2].toFixed(0)+'°';dirty=true;};
 $('cabin-level').onchange=()=>{command.cabin_level=$('cabin-level').checked;dirty=true;};
 $('cabin-face-travel').onclick=()=>{const o=last?.observation;if(!o){toast('Flight instruments are not available.');return;}const [vx,vy]=o.gnss_velocity_mps;if(Math.hypot(vx,vy)<.5){toast('Direction of travel is unavailable at this speed.');return;}const heading=THREE.MathUtils.radToDeg(Math.atan2(vx,-vy));const yaw=THREE.MathUtils.euclideanModulo(heading-o.attitude_xyz_deg[2]+180,360)-180;command.cabin_deg[2]=yaw;$('cabin-yaw').value=yaw;$('cabin-yaw-value').value=yaw.toFixed(0)+'°';dirty=true;};
-const onMap=async(event,canvas)=>{if(last?.active){toast('End the current sortie before selecting the next mission.');return;}const rect=canvas.getBoundingClientRect(),x=((event.clientX-rect.left)/rect.width-.5)*world.half_m*2,y=(.5-(event.clientY-rect.top)/rect.height)*world.half_m*2;await choosePoint([Math.round(x*10)/10,Math.round(y*10)/10]);};
+let miniMap=null,largeMinimap=null;
+function getMinimap(canvas){
+  if(!canvas)return null;
+  if(canvas===$('map')){
+    if(!miniMap)miniMap=new TacticalMinimap(canvas,{isLarge:false});
+    return miniMap;
+  }
+  if(canvas===$('large-map')){
+    if(!largeMinimap)largeMinimap=new TacticalMinimap(canvas,{isLarge:true});
+    return largeMinimap;
+  }
+  return null;
+}
+const onMap=async(event,canvas)=>{
+  if(last?.active){toast('End the current sortie before selecting the next mission.');return;}
+  const rect=canvas.getBoundingClientRect();
+  const mm=getMinimap(canvas);
+  let x,y;
+  if(mm){
+    const proj=mm.getProjection(world?.half_m||500);
+    const sx=((event.clientX-rect.left)/rect.width)*canvas.width;
+    const sy=((event.clientY-rect.top)/rect.height)*canvas.height;
+    x=proj.unpx(sx);
+    y=proj.unpy(sy);
+  } else {
+    x=((event.clientX-rect.left)/rect.width-.5)*world.half_m*2;
+    y=(.5-(event.clientY-rect.top)/rect.height)*world.half_m*2;
+  }
+  await choosePoint([Math.round(x*10)/10,Math.round(y*10)/10]);
+};
 async function choosePoint(p){const verdict=await api(`/api/validate?x=${p[0]}&y=${p[1]}`);$('validation').textContent=`${pick.toUpperCase()} (${p.join(', ')}): ${verdict.reason}`;$('large-validation').textContent=$('validation').textContent;if(!verdict.valid){toast(verdict.reason);return;}if(pick==='a'){departure=p;$('dep').value=p.join(', ');}else{destination=p;$('dest').value=p.join(', ');}updateMarkers();drawMaps();}
 $('map').onclick=guard(e=>onMap(e,$('map')));$('large-map').onclick=guard(e=>onMap(e,$('large-map')));
 function setPick(p){pick=p;$('pick-a').classList.toggle('selected',p==='a');$('pick-b').classList.toggle('selected',p==='b');$('large-pick').textContent=p.toUpperCase();}
 $('pick-a').onclick=()=>setPick('a');$('pick-b').onclick=()=>setPick('b');
 for(const [id,p] of [['dep','a'],['dest','b']])$(id).onchange=guard(async()=>{const vals=$(id).value.split(',').map(Number);if(vals.length!==2||vals.some(v=>!Number.isFinite(v)))throw Error('Use two finite coordinates: east, north');setPick(p);await choosePoint(vals);});
-$('map-zoom').onclick=()=>{$('map-dialog').showModal();drawMaps();};
+$('map-zoom').onclick=()=>{$('map-dialog').showModal();drawMaps(true);};
+const mapModeBtn=$('map-mode');
+if(mapModeBtn){
+  mapModeBtn.onclick=()=>{
+    const mm=getMinimap($('map'));
+    if(mm){
+      mm.tacticalMode=!mm.tacticalMode;
+      mm.zoom=mm.tacticalMode?2.4:0.88;
+      mm.center=mm.tacticalMode?[0,40]:[20,110];
+      mapModeBtn.textContent=mm.tacticalMode?'Valley':'Tactical';
+      drawMaps(true);
+    }
+  };
+}
 $('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,stability_assist:+$('assist').value/100,reference_rpm:+$('drive').value,gear_variant:$('gear').value,airframe_variant:$('airframe').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value,label:'Map-selected live ground-to-ground attempt'});manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
 $('end').onclick=guard(async()=>{const r=await api('/api/stop',{reason:'Operator ended the live attempt'});toast(`Recorded: ${r.outcome}. Every failed attempt is retained.`);});
 for(const authority of ['manual','colin'])$('retry-'+authority).onclick=guard(async()=>{
@@ -217,23 +260,15 @@ $('engineering').onclick=()=>{$('engineering-dialog').showModal();updateEngineer
 $('history').onclick=guard(async()=>{const records=await api('/api/runs');$('runs').replaceChildren();for(const r of records){const a=document.createElement('article'),button=document.createElement('button');button.textContent='Inspect recorded states';button.onclick=guard(async()=>{const replay=await api('/api/replay/'+r.run_id);replayFrames=replay.frames;replayFrame=0;$('replay-time').max=Math.max(0,replayFrames.length-1);$('replay-controls').hidden=false;$('view-mode').textContent='POST-FLIGHT AUDIT · NO CONTROL';toast(replay.downsampled?`Inspection uses ${replay.frames.length} of ${replay.total_frames} recorded states; full log is retained.`:'Inspection only. The live physical plant remains separate.');});a.append(button,document.createTextNode(`${r.run_id} · ${r.outcome} · ${r.simulated_seconds.toFixed(1)} s · ${r.decisions} decisions`));$('runs').appendChild(a);}$('history-dialog').showModal();});
 $('replay-time').oninput=()=>replayFrame=+$('replay-time').value;
 $('return-live').onclick=()=>{replayFrames=null;$('replay-controls').hidden=true;$('view-mode').textContent='PHYSICAL STATE · LIVE';};
-const mapBackgrounds=new WeakMap();
-function drawMap(canvas){if(!world)return;const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,n=world.heights_m.length;const px=x=>(x/(2*world.half_m)+.5)*w,py=y=>(.5-y/(2*world.half_m))*h;
- let bg=mapBackgrounds.get(canvas);
- if(!bg||bg.width!==w||bg.height!==h||bg.world!==world){
- const layer=document.createElement('canvas');layer.width=w;layer.height=h;const ctx=layer.getContext('2d');ctx.fillStyle='#2c4845';ctx.fillRect(0,0,w,h);
- for(let j=0;j<n-1;j++)for(let i=0;i<n-1;i++){const v=world.heights_m[j][i],shade=Math.round(55+v*1.0);ctx.fillStyle=`rgb(${shade},${shade+27},${shade+17})`;ctx.fillRect(i/(n-1)*w,h-(j+1)/(n-1)*h,w/(n-1)+1,h/(n-1)+1);}
- ctx.strokeStyle='#adcec420';ctx.lineWidth=1;for(let x=-500;x<=500;x+=100){ctx.beginPath();ctx.moveTo(px(x),0);ctx.lineTo(px(x),h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,py(x));ctx.lineTo(w,py(x));ctx.stroke();}
- for(const o of world.obstacles){ctx.fillStyle=o.landable?'#abbcac':'#b08d72';const [x,y]=o.center,[hx,hy]=o.half;ctx.fillRect(px(x-hx),py(y+hy),hx/world.half_m*w,hy/world.half_m*h);}
- const water=world.water;ctx.fillStyle='#6c9baf';ctx.fillRect(px(water.x-water.half_x),py(water.y+water.half_y),water.half_x/world.half_m*w,water.half_y/world.half_m*h);
- bg={width:w,height:h,world,layer};mapBackgrounds.set(canvas,bg);
- }
- ctx.drawImage(bg.layer,0,0);
- if(track.length>1){ctx.strokeStyle='#d9f0eaa0';ctx.lineWidth=2;ctx.beginPath();track.forEach((p,i)=>i?ctx.lineTo(px(p[0]),py(p[1])):ctx.moveTo(px(p[0]),py(p[1])));ctx.stroke();}
- for(const [p,label,col] of [[departure,'A','#7cdfcb'],[destination,'B','#ffc88b']]){const x=px(p[0]),y=py(p[1]);ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,Math.max(6,w/85),0,Math.PI*2);ctx.fill();ctx.fillStyle='#15342e';ctx.font=`bold ${Math.max(9,w/65)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,x,y+.5);}
- if(last){const p=last.observation.gnss_xy_m;ctx.strokeStyle='#fff';ctx.lineWidth=1.7;const x=px(p[0]),y=py(p[1]);ctx.beginPath();ctx.moveTo(x,y-5);ctx.lineTo(x+4,y+4);ctx.lineTo(x-4,y+4);ctx.closePath();ctx.stroke();}
- ctx.fillStyle='#ddede6';ctx.font=`${Math.max(9,w/60)}px system-ui`;ctx.textAlign='left';ctx.fillText('N ↑',10,17);ctx.fillText('0',w/2+4,h/2+12);
+function drawMap(canvas){
+  if(!world||!canvas)return;
+  const mm=getMinimap(canvas);
+  if(mm){
+    mm.render(world,{last,track,departure,destination});
+  }
 }
+// Legacy map replaced by TacticalMinimap
+
 let lastMapMs=0;
 function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return;lastMapMs=performance.now();drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
 function updateEngineering(){if(!last)return;const t=last.rendering_truth;$('engineering-content').textContent=JSON.stringify({revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses},null,2);}
