@@ -405,7 +405,11 @@ class Aircraft:
     def physical_snapshot(self):
         return dict(t_s=float(self.data.time),qpos=self.data.qpos.tolist(),qvel=self.data.qvel.tolist(),
                     body_poses={n:dict(position=self.data.xpos[b].tolist(),quaternion_wxyz=self.data.xquat[b].tolist()) for n,b in self.bids.items()},
-                    pitch_deg=self.pitch.tolist(),assisted_collective_deg=self.assisted_collective_deg,
+                    pitch_deg=self.pitch.tolist(),
+                    # Rendering-only angular speed. The rotor pose remains MuJoCo-authoritative;
+                    # this enables visual sub-frame motion without changing the physical plant.
+                    rotor_spin_rad_s=[float(self.joint(f'rotor{i}_spin')[1]) for i in range(1,5)],
+                    assisted_collective_deg=self.assisted_collective_deg,
                     stability_assist=self.stability_assist,assistance_applied=self._bench_apply_experimental_assist,
                     fuel_kg=self.fuel.tolist(),rotors=self.rotors,
                     integrity=self.integrity.tolist(),power=self.power,energy=self.energy,
