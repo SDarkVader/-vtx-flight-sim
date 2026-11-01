@@ -1,39 +1,66 @@
-# VTX-P0-V4 Flight Simulation
+# VTX — Vader's Taxis
 
-**Independent private repository for Vader's Taxis VTX flight simulation.** Not related to The Node.
+**A proprietary, physics-driven 3D VTOL flight game in active development.**
 
-**Current state:** recovered P0-V4 assembly, conditional multibody physics and a live interactive Stage 1 flight laboratory. Actual Colin control attempts include a failed takeoff and an airborne collision; no controlled A-to-B landing or real VTX flightworthiness is claimed.
+VTX puts the player in control of an experimental four-fan aircraft in an interactive 3D world. Take off, hover, manoeuvre around terrain and structures, navigate to a chosen destination and attempt a controlled landing. Aircraft movement is produced by the live physics simulation—not by a scripted flight path or a decorative animation.
 
-[Open the live laboratory](https://sb-6iqplfebw9l2.vercel.run) · [Run locally and use keyboard controls](docs/LIVE_ACCESS.md) · [Engineering and flight findings](evidence/EXPERIMENT_REPORT.md). Hosting is a temporary, resumable Vercel Sandbox. Keyboard controls open in a closable pop-up; crash retries retain the failed run and pilot checkpoint. R4 and the experimental lighter R5 underside are selectable.
+**Status:** playable experimental prototype / flight-test game, **not a finished commercial release**. The repository is private. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
 
-For Windows, download or clone this branch, install Python with the Windows `py` launcher, and run `launch-windows.bat` from the repository folder. The first launch installs the packages in `requirements.txt`; keep the command window open while using the game. It opens a local browser at `http://127.0.0.1:8765/`. The existing hosted URL is temporary and may no longer run the latest revision.
+## Play the game
 
-## Non-negotiable: Colin flies by wire
+- **Manual flight:** take control of the four independently articulated ducted fans through the browser interface, keyboard inputs and live cockpit instruments.
+- **AI-piloted flight:** connect an AI pilot that receives live observations and issues actual fly-by-wire commands. The pilot must respond to the evolving simulation rather than follow a precomputed route.
+- **Missions and exploration:** choose valid departure and destination positions, fly through the test environment, avoid obstacles and attempt takeoff, navigation and landing.
+- **Real consequences:** mass, gravity, inertia, actuator limits, contact dynamics and collisions affect each flight. Failures and crashes are recorded rather than concealed.
+- **Flight evidence:** inspect telemetry, mission traces, controller actions and post-flight reports to understand what happened.
 
-[Live fly-by-wire piloting contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md). The proprietor selects start and destination; **Colin pilots through live controls from observations**, including physical takeoff and landing attempts. No autopilot pretending to be an agent, no precomputed trajectory driving motion and no playback substituted for flight. Deterministic replay is post-flight audit only.
+The 3D environment, visuals, controls and AI-pilot integration are under ongoing development. Some aircraft behaviours and flight scenarios remain uncalibrated or unproven.
 
-## Required physics and source register
+## Getting started — Windows development build
 
-[PHYSICS_AND_RESEARCH_BASELINE.md](docs/PHYSICS_AND_RESEARCH_BASELINE.md) is the authoritative engineering baseline. The verified handoff source, original tests and historical PDFs are imported. The exact current Blendstra source and derivative component ledgers are retained. Independent conservation/mechanical checks and actual live attempts are recorded, with unresolved mass, aerodynamic and structural calibration explicit in [the experiment report](evidence/EXPERIMENT_REPORT.md). The executable model is conditional, not a validated physical aircraft.
+This is a private developer/tester build, not a public download.
 
-## Primary engineering reference
+1. Obtain **written authorisation** from the rights holder and access to the private repository.
+2. Install a supported Python version with the Windows `py` launcher.
+3. Clone the repository and run `launch-windows.bat` from its root.
+4. Allow the first launch to install the packages listed in `requirements.txt`.
+5. Open `http://127.0.0.1:8765/` if it does not open automatically; keep the launcher running.
 
-[Saved P0-V4 Blendstra aircraft](https://blendstra.com/studio?workspace=wsp_816786f2f8ced68922a0d7b529616880cf8b6f22&project=3288318a-95f4-4dda-8d0f-dbf7b8eaceb9&version=version_f01d449a46712dd351275c360854de71baa3a13bb6ca61c1707a0593d7c7dea2)
+See [live access and manual controls](docs/LIVE_ACCESS.md) for the current keyboard mappings, flight modes and operational limits. Any previously shared hosted Vercel Sandbox URL is temporary and **not** a permanent game service.
 
-Four independently tilt-vectoring ducted rotors, central two-seat spherical cabin, annular composite structure, four fuel cells, six landing contacts. Concept illustration is not verified CAD or measured dynamics.
+## AI pilots and conversation
 
-## Colin's assignment
+VTX is designed for **actual interaction between human operators, AI pilots and the simulated aircraft**. A connected agent can observe aircraft state, select controls, react to the resulting motion and participate in the flight-test workflow. AI flights are auditable through preserved records.
 
-Implement a deterministic 6-DOF Newton–Euler flight dynamics model with quaternion attitude, four independently actuated ducted rotor thrust vectors, feedback control, saturation and gyroscopic effects, realistic contacts/collisions and a reproducible browser-hosted 3D interactive flight sandbox. Physics state must drive animation, never the reverse.
+We have also experimented with conversational operation from a phone through an **external remote-command integration**, including live actuator demonstrations, flight observations and engineering changes. That workflow is experimental; it is **not a claim that a standalone in-game voice-chat feature has shipped**.
 
-The user chooses **any valid takeoff position and destination on the map**. Colin must personally issue fly-by-wire controls based on live pilot observations to attempt ground takeoff, hover, navigation, turning, approach, touchdown and settling under simulated physics. Show failures and crashes; do not script success or suppress instability.
+For the active pilot requirements, see the [live fly-by-wire pilot contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md). Scripted paths, replay masquerading as live flight and unearned successful landings are not acceptable substitutes for genuine control.
 
-Stage 1 is a training/test world Colin builds. Persist versioned controller learning and experience. The proprietor later introduces a **previously unseen Stage 2 world**. No advance access or training on Stage 2. Evaluate transfer with continued learned state, and compare against fresh-start. Record failures and adaptation.
+## Development status and engineering basis
 
-Use explicitly synthetic fixtures where VTX calibration is missing. Real CG/inertia, thrust/torque maps, actuators, drag, structural limits and aerodynamic effects must remain in a `CALIBRATION_BLOCKED` evidence register until established. Same seed, environment, input and integrator should reproduce the same trajectories/failures.
+The current prototype includes a browser-based interactive flight laboratory, instrumented aircraft dynamics, four independently controllable ducted fans, manual controls, AI control interfaces, contact/collision handling and retained flight evidence. Alternate aircraft configurations and improved world presentation are experimental.
 
-Acceptance: live playable browser preview; arbitrary map-valid A-to-B physics-driven takeoff-to-land attempt; independently commanded 4 rotors; deterministic success AND failure cases; complete telemetry, seeds, parameter provenance, scenario traces, learning checkpoints and test evidence. Preserve all source art/model provenance. Work independently and deliver reviewable PR and exact run commands.
+The underlying model is a conditional simulation. Its real-world aircraft parameters have **not** all been measured or validated. Recorded launches, airborne flights and collisions must not be confused with reliable autonomous navigation, successful end-to-end missions or real aircraft flightworthiness.
 
-See `COLIN_MISSION.md` for the execution contract. The verified `VTX_COLIN_ENGINEERING_HANDOFF.zip` supplied the starter snapshot and all 31 original tests. Its older instruction files remain archived and did not overwrite the current GitHub contracts. The earlier Git bundle/history at e768250 was not in the handoff; this provenance gap does not prevent running the imported snapshot.
+The simulation is built around a 6-DOF Newton–Euler / MuJoCo physics model, with a Python server and browser-based game interface. Modelled forces, torques, mass properties and actuators are intended to drive the rendered motion.
 
-New test defaults use 10 kg fuel, a 300 kW engine shaft ceiling and the 1200 rpm proposed gearset with bounded PI shaft regulation. A brief live low-fuel test lifted off and returned to supported rest near departure; no A-to-B mission or stable-flight qualification is claimed. [Fuel, power, exhaust calculations and the actual test](evidence/PROPULSION_FUEL_REVISION.md). Downward exhaust lift remains disabled pending installed flow/backpressure data.
+**Primary project documents:**
+
+- [Engineering physics and research baseline](docs/PHYSICS_AND_RESEARCH_BASELINE.md)
+- [Live flight interface and keyboard controls](docs/LIVE_ACCESS.md)
+- [AI pilot operating contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md)
+- [Game and pilot development mission](COLIN_MISSION.md)
+- [Experiment findings](evidence/EXPERIMENT_REPORT.md)
+- [Flight evidence and recorded tests](evidence/)
+
+The original aircraft concept and source provenance are documented in the engineering baseline; externally sourced models and reference materials do not automatically become VTX-owned assets. VTX is separate from *The Node* project.
+
+## Ownership, licensing and commercial enquiries
+
+**Copyright © 2026 Steven Dark (SDarkVader). All rights reserved.**
+
+VTX is **proprietary software and game content, not open source**. No permission is granted to use, run, reproduce, copy, modify, adapt, redistribute, publish, host, sublicense, sell, commercially exploit or train models on original VTX content without prior express written authorisation from the relevant rights holder, subject to non-excludable legal rights.
+
+Access to this private repository is not itself a licence. For commercial licensing, collaboration, testing or other permissions, contact the owner via [GitHub](https://github.com/SDarkVader).
+
+Third-party dependencies and externally sourced materials remain subject to **their own licences and rights**. See the full [proprietary licence notice](LICENSE). The game is not suitable for operating real aircraft or for safety-critical engineering use.
