@@ -189,7 +189,7 @@ class Aircraft:
         self.aero=BladeElementModel(self.ledger['blade'])
         self.command=dict(engine=0.,collective_deg=[0.]*4,tilt_deg=[[0.,0.] for _ in range(4)],cabin_deg=[0.,0.,0.],cabin_level=True)
         self.stability_assist=0.;self.assisted_collective_deg=[0.]*4
-        # Offline tests alone may opt in to active control. Never exposed to the API.
+        # Experimental live test wire, disabled by default. Operator opt-in only.
         self._bench_apply_experimental_assist=False
         self.pitch=np.zeros(4);self.target_angles=np.zeros((4,2));self.cabin_target=np.zeros(3)
         self.engine_spool=0.;self.fuel=np.full(4,fuel_kg/4)

@@ -7,3 +7,9 @@ results/*
 !results/.gitkeep
 *.log
 BUILD_COMMIT
+# Local live-session data, retained on the operator PC.
+evidence/flights/*/
+pilot/pilot_status.json
+pilot/pilot_events.jsonl
+tools/pilot_controls.json.tmp
+tools/pilot_controls.json.bak

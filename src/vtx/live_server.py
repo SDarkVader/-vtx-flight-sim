@@ -36,7 +36,7 @@ class Action(BaseModel):
     collective_deg:list[float]
     tilt_deg:list[list[float]]
     cabin_deg:list[float]=[0.,0.,0.]
-    cabin_level:bool=True
+    cabin_level:bool=False
     @field_validator('collective_deg')
     @classmethod
     def pitch(cls,v):
@@ -112,6 +112,25 @@ class Laboratory:
             if meta_path.exists():
                 self.retry_hint=dict(run_id=last['run_id'],mission=last['mission'],request=json.loads(meta_path.read_text())['request'])
                 self.end_summary={k:v for k,v in last.items() if k!='final'}
+        # If the process died without stop(), the latest metadata is still
+        # enough to retry at the departure point. Never reconstruct mid-flight
+        # physics from a render frame or claim the interrupted flight landed.
+        unfinished=sorted(p for p in (ROOT/'evidence/flights').glob('*/metadata.json')
+                          if not (p.parent/'summary.json').exists())
+        if unfinished and (not completed or unfinished[-1].parent.name>completed[-1].parent.name):
+            path=unfinished[-1]
+            try:
+                meta=json.loads(path.read_text())
+                interrupted=dict(run_id=meta['run_id'],mission=meta['mission'],
+                                 outcome='interrupted',authority=meta.get('operator'),
+                                 reason='Server exited before the sortie ended; physical state not recoverable',
+                                 previous_evidence=path.parent.name)
+                (path.parent/'summary.json').write_text(json.dumps(interrupted,indent=2))
+                self.retry_hint=dict(run_id=meta['run_id'],mission=meta['mission'],
+                                     request=meta['request'])
+                self.end_summary=interrupted
+            except (ValueError,KeyError,OSError):
+                pass
 
     def log(self,kind,payload):
         if self.audit_file:
@@ -139,7 +158,7 @@ class Laboratory:
             rotor_rpm=[round(float(abs(p.joint(f'rotor{i}_spin')[1])*60/(2*math.pi)),2) for i in range(1,5)],
             shaft_torque_nm=[round(v['torque_nm'],1) for v in p.rotors],
             collective_feedback_deg=np.round(p.pitch,3).tolist(),
-            stability_assist=p.stability_assist,assistance_applied=False,assisted_collective_deg=p.assisted_collective_deg,
+            stability_assist=p.stability_assist,assistance_applied=bool(p.stability_assist and p._bench_apply_experimental_assist),assisted_collective_deg=p.assisted_collective_deg,
             tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
             cabin_feedback_deg=[round(math.degrees(p.joint(f'cabin_{a}')[0]),3) for a in 'xyz'],
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
@@ -343,6 +362,12 @@ async def retry(request:dict):
     except ValueError as e:raise HTTPException(422,str(e))
 @app.post('/api/operator')
 async def operator(request:dict):
+    if 'experimental_assist_wire' in request:
+        enabled=request['experimental_assist_wire']
+        if not isinstance(enabled,bool):raise HTTPException(422,'Experimental assist wire requires boolean')
+        lab.aircraft._bench_apply_experimental_assist=enabled
+        lab.log('experimental_assist_wire_change',dict(enabled=enabled))
+        lab.last_obs=None
     if 'stability_assist' in request:
         value=float(request['stability_assist'])
         if not math.isfinite(value) or not 0<=value<=1:raise HTTPException(422,'Stability assistance must be 0–1')
@@ -363,7 +388,7 @@ async def operator(request:dict):
         if not .01<=value<=1 or not math.isfinite(value):raise HTTPException(422,'Time scale must be .01–1')
         lab.time_scale=value;lab.clock_epoch+=1;lab.log('clock_scale',dict(time_scale=value))
     lab.last_obs=None  # Operator status must update even when the physical clock is paused.
-    return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale)
+    return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale,stability_assist=lab.aircraft.stability_assist,experimental_assist_wire=lab.aircraft._bench_apply_experimental_assist)
 @app.get('/api/memory')
 async def memory():return json.loads(lab.memory_path.read_text())
 @app.post('/api/lesson')
