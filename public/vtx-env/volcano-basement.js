@@ -13,6 +13,10 @@ import {
   subwayStationSignTexture,
   cherryBlossomTexture,
   robotMaskTexture,
+  umbrellaTexture,
+  nordeusBadgeTexture,
+  crackedGlassTexture,
+  citationTexture,
   rng
 } from './textures.js';
 
@@ -249,6 +253,7 @@ export function buildVolcanoBasement(scene, world) {
     emissiveIntensity: 3.2,
     roughness: 0.35,
     metalness: 0.2,
+    side: THREE.DoubleSide,
   });
   lavaTex.repeat.set(2, 4);
   lavaEmissiveTex.repeat.set(2, 4);
@@ -284,6 +289,29 @@ export function buildVolcanoBasement(scene, world) {
     lavaTex.offset.y -= dt * 0.25;
     lavaEmissiveTex.offset.y -= dt * 0.25;
     lavaLight.intensity = 8.8 + Math.sin(t * 4.8) * 1.5 + Math.cos(t * 7.5) * 0.9;
+  });
+
+  // Geothermal white steam / foam vapor clouds churning at the base of the molten lava fall
+  const steamMat = new THREE.MeshStandardMaterial({
+    color: '#ffffff',
+    emissive: '#ffe4cc',
+    emissiveIntensity: 0.45,
+    transparent: true,
+    opacity: 0.52,
+    roughness: 0.9,
+  });
+  const steamPuffs = [];
+  for (let s = 0; s < 12; s++) {
+    const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(2.4 + (s % 3) * 0.9, 1), steamMat);
+    puff.position.set(-16 + (s * 2.8), 36 + ((s * 4) % 6), 2.2 + (s % 3) * 1.1);
+    group.add(puff);
+    steamPuffs.push(puff);
+  }
+  updaters.push((t) => {
+    steamPuffs.forEach((puff, idx) => {
+      puff.position.z = 2.0 + Math.sin(t * 1.6 + idx * 0.8) * 1.1;
+      puff.scale.setScalar(0.9 + Math.cos(t * 1.3 + idx * 0.6) * 0.28);
+    });
   });
 
   // =========================================================================
@@ -322,6 +350,26 @@ export function buildVolcanoBasement(scene, world) {
     }
   }
 
+  // Cracked Glass Barrel Vault Canopy between ribs (as in user reference photos)
+  const glassTex = crackedGlassTexture();
+  glassTex.repeat.set(4, 6);
+  const glassMat = new THREE.MeshStandardMaterial({
+    map: glassTex,
+    color: '#346682',
+    emissive: '#16384a',
+    emissiveIntensity: 0.38,
+    roughness: 0.18,
+    metalness: 0.12,
+    transparent: true,
+    opacity: 0.72,
+    side: THREE.DoubleSide,
+  });
+  const glassCanopyGeom = new THREE.CylinderGeometry(38, 38, 72, 32, 1, true, -Math.PI / 2, Math.PI);
+  glassCanopyGeom.rotateZ(Math.PI / 2);
+  glassCanopyGeom.translate(0, 7, 0);
+  const glassCanopy = new THREE.Mesh(glassCanopyGeom, glassMat);
+  group.add(glassCanopy);
+
   // =========================================================================
   // 6. Steampunk "Vader's Taxi's Basement" Sign with Rotating Brass Gears
   // =========================================================================
@@ -333,11 +381,12 @@ export function buildVolcanoBasement(scene, world) {
     emissiveMap: signTex,
     emissive: new THREE.Color('#ffffff'),
     emissiveIntensity: 0.75,
+    side: THREE.DoubleSide,
   });
 
   const signW = 28, signH = 14;
   const signGeom = new THREE.PlaneGeometry(signW, signH);
-  signGeom.rotateX(-Math.PI / 2); // Stand vertically facing South (-Y)
+  signGeom.rotateX(Math.PI / 2); // Stand vertically facing South (-Y)
   const signMesh = new THREE.Mesh(signGeom, signMat);
   signMesh.position.set(0, 24, 32);
   signMesh.castShadow = true;
@@ -555,10 +604,11 @@ export function buildVolcanoBasement(scene, world) {
     emissive: new THREE.Color('#38e4ff'),
     emissiveIntensity: 0.85,
     roughness: 0.3,
+    side: THREE.DoubleSide,
   });
-  const stationSign = new THREE.Mesh(new THREE.BoxGeometry(0.15, 6.5, 3.2), [
-    stationSignMat, stationSignMat, ironMat, ironMat, ironMat, ironMat
-  ]);
+  const stSignGeom = new THREE.PlaneGeometry(6.5, 3.2);
+  stSignGeom.rotateX(Math.PI / 2);
+  const stationSign = new THREE.Mesh(stSignGeom, stationSignMat);
   stationSign.position.set(-24 + platformW / 2 - 1.2, 2, platformH + 3.2);
   group.add(stationSign);
 
@@ -571,6 +621,73 @@ export function buildVolcanoBasement(scene, world) {
   lanternLight.position.set(-24 + platformW / 2 - 1.2, 2, platformH + 3.8);
   group.add(lanternLight);
 
+  // Flooded water surface reflecting subterranean lights over the sunken tracks
+  const waterCanvas = document.createElement('canvas');
+  waterCanvas.width = 256; waterCanvas.height = 256;
+  const wgc = waterCanvas.getContext('2d');
+  wgc.fillStyle = '#061824'; wgc.fillRect(0, 0, 256, 256);
+  wgc.strokeStyle = 'rgba(70, 160, 200, 0.4)'; wgc.lineWidth = 2;
+  for (let wy = 10; wy < 256; wy += 24) {
+    wgc.beginPath(); wgc.moveTo(0, wy);
+    for (let wx = 0; wx < 256; wx += 20) {
+      wgc.quadraticCurveTo(wx + 10, wy + (Math.sin(wx) * 4), wx + 20, wy);
+    }
+    wgc.stroke();
+  }
+  const waterTex = new THREE.CanvasTexture(waterCanvas);
+  waterTex.wrapS = waterTex.wrapT = THREE.RepeatWrapping;
+  waterTex.repeat.set(2, 6);
+  const waterMat = new THREE.MeshStandardMaterial({
+    map: waterTex,
+    color: '#082638',
+    roughness: 0.1,
+    metalness: 0.8,
+    transparent: true,
+    opacity: 0.78,
+  });
+  const waterPlane = new THREE.Mesh(new THREE.PlaneGeometry(8, platformL + 14), waterMat);
+  waterPlane.position.set(-15.5, 4, 0.45);
+  group.add(waterPlane);
+
+  updaters.push((t, dt) => {
+    waterTex.offset.y += dt * 0.05;
+  });
+
+  // Floating cyan orb lanterns along flooded track edge
+  for (let oy = -platformL / 2 + 2; oy <= platformL / 2 - 2; oy += 10) {
+    const orb = new THREE.Mesh(
+      new THREE.SphereGeometry(0.35, 12, 10),
+      new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#4be3ff', emissiveIntensity: 3.5, roughness: 0.2 })
+    );
+    orb.position.set(-18.5, oy + 4, 0.65);
+    group.add(orb);
+    const orbLight = new THREE.PointLight('#4be3ff', 1.2, 12, 1.8);
+    orbLight.position.set(-18.5, oy + 4, 1.0);
+    group.add(orbLight);
+  }
+
+  // Station Master Kiosk: Arthur Finch Citation & Police Scotland Mug
+  const desk = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.4, 1.1), new THREE.MeshStandardMaterial({ color: '#2a1e16', roughness: 0.8 }));
+  desk.position.set(-26.5, 12, platformH + 0.55);
+  group.add(desk);
+
+  const citationMat = new THREE.MeshStandardMaterial({ map: citationTexture(), roughness: 0.4 });
+  const citationGeom = new THREE.PlaneGeometry(0.8, 1.1);
+  citationGeom.rotateX(Math.PI / 2);
+  const framedCitation = new THREE.Mesh(citationGeom, new THREE.MeshStandardMaterial({ map: citationTexture(), roughness: 0.4, side: THREE.DoubleSide }));
+  framedCitation.position.set(-26.5, 11.8, platformH + 1.2);
+  framedCitation.rotation.z = -Math.PI / 10;
+  group.add(framedCitation);
+
+  const mugMat = new THREE.MeshStandardMaterial({ color: '#f0f2f4', roughness: 0.2 });
+  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.16, 12), mugMat);
+  mug.position.set(-25.8, 12.2, platformH + 1.18);
+  mug.rotateX(Math.PI / 2);
+  group.add(mug);
+  const mugCrest = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.08), new THREE.MeshBasicMaterial({ color: '#002b66' }));
+  mugCrest.position.set(-25.8, 12.12, platformH + 1.18);
+  group.add(mugCrest);
+
   // =========================================================================
   // 9. Blooming Japanese Cherry Blossom Tree (Sakura)
   // =========================================================================
@@ -578,15 +695,19 @@ export function buildVolcanoBasement(scene, world) {
   treeGroup.position.set(-24, -4, platformH);
 
   const trunkMat = new THREE.MeshStandardMaterial({ color: '#2c221e', roughness: 0.95 });
-  const trunk1 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.75, 4.2, 8), trunkMat);
+  const t1Geom = new THREE.CylinderGeometry(0.45, 0.75, 4.2, 8);
+  t1Geom.rotateX(Math.PI / 2);
+  const trunk1 = new THREE.Mesh(t1Geom, trunkMat);
   trunk1.position.set(0, 0, 2.1);
-  trunk1.rotation.x = 0.15;
+  trunk1.rotation.y = 0.12;
   treeGroup.add(trunk1);
 
-  const trunk2 = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.45, 3.5, 8), trunkMat);
-  trunk2.position.set(0.6, 0.4, 4.8);
-  trunk2.rotation.z = -0.35;
-  trunk2.rotation.x = 0.25;
+  const t2Geom = new THREE.CylinderGeometry(0.25, 0.45, 3.5, 8);
+  t2Geom.rotateX(Math.PI / 2);
+  const trunk2 = new THREE.Mesh(t2Geom, trunkMat);
+  trunk2.position.set(0.4, 0.3, 4.8);
+  trunk2.rotation.y = -0.22;
+  trunk2.rotation.x = 0.18;
   treeGroup.add(trunk2);
 
   const petalTex = cherryBlossomTexture();
@@ -641,18 +762,28 @@ export function buildVolcanoBasement(scene, world) {
   umbrellaPole.position.set(0.25, 0.15, 1.8);
   figureGroup.add(umbrellaPole);
 
+  const umbrellaMat = new THREE.MeshStandardMaterial({
+    map: umbrellaTexture(),
+    roughness: 0.45,
+    side: THREE.DoubleSide,
+  });
   const umbrellaCanopy = new THREE.Mesh(
-    new THREE.ConeGeometry(1.2, 0.45, 12, 1, true),
-    new THREE.MeshStandardMaterial({ color: '#16191c', roughness: 0.5, side: THREE.DoubleSide })
+    new THREE.ConeGeometry(1.35, 0.52, 16, 1, true),
+    umbrellaMat
   );
   umbrellaCanopy.position.set(0.25, 0.15, 2.6);
   umbrellaCanopy.rotateX(Math.PI);
   figureGroup.add(umbrellaCanopy);
 
-  const badge = new THREE.Mesh(new THREE.PlaneGeometry(0.35, 0.18), new THREE.MeshBasicMaterial({ color: '#d4281b' }));
-  badge.position.set(0.25, 0.15 - 0.85, 2.45);
-  badge.rotation.x = -Math.PI / 4;
-  figureGroup.add(badge);
+  // Nordeus Coat Badge on left lapel
+  const coatBadgeMat = new THREE.MeshBasicMaterial({
+    map: nordeusBadgeTexture(),
+    transparent: true,
+  });
+  const coatBadge = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.2), coatBadgeMat);
+  coatBadge.position.set(0.18, -0.32, 1.62);
+  coatBadge.rotation.x = -Math.PI / 12;
+  figureGroup.add(coatBadge);
 
   group.add(figureGroup);
 
@@ -667,6 +798,7 @@ export function buildVolcanoBasement(scene, world) {
     emissiveMap: maskTex,
     emissive: new THREE.Color('#ffffff'),
     emissiveIntensity: 1.5,
+    side: THREE.DoubleSide,
   });
 
   const maskOffsets = [
@@ -687,7 +819,7 @@ export function buildVolcanoBasement(scene, world) {
     maskHolder.add(wire);
 
     const mGeom = new THREE.PlaneGeometry(3.2, 3.2);
-    mGeom.rotateX(-Math.PI / 2); // Stand vertically facing South (-Y)
+    mGeom.rotateX(Math.PI / 2); // Stand vertically facing South (-Y)
     const mMesh = new THREE.Mesh(mGeom, maskMat);
     maskHolder.add(mMesh);
 

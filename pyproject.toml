@@ -4,3 +4,8 @@
 
 [tool.vercel]
 entrypoint = "src.vtx.live_server:app"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

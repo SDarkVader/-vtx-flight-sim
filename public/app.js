@@ -14,6 +14,7 @@ import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
 import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=2';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=1';
+import {createFreeCamera} from './free-camera.js?v=3';
 
 const $=id=>document.getElementById(id);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
@@ -41,6 +42,7 @@ const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-per
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
+const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
 const sky=buildSky(scene,renderer,{shadows:!mobile,shadowSize:mobile?1024:2048}),environment={};
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 function plane(w,h,color,x,y,z){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({color,roughness:.95}));m.position.set(x,y,z);m.receiveShadow=true;scene.add(m);return m;}
@@ -190,11 +192,21 @@ $('takeover').onclick=guard(async()=>{
 $('scale').onchange=guard(async()=>{await api('/api/operator',{time_scale:+$('scale').value});});
 $('feather').onclick=()=>{command.engine=0;command.collective_deg.fill(0);$('engine').value=0;$('engine').oninput();$('common').value=0;$('common').oninput();dirty=true;};
 let cockpitYaw=0,cockpitPitch=0,cockpitPointer=null;
-function setCameraMode(mode){cameraMode=mode;orbit.enabled=mode!=='cockpit';renderer.domElement.style.touchAction='none';$('cockpit-look').hidden=mode!=='cockpit';$('cockpit').textContent=mode==='cockpit'?'Exit cockpit · C':'Cockpit · C';$('camera').textContent=mode==='chase'?'Chase camera':'Free orbit';}
-$('camera').onclick=()=>setCameraMode(cameraMode==='chase'?'orbit':'chase');
+function setCameraMode(mode){
+ cameraMode=mode;
+ orbit.enabled=(mode==='chase');
+ if(mode==='free'){orbit.enabled=false;freeCam.activate(orbit.target);}
+ else{freeCam.deactivate();}
+ renderer.domElement.style.touchAction='none';
+ $('cockpit-look').hidden=mode!=='cockpit';
+ $('cockpit').textContent=mode==='cockpit'?'Exit cockpit · C':'Cockpit · C';
+ $('camera').textContent=mode==='free'?'Chase camera':'Free roam camera';
+}
+$('camera').onclick=()=>setCameraMode(cameraMode==='free'?'chase':'free');
 $('cockpit').onclick=()=>setCameraMode(cameraMode==='cockpit'?'chase':'cockpit');
 function zoomCamera(factor){
  if(cameraMode==='cockpit'){toast('Zoom is available in the external camera.');return;}
+ if(cameraMode==='free'){freeCam.zoom(factor);return;}
  const offset=camera.position.clone().sub(orbit.target),distance=offset.length();
  if(distance<1e-9)return;
  camera.position.copy(orbit.target).add(offset.multiplyScalar(zoomDistance(distance,factor,orbit.minDistance,orbit.maxDistance)/distance));
@@ -298,13 +310,15 @@ function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:'
 api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
-if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;}};
+if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;}};
 function animate(){requestAnimationFrame(animate);const now=performance.now();if(now-lastFrameMs<80)return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
  if(truth)loadAirframe(truth.provenance.render_asset||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb'));
  if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);}for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
   const base=truth.body_poses.airframe,posArray=base.position;pos.set(posArray[0],posArray[1],posArray[2]+1.5);
-  if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);}
-  if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);cameraTarget.copy(camera.position).add(new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch)).applyQuaternion(q));camera.lookAt(cameraTarget);}else{camera.up.set(0,0,1);orbit.update();}
+  if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
+  else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);cameraTarget.copy(camera.position).add(new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch)).applyQuaternion(q));camera.lookAt(cameraTarget);}
+  else if(cameraMode==='free'){freeCam.update(0.08);}
+  else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);
  }
  sky.update(camera,now/1000);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);environment.serviceRoads?.update(now/1000,last?.observation?.gnss_xy_m);

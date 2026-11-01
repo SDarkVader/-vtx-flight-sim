@@ -708,3 +708,112 @@ export function citationTexture() {
 
   return toTexture(c, { aniso: 8 });
 }
+
+
+// ---- Nordeus Umbrella Canopy Texture ----------------------------------------
+export function umbrellaTexture() {
+  const S = 512, c = makeCanvas(S, S), g = c.getContext('2d');
+  g.fillStyle = '#141618'; g.fillRect(0, 0, S, S);
+  const cx = S / 2, cy = S / 2;
+  const numPanels = 8;
+  for (let i = 0; i < numPanels; i++) {
+    const a1 = (i / numPanels) * Math.PI * 2;
+    const a2 = ((i + 1) / numPanels) * Math.PI * 2;
+    // Draw gore ribs
+    g.strokeStyle = '#22262a'; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a1) * (S / 2), cy + Math.sin(a1) * (S / 2)); g.stroke();
+
+    // Alternate panels have red Nordeus trapezoid badge
+    if (i % 2 === 0) {
+      const midA = (a1 + a2) / 2;
+      g.save();
+      g.translate(cx, cy);
+      g.rotate(midA + Math.PI / 2);
+      // Red trapezoid
+      g.fillStyle = '#d4281b';
+      g.beginPath();
+      g.moveTo(-45, 120);
+      g.lineTo(45, 120);
+      g.lineTo(65, 195);
+      g.lineTo(-65, 195);
+      g.closePath();
+      g.fill();
+      g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.stroke();
+      // White Nordeus text
+      g.font = 'bold 24px "Arial Black", sans-serif';
+      g.fillStyle = '#ffffff';
+      g.textAlign = 'center';
+      g.fillText('Nordeus', 0, 165);
+      g.restore();
+    }
+  }
+  return toTexture(c, { aniso: 8 });
+}
+
+// ---- Nordeus Coat Badge Texture ---------------------------------------------
+export function nordeusBadgeTexture() {
+  const W = 256, H = 160, c = makeCanvas(W, H), g = c.getContext('2d');
+  g.fillStyle = 'rgba(0,0,0,0)'; g.fillRect(0, 0, W, H);
+  // Red shield / cartouche
+  g.fillStyle = '#d4281b';
+  g.beginPath();
+  g.moveTo(20, 30);
+  g.lineTo(W - 20, 30);
+  g.lineTo(W - 35, H - 30);
+  g.lineTo(W / 2, H - 10);
+  g.lineTo(35, H - 30);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = '#ffffff'; g.lineWidth = 4; g.stroke();
+
+  g.font = 'bold 36px "Arial Black", sans-serif';
+  g.fillStyle = '#ffffff';
+  g.textAlign = 'center';
+  g.fillText('Nordeus', W / 2, 85);
+  return toTexture(c, { aniso: 8 });
+}
+
+// ---- Subterranean Vault Cracked Glass Canopy Texture -----------------------
+export function crackedGlassTexture() {
+  const S = 512, c = makeCanvas(S, S), g = c.getContext('2d'), r = rng(101);
+  // Aquatic deep translucent blue
+  g.fillStyle = 'rgba(12, 34, 52, 0.72)'; g.fillRect(0, 0, S, S);
+
+  // Iron frame grid
+  g.strokeStyle = '#15191c'; g.lineWidth = 8;
+  g.strokeRect(0, 0, S, S);
+  g.beginPath();
+  g.moveTo(S / 2, 0); g.lineTo(S / 2, S);
+  g.moveTo(0, S / 2); g.lineTo(S, S / 2);
+  g.stroke();
+
+  // Glass fracture spider-web cracks (as seen in user reference photo)
+  g.strokeStyle = 'rgba(215, 240, 255, 0.75)'; g.lineWidth = 1.8;
+  for (let center = 0; center < 3; center++) {
+    const hx = 60 + r() * (S - 120), hy = 60 + r() * (S - 120);
+    for (let rad = 0; rad < 8; rad++) {
+      const a = (rad / 8) * Math.PI * 2 + (r() - 0.5) * 0.4;
+      g.beginPath(); g.moveTo(hx, hy);
+      let dist = 15;
+      for (let s = 0; s < 4; s++) {
+        dist += 15 + r() * 25;
+        const nx = hx + Math.cos(a) * dist + (r() - 0.5) * 10;
+        const ny = hy + Math.sin(a) * dist + (r() - 0.5) * 10;
+        g.lineTo(nx, ny);
+      }
+      g.stroke();
+    }
+  }
+
+  // Water condensation droplets and drip lines
+  g.fillStyle = 'rgba(230, 248, 255, 0.6)';
+  for (let d = 0; d < 45; d++) {
+    const dx = r() * S, dy = r() * S;
+    g.beginPath(); g.arc(dx, dy, 1 + r() * 2.5, 0, Math.PI * 2); g.fill();
+    if (r() < 0.3) {
+      g.strokeStyle = 'rgba(230, 248, 255, 0.45)'; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(dx, dy); g.lineTo(dx, dy + 12 + r() * 20); g.stroke();
+    }
+  }
+  return toTexture(c, { wrap: true, aniso: 8 });
+}
