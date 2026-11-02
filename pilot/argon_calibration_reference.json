@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "source": "evidence/ARGON_CALIBRATION_REPORT.md",
+  "compatible_revisions": [
+    "P0-V4A-assembly-r6"
+  ],
+  "rotor_order": [
+    "east +X",
+    "north +Y",
+    "west -X",
+    "south -Y"
+  ],
+  "hover_by_fuel_kg": {
+    "0": {
+      "rpm": 1200,
+      "shaft_kw": 200.4,
+      "collective_deg": [
+        16.88,
+        17.59,
+        16.88,
+        16.17
+      ]
+    },
+    "10": {
+      "rpm": 1200,
+      "shaft_kw": 202.5,
+      "collective_deg": [
+        16.95,
+        17.66,
+        16.95,
+        16.24
+      ]
+    },
+    "30": {
+      "rpm": 1200,
+      "shaft_kw": 207.8,
+      "collective_deg": [
+        17.12,
+        17.82,
+        17.12,
+        16.42
+      ]
+    },
+    "60": {
+      "rpm": 1200,
+      "shaft_kw": 216.1,
+      "collective_deg": [
+        17.38,
+        18.07,
+        17.38,
+        16.69
+      ]
+    },
+    "110": {
+      "rpm": 1200,
+      "shaft_kw": 230.5,
+      "collective_deg": [
+        17.81,
+        18.48,
+        17.81,
+        17.14
+      ]
+    }
+  },
+  "control_gains": {
+    "attitude": {
+      "kp": 0.62,
+      "kd": 0.32,
+      "ki": 0.24,
+      "max_u_deg": 3.5
+    },
+    "altitude": {
+      "kp": 1.15,
+      "kd": 1.65,
+      "ki": 0.35
+    },
+    "position_yaw": {
+      "kp_pos": 0.32,
+      "kd_vel": 0.45,
+      "kp_yaw": 0.45,
+      "kd_yaw": 0.85
+    }
+  },
+  "limitations": [
+    "Advisory only; no control injection",
+    "R6 hover table at 1200 RPM; source report also mentions R5 but does not establish interchangeability",
+    "Translation failed near 90 degree yaw without world-to-body transform",
+    "Fuel states between recorded table points use bounded linear estimates; these intermediate estimates are not flight-validated measurements"
+  ]
+}

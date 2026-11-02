@@ -19,6 +19,8 @@ import time
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from argon_calibration import from_instrument_observation
+
 ROOT = Path(__file__).resolve().parents[1]
 CONTROLS = ROOT / "tools" / "pilot_controls.json"
 STATUS = ROOT / "pilot" / "pilot_status.json"
@@ -84,7 +86,15 @@ def load_config(path=CONTROLS):
 
 def request(base, path, payload=None):
     body=None if payload is None else json.dumps(payload,allow_nan=False).encode()
-    req=Request(base+path, data=body, headers={"Content-Type":"application/json"})
+    headers={"Content-Type":"application/json"}
+    # The existing PC/LAN path remains unchanged. Cloud use is explicit and
+    # the token is never put in a URL or the pilot controls file.
+    token=os.environ.get("VTX_CLOUD_ACCESS_TOKEN")
+    if token:
+        if not base.startswith("https://"):
+            raise ValueError("Cloud token requires an HTTPS simulator URL")
+        headers["Authorization"]="Bearer "+token
+    req=Request(base+path, data=body, headers=headers)
     with urlopen(req,timeout=4) as response:
         return json.load(response)
 
@@ -105,6 +115,8 @@ class Pilot:
         self.blocked_serial=None
         self.last_state=None
         self.connected=False
+        self.calibration=None
+        self.calibration_error="Not verified against live aircraft revision and fuel state"
 
     def event(self, kind, **details):
         row={"utc":datetime.now(timezone.utc).isoformat(),"kind":kind, **details}
@@ -122,11 +134,20 @@ class Pilot:
         temp.write_text(json.dumps(body,indent=2,allow_nan=False),encoding="utf-8")
         temp.replace(self.status)
 
+    def refresh_calibration(self, observation):
+        """Expose Argon's measured/estimated R6 reference from permitted instruments."""
+        try:
+            self.calibration=from_instrument_observation(observation)
+            self.calibration_error=None
+        except (OSError,ValueError,TypeError,KeyError,json.JSONDecodeError) as exc:
+            self.calibration=None
+            self.calibration_error=str(exc)
+
     def tick(self, now=None):
         now=time.monotonic() if now is None else now
         cfg=load_config(self.controls)
         if not cfg["enabled"]:
-            self.status_update(state="disabled")
+            self.status_update(state="disabled",calibration=self.calibration,calibration_error=self.calibration_error)
             return
         view=request(self.base,"/api/view")
         if not self.connected:
@@ -180,7 +201,9 @@ class Pilot:
                 self.last_state="manual_authority"
             return
         if view.get("paused"):
-            self.status_update(state="paused",authority="colin")
+            # Read-only instrument inspection is permitted while flight remains paused.
+            self.refresh_calibration(request(self.base,"/api/observe"))
+            self.status_update(state="paused",authority="colin",calibration=self.calibration,calibration_error=self.calibration_error)
             return
         if self.settings_run!=run:
             result=request(self.base,"/api/operator",{
@@ -192,6 +215,7 @@ class Pilot:
             self.settings_run=run
         # Only this permitted sensor packet may support control decisions.
         obs=request(self.base,"/api/observe")
+        self.refresh_calibration(obs)
         attitude=obs.get("attitude_xyz_deg",[0,0,0])
         rates=obs.get("gyro_world_deg_s",[0,0,0])
         guard=(max(abs(attitude[0]),abs(attitude[1]))>cfg["max_attitude_deg"] or
@@ -219,7 +243,8 @@ class Pilot:
         state="armed" if armed else ("guarded" if guard else "idle")
         self.status_update(state=state,authority="colin",armed=armed,
                            control_serial=cfg["serial"],assistance_applied=obs.get("assistance_applied"),
-                           observation=obs)
+                           observation=obs,calibration=self.calibration,
+                           calibration_error=self.calibration_error)
         self.last_state=state
 
 
