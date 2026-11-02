@@ -19,6 +19,8 @@ import time
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from argon_calibration import load_calibration
+
 ROOT = Path(__file__).resolve().parents[1]
 CONTROLS = ROOT / "tools" / "pilot_controls.json"
 STATUS = ROOT / "pilot" / "pilot_status.json"
@@ -105,6 +107,8 @@ class Pilot:
         self.blocked_serial=None
         self.last_state=None
         self.connected=False
+        self.calibration=None
+        self.calibration_error="Not verified against live aircraft revision and fuel state"
 
     def event(self, kind, **details):
         row={"utc":datetime.now(timezone.utc).isoformat(),"kind":kind, **details}
@@ -122,11 +126,22 @@ class Pilot:
         temp.write_text(json.dumps(body,indent=2,allow_nan=False),encoding="utf-8")
         temp.replace(self.status)
 
+    def refresh_calibration(self, observation):
+        """Expose advisory reference only after instrument metadata verifies compatibility."""
+        revision=observation.get("aircraft_revision")
+        fuel=observation.get("fuel_kg")
+        try:
+            self.calibration=load_calibration(aircraft_revision=revision,fuel_kg=fuel)
+            self.calibration_error=None
+        except (OSError,ValueError,TypeError,KeyError,json.JSONDecodeError) as exc:
+            self.calibration=None
+            self.calibration_error=str(exc)
+
     def tick(self, now=None):
         now=time.monotonic() if now is None else now
         cfg=load_config(self.controls)
         if not cfg["enabled"]:
-            self.status_update(state="disabled")
+            self.status_update(state="disabled",calibration=self.calibration,calibration_error=self.calibration_error)
             return
         view=request(self.base,"/api/view")
         if not self.connected:
@@ -180,7 +195,7 @@ class Pilot:
                 self.last_state="manual_authority"
             return
         if view.get("paused"):
-            self.status_update(state="paused",authority="colin")
+            self.status_update(state="paused",authority="colin",calibration=self.calibration,calibration_error=self.calibration_error)
             return
         if self.settings_run!=run:
             result=request(self.base,"/api/operator",{
@@ -192,6 +207,7 @@ class Pilot:
             self.settings_run=run
         # Only this permitted sensor packet may support control decisions.
         obs=request(self.base,"/api/observe")
+        self.refresh_calibration(obs)
         attitude=obs.get("attitude_xyz_deg",[0,0,0])
         rates=obs.get("gyro_world_deg_s",[0,0,0])
         guard=(max(abs(attitude[0]),abs(attitude[1]))>cfg["max_attitude_deg"] or
@@ -219,7 +235,8 @@ class Pilot:
         state="armed" if armed else ("guarded" if guard else "idle")
         self.status_update(state=state,authority="colin",armed=armed,
                            control_serial=cfg["serial"],assistance_applied=obs.get("assistance_applied"),
-                           observation=obs)
+                           observation=obs,calibration=self.calibration,
+                           calibration_error=self.calibration_error)
         self.last_state=state
 
 
