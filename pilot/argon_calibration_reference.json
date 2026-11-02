@@ -85,6 +85,6 @@
     "Advisory only; no control injection",
     "R6 hover table at 1200 RPM; source report also mentions R5 but does not establish interchangeability",
     "Translation failed near 90 degree yaw without world-to-body transform",
-    "No arbitrary fuel interpolation"
+    "Fuel states between recorded table points use bounded linear estimates; these intermediate estimates are not flight-validated measurements"
   ]
 }
