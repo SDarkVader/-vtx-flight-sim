@@ -1,6 +1,6 @@
 # Phantom retractable wing — Stage 1: measurement, defects, loads and architecture
 
-**Status:** analysis complete for Stage 1; **model build is waiting on a configuration decision** (section 9).
+**Status:** Stage 1 analysis. Option T was **approved on 2026-11-02** and built as revision A9; see [A9_WING_CASSETTE_REVISION.md](A9_WING_CASSETTE_REVISION.md). The A9 build moved the shoulder flank out to the fender line, \|y\| = 1.245 m, which gives a 5.19 m span, a 1.05 m tongue and 0.94 m between lock stations. The figures below are the Stage 1 values.
 No new Blender revision has been made, and nothing has been written to Blendstra.
 
 **Kinds of evidence.** Every number below is tagged with one of these:

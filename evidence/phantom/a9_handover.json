@@ -1,0 +1,2370 @@
+{
+ "schema": "phantom-a9-handover-0.1",
+ "source_file": "C:\\Users\\steve\\Documents\\Github\\-vtx-flight-sim\\.claude\\worktrees\\dreamy-khayyam-7059f0\\assets\\derived\\phantom-a9-cassette.blend",
+ "reference_frame": 240,
+ "stowed_frame": 1,
+ "frame_convention": "Blender model: X forward, Y to A8-RIGHT side (+Y), Z up, right-handed, metres. Use the same axes for the MuJoCo body frame (x forward, z up); A8 \"RIGHT\" objects sit at +Y.",
+ "status": "Kinematic CAD + DERIVED/SYNTHETIC mass. Chassis (A8 hull, tub, pods, occupants, powertrain) mass is NOT included.",
+ "bodies_reference_pose": {
+  "JOINT_WHEEL_POD_FL": {
+   "mass_kg": 71.55754481003855,
+   "com_world_m": [
+    1.5399998426437378,
+    -1.0399998426437378,
+    0.42316415905952454
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     2.0790462493896484,
+     5.93292739381468e-08,
+     1.7342159708277904e-07
+    ],
+    [
+     5.93292739381468e-08,
+     2.0790462493896484,
+     1.8177406957420317e-07
+    ],
+    [
+     1.7342159708277904e-07,
+     1.8177406957420317e-07,
+     4.004456043243408
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    2.079046190060374,
+    2.0790463087188895,
+    4.00445604324344
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "WHEEL_FL_CLOSED_TYRE",
+     "mass_kg": 25.595947859430627,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_FL_STRUCTURAL_DISK",
+     "mass_kg": 39.640554072118526,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_FL_THRUST_INLET_OUTLET_PLACEHOLDER",
+     "mass_kg": 2.141449306887914,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_FL_AMBER_RING",
+     "mass_kg": 1.0514252614914152,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "PHANTOM_FL_CFRP_THROTTLE_HUB",
+     "mass_kg": 3.128168310110065,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    }
+   ]
+  },
+  "JOINT_WHEEL_POD_FR": {
+   "mass_kg": 71.55754211042684,
+   "com_world_m": [
+    1.5399998426437378,
+    1.0399999618530273,
+    0.4231642186641693
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     2.0790462493896484,
+     -7.78512969645817e-08,
+     -1.5943854236866173e-07
+    ],
+    [
+     -7.78512969645817e-08,
+     2.0790460109710693,
+     -1.3726747738473932e-08
+    ],
+    [
+     -1.5943854236866173e-07,
+     -1.3726747738473932e-08,
+     4.004456043243408
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    2.079045987801709,
+    2.0790462725589944,
+    4.004456043243421
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "WHEEL_FR_CLOSED_TYRE",
+     "mass_kg": 25.595947565102765,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_FR_STRUCTURAL_DISK",
+     "mass_kg": 39.640550535105454,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_FR_THRUST_INLET_OUTLET_PLACEHOLDER",
+     "mass_kg": 2.1414503343229834,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_FR_AMBER_RING",
+     "mass_kg": 1.0514253638087623,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "PHANTOM_FR_CFRP_THROTTLE_HUB",
+     "mass_kg": 3.128168312086872,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    }
+   ]
+  },
+  "JOINT_WHEEL_POD_RL": {
+   "mass_kg": 71.55754125155163,
+   "com_world_m": [
+    -1.590000033378601,
+    -1.0399998426437378,
+    0.42316415905952454
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     2.0790460109710693,
+     4.7744730835574956e-08,
+     1.710919264041877e-07
+    ],
+    [
+     4.7744730835574956e-08,
+     2.0790462493896484,
+     1.8106342736246006e-07
+    ],
+    [
+     1.710919264041877e-07,
+     1.8106342736246006e-07,
+     4.004456520080566
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    2.0790460017653425,
+    2.0790462585953438,
+    4.004456520080598
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "WHEEL_RL_CLOSED_TYRE",
+     "mass_kg": 25.595947032831774,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_RL_STRUCTURAL_DISK",
+     "mass_kg": 39.640554072118526,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_RL_THRUST_INLET_OUTLET_PLACEHOLDER",
+     "mass_kg": 2.1414491725295837,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_RL_AMBER_RING",
+     "mass_kg": 1.0514258618403503,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "PHANTOM_RL_CFRP_THROTTLE_HUB",
+     "mass_kg": 3.128165112231398,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    }
+   ]
+  },
+  "JOINT_WHEEL_POD_RR": {
+   "mass_kg": 71.55753817152373,
+   "com_world_m": [
+    -1.5899999141693115,
+    1.0399998426437378,
+    0.42316415905952454
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     2.0790460109710693,
+     -7.349888164753793e-08,
+     -1.6873798358574277e-07
+    ],
+    [
+     -7.349888164753793e-08,
+     2.0790462493896484,
+     -1.4333330966564972e-08
+    ],
+    [
+     -1.6873798358574277e-07,
+     -1.4333330966564972e-08,
+     4.004456520080566
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    2.0790459901341367,
+    2.079046270226566,
+    4.0044565200805815
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "WHEEL_RR_CLOSED_TYRE",
+     "mass_kg": 25.595946744678773,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_RR_STRUCTURAL_DISK",
+     "mass_kg": 39.640550535105454,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_RR_THRUST_INLET_OUTLET_PLACEHOLDER",
+     "mass_kg": 2.141449842616757,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "WHEEL_RR_AMBER_RING",
+     "mass_kg": 1.0514259394742802,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "PHANTOM_RR_CFRP_THROTTLE_HUB",
+     "mass_kg": 3.1281651096484664,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    }
+   ]
+  },
+  "JOINT_LEG_SLIDE_FL": {
+   "mass_kg": 18.55203720987913,
+   "com_world_m": [
+    1.1000001430511475,
+    -0.5300000309944153,
+    0.035412807017564774
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.45494264364242554,
+     -9.55458490103922e-10,
+     -1.6342482922482304e-13
+    ],
+    [
+     -9.55458490103922e-10,
+     0.45374464988708496,
+     1.7408297026122455e-13
+    ],
+    [
+     -1.6342482922482304e-13,
+     1.7408297026122455e-13,
+     0.02962639555335045
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.029626395553350445,
+    0.4537446498870842,
+    0.4549426436424263
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "LEG_FL_OLEO_MAIN_SLIDER",
+     "mass_kg": 12.044838597457275,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x Ti density, not a mass estimate"
+    },
+    {
+     "name": "LEG_FL_CFRP_GAITOR",
+     "mass_kg": 4.316416086225405,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "LEG_FL_SHOCK_FOOT",
+     "mass_kg": 2.190782526196451,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    }
+   ]
+  },
+  "JOINT_LEG_SLIDE_FR": {
+   "mass_kg": 18.55203720998824,
+   "com_world_m": [
+    1.1000001430511475,
+    0.5300000309944153,
+    0.035412807017564774
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.45494264364242554,
+     -9.525473743110524e-10,
+     0.0
+    ],
+    [
+     -9.525473743110524e-10,
+     0.45374464988708496,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.02962639555335045
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.02962639555335045,
+    0.4537446498870842,
+    0.4549426436424263
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "LEG_FR_OLEO_MAIN_SLIDER",
+     "mass_kg": 12.044838597457275,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x Ti density, not a mass estimate"
+    },
+    {
+     "name": "LEG_FR_CFRP_GAITOR",
+     "mass_kg": 4.316416086225405,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "LEG_FR_SHOCK_FOOT",
+     "mass_kg": 2.1907825263055587,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    }
+   ]
+  },
+  "JOINT_LEG_SLIDE_RL": {
+   "mass_kg": 18.552037210206457,
+   "com_world_m": [
+    -1.1800000667572021,
+    -0.5300000309944153,
+    0.035412807017564774
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.45494264364242554,
+     -9.512800547284428e-10,
+     0.0
+    ],
+    [
+     -9.512800547284428e-10,
+     0.45374464988708496,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.02962639555335045
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.02962639555335045,
+    0.4537446498870842,
+    0.4549426436424263
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "LEG_RL_OLEO_MAIN_SLIDER",
+     "mass_kg": 12.044838597457275,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x Ti density, not a mass estimate"
+    },
+    {
+     "name": "LEG_RL_CFRP_GAITOR",
+     "mass_kg": 4.316416086225405,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "LEG_RL_SHOCK_FOOT",
+     "mass_kg": 2.1907825265237757,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    }
+   ]
+  },
+  "JOINT_LEG_SLIDE_RR": {
+   "mass_kg": 18.552037210206457,
+   "com_world_m": [
+    -1.1800000667572021,
+    0.5300000309944153,
+    0.035412807017564774
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.45494264364242554,
+     -9.560855440682303e-10,
+     0.0
+    ],
+    [
+     -9.560855440682303e-10,
+     0.45374464988708496,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.02962639555335045
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.02962639555335045,
+    0.4537446498870842,
+    0.4549426436424263
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "LEG_RR_OLEO_MAIN_SLIDER",
+     "mass_kg": 12.044838597457275,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x Ti density, not a mass estimate"
+    },
+    {
+     "name": "LEG_RR_CFRP_GAITOR",
+     "mass_kg": 4.316416086225405,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    },
+    {
+     "name": "LEG_RR_SHOCK_FOOT",
+     "mass_kg": 2.190782526523776,
+     "basis": "A8 PLACEHOLDER: solid CAD volume x CFRP density, not a mass estimate"
+    }
+   ]
+  },
+  "chassis_A9_fixed_parts": {
+   "mass_kg": 77.48095008701256,
+   "com_world_m": [
+    -0.7927762866020203,
+    0.001755264587700367,
+    0.9064400792121887
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     47.606597900390625,
+     0.09910541772842407,
+     2.471682548522949
+    ],
+    [
+     0.09910541772842407,
+     83.28813934326172,
+     0.14327232539653778
+    ],
+    [
+     2.471682548522949,
+     0.14327232539653778,
+     128.8987274169922
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    47.53126502024586,
+    83.28792224959335,
+    128.9742773908053
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_SLEEVE_CARRY_THROUGH_BOX",
+     "mass_kg": 50.46,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_SLEEVE_SUPPORT_POST_R_F",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_SLEEVE_SUPPORT_POST_L_F",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_SLEEVE_SUPPORT_POST_R_A",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_SLEEVE_SUPPORT_POST_L_A",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_LOCK_ACTUATOR_REAR_OUT",
+     "mass_kg": 0.8,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_LOCK_ACTUATOR_REAR_IN",
+     "mass_kg": 0.8,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_SLIDE_BALL_SCREW",
+     "mass_kg": 2.4,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_SLIDE_MOTOR",
+     "mass_kg": 1.6,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_LOCK_ACTUATOR_REAR_OUT",
+     "mass_kg": 0.8,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_LOCK_ACTUATOR_REAR_IN",
+     "mass_kg": 0.8,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_SLIDE_BALL_SCREW",
+     "mass_kg": 2.4,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_SLIDE_MOTOR",
+     "mass_kg": 1.6,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_CANARD_R_ROOT_STRUCTURE",
+     "mass_kg": 4.4,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_CANARD_L_ROOT_STRUCTURE",
+     "mass_kg": 4.4,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_HAUNCH_R_AMBER_CREASE",
+     "mass_kg": 0.11047498530715327,
+     "basis": "DERIVED volume x CFRP density"
+    },
+    {
+     "name": "A9_HAUNCH_L_AMBER_CREASE",
+     "mass_kg": 0.11047510170541036,
+     "basis": "DERIVED volume x CFRP density"
+    },
+    {
+     "name": "A9_INDUCTION_DUCT_R",
+     "mass_kg": 1.6,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_INDUCTION_DUCT_L",
+     "mass_kg": 1.6,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_R_LOCK_REAR_OUT": {
+   "mass_kg": 0.35,
+   "com_world_m": [
+    -1.4884999990463257,
+    1.1699999570846558,
+    0.999500036239624
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     4.4069118303013965e-05,
+     -3.840759527209963e-21,
+     -3.847864475528039e-21
+    ],
+    [
+     -1.4009544646452745e-21,
+     0.0004420338082127273,
+     -5.24176892181779e-22
+    ],
+    [
+     -3.237913285617514e-21,
+     -5.24176892181779e-22,
+     0.00044203372090123594
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    4.4069118303013965e-05,
+    0.0004420337209012359,
+    0.00044203380821272725
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_R_LOCK_PIN_REAR_OUT",
+     "mass_kg": 0.35,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_R_LOCK_REAR_IN": {
+   "mass_kg": 0.35,
+   "com_world_m": [
+    -1.4884999990463257,
+    0.24000000953674316,
+    0.999500036239624
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     4.4069158320780843e-05,
+     3.0723721499432054e-21,
+     1.9800702555957373e-21
+    ],
+    [
+     3.0723721499432054e-21,
+     0.0004420338082127273,
+     -2.9937246614136293e-16
+    ],
+    [
+     1.502181626117763e-22,
+     -2.9937246614136293e-16,
+     0.0004420337500050664
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    4.4069158320780843e-05,
+    0.0004420337500050665,
+    0.00044203380821272704
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_R_LOCK_PIN_REAR_IN",
+     "mass_kg": 0.35,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_L_LOCK_REAR_OUT": {
+   "mass_kg": 0.35,
+   "com_world_m": [
+    -1.4884999990463257,
+    -1.1699999570846558,
+    0.8815000057220459
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     4.406914740684442e-05,
+     -4.686035725404547e-22,
+     -4.4535177997656265e-21
+    ],
+    [
+     1.0562735944422914e-21,
+     0.00044203383731655777,
+     1.4891379057132422e-22
+    ],
+    [
+     -5.368444180734631e-21,
+     4.139803191080551e-22,
+     0.00044203372090123594
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    4.406914740684442e-05,
+    0.00044203372090123615,
+    0.000442033837316558
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_L_LOCK_PIN_REAR_OUT",
+     "mass_kg": 0.35,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_L_LOCK_REAR_IN": {
+   "mass_kg": 0.35,
+   "com_world_m": [
+    -1.4884999990463257,
+    -0.24000000953674316,
+    0.8815000057220459
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     4.40691874246113e-05,
+     3.327055729110741e-21,
+     -1.235216328314827e-21
+    ],
+    [
+     2.4121301559353034e-21,
+     0.0004420338082127273,
+     7.616933434387671e-22
+    ],
+    [
+     -6.252659461978687e-22,
+     7.616933434387671e-22,
+     0.00044203377910889685
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    4.40691874246113e-05,
+    0.00044203377910889685,
+    0.0004420338082127273
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_L_LOCK_PIN_REAR_IN",
+     "mass_kg": 0.35,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_R_SLIDE": {
+   "mass_kg": 20.740000000000002,
+   "com_world_m": [
+    -1.0823149681091309,
+    1.2924151420593262,
+    0.9981973171234131
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     7.005121231079102,
+     0.22071312367916107,
+     0.010426925495266914
+    ],
+    [
+     0.22071312367916107,
+     0.8367640972137451,
+     0.043062590062618256
+    ],
+    [
+     0.010426925495266914,
+     0.043062590062618256,
+     7.821348190307617
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.8286164473271791,
+    7.012831794094768,
+    7.821785277178517
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_R_PANEL_CFRP_TORSION_BOX",
+     "mass_kg": 10.05,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_TONGUE_CARRY_THROUGH_BOX",
+     "mass_kg": 7.39,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_ROOT_SEAL_STOP_PLATE",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_FLAP_ROTARY_EMA",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_AILERON_ROTARY_EMA",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_SLIDE_NUT_CARRIAGE",
+     "mass_kg": 0.45,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_R_SLIDE_NUT_ARM",
+     "mass_kg": 0.15,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_R_LOCK_FRONT_OUT": {
+   "mass_kg": 0.35,
+   "com_world_m": [
+    -0.6825000047683716,
+    1.1699999570846558,
+    0.999500036239624
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     4.4069118303013965e-05,
+     4.081374573615561e-21,
+     -1.7569362658756407e-21
+    ],
+    [
+     5.301275741746261e-21,
+     0.0004420346231199801,
+     -3.454798790148889e-22
+    ],
+    [
+     -8.4201038977761575e-22,
+     -4.973718782497994e-22,
+     0.0004420345358084887
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    4.4069118303013965e-05,
+    0.0004420345358084887,
+    0.00044203462311998015
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_R_LOCK_PIN_FRONT_OUT",
+     "mass_kg": 0.35,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_R_LOCK_FRONT_IN": {
+   "mass_kg": 0.35,
+   "com_world_m": [
+    -0.6825000047683716,
+    0.24000000953674316,
+    0.999500036239624
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     4.4069154682802036e-05,
+     -3.042866884065316e-21,
+     -2.592978777754853e-21
+    ],
+    [
+     -3.3478418731754034e-21,
+     0.0004420346231199801,
+     -2.993723867320241e-16
+    ],
+    [
+     -2.592978777754853e-21,
+     -2.993722279133465e-16,
+     0.0004420346231199801
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    4.4069154682802036e-05,
+    0.0004420346231196807,
+    0.0004420346231202795
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_R_LOCK_PIN_FRONT_IN",
+     "mass_kg": 0.35,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_FLAP_R": {
+   "mass_kg": 1.0,
+   "com_world_m": [
+    -1.327189326286316,
+    1.5718367099761963,
+    0.992003858089447
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.02975887805223465,
+     0.0020597015973180532,
+     -0.00011473811900941655
+    ],
+    [
+     0.0020597015973180532,
+     0.002574626822024584,
+     0.0001116867279051803
+    ],
+    [
+     -0.00011473811900941655,
+     0.0001116867279051803,
+     0.032165344804525375
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.0024189686984949408,
+    0.029909071216315516,
+    0.03217080976397415
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_R_FLAP",
+     "mass_kg": 1.0,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_AILERON_R": {
+   "mass_kg": 0.8,
+   "com_world_m": [
+    -1.371632695198059,
+    2.2142298221588135,
+    0.9895927906036377
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.01830972172319889,
+     0.0012597962049767375,
+     -4.302154411561787e-05
+    ],
+    [
+     0.0012597962049767375,
+     0.0009509933879598975,
+     6.850822683190927e-05
+    ],
+    [
+     -4.302154411561787e-05,
+     6.850822683190927e-05,
+     0.019205112010240555
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.0008597630982650528,
+    0.018398885684981107,
+    0.019207178338153177
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_R_AILERON",
+     "mass_kg": 0.8,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_L_SLIDE": {
+   "mass_kg": 20.740000000000002,
+   "com_world_m": [
+    -1.0823149681091309,
+    -1.2924151420593262,
+    0.8779988288879395
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     7.00490140914917,
+     -0.22071318328380585,
+     -0.009155279956758022
+    ],
+    [
+     -0.22071318328380585,
+     0.8365450501441956,
+     -0.01518209744244814
+    ],
+    [
+     -0.009155279956758022,
+     -0.01518209744244814,
+     7.821348190307617
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.8286233273717496,
+    7.012697166855375,
+    7.82147415537386
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_L_PANEL_CFRP_TORSION_BOX",
+     "mass_kg": 10.05,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_TONGUE_CARRY_THROUGH_BOX",
+     "mass_kg": 7.39,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_ROOT_SEAL_STOP_PLATE",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_FLAP_ROTARY_EMA",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_AILERON_ROTARY_EMA",
+     "mass_kg": 0.9,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_SLIDE_NUT_CARRIAGE",
+     "mass_kg": 0.45,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_WING_L_SLIDE_NUT_ARM",
+     "mass_kg": 0.15,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_L_LOCK_FRONT_OUT": {
+   "mass_kg": 0.35,
+   "com_world_m": [
+    -0.6825000047683716,
+    -1.1699999570846558,
+    0.8815000057220459
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     4.406914740684442e-05,
+     3.2439277126202128e-21,
+     -2.1273213293272474e-21
+    ],
+    [
+     2.3290019374963837e-21,
+     0.00044203465222381055,
+     1.6678326974478232e-22
+    ],
+    [
+     -2.7372717114442056e-21,
+     3.573927389127828e-22,
+     0.0004420345358084887
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    4.406914740684442e-05,
+    0.00044203453580848867,
+    0.0004420346522238104
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_L_LOCK_PIN_FRONT_OUT",
+     "mass_kg": 0.35,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_WING_L_LOCK_FRONT_IN": {
+   "mass_kg": 0.35,
+   "com_world_m": [
+    -0.6825000047683716,
+    -0.24000000953674316,
+    0.8815000057220459
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     4.406918378663249e-05,
+     -1.882367825621972e-21,
+     -6.5457809892616e-22
+    ],
+    [
+     -4.322166930709104e-21,
+     0.00044203465222381055,
+     2.2039198494419525e-22
+    ],
+    [
+     5.653214031303082e-22,
+     2.2039198494419525e-22,
+     0.00044203459401614964
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    4.406918378663249e-05,
+    0.0004420345940161497,
+    0.00044203465222381045
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_L_LOCK_PIN_FRONT_IN",
+     "mass_kg": 0.35,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_FLAP_L": {
+   "mass_kg": 1.0,
+   "com_world_m": [
+    -1.3271892070770264,
+    -1.5718368291854858,
+    0.8740038275718689
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.029758881777524948,
+     -0.0020597002003341913,
+     -0.0001147389120887965
+    ],
+    [
+     -0.0020597002003341913,
+     0.002574625425040722,
+     -0.00011168683704454452
+    ],
+    [
+     -0.0001147389120887965,
+     -0.00011168683704454452,
+     0.032165348529815674
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.0024189675385000494,
+    0.029909074629823406,
+    0.03217081356405788
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_L_FLAP",
+     "mass_kg": 1.0,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_AILERON_L": {
+   "mass_kg": 0.8,
+   "com_world_m": [
+    -1.371632695198059,
+    -2.2142298221588135,
+    0.8715927004814148
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.018309710547327995,
+     -0.0012597909662872553,
+     -4.302188608562574e-05
+    ],
+    [
+     -0.0012597909662872553,
+     0.0009509926894679666,
+     -6.85086561134085e-05
+    ],
+    [
+     -4.302188608562574e-05,
+     -6.85086561134085e-05,
+     0.01920510083436966
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.0008597630943258467,
+    0.018398873781648395,
+    0.01920716719519138
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_WING_L_AILERON",
+     "mass_kg": 0.8,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_CANARD_R_PITCH": {
+   "mass_kg": 4.525143217320501,
+   "com_world_m": [
+    1.7378734350204468,
+    1.4371663331985474,
+    0.949999988079071
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.1660154163837433,
+     0.010215282440185547,
+     3.4313274444031094e-10
+    ],
+    [
+     0.010215282440185547,
+     0.055053334683179855,
+     -4.841410050637762e-10
+    ],
+    [
+     3.4313274444031094e-10,
+     -4.841410050637762e-10,
+     0.2200147807598114
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.0541207434117537,
+    0.16694800765516946,
+    0.22001478075981137
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_CANARD_R_ALL_MOVING_BLADE",
+     "mass_kg": 3.5,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_CANARD_R_AMBER_EDGE",
+     "mass_kg": 0.02514321732050105,
+     "basis": "DERIVED volume x CFRP density"
+    },
+    {
+     "name": "A9_CANARD_R_TI_SPINDLE",
+     "mass_kg": 1.0,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_CANARD_R_FOLD": {
+   "mass_kg": 2.2,
+   "com_world_m": [
+    1.8762412071228027,
+    1.1699999570846558,
+    0.9493249654769897
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.005597796756774187,
+     -7.978270228420295e-19,
+     7.432768325088546e-05
+    ],
+    [
+     -3.2642046236202724e-19,
+     0.009744598530232906,
+     -1.5632016758500636e-14
+    ],
+    [
+     7.432768325088546e-05,
+     -1.5631930361140016e-14,
+     0.013533464632928371
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.005597100643981838,
+    0.009744598530232906,
+    0.013534160745720721
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_CANARD_R_FOLD_YOKE_AND_PITCH_EMA",
+     "mass_kg": 2.2,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_CANARD_L_PITCH": {
+   "mass_kg": 4.525143215337153,
+   "com_world_m": [
+    1.7378734350204468,
+    -1.4371663331985474,
+    0.949999988079071
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.1660153567790985,
+     -0.010215284302830696,
+     3.4312672148040235e-10
+    ],
+    [
+     -0.010215284302830696,
+     0.05505333095788956,
+     4.840814971096563e-10
+    ],
+    [
+     3.4312672148040235e-10,
+     4.840814971096563e-10,
+     0.220014750957489
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.05412073888729894,
+    0.16694794884968914,
+    0.220014750957489
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_CANARD_L_ALL_MOVING_BLADE",
+     "mass_kg": 3.5,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_CANARD_L_AMBER_EDGE",
+     "mass_kg": 0.025143215337153458,
+     "basis": "DERIVED volume x CFRP density"
+    },
+    {
+     "name": "A9_CANARD_L_TI_SPINDLE",
+     "mass_kg": 1.0,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_CANARD_L_FOLD": {
+   "mass_kg": 2.2,
+   "com_world_m": [
+    1.8762412071228027,
+    -1.1699999570846558,
+    0.9493249654769897
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.005597796756774187,
+     -6.072494693959107e-19,
+     7.432768325088546e-05
+    ],
+    [
+     -4.786839921116672e-19,
+     0.009744598530232906,
+     1.563186429257013e-14
+    ],
+    [
+     7.432768325088546e-05,
+     1.563195068993075e-14,
+     0.013533464632928371
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.005597100643981838,
+    0.009744598530232906,
+    0.013534160745720721
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_CANARD_L_FOLD_YOKE_AND_PITCH_EMA",
+     "mass_kg": 2.2,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    }
+   ]
+  },
+  "A9_JOINT_HATCH_R": {
+   "mass_kg": 0.8188016751714906,
+   "com_world_m": [
+    -1.0555000305175781,
+    1.2554080486297607,
+    0.8817945122718811
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.0008896765648387372,
+     1.46410257563547e-20,
+     2.3703367100832197e-19
+    ],
+    [
+     1.4771720293138077e-20,
+     0.05018565431237221,
+     -3.857753654301632e-06
+    ],
+    [
+     2.3703367100832197e-19,
+     -3.857753654301632e-06,
+     0.0493013821542263
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.0008896765648387372,
+    0.049301365324588634,
+    0.05018567114200986
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_HATCH_R_FLUSH_DOOR",
+     "mass_kg": 0.8,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_HATCH_R_AMBER_EDGE",
+     "mass_kg": 0.018801675171490572,
+     "basis": "DERIVED volume x CFRP density"
+    }
+   ]
+  },
+  "A9_JOINT_HATCH_L": {
+   "mass_kg": 0.8161155843504138,
+   "com_world_m": [
+    -1.0555000305175781,
+    -1.2554211616516113,
+    0.9990466833114624
+   ],
+   "inertia_about_com_world_axes_kg_m2": [
+    [
+     0.0008833479369059205,
+     -1.673969929267537e-20,
+     8.887542571408558e-20
+    ],
+    [
+     -1.673969929267537e-20,
+     0.050017647445201874,
+     -3.349101689309464e-06
+    ],
+    [
+     8.887542571408558e-20,
+     -3.349101689309464e-06,
+     0.049139611423015594
+    ]
+   ],
+   "principal_moments_kg_m2": [
+    0.0008833479369059205,
+    0.04913959864868897,
+    0.050017660219528526
+   ],
+   "positive_definite": true,
+   "parts": [
+    {
+     "name": "A9_HATCH_L_FLUSH_DOOR",
+     "mass_kg": 0.8,
+     "basis": "property (DERIVED/SYNTHETIC)"
+    },
+    {
+     "name": "A9_HATCH_L_AMBER_EDGE",
+     "mass_kg": 0.01611558435041369,
+     "basis": "DERIVED volume x CFRP density"
+    }
+   ]
+  }
+ },
+ "body_coms_stowed_pose": {
+  "JOINT_WHEEL_POD_FL": [
+   1.5399999618530273,
+   -1.0431641340255737,
+   0.41999998688697815
+  ],
+  "JOINT_WHEEL_POD_FR": [
+   1.5399999618530273,
+   1.0431641340255737,
+   0.4200000464916229
+  ],
+  "JOINT_WHEEL_POD_RL": [
+   -1.590000033378601,
+   -1.0431640148162842,
+   0.41999998688697815
+  ],
+  "JOINT_WHEEL_POD_RR": [
+   -1.5900001525878906,
+   1.0431641340255737,
+   0.4200000464916229
+  ],
+  "JOINT_LEG_SLIDE_FL": [
+   1.100000023841858,
+   -0.5299999713897705,
+   0.5554128289222717
+  ],
+  "JOINT_LEG_SLIDE_FR": [
+   1.100000023841858,
+   0.5299999713897705,
+   0.5554128289222717
+  ],
+  "JOINT_LEG_SLIDE_RL": [
+   -1.179999828338623,
+   -0.5299999713897705,
+   0.5554128289222717
+  ],
+  "JOINT_LEG_SLIDE_RR": [
+   -1.179999828338623,
+   0.5299999713897705,
+   0.5554128289222717
+  ],
+  "chassis_A9_fixed_parts": [
+   -0.7927762866020203,
+   0.001755264587700367,
+   0.9064400792121887
+  ],
+  "A9_JOINT_WING_R_LOCK_REAR_OUT": [
+   -1.558500051498413,
+   1.1699999570846558,
+   0.999500036239624
+  ],
+  "A9_JOINT_WING_R_LOCK_REAR_IN": [
+   -1.558500051498413,
+   0.24000000953674316,
+   0.999500036239624
+  ],
+  "A9_JOINT_WING_L_LOCK_REAR_OUT": [
+   -1.558500051498413,
+   -1.1699999570846558,
+   0.8815000057220459
+  ],
+  "A9_JOINT_WING_L_LOCK_REAR_IN": [
+   -1.558500051498413,
+   -0.24000000953674316,
+   0.8815000057220459
+  ],
+  "A9_JOINT_WING_R_SLIDE": [
+   -1.0823149681091309,
+   -0.07758470624685287,
+   0.9981973171234131
+  ],
+  "A9_JOINT_WING_R_LOCK_FRONT_OUT": [
+   -0.7524999976158142,
+   -0.20000004768371582,
+   0.999500036239624
+  ],
+  "A9_JOINT_WING_R_LOCK_FRONT_IN": [
+   -0.7524999976158142,
+   -1.1299999952316284,
+   0.999500036239624
+  ],
+  "A9_JOINT_FLAP_R": [
+   -1.327189326286316,
+   0.20183664560317993,
+   0.992003858089447
+  ],
+  "A9_JOINT_AILERON_R": [
+   -1.371632695198059,
+   0.8442297577857971,
+   0.9895927906036377
+  ],
+  "A9_JOINT_WING_L_SLIDE": [
+   -1.0823149681091309,
+   0.07758470624685287,
+   0.8779988288879395
+  ],
+  "A9_JOINT_WING_L_LOCK_FRONT_OUT": [
+   -0.7524999976158142,
+   0.20000004768371582,
+   0.8815000057220459
+  ],
+  "A9_JOINT_WING_L_LOCK_FRONT_IN": [
+   -0.7524999976158142,
+   1.1299999952316284,
+   0.8815000057220459
+  ],
+  "A9_JOINT_FLAP_L": [
+   -1.3271892070770264,
+   -0.20183679461479187,
+   0.8740038275718689
+  ],
+  "A9_JOINT_AILERON_L": [
+   -1.371632695198059,
+   -0.8442296981811523,
+   0.8715927004814148
+  ],
+  "A9_JOINT_CANARD_R_PITCH": [
+   1.7128338813781738,
+   0.9878733158111572,
+   0.949999988079071
+  ],
+  "A9_JOINT_CANARD_R_FOLD": [
+   1.9799998998641968,
+   1.1262412071228027,
+   0.9493249654769897
+  ],
+  "A9_JOINT_CANARD_L_PITCH": [
+   1.7128338813781738,
+   -0.9878733158111572,
+   0.949999988079071
+  ],
+  "A9_JOINT_CANARD_L_FOLD": [
+   1.9800001382827759,
+   -1.1262412071228027,
+   0.9493249654769897
+  ],
+  "A9_JOINT_HATCH_R": [
+   -1.0555000305175781,
+   1.2495918273925781,
+   0.9992055296897888
+  ],
+  "A9_JOINT_HATCH_L": [
+   -1.0555000305175781,
+   -1.2495790719985962,
+   0.8819534778594971
+  ]
+ },
+ "joints": [
+  {
+   "name": "A9_JOINT_AILERON_L",
+   "parent_body": "A9_JOINT_WING_L_SLIDE",
+   "anchor_world_m": [
+    -1.3129870891571045,
+    -1.985200047492981,
+    0.8743417263031006
+   ],
+   "axis_world": [
+    -0.09632300585508347,
+    -0.9953378438949585,
+    -0.004949966445565224
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -20,
+    20
+   ],
+   "ref_value_deg": 0.0,
+   "positive": "trailing edge down",
+   "rate_deg_s": 80,
+   "actuator_stall_torque_Nm": 72,
+   "actuator": "rotary EMA inside the wing on the hinge line + torque tube, irreversible, mass-balanced surface",
+   "interlock": "neutral and locked whenever the wing is not fully deployed and pinned",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_AILERON_R",
+   "parent_body": "A9_JOINT_WING_R_SLIDE",
+   "anchor_world_m": [
+    -1.3129870891571045,
+    1.985200047492981,
+    0.9923416972160339
+   ],
+   "axis_world": [
+    0.09632300585508347,
+    -0.9953378438949585,
+    0.004949966445565224
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -20,
+    20
+   ],
+   "ref_value_deg": 0.0,
+   "positive": "trailing edge down",
+   "rate_deg_s": 80,
+   "actuator_stall_torque_Nm": 72,
+   "actuator": "rotary EMA inside the wing on the hinge line + torque tube, irreversible, mass-balanced surface",
+   "interlock": "neutral and locked whenever the wing is not fully deployed and pinned",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_CANARD_L_FOLD",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    1.9500000476837158,
+    -1.2000000476837158,
+    0.949999988079071
+   ],
+   "axis_world": [
+    0,
+    0,
+    1
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -90,
+    0
+   ],
+   "ref_value_deg": 0,
+   "ref_pose": "deployed",
+   "rate_deg_s": 60,
+   "actuator": "fold rotary EMA + shoot-bolt lock; fold pin bearings 0.20 m apart",
+   "note": "+90 deg (R) / -90 deg (L) = stowed over the front fender",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_CANARD_L_PITCH",
+   "parent_body": "A9_JOINT_CANARD_L_FOLD",
+   "anchor_world_m": [
+    1.7999999523162842,
+    -1.2599999904632568,
+    0.949999988079071
+   ],
+   "axis_world": [
+    0,
+    -1,
+    0
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -20,
+    25
+   ],
+   "ref_value_deg": 0,
+   "positive": "nose up",
+   "rate_deg_s": 40,
+   "actuator_stall_torque_Nm": 420,
+   "actuator": "rotary EMA on fold yoke, irreversible",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_CANARD_R_FOLD",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    1.9500000476837158,
+    1.2000000476837158,
+    0.949999988079071
+   ],
+   "axis_world": [
+    0,
+    0,
+    1
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    0,
+    90
+   ],
+   "ref_value_deg": 0,
+   "ref_pose": "deployed",
+   "rate_deg_s": 60,
+   "actuator": "fold rotary EMA + shoot-bolt lock; fold pin bearings 0.20 m apart",
+   "note": "+90 deg (R) / -90 deg (L) = stowed over the front fender",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_CANARD_R_PITCH",
+   "parent_body": "A9_JOINT_CANARD_R_FOLD",
+   "anchor_world_m": [
+    1.7999999523162842,
+    1.2599999904632568,
+    0.949999988079071
+   ],
+   "axis_world": [
+    0,
+    -1,
+    0
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -20,
+    25
+   ],
+   "ref_value_deg": 0,
+   "positive": "nose up",
+   "rate_deg_s": 40,
+   "actuator_stall_torque_Nm": 420,
+   "actuator": "rotary EMA on fold yoke, irreversible",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_FLAP_L",
+   "parent_body": "A9_JOINT_WING_L_SLIDE",
+   "anchor_world_m": [
+    -1.2469871044158936,
+    -1.3032000064849854,
+    0.8777333498001099
+   ],
+   "axis_world": [
+    -0.09632302075624466,
+    -0.9953377842903137,
+    -0.004949934780597687
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -5,
+    35
+   ],
+   "ref_value_deg": 0.0,
+   "positive": "trailing edge down",
+   "rate_deg_s": 15,
+   "actuator_stall_torque_Nm": 60,
+   "actuator": "rotary EMA inside the wing on the hinge line + torque tube, irreversible, mass-balanced surface",
+   "interlock": "neutral and locked whenever the wing is not fully deployed and pinned",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_FLAP_R",
+   "parent_body": "A9_JOINT_WING_R_SLIDE",
+   "anchor_world_m": [
+    -1.2469871044158936,
+    1.3032000064849854,
+    0.995733380317688
+   ],
+   "axis_world": [
+    0.09632302075624466,
+    -0.9953377842903137,
+    0.004949934780597687
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -5,
+    35
+   ],
+   "ref_value_deg": 0.0,
+   "positive": "trailing edge down",
+   "rate_deg_s": 15,
+   "actuator_stall_torque_Nm": 60,
+   "actuator": "rotary EMA inside the wing on the hinge line + torque tube, irreversible, mass-balanced surface",
+   "interlock": "neutral and locked whenever the wing is not fully deployed and pinned",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_HATCH_L",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.0499999523162842,
+    -1.252500057220459,
+    0.940500020980835
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -180,
+    0
+   ],
+   "ref_value_deg": -180,
+   "ref_pose": "open (flight)",
+   "positive": "right-hand about +X",
+   "rate_deg_s": 180,
+   "actuator": "rotary EMA + over-centre latch, 25 N m stall",
+   "latch_load_at_VD_N": 2105,
+   "a9_revision": "A9",
+   "value_at_reference_frame": -180.0,
+   "mjcf_note": "MJCF body is written at the reference frame (door open); its range is shifted so 0 = open, 180 = closed"
+  },
+  {
+   "name": "A9_JOINT_HATCH_R",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.0499999523162842,
+    1.252500057220459,
+    0.940500020980835
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "hinge",
+   "range_deg": [
+    -180,
+    0
+   ],
+   "ref_value_deg": -180,
+   "ref_pose": "open (flight)",
+   "positive": "right-hand about +X",
+   "rate_deg_s": 180,
+   "actuator": "rotary EMA + over-centre latch, 25 N m stall",
+   "latch_load_at_VD_N": 2105,
+   "a9_revision": "A9",
+   "value_at_reference_frame": -180.0,
+   "mjcf_note": "MJCF body is written at the reference frame (door open); its range is shifted so 0 = open, 180 = closed"
+  },
+  {
+   "name": "A9_JOINT_WING_L_LOCK_FRONT_IN",
+   "parent_body": "A9_JOINT_WING_L_SLIDE",
+   "anchor_world_m": [
+    -0.6945000290870667,
+    -0.23999999463558197,
+    0.8815000057220459
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -0.07,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "locked (as built)",
+   "actuator": "tongue-mounted lock EMA, irreversible screw + spring, 2 proximity sensors",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_L_LOCK_FRONT_OUT",
+   "parent_body": "A9_JOINT_WING_L_SLIDE",
+   "anchor_world_m": [
+    -0.6945000290870667,
+    -1.1699999570846558,
+    0.8815000057220459
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -0.07,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "locked (as built)",
+   "actuator": "tongue-mounted lock EMA, irreversible screw + spring, 2 proximity sensors",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_L_LOCK_REAR_IN",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.5464999675750732,
+    -0.23999999463558197,
+    0.8815000057220459
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -0.07,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "locked (as built)",
+   "actuator": "sleeve-mounted lock EMA, irreversible screw + spring, dual sensors",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_L_LOCK_REAR_OUT",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.5464999675750732,
+    -1.1699999570846558,
+    0.8815000057220459
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -0.07,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "locked (as built)",
+   "actuator": "sleeve-mounted lock EMA, irreversible screw + spring, dual sensors",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_L_SLIDE",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.0499999523162842,
+    -1.2309999465942383,
+    0.8815000057220459
+   ],
+   "axis_world": [
+    0,
+    -1,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -1.37,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "deployed",
+   "actuator": "ball-screw EMA, 2.5 kN stall, 0.30 m/s max, brake on loss of power",
+   "note": "0 = deployed and seated on mouth flange (hard stop); -1.37 = stowed (inboard stop)",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_R_LOCK_FRONT_IN",
+   "parent_body": "A9_JOINT_WING_R_SLIDE",
+   "anchor_world_m": [
+    -0.6945000290870667,
+    0.23999999463558197,
+    0.9994999766349792
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -0.07,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "locked (as built)",
+   "actuator": "tongue-mounted lock EMA, irreversible screw + spring, 2 proximity sensors",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_R_LOCK_FRONT_OUT",
+   "parent_body": "A9_JOINT_WING_R_SLIDE",
+   "anchor_world_m": [
+    -0.6945000290870667,
+    1.1699999570846558,
+    0.9994999766349792
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -0.07,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "locked (as built)",
+   "actuator": "tongue-mounted lock EMA, irreversible screw + spring, 2 proximity sensors",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_R_LOCK_REAR_IN",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.5464999675750732,
+    0.23999999463558197,
+    0.9994999766349792
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -0.07,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "locked (as built)",
+   "actuator": "sleeve-mounted lock EMA, irreversible screw + spring, dual sensors",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_R_LOCK_REAR_OUT",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.5464999675750732,
+    1.1699999570846558,
+    0.9994999766349792
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -0.07,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "locked (as built)",
+   "actuator": "sleeve-mounted lock EMA, irreversible screw + spring, dual sensors",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "A9_JOINT_WING_R_SLIDE",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.0499999523162842,
+    1.2309999465942383,
+    0.9994999766349792
+   ],
+   "axis_world": [
+    0,
+    1,
+    0
+   ],
+   "joint_type": "slide",
+   "range_m": [
+    -1.37,
+    0.0
+   ],
+   "ref_value_m": 0.0,
+   "ref_pose": "deployed",
+   "actuator": "ball-screw EMA, 2.5 kN stall, 0.30 m/s max, brake on loss of power",
+   "note": "0 = deployed and seated on mouth flange (hard stop); -1.37 = stowed (inboard stop)",
+   "a9_revision": "A9"
+  },
+  {
+   "name": "JOINT_LEG_SLIDE_FL",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    1.100000023841858,
+    -0.5299999713897705,
+    0.27000001072883606
+   ],
+   "axis_world": [
+    0,
+    0,
+    1
+   ],
+   "stroke_m": 0.51,
+   "clearance_validation": "requires swept-volume check against rotating wheel",
+   "joint_type": "slide",
+   "range_m": [
+    -0.52,
+    0.0
+   ],
+   "note": "A8 landing leg extension, animation-derived"
+  },
+  {
+   "name": "JOINT_LEG_SLIDE_FR",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    1.100000023841858,
+    0.5299999713897705,
+    0.27000001072883606
+   ],
+   "axis_world": [
+    0,
+    0,
+    1
+   ],
+   "stroke_m": 0.51,
+   "clearance_validation": "requires swept-volume check against rotating wheel",
+   "joint_type": "slide",
+   "range_m": [
+    -0.52,
+    0.0
+   ],
+   "note": "A8 landing leg extension, animation-derived"
+  },
+  {
+   "name": "JOINT_LEG_SLIDE_RL",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.1799999475479126,
+    -0.5299999713897705,
+    0.27000001072883606
+   ],
+   "axis_world": [
+    0,
+    0,
+    1
+   ],
+   "stroke_m": 0.51,
+   "clearance_validation": "requires swept-volume check against rotating wheel",
+   "joint_type": "slide",
+   "range_m": [
+    -0.52,
+    0.0
+   ],
+   "note": "A8 landing leg extension, animation-derived"
+  },
+  {
+   "name": "JOINT_LEG_SLIDE_RR",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.1799999475479126,
+    0.5299999713897705,
+    0.27000001072883606
+   ],
+   "axis_world": [
+    0,
+    0,
+    1
+   ],
+   "stroke_m": 0.51,
+   "clearance_validation": "requires swept-volume check against rotating wheel",
+   "joint_type": "slide",
+   "range_m": [
+    -0.52,
+    0.0
+   ],
+   "note": "A8 landing leg extension, animation-derived"
+  },
+  {
+   "name": "JOINT_WHEEL_POD_FL",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    1.5399999618530273,
+    -1.0399999618530273,
+    0.41999998688697815
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "tilt_axis": "X",
+   "nominal_radius_m": 0.36,
+   "road_contact_clearance_m": 0.06,
+   "drive_vs_thrust": "mechanical details not decided, this is articulated rotating packaging",
+   "thrust_off_during_retraction": "can spool down quickly, but angular momentum persists",
+   "pylon_sealed": "external pylon capped by sculpted wheel arch; body wall remains continuous",
+   "joint_type": "hinge",
+   "range_deg": [
+    -90,
+    0
+   ],
+   "note": "A8 wheel-thruster pod rotation about X (road <-> VTOL), animation-derived range"
+  },
+  {
+   "name": "JOINT_WHEEL_POD_FR",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    1.5399999618530273,
+    1.0399999618530273,
+    0.41999998688697815
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "tilt_axis": "X",
+   "nominal_radius_m": 0.36,
+   "road_contact_clearance_m": 0.06,
+   "drive_vs_thrust": "mechanical details not decided, this is articulated rotating packaging",
+   "thrust_off_during_retraction": "can spool down quickly, but angular momentum persists",
+   "pylon_sealed": "external pylon capped by sculpted wheel arch; body wall remains continuous",
+   "joint_type": "hinge",
+   "range_deg": [
+    0,
+    90
+   ],
+   "note": "A8 wheel-thruster pod rotation about X (road <-> VTOL), animation-derived range"
+  },
+  {
+   "name": "JOINT_WHEEL_POD_RL",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.590000033378601,
+    -1.0399999618530273,
+    0.41999998688697815
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "tilt_axis": "X",
+   "nominal_radius_m": 0.36,
+   "road_contact_clearance_m": 0.06,
+   "drive_vs_thrust": "mechanical details not decided, this is articulated rotating packaging",
+   "thrust_off_during_retraction": "can spool down quickly, but angular momentum persists",
+   "pylon_sealed": "external pylon capped by sculpted wheel arch; body wall remains continuous",
+   "joint_type": "hinge",
+   "range_deg": [
+    -90,
+    0
+   ],
+   "note": "A8 wheel-thruster pod rotation about X (road <-> VTOL), animation-derived range"
+  },
+  {
+   "name": "JOINT_WHEEL_POD_RR",
+   "parent_body": "chassis",
+   "anchor_world_m": [
+    -1.590000033378601,
+    1.0399999618530273,
+    0.41999998688697815
+   ],
+   "axis_world": [
+    1,
+    0,
+    0
+   ],
+   "tilt_axis": "X",
+   "nominal_radius_m": 0.36,
+   "road_contact_clearance_m": 0.06,
+   "drive_vs_thrust": "mechanical details not decided, this is articulated rotating packaging",
+   "thrust_off_during_retraction": "can spool down quickly, but angular momentum persists",
+   "pylon_sealed": "external pylon capped by sculpted wheel arch; body wall remains continuous",
+   "joint_type": "hinge",
+   "range_deg": [
+    0,
+    90
+   ],
+   "note": "A8 wheel-thruster pod rotation about X (road <-> VTOL), animation-derived range"
+  }
+ ],
+ "sites": {
+  "lock_station_R_OUT": [
+   -1.5464999675750732,
+   1.1699999570846558,
+   0.9994999766349792
+  ],
+  "lock_station_R_IN": [
+   -1.5464999675750732,
+   0.23999999463558197,
+   0.9994999766349792
+  ],
+  "lock_station_L_OUT": [
+   -1.5464999675750732,
+   -1.1699999570846558,
+   0.8815000057220459
+  ],
+  "lock_station_L_IN": [
+   -1.5464999675750732,
+   -0.23999999463558197,
+   0.8815000057220459
+  ]
+ },
+ "aero_surfaces": {
+  "wing": {
+   "S_ref_m2": 4.055,
+   "S_exposed_each_m2": 0.756,
+   "span_m": 5.19,
+   "mac_m": 0.872,
+   "x_ac_mac_m": -0.806,
+   "y_mac_m": 1.042,
+   "ac_height_R_m": 1.0015,
+   "ac_height_L_m": 0.879,
+   "section": "NACA 2411 -> 2410 (stand-in)",
+   "incidence_deg": 0.0,
+   "CLalpha_per_rad_M0": 4.0,
+   "CLmax_clean": 1.2,
+   "CLmax_flap": 1.6,
+   "cm0": -0.04,
+   "basis": "DERIVED/SYNTHETIC, wing_loads.py A9_cassette_build"
+  },
+  "aileron": {
+   "eta": [
+    0.55,
+    0.95
+   ],
+   "area_each_m2": 0.067,
+   "cf_c": 0.28,
+   "tau": 0.64,
+   "Ch_delta": -0.7,
+   "Ch_alpha": -0.35
+  },
+  "flap": {
+   "eta": [
+    0.05,
+    0.5
+   ],
+   "area_each_m2": 0.114,
+   "cf_c": 0.28,
+   "tau": 0.64
+  },
+  "canard": {
+   "area_each_m2": 0.278,
+   "x_pivot_m": 1.8,
+   "y_root_m": 1.26,
+   "y_tip_m": 1.84,
+   "z_m": 0.95,
+   "section": "NACA 0009",
+   "CLalpha_per_rad": 3.0,
+   "pivot_frac_mac": 0.25
+  }
+ },
+ "control_limits": {
+  "wing_slide": {
+   "stroke_m": 1.37,
+   "max_speed_m_s": 0.3,
+   "stall_force_N": 2500,
+   "transit_q_limit_Pa": 600,
+   "sequence": "hatch open -> slide -> 4 pins -> locked"
+  },
+  "locks": {
+   "pins_per_wing": 4,
+   "engage_stroke_m": 0.07,
+   "engage_time_s": 0.5,
+   "ultimate_pin_force_N": 54000,
+   "sensor": "2 proximity sensors per pin"
+  },
+  "aileron": {
+   "travel_deg": [
+    -20,
+    20
+   ],
+   "rate_deg_s": 80,
+   "stall_torque_Nm": 72,
+   "power_peak_W": 78,
+   "min_stiffness_Nm_rad": 6929
+  },
+  "flap": {
+   "travel_deg": [
+    -5,
+    35
+   ],
+   "rate_deg_s": 15,
+   "stall_torque_Nm": 60,
+   "min_stiffness_Nm_rad": 27276,
+   "max_speed_m_s": 75
+  },
+  "canard_pitch": {
+   "travel_deg": [
+    -20,
+    25
+   ],
+   "rate_deg_s": 40,
+   "stall_torque_Nm": 420
+  },
+  "canard_fold": {
+   "travel_deg": 90,
+   "rate_deg_s": 60,
+   "lock": "shoot bolt"
+  },
+  "hatch": {
+   "travel_deg": 180,
+   "rate_deg_s": 180,
+   "latch_load_at_VD_N": 2105
+  }
+ }
+}

@@ -745,6 +745,32 @@ def analyse(w: Wing, canard, body_munk_m3, x_cg_list, n_pos, n_neg, label):
     return res
 
 
+def carry_through(root_ult_ff, lock_stations=(1.17, 0.24), support_y=0.62, depth=0.251, width=0.857,
+                  face_t=0.0015, core_t=0.012):
+    """Sleeve (carry-through) box: overhang bending between the outboard lock station and the tub
+    support, facesheet stress and simply-supported sandwich-panel buckling (k=4, long plate)."""
+    M, V = root_ult_ff["Mx"], root_ult_ff["V"]
+    D = lock_stations[0] - lock_stations[1]
+    F_out, F_in = M / D + V, M / D
+    M_support = F_out * (lock_stations[0] - support_y) - F_in * max(0.0, lock_stations[1] - support_y)
+    E_face = 60e9  # quasi-isotropic IM7/8552 facesheet, DERIVED
+    A_face = width * face_t
+    h = depth - face_t
+    sigma = M_support / (h * A_face)
+    Dp = E_face * face_t * (core_t + face_t) ** 2 / 2
+    sigma_cr = 4 * math.pi ** 2 * Dp / (width ** 2 * face_t)
+    mono_t = 0.006
+    sigma_mono = M_support / ((depth - mono_t) * width * mono_t)
+    sigma_cr_mono = 4 * math.pi ** 2 * E_face * mono_t ** 2 / (12 * (1 - 0.3 ** 2) * width ** 2)
+    return dict(station_forces_N=dict(outboard=F_out, inboard=F_in), support_y_m=support_y,
+                bending_at_support_Nm=M_support, sandwich=dict(face_mm=face_t * 1e3, core_mm=core_t * 1e3,
+                                                               face_stress_Pa=sigma, buckling_stress_Pa=sigma_cr,
+                                                               buckling_margin=sigma_cr / sigma - 1),
+                monolithic_6mm_check=dict(stress_Pa=sigma_mono, buckling_stress_Pa=sigma_cr_mono,
+                                          buckling_margin=sigma_cr_mono / sigma_mono - 1),
+                basis="DERIVED closed-form; supports idealised as rigid tub posts at |y|=0.62 m; not FEA")
+
+
 def flutter_validation():
     """Reference typical section (Hodges & Pierce, 'Introduction to Structural Dynamics and
     Aeroelasticity', Ch.5 example): a=-1/5, x_a=0.1, mu=20, r^2=6/25, sigma=0.4.
@@ -785,8 +811,16 @@ def main():
                  x_le_root=-0.66, x_le_tip=-1.14, tc_root=0.11, tc_tip=0.10, z=0.95,
                  joint=dict(tongue_length_m=0.85, lock_spacing_m=0.76),
                  source="geometry chosen to fit measured bay x -0.63..-1.48, z 0.82..1.06, |y|<=1.12; straight TE at x -1.46")
+    # A9 build geometry (approved Option T): shoulder flank moved out to the fender line |y| = 1.245,
+    # which lengthens the sleeve to 2.43 m and allows a 1.05 m tongue with 0.94 m lock-station spacing.
+    a9 = Wing(name="A9_cassette_build", y_root=1.245, span_exp=1.35, c_root=0.80, c_tip=0.32,
+              x_le_root=-0.66, x_le_tip=-1.14, tc_root=0.11, tc_tip=0.10, z=0.95,
+              joint=dict(tongue_length_m=1.05, lock_spacing_m=0.94),
+              source="A9 revision geometry (tools/phantom/build_a9_cassette.py); bay x -0.62..-1.49, z 0.815..1.066, |y|<=1.245")
     canard_a8 = dict(name="A8 canard", S=0.32 * 2, c=0.55, span=0.65, x_ac=1.70, CLalpha=3.0,
                      basis="MEASURED planform ~0.32 m^2 per side from pinned source; CLalpha SYNTHETIC")
+    canard_a9 = dict(name="A9 telescopic all-moving canard", S=(0.60 + 0.36) / 2 * 0.58 * 2, c=0.49, span=0.58, x_ac=1.71,
+                     CLalpha=3.0, basis="A9 build planform (root 0.60, tip 0.36, span 0.58 per side); CLalpha SYNTHETIC")
     body_munk = 4.35 * 0.85  # MEASURED hull volume 4.35 m^3 x (k2-k1)~0.85 SYNTHETIC
     x_cgs = [-0.25, -0.50, -0.75]
     results = dict(
@@ -800,8 +834,10 @@ def main():
         cases={},
     )
     n_pos, n_neg = ENVELOPE["n_pos_limit"]["value"], ENVELOPE["n_neg_limit"]["value"]
-    for w in (a8, opt_t):
-        results["cases"][w.name] = analyse(w, canard_a8, body_munk, x_cgs, n_pos, n_neg, w.name)
+    for w, cn in ((a8, canard_a8), (opt_t, canard_a8), (a9, canard_a9)):
+        results["cases"][w.name] = analyse(w, cn, body_munk, x_cgs, n_pos, n_neg, w.name)
+    a9r = results["cases"][a9.name]
+    a9r["carry_through"] = carry_through(a9r["root_joint"]["applied_ultimate_with_fitting_factor"])
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(results, indent=1, default=float))
     print(json.dumps(summary(results), indent=1, default=lambda v: round(v, 3) if isinstance(v, float) else v))

@@ -19,6 +19,7 @@ out = Path(argv[0]).resolve(); out.mkdir(parents=True, exist_ok=True)
 frame = int(argv[1])
 overlay = argv[3] if len(argv) > 3 and argv[2] == '--overlay' else None
 sc = bpy.context.scene
+sc.frame_set(frame + 1)   # same-frame set after load can leave nested-child matrices stale
 sc.frame_set(frame)
 
 ROLE = [  # substring -> RGBA

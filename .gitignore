@@ -16,3 +16,7 @@ tools/pilot_controls.json.bak
 
 # Private Blendstra Phantom A8 source: kept local only (public repo). Pin: see docs/phantom/WING_CASSETTE_STUDY.md
 assets/source/phantom-a8/*.blend
+# Revisions derived from the private Phantom A8 source: local only (public repo)
+assets/derived/phantom-a9*
+evidence/phantom/media/
+*.blend1

@@ -28,7 +28,7 @@ from mathutils.bvhtree import BVHTree
 
 argv = sys.argv[sys.argv.index('--') + 1:]
 out = Path(argv[0])
-step, frames, ignore, watch = 1, None, [], None
+step, frames, ignore, watch, require = 1, None, [], None, None
 SAMPLE = 0.01   # m, target surface sample spacing on moving objects
 MAX_SAMPLES = 20000
 i = 1
@@ -43,6 +43,8 @@ while i < len(argv):
         ignore.append((re.compile(argv[i + 1]), re.compile(argv[i + 2]))); i += 3
     elif argv[i] == '--watch':
         watch = re.compile(argv[i + 1]); i += 2
+    elif argv[i] == '--require':
+        require = re.compile(argv[i + 1]); i += 2
     else:
         raise SystemExit('unknown arg ' + argv[i])
 
@@ -56,7 +58,24 @@ NEAR = 0.25    # m, AABB proximity for clearance evaluation
 geom_objs = [o for o in scene.objects if o.type in {'MESH', 'CURVE', 'SURFACE', 'FONT'} and not o.hide_render]
 
 
+def rigid_body(o):
+    """Nearest ancestor empty (a joint frame) or the static world: parts of one body never self-collide."""
+    p = o.parent
+    while p is not None:
+        if p.type == 'EMPTY':
+            return p.name
+        p = p.parent
+    return '<world>'
+
+
+BODY = {o.name: rigid_body(o) for o in geom_objs}
+
+
 def ignored(a, b):
+    if BODY.get(a) == BODY.get(b) and BODY.get(a) != '<world>':
+        return True
+    if require and not (require.search(a) or require.search(b)):
+        return True
     for ra, rb in ignore:
         if (ra.search(a) and rb.search(b)) or (ra.search(b) and rb.search(a)):
             return True
@@ -125,8 +144,29 @@ def inside(g, p):
     return votes >= 2
 
 
+def penetrates(a, b, limit=3000):
+    """Confirm a BVH triangle-overlap flag. For two closed solids a real interference puts surface samples
+    of one inside the other; a flag with no sample inside either is a touching/coincident-face contact.
+    If either mesh is open, containment is undefined and the flag is kept."""
+    if not (a['manifold'] and b['manifold']):
+        return True
+    for g, h in ((a, b), (b, a)):
+        pts = samples(g)
+        if len(pts) > limit:
+            pts = pts[::max(1, len(pts) // limit)]
+        for p in pts:
+            loc, n, _i, d = h['bvh'].find_nearest(p)
+            # inside only if the nearest-face normal and ray parity agree (robust to grazing rays)
+            if d is not None and d > 1e-4 and (p - loc).dot(n) < 0 and inside(h, p):
+                return True
+    return False
+
+
 def snapshot(frame):
+    # step through a different frame first: a same-frame set after load can leave nested-child matrices stale
+    scene.frame_set(frame + 1 if frame < scene.frame_end else frame - 1)
     scene.frame_set(frame)
+    bpy.context.view_layer.update()
     dg = bpy.context.evaluated_depsgraph_get()
     return {o.name: world_tris(o, dg) for o in geom_objs}, {o.name: [list(r) for r in o.matrix_world] for o in geom_objs}
 
@@ -134,6 +174,7 @@ def snapshot(frame):
 # Identify moving objects from world matrices over the sweep.
 mats = {}
 for fr in frame_list:
+    scene.frame_set(fr + 1 if fr < scene.frame_end else fr - 1)
     scene.frame_set(fr)
     for o in geom_objs:
         mats.setdefault(o.name, []).append(o.matrix_world.copy())
@@ -152,9 +193,9 @@ for ia, na in enumerate(names):
             continue
         ov = geo0[na]['bvh'].overlap(geo0[nb]['bvh'])
         if ov:
-            static_hits.append(dict(a=na, b=nb, triangle_pairs=len(ov)))
+            static_hits.append(dict(a=na, b=nb, triangle_pairs=len(ov), confirmed=penetrates(geo0[na], geo0[nb])))
 
-per_object = {n: dict(collisions={}, contained_in={}, min_clearance=None) for n in moving}
+per_object = {n: dict(collisions={}, contacts={}, contained_in={}, min_clearance=None) for n in moving}
 timeline = []
 for fr in frame_list:
     geo, _ = snapshot(fr) if fr != frame_list[0] else (geo0, None)
@@ -172,7 +213,10 @@ for fr in frame_list:
             if gap > NEAR:
                 continue
             if gap == 0 and g['bvh'].overlap(h['bvh']):
-                rec['hits'].append(other)
+                if penetrates(g, h):
+                    rec['hits'].append(other)
+                else:
+                    rec.setdefault('contacts', []).append(other)
                 continue
             if h['manifold'] and gap == 0 and inside(h, g['verts'][0]):
                 rec['inside'].append(other)
@@ -188,6 +232,8 @@ for fr in frame_list:
             po['collisions'].setdefault(other, []).append(fr)
         for other in rec['inside']:
             po['contained_in'].setdefault(other, []).append(fr)
+        for other in rec.get('contacts', []):
+            po['contacts'].setdefault(other, []).append(fr)
         if rec['clearance'] and (po['min_clearance'] is None or rec['clearance'][1] < po['min_clearance']['m']):
             po['min_clearance'] = dict(partner=rec['clearance'][0], m=rec['clearance'][1], frame=fr)
     timeline.append(row)
@@ -206,10 +252,12 @@ def ranges(fs):
 for po in per_object.values():
     po['collisions'] = {k: ranges(v) for k, v in po['collisions'].items()}
     po['contained_in'] = {k: ranges(v) for k, v in po['contained_in'].items()}
+    po['contacts'] = {k: ranges(v) for k, v in po['contacts'].items()}
 
 result = dict(
     file=bpy.data.filepath, blender=bpy.app.version_string, frames=frame_list,
-    method='BVH triangle overlap + ray-parity containment + sampled nearest distance; kinematic only',
+    method=('BVH triangle overlap, confirmed by sample-in-solid containment for closed meshes (unconfirmed flags = contacts); '
+            'ray-parity containment; sampled nearest distance; kinematic only'),
     sample_spacing_m=SAMPLE, clearance_search_m=NEAR,
     moving_objects=moving, static_intersections_first_frame=static_hits,
     per_object=per_object, timeline=timeline)
