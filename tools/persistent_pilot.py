@@ -86,7 +86,15 @@ def load_config(path=CONTROLS):
 
 def request(base, path, payload=None):
     body=None if payload is None else json.dumps(payload,allow_nan=False).encode()
-    req=Request(base+path, data=body, headers={"Content-Type":"application/json"})
+    headers={"Content-Type":"application/json"}
+    # The existing PC/LAN path remains unchanged. Cloud use is explicit and
+    # the token is never put in a URL or the pilot controls file.
+    token=os.environ.get("VTX_CLOUD_ACCESS_TOKEN")
+    if token:
+        if not base.startswith("https://"):
+            raise ValueError("Cloud token requires an HTTPS simulator URL")
+        headers["Authorization"]="Bearer "+token
+    req=Request(base+path, data=body, headers=headers)
     with urlopen(req,timeout=4) as response:
         return json.load(response)
 
