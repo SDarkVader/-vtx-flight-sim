@@ -39,15 +39,15 @@ function selectedFuel(){const value=Number($('initial-fuel').value);if(!Number.i
 console.log('VTX: module ready');
 const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<800;
 const mobileView=mobile;
-// Optional display-only lightweight mode. No simulation or collision changes.
-const lightweightView=new URLSearchParams(location.search).has('lite');
+// Phones default to the lighter display path. The physics and model are unchanged.
+const lightweightView=mobile||new URLSearchParams(location.search).has('lite');
 // On phones keep retained-flight actions and indicator bar directly below the flight view.
 if (innerWidth <= 800) {
  document.querySelector('header').after($('retry-bar'));
  $('viewport').after(document.querySelector('footer'));
 }
 const camera=new THREE.PerspectiveCamera(48,1,.1,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileView ? 1.0 : 1.2));renderer.shadowMap.enabled=!mobile&&!lightweightView;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;viewport.appendChild(renderer.domElement);
+const renderer=new THREE.WebGLRenderer({antialias:!mobileView,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileView ? .8 : 1.2));renderer.shadowMap.enabled=!mobile&&!lightweightView;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
@@ -66,7 +66,7 @@ function buildWorld(w){
  world=w;
  // Ground uses the same heightfield samples as the physics terrain; the distant landscape lies outside the +/-500 m test area.
  scene.add(buildTerrain(w));
- const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,mobile||lightweightView?700:1700));
+ const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,mobile?350:lightweightView?700:1700));
  // Buildings are dressed onto the physical obstacle boxes; airfield markings are flush paint.
  environment.buildings=buildBuildings(scene,w,{ppm:mobile||lightweightView?14:24});buildAirfield(scene,{ppm:mobile||lightweightView?7:11});buildTrees(scene,w);buildForecourt(scene,w);environment.volcano=buildVolcanoBasement(scene,w);environment.serviceRoads=buildServiceRoads(scene,w,surfaceZ);
  scene.add(makeWater(w,surfaceZ(w.water.x,w.water.y)+.1));
@@ -324,7 +324,7 @@ api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
 if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;}};
-function animate(){requestAnimationFrame(animate);const now=performance.now();if(now-lastFrameMs<(lightweightView?67:50))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
+function animate(){requestAnimationFrame(animate);if(document.hidden)return;const now=performance.now();if(now-lastFrameMs<(lightweightView?67:50))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
  if(truth)loadAirframe(truth.provenance.render_asset||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb'));
  if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);
    // The authoritative rotor pose is sampled at 20 Hz. At 1200 RPM one full
