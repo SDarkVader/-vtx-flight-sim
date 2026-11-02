@@ -1,0 +1,249 @@
+{
+  "schema_version": "phantom-contract-0.1",
+  "status": "DRAFT_DOCUMENTATION_ONLY_NOT_SIMULATABLE",
+  "provenance": {
+    "blendstra_project_id": "b77e9377-f1b3-4177-ba4e-c1af1d4ed8b2",
+    "blendstra_version_id": "version_a5589426caea8f9c2a6b690671aa8a9387ceff32eaef358186236dbd4de18752",
+    "source_status": "CONCEPT_CAD_NOT_VALIDATED",
+    "engineering_notes": "https://app.notion.com/p/40c59e49d35c8105b78de2af8c276039",
+    "simulation_model": "NOT_YET_IMPLEMENTED",
+    "existing_aircraft_is_unchanged": true
+  },
+  "vehicle": {
+    "id": "phantom",
+    "occupants": 2,
+    "seats": "side_by_side",
+    "target_road_top_speed_min_m_s": 89.408,
+    "target_airborne_max_speed_m_s": 178.816,
+    "required_takeoff_speed_m_s": null,
+    "vtol_enabled": true,
+    "rolling_takeoff_enabled": true,
+    "rolling_landing_enabled": true,
+    "reference_frame": "CAD_X_FORWARD_Y_LATERAL_Z_UP",
+    "dynamics_frame_transform": "UNKNOWN_MUST_DEFINE_EXPLICITLY"
+  },
+  "mass": {
+    "mass_kg": null,
+    "centre_of_gravity_m": null,
+    "inertia_about_cg_kg_m2": null,
+    "empty_mass_kg": null,
+    "fuel_mass_kg": null,
+    "occupant_masses_kg": [
+      null,
+      null
+    ],
+    "source_status": "UNMEASURED_MUST_SUPPLY_SYNTHETIC_ESTIMATES_OR_CAD_LEDGER"
+  },
+  "structural": {
+    "design_limit_g_positive": null,
+    "design_limit_g_negative": null,
+    "design_ultimate_g_positive": null,
+    "wing_carrythrough_mass_kg": null,
+    "wing_root_lock_force_rating_n": null,
+    "wing_root_bearing_part_number": null,
+    "wing_root_loadpath_arm_m": null,
+    "aeroelastic_model": "NOT_IMPLEMENTED",
+    "failure_model": "NOT_IMPLEMENTED",
+    "source_status": "CALIBRATION_BLOCKED"
+  },
+  "actuator_schema": {
+    "mandatory": [
+      "id",
+      "type",
+      "source_status",
+      "moment_arm_m",
+      "mass_kg",
+      "inertia_kg_m2",
+      "maximum_rate",
+      "maximum_acceleration",
+      "continuous_force_or_torque",
+      "peak_force_or_torque",
+      "efficiency",
+      "power_supply",
+      "fault_status"
+    ],
+    "default_status": "UNKNOWN",
+    "action_integrity": "requested_target_separate_from_achieved_state",
+    "unlimited_force_allowed": false,
+    "instantaneous_motion_allowed": false
+  },
+  "propulsion": {
+    "wheel_pods": [
+      {
+        "id": "FL",
+        "position_body_m": null,
+        "thrust_max_n": null,
+        "shaft_power_max_w": null,
+        "effective_disc_radius_m": null,
+        "spool_time_s": null,
+        "tilt_rate_rad_s": null
+      },
+      {
+        "id": "FR",
+        "position_body_m": null,
+        "thrust_max_n": null,
+        "shaft_power_max_w": null,
+        "effective_disc_radius_m": null,
+        "spool_time_s": null,
+        "tilt_rate_rad_s": null
+      },
+      {
+        "id": "RL",
+        "position_body_m": null,
+        "thrust_max_n": null,
+        "shaft_power_max_w": null,
+        "effective_disc_radius_m": null,
+        "spool_time_s": null,
+        "tilt_rate_rad_s": null
+      },
+      {
+        "id": "RR",
+        "position_body_m": null,
+        "thrust_max_n": null,
+        "shaft_power_max_w": null,
+        "effective_disc_radius_m": null,
+        "spool_time_s": null,
+        "tilt_rate_rad_s": null
+      }
+    ],
+    "rear_thrusters": [
+      {
+        "id": "L",
+        "position_body_m": null,
+        "thrust_max_n": null,
+        "shaft_power_max_w": null,
+        "spool_time_s": null
+      },
+      {
+        "id": "R",
+        "position_body_m": null,
+        "thrust_max_n": null,
+        "shaft_power_max_w": null,
+        "spool_time_s": null
+      }
+    ],
+    "thrust_map_source": "UNKNOWN",
+    "source_status": "NOT_SELECTED"
+  },
+  "aerodynamic_surfaces": {
+    "wing_L": {
+      "area_m2": null,
+      "mean_chord_m": null,
+      "centre_of_pressure_body_m": null,
+      "airfoil_polar_source": "UNKNOWN"
+    },
+    "wing_R": {
+      "area_m2": null,
+      "mean_chord_m": null,
+      "centre_of_pressure_body_m": null,
+      "airfoil_polar_source": "UNKNOWN"
+    },
+    "aileron_L": {
+      "area_m2": null,
+      "hinge_moment_coefficient": null,
+      "deflection_min_rad": null,
+      "deflection_max_rad": null
+    },
+    "aileron_R": {
+      "area_m2": null,
+      "hinge_moment_coefficient": null,
+      "deflection_min_rad": null,
+      "deflection_max_rad": null
+    },
+    "flap_L": {
+      "area_m2": null,
+      "hinge_moment_coefficient": null,
+      "deflection_min_rad": null,
+      "deflection_max_rad": null
+    },
+    "flap_R": {
+      "area_m2": null,
+      "hinge_moment_coefficient": null,
+      "deflection_min_rad": null,
+      "deflection_max_rad": null
+    },
+    "canard_L": {
+      "area_m2": null,
+      "centre_of_pressure_body_m": null,
+      "hinge_moment_coefficient": null
+    },
+    "canard_R": {
+      "area_m2": null,
+      "centre_of_pressure_body_m": null,
+      "hinge_moment_coefficient": null
+    },
+    "source_status": "REQUIRES_CFD_OR_DECLARED_SYNTHETIC_POLARS",
+    "zero_airspeed_lift_n": 0
+  },
+  "deployment": {
+    "hatch_L": {
+      "travel_max_rad": null,
+      "rate_max_rad_s": null
+    },
+    "hatch_R": {
+      "travel_max_rad": null,
+      "rate_max_rad_s": null
+    },
+    "wing_L": {
+      "slide_travel_m": null,
+      "fold_angle_max_rad": null,
+      "lock_state": "UNLOCKED"
+    },
+    "wing_R": {
+      "slide_travel_m": null,
+      "fold_angle_max_rad": null,
+      "lock_state": "UNLOCKED"
+    },
+    "landing_legs": [
+      "FL",
+      "FR",
+      "RL",
+      "RR"
+    ],
+    "geometry_swept_clearance_passed": false,
+    "source_status": "VISUAL_WING_CLIPPING_PRESENT_CURRENT_A8"
+  },
+  "electrical": {
+    "architecture_selected": null,
+    "bus_voltage_v": null,
+    "generator_power_cont_w": null,
+    "generator_spool_time_s": null,
+    "buffer_energy_j": null,
+    "buffer_power_discharge_cont_w": null,
+    "buffer_power_discharge_peak_w": null,
+    "buffer_soc_initial": null,
+    "buffer_temperature_max_k": null,
+    "radiator_heat_rejection_w": null,
+    "hover_cooling_fan_power_w": null,
+    "actuator_power_reserved_w": null,
+    "source_status": "NOT_SELECTED"
+  },
+  "telemetry_required": [
+    "timestamp_s",
+    "variant",
+    "config_sha256",
+    "mass_kg",
+    "cg_m",
+    "inertia_kg_m2",
+    "action_requested",
+    "actuator_achieved",
+    "aero_force_and_moment",
+    "propulsor_force_and_moment",
+    "generator_power_w",
+    "battery_power_w",
+    "battery_soc",
+    "fuel_kg",
+    "thermal",
+    "contact",
+    "faults",
+    "outcome"
+  ],
+  "acceptance": {
+    "live_loaded": false,
+    "bench_tested": false,
+    "static_hover_verified": false,
+    "wingborne_flight_verified": false,
+    "wing_clearance_verified": false,
+    "test_plan": "docs/phantom/TEST_PLAN.md"
+  }
+}
