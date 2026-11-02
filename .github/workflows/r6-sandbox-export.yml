@@ -21,6 +21,7 @@ jobs:
           import hashlib, json, tarfile
           roots = [
               'src', 'public', 'scripts', 'tools', 'tests', 'inputs',
+              'assets/derived/p0-v4-r6.blend',
               'evidence/source', 'requirements.txt', 'pyproject.toml',
               'VERSION.txt', 'evidence/r6_clearance_audit.json',
               'evidence/argon_task01_transmission_tanks.json',
