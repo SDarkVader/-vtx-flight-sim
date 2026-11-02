@@ -15,7 +15,7 @@ import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
 import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=2';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=1';
-import {createFreeCamera} from './free-camera.js?v=3';
+import {createFreeCamera} from './free-camera.js?v=4';
 
 const $=id=>document.getElementById(id);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
@@ -41,8 +41,11 @@ const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(p
 const mobileView=mobile;
 // Optional display-only lightweight mode. No simulation or collision changes.
 const lightweightView=new URLSearchParams(location.search).has('lite');
-// On phones keep retained-flight actions in the document flow, not across the view.
-if (innerWidth <= 600) document.querySelector('header').after($('retry-bar'));
+// On phones keep retained-flight actions and indicator bar directly below the flight view.
+if (innerWidth <= 800) {
+ document.querySelector('header').after($('retry-bar'));
+ $('viewport').after(document.querySelector('footer'));
+}
 const camera=new THREE.PerspectiveCamera(48,1,.1,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileView ? 1.0 : 1.2));renderer.shadowMap.enabled=!mobile&&!lightweightView;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
@@ -78,7 +81,7 @@ function disposeModel(root){
 function loadAirframe(asset){
  if(asset===loadedAsset||performance.now()<assetRetryAfter)return;loadedAsset=asset;
  $('loading').hidden=false;$('loading').textContent='Loading physical revision…';
- new GLTFLoader().load(asset,async g=>{
+ new GLTFLoader().load(asset+(asset.includes('?')?'&':'?')+'v=r6-20261101-2',async g=>{
  if(asset!==loadedAsset){disposeModel(g.scene);return;}
  if(model){scene.remove(model);disposeModel(model);}
  for(const key of Object.keys(bodyNodes))delete bodyNodes[key];pitchMeshes.length=0;
