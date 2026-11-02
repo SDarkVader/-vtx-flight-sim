@@ -26,6 +26,7 @@ Existing code is already split into **`src/vtx/aircraft.py` (MuJoCo), `src/vtx/a
 2. [Manufacturer and physics reference register](SOURCE_REGISTER.md) — official documents, what the sources establish and what remains unknown.
 3. [Synthetic component specification](SYNTHETIC_COMPONENTS.md) — substitute missing hardware with accountable code, not magic forces.
 4. [Phased testing and acceptance](TEST_PLAN.md) — independent flight progression and measurable failure tests.
+5. [Wing cassette Stage 1 study](WING_CASSETTE_STUDY.md) — measured A8 defects, load envelope, root-joint comparison and the configuration decision for the retractable wing.
 
 **Version boundary:** documentation on a separate `docs/phantom-flight-systems-20261102` branch; preserve the currently flown four-fan aircraft, any live pilot checkpoints and the working-tree changes on `fix/mobile-flight-view-performance`.
 

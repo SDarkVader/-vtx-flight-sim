@@ -1,0 +1,2425 @@
+{
+ "schema": "phantom-wing-loads-0.1",
+ "disclaimer": "Closed-form screening only. Not FEA, CFD or coupled aeroelastic analysis. Kinematic Blender checks are separate.",
+ "inputs": {
+  "mass": {
+   "mtow_kg": {
+    "value": 1300.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "project notional mass (SYSTEMS_CONTRACT); bounds 1100-1500"
+   },
+   "min_flying_kg": {
+    "value": 1050.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "one occupant, low fuel/energy; used for gust case"
+   },
+   "Ixx_body_kg_m2": {
+    "value": 600.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "box estimate m(w^2+h^2)/12 with w=2.0, h=1.0 m, +/-30%"
+   },
+   "Iyy_kg_m2": {
+    "value": 2300.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "box estimate m(L^2+h^2)/12, L=4.85 m, +/-30%"
+   }
+  },
+  "speeds": {
+   "VC_mps": {
+    "value": 178.8,
+    "basis": "DERIVED",
+    "note": "400 mph flight maximum target taken as design cruise/VMO"
+   },
+   "VD_over_VC": {
+    "value": 1.25,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23.335(b) minimum VD/VC pattern"
+   },
+   "q_deploy_max_Pa": {
+    "value": 600.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "wing transit allowed only at q<=600 Pa (~31 m/s EAS); to be validated"
+   }
+  },
+  "envelope": {
+   "n_pos_limit": {
+    "value": 6.0,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23 aerobatic-category positive limit"
+   },
+   "n_neg_limit": {
+    "value": -3.0,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23 aerobatic negative limit (0.5 x positive)"
+   },
+   "ultimate_factor": {
+    "value": 1.5,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23.303"
+   },
+   "fitting_factor": {
+    "value": 1.15,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23.625 fitting factor on joints"
+   },
+   "gust_Ude_VC_mps": {
+    "value": 15.24,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23.341, 50 ft/s EAS at VC"
+   },
+   "gust_Ude_VD_mps": {
+    "value": 7.62,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23.341, 25 ft/s EAS at VD"
+   },
+   "rolling_asym_factor": {
+    "value": 0.6,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23.349 aerobatic: 100% one side, 60% other, at 2/3 n_limit"
+   },
+   "flutter_margin_on_VD": {
+    "value": 1.2,
+    "basis": "REGULATORY_REFERENCE",
+    "note": "CS-23.629: free from flutter/divergence/reversal to 1.2 VD"
+   },
+   "prior_estimate": {
+    "value": {
+     "n_limit": 8.0,
+     "n_ultimate": 12.0
+    },
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "earlier project screen; kept for comparison"
+   }
+  },
+  "material": {
+   "cfrp_density": {
+    "value": 1580.0,
+    "basis": "MANUFACTURER",
+    "note": "Hexcel 8552/IM7 cured laminate density ~1.57-1.59 g/cc"
+   },
+   "E_cap_Pa": {
+    "value": 105000000000.0,
+    "basis": "DERIVED",
+    "note": "60/30/10 (0/+-45/90) laminate, classical lamination estimate from IM7/8552 ply data"
+   },
+   "strain_allow_ult": {
+    "value": 0.0035,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "damage-tolerant (BVID, hot/wet) ultimate design strain; bounds 0.0030-0.0045"
+   },
+   "G_web_Pa": {
+    "value": 30000000000.0,
+    "basis": "DERIVED",
+    "note": "+-45-dominated web laminate"
+   },
+   "G_skin_Pa": {
+    "value": 20000000000.0,
+    "basis": "DERIVED",
+    "note": "cap-dominated skin laminate"
+   },
+   "tau_allow_ult_Pa": {
+    "value": 150000000.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "web/skin ultimate shear allowable incl. stability by sandwich/stiffening"
+   },
+   "t_min_m": {
+    "value": 0.001,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "minimum handling/impact gauge"
+   },
+   "secondary_areal_kg_m2": {
+    "value": 9.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "ribs, sandwich cores, LE, TE, control surfaces, hinges, sealing, LPS per m^2 planform; set so panel mass agrees with Raymer GA statistical wing weight (see raymer_check)"
+   },
+   "ti64_Ftu_Pa": {
+    "value": 896000000.0,
+    "basis": "MANUFACTURER",
+    "note": "Ti-6Al-4V annealed, MMPDS-typical Ftu 130 ksi"
+   },
+   "ti64_Fsu_Pa": {
+    "value": 552000000.0,
+    "basis": "MANUFACTURER",
+    "note": "Ti-6Al-4V annealed, MMPDS-typical Fsu 80 ksi"
+   },
+   "ti64_density": {
+    "value": 4430.0,
+    "basis": "MANUFACTURER",
+    "note": "Ti-6Al-4V"
+   },
+   "pin_steel_Fsu_Pa": {
+    "value": 910000000.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "PH13-8Mo H1000 class, ~0.6 x Ftu 1517 MPa"
+   },
+   "pin_steel_Ftu_Pa": {
+    "value": 1517000000.0,
+    "basis": "MANUFACTURER",
+    "note": "PH13-8Mo H1000 typical Ftu 220 ksi"
+   },
+   "ti_lug_notched_endurance_Pa": {
+    "value": 200000000.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "Kt~3, R=0.1, 1e7 cycles max stress; replace with MMPDS S-N for chosen form"
+   },
+   "pin_stiffness_N_per_m": {
+    "value": 300000000.0,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "pin + bushing + local lug radial stiffness per pin"
+   }
+  },
+  "bearings": [
+   {
+    "part": "SKF GEH 50 TXE-2LS",
+    "bore_mm": 50,
+    "C_kN": 695,
+    "C0_kN": 1160
+   },
+   {
+    "part": "SKF GE 80 TXE-2LS",
+    "bore_mm": 80,
+    "C_kN": 1140,
+    "C0_kN": 1900
+   }
+  ],
+  "aero": {
+   "cl_alpha_2d_factor": {
+    "value": 0.9,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "section lift slope = 0.9 * 2*pi / beta"
+   },
+   "cm0_section": {
+    "value": -0.04,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "NACA 64A2xx-class cambered section; CFD/polar to replace"
+   },
+   "CLmax_clean": {
+    "value": 1.2,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "3D clean, low sweep, t/c 0.10-0.12"
+   },
+   "CLmax_flap": {
+    "value": 1.6,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "plain/simple-slotted inboard flaps 30 deg"
+   },
+   "x_ac_frac": {
+    "value": 0.25,
+    "basis": "DERIVED",
+    "note": "subsonic section aerodynamic centre"
+   },
+   "x_ea_frac": {
+    "value": 0.4,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "elastic axis of a 15-60% box"
+   },
+   "x_cg_frac": {
+    "value": 0.43,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "section CG with mass-balanced control surfaces"
+   },
+   "Ch_delta_per_rad": {
+    "value": -0.7,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "sealed plain flap cf/c~0.28, no aero balance; bounds x0.7..x1.3"
+   },
+   "Ch_alpha_per_rad": {
+    "value": -0.35,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "as above"
+   },
+   "hinge_bound_factor": {
+    "value": 1.3,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "upper-bound multiplier used for actuator sizing"
+   },
+   "control_viscous_factor": {
+    "value": 0.8,
+    "basis": "SYNTHETIC_UNVALIDATED",
+    "note": "thin-airfoil flap effectiveness correction"
+   }
+  },
+  "body_munk_volume_m3": {
+   "value": 3.6975,
+   "basis": "DERIVED",
+   "note": "MEASURED hull volume 4.35 m^3 x SYNTHETIC (k2-k1)=0.85"
+  },
+  "x_cg_candidates": {
+   "value": [
+    -0.25,
+    -0.5,
+    -0.75
+   ],
+   "basis": "SYNTHETIC_UNVALIDATED",
+   "note": "no mass ledger yet; mid/rear-engine estimate -0.25"
+  }
+ },
+ "measured_constraints": {
+  "PHANTOM_A8_INTEGRATED_DUCTED_FACETED_CFRP_HULL": {
+   "min": [
+    -2.4,
+    -1.011,
+    0.17
+   ],
+   "max": [
+    2.45,
+    1.011,
+    1.19
+   ]
+  },
+  "SEAT_DRIVER_CFRP_ENERGY_ABSORBING_BACK": {
+   "min": [
+    -0.5871,
+    -0.525,
+    0.5485
+   ],
+   "max": [
+    -0.3929,
+    -0.075,
+    1.0275
+   ]
+  },
+  "SEAT_DRIVER_INTEGRATED_HEAD_RESTRAINT": {
+   "min": [
+    -0.6005,
+    -0.4425,
+    0.9475
+   ],
+   "max": [
+    -0.5055,
+    -0.1575,
+    1.0825
+   ]
+  },
+  "MOUNT_001_WING_CARBON_CARRY_THROUGH_BENDING_BOX": {
+   "min": [
+    -0.86,
+    -0.685,
+    0.685
+   ],
+   "max": [
+    -0.44,
+    0.685,
+    0.855
+   ]
+  },
+  "PHANTOM_LEFT_TRIANGULAR_COUP\u00c9_SIDEGLASS": {
+   "min": [
+    -0.99,
+    -0.745,
+    0.837
+   ],
+   "max": [
+    0.75,
+    -0.67,
+    1.153
+   ]
+  },
+  "PHANTOM_LEFT_BLACK_INVERTED_SPEAR_DOOR": {
+   "min": [
+    -0.9,
+    -0.87,
+    0.378
+   ],
+   "max": [
+    0.78,
+    -0.8,
+    0.762
+   ]
+  },
+  "PHANTOM_REAR_LEFT_WIDEBODY_ANGULAR_FENDER": {
+   "min": [
+    -2.28,
+    -1.25,
+    0.52
+   ],
+   "max": [
+    -0.89,
+    -0.67,
+    0.945
+   ]
+  },
+  "WHEEL_RL_CLOSED_TYRE": {
+   "min": [
+    -1.95,
+    -1.093,
+    0.06
+   ],
+   "max": [
+    -1.23,
+    -0.987,
+    0.78
+   ]
+  },
+  "PHANTOM_LEFT_ANGULAR_RAKED_V_TAIL": {
+   "min": [
+    -2.23,
+    -0.64,
+    0.734
+   ],
+   "max": [
+    -1.28,
+    -0.47,
+    1.456
+   ]
+  },
+  "PHANTOM_CARBON_CENTRAL_REAR_DORSAL": {
+   "min": [
+    -1.81,
+    -0.34,
+    0.817
+   ],
+   "max": [
+    -0.75,
+    0.34,
+    1.193
+   ]
+  },
+  "TUB_REAR_MOTOR_CFRP_FULL_WIDTH_BULKHEAD": {
+   "min": [
+    -1.51,
+    -0.64,
+    0.245
+   ],
+   "max": [
+    -1.39,
+    0.64,
+    0.715
+   ]
+  },
+  "TUB_L_REAR_CONTINUOUS_SHEAR_WALL": {
+   "min": [
+    -1.37,
+    -0.6,
+    0.325
+   ],
+   "max": [
+    -1.19,
+    -0.44,
+    0.895
+   ]
+  },
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_LEFT_SEALING_PERIMETER": {
+   "min": [
+    -1.528,
+    -0.7984,
+    0.7528
+   ],
+   "max": [
+    -0.9722,
+    -0.5108,
+    0.9278
+   ]
+  },
+  "PHANTOM_LEFT_WING_AERODYNAMIC_ENVELOPE": {
+   "min": [
+    -2.96,
+    -1.29,
+    0.87
+   ],
+   "max": [
+    -0.79,
+    -0.01,
+    0.988
+   ]
+  },
+  "PHANTOM_LEFT_NOSE_CANARD_STOWED_BLADE": {
+   "min": [
+    1.1553,
+    -1.1567,
+    0.5015
+   ],
+   "max": [
+    2.0463,
+    -0.4991,
+    0.5435
+   ]
+  },
+  "WHEEL_FL_CLOSED_TYRE": {
+   "min": [
+    1.18,
+    -1.093,
+    0.06
+   ],
+   "max": [
+    1.9,
+    -0.987,
+    0.78
+   ]
+  },
+  "LEG_RL_CFRP_GAITOR": {
+   "min": [
+    -1.243,
+    -0.593,
+    0.58
+   ],
+   "max": [
+    -1.117,
+    -0.467,
+    0.8
+   ]
+  }
+ },
+ "flutter_method_validation": {
+  "case": "H&P typical section",
+  "computed": 2.1839111690861412,
+  "k": 0.29716751731034596,
+  "reference": 2.17
+ },
+ "cases": {
+  "A8_as_drawn": {
+   "label": "A8_as_drawn",
+   "geometry": {
+    "name": "A8_as_drawn",
+    "y_root": 0.91,
+    "span_exp": 2.17,
+    "c_root": 1.1,
+    "c_tip": 0.25,
+    "x_le_root": -0.45,
+    "x_le_tip": -1.55,
+    "tc_root": 0.04181818181818182,
+    "tc_tip": 0.184,
+    "z": 0.93,
+    "box_fs": 0.15,
+    "box_rs": 0.6,
+    "aileron_eta": [
+     0.55,
+     0.95
+    ],
+    "flap_eta": [
+     0.05,
+     0.5
+    ],
+    "cf_c": 0.28,
+    "joint": {},
+    "source": "MEASURED envelope bounds x -1.69..-0.41, y 0.91..3.08, plate 0.046 m; chords approximate from outline"
+   },
+   "planform": {
+    "S_ref": 5.255870967741936,
+    "S_exposed_both": 2.9295,
+    "span": 6.16,
+    "AR": 7.219659735349715,
+    "mac": 0.9953848811919426,
+    "y_mac": 1.1770762444864524,
+    "x_ac_mac": -0.8342304916966482,
+    "sweep_le_deg": 26.881017346366384,
+    "sweep_c4_deg": 31.167172646102262,
+    "taper": 0.1716500553709856,
+    "root_box_depth_m": 0.0414
+   },
+   "vn": {
+    "mtow": {
+     "W_N": 12748.644999999999,
+     "S_ref": 5.255870967741936,
+     "wing_loading_Pa": 2425.600833476542,
+     "VS1": 57.446820524755395,
+     "VA": 140.71539763089447,
+     "VG_neg": 111.24528959247202,
+     "VC": 178.8,
+     "VD": 223.5,
+     "VA_exceeds_VC": false,
+     "gust_VC": {
+      "V": 178.8,
+      "mach": 0.5254341884862911,
+      "CLalpha": 4.09573705360539,
+      "mu_g": 115.55706821662393,
+      "Kg": 0.8414089596179823,
+      "dn": 2.3712559885150264,
+      "n_pos": 3.3712559885150264,
+      "n_neg": -1.3712559885150264
+     },
+     "gust_VD": {
+      "V": 223.5,
+      "mach": 0.6567927356078639,
+      "CLalpha": 4.317285242161743,
+      "mu_g": 109.6270780255063,
+      "Kg": 0.8394177448854577,
+      "dn": 1.5585048128270294,
+      "n_pos": 2.5585048128270294,
+      "n_neg": -0.5585048128270294
+     }
+    },
+    "min_flying": {
+     "W_N": 10296.9825,
+     "S_ref": 5.255870967741936,
+     "wing_loading_Pa": 1959.1391347310532,
+     "VS1": 51.62843617041671,
+     "VA": 126.46332483537175,
+     "VG_neg": 99.97803673937827,
+     "VC": 178.8,
+     "VD": 223.5,
+     "VA_exceeds_VC": false,
+     "gust_VC": {
+      "V": 178.8,
+      "mach": 0.5254341884862911,
+      "CLalpha": 4.09573705360539,
+      "mu_g": 93.33455509804242,
+      "Kg": 0.8327143403712421,
+      "dn": 2.9055035172833303,
+      "n_pos": 3.9055035172833303,
+      "n_neg": -1.9055035172833303
+     },
+     "gust_VD": {
+      "V": 223.5,
+      "mach": 0.6567927356078639,
+      "CLalpha": 4.317285242161743,
+      "mu_g": 88.54494763598586,
+      "Kg": 0.830301000560082,
+      "dn": 1.9086206422285406,
+      "n_pos": 2.9086206422285406,
+      "n_neg": -0.9086206422285406
+     }
+    }
+   },
+   "panel_lift_share_schrenk": 0.2967196290294766,
+   "conditions_limit": {
+    "PHAA_VA_noBodyLift": {
+     "V": 36842.48376201072,
+     "Mx_streamwise": 32480.130491003973,
+     "My_streamwise": 7554.873955667602,
+     "M_bend": 33151.658971191646,
+     "T_ea": -3605.8985920959267,
+     "lift_panel": 38245.93499999999
+    },
+    "ROLL_PULLUP_VA_noBodyLift": {
+     "V": 29488.588089293204,
+     "Mx_streamwise": 29410.468889431304,
+     "My_streamwise": 8002.016815180274,
+     "M_bend": 30402.341875535203,
+     "T_ea": -2169.2307138046067,
+     "lift_panel": 30424.22224795271
+    },
+    "NEG_VD_noBodyLift": {
+     "V": -18421.24188100536,
+     "Mx_streamwise": -16240.065245501986,
+     "My_streamwise": -2136.0740967947013,
+     "M_bend": -16033.286588956393,
+     "T_ea": 3352.0520404000195,
+     "lift_panel": -19122.967499999995
+    },
+    "PHAA_VA": {
+     "V": 21293.188052181686,
+     "Mx_streamwise": 18785.792361786567,
+     "My_streamwise": 4519.712775586423,
+     "M_bend": 19223.81755321583,
+     "T_ea": -1943.8716301825389,
+     "lift_panel": 22696.639290170944
+    },
+    "PLAA_VD": {
+     "V": 21293.188052181686,
+     "Mx_streamwise": 18785.792361786567,
+     "My_streamwise": 5346.567113888035,
+     "M_bend": 19497.129416779506,
+     "T_ea": -1163.4943355336304,
+     "lift_panel": 22696.639290170944
+    },
+    "NEG_VD": {
+     "V": -10646.594026090843,
+     "Mx_streamwise": -9392.896180893284,
+     "My_streamwise": -618.4935067541119,
+     "M_bend": -9069.365879968487,
+     "T_ea": 2521.038559443325,
+     "lift_panel": -11348.319645085472
+    },
+    "GUST_POS": {
+     "V": 13860.10347199516,
+     "Mx_streamwise": 12227.996357318627,
+     "My_streamwise": 3465.217669717269,
+     "M_bend": 12686.074595449407,
+     "T_ea": -771.4530263156488,
+     "lift_panel": 14773.634096378943
+    },
+    "GUST_NEG": {
+     "V": -6762.374121267932,
+     "Mx_streamwise": -5966.065570056437,
+     "My_streamwise": -386.2278000791839,
+     "M_bend": -5758.381529252593,
+     "T_ea": 1607.5299261069465,
+     "lift_panel": -7208.087666321959
+    },
+    "ROLL_PULLUP_VA_100pct": {
+     "V": 19122.39094940717,
+     "Mx_streamwise": 20280.910136619696,
+     "My_streamwise": 5978.576028459485,
+     "M_bend": 21117.114263551324,
+     "T_ea": -1061.2127391956813,
+     "lift_panel": 20058.02510806668
+    },
+    "ROLL_PULLUP_VD_100pct": {
+     "V": 18338.575206624486,
+     "Mx_streamwise": 19046.856881061627,
+     "My_streamwise": 6362.460635152904,
+     "M_bend": 20079.317297354253,
+     "T_ea": -290.99699944363755,
+     "lift_panel": 19274.209365283994
+    },
+    "FLAPS_30deg_n2": {
+     "V": 11521.485349070479,
+     "Mx_streamwise": 8743.071626402181,
+     "My_streamwise": 2459.4805891947326,
+     "M_bend": 9064.595127311124,
+     "T_ea": -568.7366798017897,
+     "lift_panel": 11989.302428400231
+    },
+    "PRIOR_8g_at_VA": {
+     "V": 28390.917402908908,
+     "Mx_streamwise": 25047.723149048754,
+     "My_streamwise": 6026.283700781898,
+     "M_bend": 25631.75673762111,
+     "T_ea": -2591.8288402433836,
+     "lift_panel": 30262.185720227928
+    }
+   },
+   "root_envelope_limit": {
+    "V": 36842.48376201072,
+    "M_bend": 33151.658971191646,
+    "T_ea": -3605.8985920959267,
+    "Mx_streamwise": 32480.130491003973,
+    "My_streamwise": 8002.016815180274
+   },
+   "root_envelope_ultimate": {
+    "V": 55263.72564301608,
+    "M_bend": 49727.48845678747,
+    "T_ea": -5408.84788814389,
+    "Mx_streamwise": 48720.19573650596,
+    "My_streamwise": 12003.025222770411
+   },
+   "box_sizing": {
+    "rows": [
+     {
+      "y": 0.9280833333333334,
+      "chord": 1.0929166666666668,
+      "h": 0.04229885568181818,
+      "box_w": 0.40979286760260686,
+      "t_cap": 0.012841057271661009,
+      "t_web": 0.006694882178957808,
+      "t_skin": 0.012841057271661009,
+      "EI": 239731.47267703043,
+      "GJ": 332690.9658771594
+     },
+     {
+      "y": 1.1450833333333335,
+      "chord": 1.0079166666666668,
+      "h": 0.051906792045454564,
+      "box_w": 0.37792182490686466,
+      "t_cap": 0.007083665015543469,
+      "t_web": 0.004675962521441639,
+      "t_skin": 0.007083665015543469,
+      "EI": 282373.2772705377,
+      "GJ": 253369.29550018226
+     },
+     {
+      "y": 1.3620833333333335,
+      "chord": 0.9229166666666666,
+      "h": 0.0593393465909091,
+      "box_w": 0.3460507822111224,
+      "t_cap": 0.00474487783902545,
+      "t_web": 0.003441402958782583,
+      "t_skin": 0.00474487783902545,
+      "EI": 256933.931832803,
+      "GJ": 199777.11741601568
+     },
+     {
+      "y": 1.5790833333333334,
+      "chord": 0.8379166666666666,
+      "h": 0.06459651931818182,
+      "box_w": 0.3141797395153802,
+      "t_cap": 0.003369255781388101,
+      "t_web": 0.0025961904716569066,
+      "t_skin": 0.003369255781388101,
+      "EI": 208334.4835513552,
+      "GJ": 149998.814547377
+     },
+     {
+      "y": 1.7960833333333333,
+      "chord": 0.7529166666666668,
+      "h": 0.06767831022727273,
+      "box_w": 0.28230869681963805,
+      "t_cap": 0.002499337653110072,
+      "t_web": 0.001968085991525825,
+      "t_skin": 0.002499337653110072,
+      "EI": 157370.56835908195,
+      "GJ": 107462.33315289972
+     },
+     {
+      "y": 2.0130833333333333,
+      "chord": 0.6679166666666667,
+      "h": 0.06858471931818182,
+      "box_w": 0.25043765412389585,
+      "t_cap": 0.0018019656146276758,
+      "t_web": 0.0015026924548015078,
+      "t_skin": 0.0018019656146276758,
+      "EI": 105665.70993299529,
+      "GJ": 69659.55869938972
+     },
+     {
+      "y": 2.2300833333333334,
+      "chord": 0.5829166666666667,
+      "h": 0.0673157465909091,
+      "box_w": 0.21856661142815365,
+      "t_cap": 0.0011961580846234579,
+      "t_web": 0.0011062430062150472,
+      "t_skin": 0.0011961580846234579,
+      "EI": 60005.62819468778,
+      "GJ": 38778.381202390214
+     },
+     {
+      "y": 2.4470833333333335,
+      "chord": 0.4979166666666667,
+      "h": 0.06387139204545456,
+      "box_w": 0.18669556873241142,
+      "t_cap": 0.001,
+      "t_web": 0.001,
+      "t_skin": 0.001,
+      "EI": 38743.554822387116,
+      "GJ": 24807.399293011717
+     },
+     {
+      "y": 2.664083333333333,
+      "chord": 0.4129166666666668,
+      "h": 0.0582516556818182,
+      "box_w": 0.15482452603666927,
+      "t_cap": 0.001,
+      "t_web": 0.001,
+      "t_skin": 0.001,
+      "EI": 26642.51162947346,
+      "GJ": 16800.354855029727
+     },
+     {
+      "y": 2.8810833333333337,
+      "chord": 0.32791666666666663,
+      "h": 0.050456537499999995,
+      "box_w": 0.12295348334092701,
+      "t_cap": 0.001,
+      "t_web": 0.001,
+      "t_skin": 0.001,
+      "EI": 15788.743010390257,
+      "GJ": 9831.262029741778
+     }
+    ],
+    "masses": {
+     "box_kg": 10.669312944345343,
+     "secondary_kg": 13.18275,
+     "tongue_kg": 0.0,
+     "panel_kg": 23.85206294434534,
+     "total_kg": 23.85206294434534
+    },
+    "material_basis": "strain-limited IM7/8552-class, see MATERIAL",
+    "raymer_check": {
+     "whole_wing_kg": 119.6134090071724,
+     "exposed_panel_kg_each": 33.334863416277514,
+     "basis": "DERIVED statistical (metal GA database); composite typically 10-25% lighter"
+    }
+   },
+   "root_joint": {
+    "applied_ultimate_with_fitting_factor": {
+     "Mx": 56028.22509698185,
+     "V": 63553.28448946848,
+     "My": 13803.479006185971,
+     "fitting_factor": 1.15
+    },
+    "options": {
+     "A_vertical_couple_A8_plate_46mm": {
+      "kind": "depth-limited lug/bearing couple",
+      "couple_separation_m": 0.046,
+      "max_pin_force_N": 1249781.5356573833,
+      "pins": 2,
+      "pin_diameter_m": 0.02956898502718368,
+      "ti_lug_thickness_m": 0.034942655664397824,
+      "bearings": [
+       {
+        "part": "SKF GEH 50 TXE-2LS",
+        "C0_kN": 1160,
+        "margin_C0": -0.07183778372126315
+       },
+       {
+        "part": "SKF GE 80 TXE-2LS",
+        "C0_kN": 1900,
+        "margin_C0": 0.5202656990772414
+       }
+      ],
+      "note": "moment reacted by upper/lower lugs separated by available depth"
+     },
+     "A_vertical_couple_A8_fairing_160mm": {
+      "kind": "depth-limited lug/bearing couple",
+      "couple_separation_m": 0.16,
+      "max_pin_force_N": 381953.0491008708,
+      "pins": 2,
+      "pin_diameter_m": 0.016346484085243557,
+      "ti_lug_thickness_m": 0.019317185361253097,
+      "bearings": [
+       {
+        "part": "SKF GEH 50 TXE-2LS",
+        "C0_kN": 1160,
+        "margin_C0": 2.0370224893626996
+       },
+       {
+        "part": "SKF GE 80 TXE-2LS",
+        "C0_kN": 1900,
+        "margin_C0": 3.974433387749249
+       }
+      ],
+      "note": "moment reacted by upper/lower lugs separated by available depth"
+     },
+     "A_vertical_couple_root_box_depth": {
+      "kind": "depth-limited lug/bearing couple",
+      "couple_separation_m": 0.0414,
+      "max_pin_force_N": 1385115.412703233,
+      "pins": 2,
+      "pin_diameter_m": 0.031128797640917447,
+      "ti_lug_thickness_m": 0.03678593824621711,
+      "bearings": [
+       {
+        "part": "SKF GEH 50 TXE-2LS",
+        "C0_kN": 1160,
+        "margin_C0": -0.16252466086121375
+       },
+       {
+        "part": "SKF GE 80 TXE-2LS",
+        "C0_kN": 1900,
+        "margin_C0": 0.3717268485893912
+       }
+      ],
+      "note": "moment reacted by upper/lower lugs separated by available depth"
+     }
+    },
+    "rotational_stiffness": {
+     "bending_Nm_per_rad": 514188.0,
+     "torsion_Nm_per_rad": 73507500.0,
+     "basis": "DERIVED from SYNTHETIC pin stiffness"
+    }
+   },
+   "aeroelastic": {
+    "station_eta": 0.7,
+    "semichord_m": 0.25250000000000006,
+    "mass_per_m": 9.158641203346416,
+    "I_alpha": 0.14808226878080888,
+    "a": -0.19999999999999996,
+    "x_alpha": 0.05999999999999994,
+    "r_alpha2": 0.2536,
+    "f_bending_Hz": 9.334192636319889,
+    "f_torsion_Hz": 89.29695397322266,
+    "f_bending_beam_only_Hz": 11.674427687026895,
+    "f_torsion_beam_only_Hz": 89.37078592429842,
+    "flutter_SL": {
+     "mu": 37.32693403373095,
+     "V_over_b_omega_alpha": 3.476251916846018,
+     "k_flutter": 0.1469218469840779,
+     "VF_TAS": 492.48061103430285,
+     "VF_EAS": 492.48061103430285,
+     "margin_vs_1p2VD": 0.8362438890167891
+    },
+    "flutter_3000m": {
+     "mu": 50.28647772057673,
+     "V_over_b_omega_alpha": 4.004757934255624,
+     "k_flutter": 0.124121525656348,
+     "VF_TAS": 567.3540588209461,
+     "VF_EAS": 488.80958948433164,
+     "margin_vs_1p2VD": 0.8225562620594022
+    },
+    "K_theta_at_aileron": 38168.459060219764,
+    "q_reversal": 203746.30151052453,
+    "V_reversal_EAS": 576.7556006440906,
+    "q_divergence_unswept": 242352.65998132573,
+    "V_divergence_EAS_unswept": 629.0292618109346,
+    "note": "typical-section screens; sweep-back bending/torsion coupling raises divergence and lowers reversal speed; not a coupled model"
+   },
+   "control_surfaces": {
+    "aileron": {
+     "geometry": {
+      "y0": 2.1035,
+      "y1": 2.9715,
+      "span": 0.8679999999999999,
+      "area": 0.112406,
+      "cf_mean": 0.12950000000000003,
+      "depth_at_hinge": 0.037763125000000015
+     },
+     "travel_deg": [
+      -20.0,
+      20.0
+     ],
+     "rate_deg_s": 80.0,
+     "hinge_moments_Nm": {
+      "VA_full": -61.837991920856176,
+      "VC_2/3": -51.41983163837781,
+      "VD_1/3": -40.9511399808975
+     },
+     "H_max_nominal_Nm": 61.837991920856176,
+     "actuator_stall_torque_Nm": 100.48673687139129,
+     "linear_EMA": {
+      "horn_radius_m": 0.030210500000000015,
+      "stall_force_N": 3670.0765168562966,
+      "stroke_m": 0.02066519907988024
+     },
+     "mech_power_peak_W": 70.15297651963854,
+     "elec_power_peak_W": 100.21853788519792,
+     "hinge_inertia_kg_m2": 0.006786276197400003,
+     "basis": "DERIVED; hinge coefficients SYNTHETIC_UNVALIDATED",
+     "actuator_min_stiffness_Nm_per_rad": 4806.700645082761,
+     "stiffness_rule": "surface rotation frequency on actuator >= 1.5 x wing torsion frequency, plus mass balance to hinge line"
+    },
+    "flap": {
+     "geometry": {
+      "y0": 1.0185,
+      "y1": 1.995,
+      "span": 0.9765000000000001,
+      "area": 0.23685007500000008,
+      "cf_mean": 0.24255000000000004,
+      "depth_at_hinge": 0.038552456250000006
+     },
+     "travel_deg": [
+      -5,
+      35.0
+     ],
+     "rate_deg_s": 15.0,
+     "hinge_moments_Nm": {
+      "VF_full": -94.30689365484074,
+      "VF_gust": -99.14314461149922
+     },
+     "H_max_nominal_Nm": 99.14314461149922,
+     "actuator_stall_torque_Nm": 161.10760999368625,
+     "linear_EMA": {
+      "horn_radius_m": 0.030841965000000006,
+      "stall_force_N": 5763.659333763405,
+      "stroke_m": 0.035380448749527386
+     },
+     "mech_power_peak_W": 21.088936833065592,
+     "elec_power_peak_W": 30.127052618665132,
+     "hinge_inertia_kg_m2": 0.0501624321458857,
+     "basis": "DERIVED; hinge coefficients SYNTHETIC_UNVALIDATED",
+     "actuator_min_stiffness_Nm_per_rad": 35529.911831016645,
+     "stiffness_rule": "surface rotation frequency on actuator >= 1.5 x wing torsion frequency, plus mass balance to hinge line"
+    }
+   },
+   "roll": {
+    "Ixx_kg_m2": 769.7733668770268,
+    "cases": [
+     {
+      "V": 140.71539763089447,
+      "delta_deg": 20.0,
+      "Cl_delta_a": 0.1965087069417755,
+      "Cl_p": -0.6320029883479701,
+      "effectiveness": 0.9404749726622339,
+      "pb_2V": 0.10207450258476654,
+      "p_deg_s": 267.1965279185164,
+      "roll_time_constant_s": 0.14171633444015927,
+      "initial_roll_accel_deg_s2": 1885.4321132003454,
+      "time_to_90deg_bank_s": 0.47400000000000003
+     },
+     {
+      "V": 178.8,
+      "delta_deg": 13.3,
+      "Cl_delta_a": 0.210288372897849,
+      "Cl_p": -0.6763205669337149,
+      "effectiveness": 0.9038938039374004,
+      "pb_2V": 0.06523926868553341,
+      "p_deg_s": 216.99439417245105,
+      "roll_time_constant_s": 0.10422227661949761,
+      "initial_roll_accel_deg_s2": 2082.0346782931083,
+      "time_to_90deg_bank_s": 0.519
+     },
+     {
+      "V": 223.5,
+      "delta_deg": 6.7,
+      "Cl_delta_a": 0.23727276745892745,
+      "Cl_p": -0.7631066349241544,
+      "effectiveness": 0.8498340686521881,
+      "pb_2V": 0.03089932368239531,
+      "p_deg_s": 128.46902176201598,
+      "roll_time_constant_s": 0.07389548562101221,
+      "initial_roll_accel_deg_s2": 1738.5232762512057,
+      "time_to_90deg_bank_s": 0.775
+     },
+     {
+      "V": 80.0,
+      "delta_deg": 20.0,
+      "Cl_delta_a": 0.18407980221473424,
+      "Cl_p": -0.5920296708719679,
+      "effectiveness": 0.980760386957024,
+      "pb_2V": 0.1064468822281308,
+      "p_deg_s": 158.41446997397463,
+      "roll_time_constant_s": 0.26610142774307105,
+      "initial_roll_accel_deg_s2": 595.316121817011,
+      "time_to_90deg_bank_s": 0.8230000000000001
+     }
+    ]
+   },
+   "longitudinal": {
+    "neutral_point": {
+     "x_np": -0.2743353506164805,
+     "x_np_without_body": -0.6120336023638533
+    },
+    "trim": [
+     {
+      "x_cg": -0.25,
+      "x_wing_ac": -0.8342304916966482,
+      "x_canard_ac": 1.7,
+      "canard_S": 0.64,
+      "min_speed_full_wingborne_trim": 90,
+      "rows": [
+       {
+        "V": 30,
+        "CL_wing": 3.575031422880659,
+        "CL_canard": 6.7763902914219525,
+        "canard_lift_share": 0.18752663477676765,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 40,
+        "CL_wing": 2.093750985245437,
+        "CL_canard": 3.1317756430294668,
+        "canard_lift_share": 0.15407517295430861,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 50,
+        "CL_wing": 1.3471322057216844,
+        "CL_canard": 1.9457697883171168,
+        "canard_lift_share": 0.1495731030670926,
+        "alpha_deg": 16.623429116577977,
+        "wing_feasible": true,
+        "canard_feasible": false
+       },
+       {
+        "V": 60,
+        "CL_wing": 0.9109929930515438,
+        "CL_canard": 1.552557482347612,
+        "canard_lift_share": 0.1718589794514594,
+        "alpha_deg": 10.049347876123194,
+        "wing_feasible": true,
+        "canard_feasible": false
+       },
+       {
+        "V": 70,
+        "CL_wing": 0.6480148035936667,
+        "CL_canard": 1.3154628637203598,
+        "canard_lift_share": 0.19819683336025654,
+        "alpha_deg": 6.085384233919475,
+        "wing_feasible": true,
+        "canard_feasible": false
+       },
+       {
+        "V": 80,
+        "CL_wing": 0.47733184408975615,
+        "CL_canard": 1.1615793372074792,
+        "canard_lift_share": 0.2285866647934839,
+        "alpha_deg": 3.512619369989178,
+        "wing_feasible": true,
+        "canard_feasible": false
+       },
+       {
+        "V": 90,
+        "CL_wing": 0.42214634048635113,
+        "CL_canard": 0.5482766310568074,
+        "canard_lift_share": 0.13655474436158316,
+        "alpha_deg": 6.363161708683384,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 110,
+        "CL_wing": 0.2765117423829566,
+        "CL_canard": 0.41697608644723916,
+        "canard_lift_share": 0.1551381321886793,
+        "alpha_deg": 4.16795969166868,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 140,
+        "CL_wing": 0.16366350469442073,
+        "CL_canard": 0.3152349118932689,
+        "canard_lift_share": 0.18998198436448452,
+        "alpha_deg": 2.466958128739558,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 178.8,
+        "CL_wing": 0.09322114468707865,
+        "CL_canard": 0.2517258257763778,
+        "canard_lift_share": 0.24744850954548345,
+        "alpha_deg": 1.4051554198694542,
+        "wing_feasible": true,
+        "canard_feasible": true
+       }
+      ]
+     },
+     {
+      "x_cg": -0.5,
+      "x_wing_ac": -0.8342304916966482,
+      "x_canard_ac": 1.7,
+      "canard_S": 0.64,
+      "min_speed_full_wingborne_trim": 60,
+      "rows": [
+       {
+        "V": 30,
+        "CL_wing": 4.0091062764001375,
+        "CL_canard": 3.2116380719846673,
+        "canard_lift_share": 0.08887736004855346,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 40,
+        "CL_wing": 2.337918090350144,
+        "CL_canard": 1.1266025195959941,
+        "canard_lift_share": 0.05542589822609443,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 50,
+        "CL_wing": 1.5301276795692957,
+        "CL_canard": 0.4429563535923677,
+        "canard_lift_share": 0.0340504599916713,
+        "alpha_deg": 19.381784881803757,
+        "wing_feasible": false,
+        "canard_feasible": true
+       },
+       {
+        "V": 60,
+        "CL_wing": 1.0380731832234962,
+        "CL_canard": 0.5089370415665361,
+        "canard_lift_share": 0.05633633637603806,
+        "alpha_deg": 11.964872713085544,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 70,
+        "CL_wing": 0.7413798412710194,
+        "CL_canard": 0.5487213153914061,
+        "canard_lift_share": 0.0826741902848352,
+        "alpha_deg": 7.492708603932629,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 80,
+        "CL_wing": 0.5488144510614794,
+        "CL_canard": 0.5745428392681241,
+        "canard_lift_share": 0.11306402171806258,
+        "alpha_deg": 4.5901020907805,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 90,
+        "CL_wing": 0.4786264250072188,
+        "CL_canard": 0.0844453240429961,
+        "canard_lift_share": 0.021032101286161883,
+        "alpha_deg": 7.214506080666649,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 110,
+        "CL_wing": 0.31432072458287624,
+        "CL_canard": 0.10647744290906792,
+        "canard_lift_share": 0.039615489113258004,
+        "alpha_deg": 4.73786790762442,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 140,
+        "CL_wing": 0.18700476411375894,
+        "CL_canard": 0.12354952481103032,
+        "canard_lift_share": 0.07445934128906313,
+        "alpha_deg": 2.8187892212428474,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 178.8,
+        "CL_wing": 0.10753133231060376,
+        "CL_canard": 0.13420629503665032,
+        "canard_lift_share": 0.13192586647006208,
+        "alpha_deg": 1.6208579599534987,
+        "wing_feasible": true,
+        "canard_feasible": true
+       }
+      ]
+     },
+     {
+      "x_cg": -0.75,
+      "x_wing_ac": -0.8342304916966482,
+      "x_canard_ac": 1.7,
+      "canard_S": 0.64,
+      "min_speed_full_wingborne_trim": 60,
+      "rows": [
+       {
+        "V": 30,
+        "CL_wing": 4.443181129919616,
+        "CL_canard": -0.35311414745261777,
+        "canard_lift_share": -0.009771914679660746,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": true
+       },
+       {
+        "V": 40,
+        "CL_wing": 2.5820851954548507,
+        "CL_canard": -0.8785706038374788,
+        "canard_lift_share": -0.04322337650211978,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": true
+       },
+       {
+        "V": 50,
+        "CL_wing": 1.7131231534169074,
+        "CL_canard": -1.0598570811323822,
+        "canard_lift_share": -0.08147218308375005,
+        "alpha_deg": 22.140140647029543,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 60,
+        "CL_wing": 1.1651533733954484,
+        "CL_canard": -0.5346833992145399,
+        "canard_lift_share": -0.059186306699383254,
+        "alpha_deg": 13.88039755004789,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 70,
+        "CL_wing": 0.8347448789483722,
+        "CL_canard": -0.21802023293754783,
+        "canard_lift_share": -0.03284845279058613,
+        "alpha_deg": 8.900032973945784,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 80,
+        "CL_wing": 0.6202970580332026,
+        "CL_canard": -0.01249365867123113,
+        "canard_lift_share": -0.0024586213573587357,
+        "alpha_deg": 5.667584811571821,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 90,
+        "CL_wing": 0.5351065095280866,
+        "CL_canard": -0.3793859829708155,
+        "canard_lift_share": -0.09449054178925945,
+        "alpha_deg": 8.065850452649915,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 110,
+        "CL_wing": 0.35212970678279604,
+        "CL_canard": -0.20402120062910362,
+        "canard_lift_share": -0.0759071539621634,
+        "alpha_deg": 5.307776123580161,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 140,
+        "CL_wing": 0.21034602353309712,
+        "CL_canard": -0.06813586227120812,
+        "canard_lift_share": -0.041063301786358176,
+        "alpha_deg": 3.1706203137461353,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 178.8,
+        "CL_wing": 0.12184151993412887,
+        "CL_canard": 0.016686764296922823,
+        "canard_lift_share": 0.016403223394640738,
+        "alpha_deg": 1.8365605000375431,
+        "wing_feasible": true,
+        "canard_feasible": true
+       }
+      ]
+     }
+    ]
+   },
+   "canard": {
+    "input": {
+     "name": "A8 canard",
+     "S": 0.64,
+     "c": 0.55,
+     "span": 0.65,
+     "x_ac": 1.7,
+     "CLalpha": 3.0,
+     "basis": "MEASURED planform ~0.32 m^2 per side from pinned source; CLalpha SYNTHETIC"
+    },
+    "hinge_cases": [
+     {
+      "V": 140.71539763089447,
+      "CL": 1.0,
+      "x_ac": 0.23,
+      "H_Nm": -42.69057466918709
+     },
+     {
+      "V": 140.71539763089447,
+      "CL": 1.0,
+      "x_ac": 0.3,
+      "H_Nm": 256.1434480151227
+     },
+     {
+      "V": 178.8,
+      "CL": 0.5,
+      "x_ac": 0.23,
+      "H_Nm": -103.38916896
+     },
+     {
+      "V": 178.8,
+      "CL": 0.5,
+      "x_ac": 0.3,
+      "H_Nm": 137.85222528
+     },
+     {
+      "V": 223.5,
+      "CL": 0.35,
+      "x_ac": 0.23,
+      "H_Nm": -177.70013415000003
+     },
+     {
+      "V": 223.5,
+      "CL": 0.35,
+      "x_ac": 0.3,
+      "H_Nm": 86.15764079999995
+     }
+    ],
+    "H_max_Nm": 256.1434480151227,
+    "actuator_stall_torque_Nm": 416.2331030245744,
+    "rate_deg_s": 40.0,
+    "travel_deg": [
+     -20,
+     25
+    ],
+    "ultimate_lift_N": 11642.884000687396,
+    "spindle_root_moment_ult_Nm": 3405.5435702010636,
+    "spindle_bearing_separation_m": 0.2,
+    "spindle_bearing_force_ult_N": 28670.601851692714,
+    "ti_spindle_outer_diameter_m": 0.03816716383961577,
+    "basis": "DERIVED; canard CL limits and pivot location SYNTHETIC_UNVALIDATED"
+   },
+   "cassette_mechanism": {
+    "q_deploy_Pa": 600.0,
+    "normal_force_transit_N": 1054.62,
+    "roller_reaction_max_N": 4826.1274016838615,
+    "slide_actuator_force_N": 491.3650662102348,
+    "slide_stroke_m": 2.1999999999999997,
+    "deploy_time_s": 6.0,
+    "slide_speed_mps": 0.43999999999999995,
+    "slide_mech_power_W": 216.20062913250328,
+    "slide_energy_J": 1081.0031456625163,
+    "stowed_retention_N": {
+     "fwd_9g": 2105.179497658478,
+     "down_6g": 1403.4529984389853,
+     "up_3g": 701.7264992194927,
+     "side_1p5g": 350.86324960974633
+    },
+    "hatch_door_area_m2": 0.041233500000000006,
+    "hatch_door_load_at_VD_N": 1892.3549797195317,
+    "basis": "DERIVED from SYNTHETIC_UNVALIDATED transit q, CN=1.2, mu_pad=0.08, a=0.5 m/s^2, 10 deg slope"
+   }
+  },
+  "T_telescopic_sleeve": {
+   "label": "T_telescopic_sleeve",
+   "geometry": {
+    "name": "T_telescopic_sleeve",
+    "y_root": 1.12,
+    "span_exp": 1.35,
+    "c_root": 0.8,
+    "c_tip": 0.32,
+    "x_le_root": -0.66,
+    "x_le_tip": -1.14,
+    "tc_root": 0.11,
+    "tc_tip": 0.1,
+    "z": 0.95,
+    "box_fs": 0.15,
+    "box_rs": 0.6,
+    "aileron_eta": [
+     0.55,
+     0.95
+    ],
+    "flap_eta": [
+     0.05,
+     0.5
+    ],
+    "cf_c": 0.28,
+    "joint": {
+     "tongue_length_m": 0.85,
+     "lock_spacing_m": 0.76
+    },
+    "source": "geometry chosen to fit measured bay x -0.63..-1.48, z 0.82..1.06, |y|<=1.12; straight TE at x -1.46"
+   },
+   "planform": {
+    "S_ref": 3.7500088888888894,
+    "S_exposed_both": 1.5120000000000002,
+    "span": 4.94,
+    "AR": 6.507611241217799,
+    "mac": 0.8437796860091943,
+    "y_mac": 0.9968696330991412,
+    "x_ac_mac": -0.8271652354931044,
+    "sweep_le_deg": 19.573125830410188,
+    "sweep_c4_deg": 23.96248897457818,
+    "taper": 0.26706231454005935,
+    "root_box_depth_m": 0.0792
+   },
+   "vn": {
+    "mtow": {
+     "W_N": 12748.644999999999,
+     "S_ref": 3.7500088888888894,
+     "wing_loading_Pa": 3399.630608283002,
+     "VS1": 68.00990932482877,
+     "VA": 166.58957529878208,
+     "VG_neg": 131.70062309606917,
+     "VC": 178.8,
+     "VD": 223.5,
+     "VA_exceeds_VC": false,
+     "gust_VC": {
+      "V": 178.8,
+      "mach": 0.5254341884862911,
+      "CLalpha": 4.289936272988316,
+      "mu_g": 173.7996001967356,
+      "Kg": 0.8539586241684697,
+      "dn": 1.7985168599938264,
+      "n_pos": 2.7985168599938266,
+      "n_neg": -0.7985168599938264
+     },
+     "gust_VD": {
+      "V": 223.5,
+      "mach": 0.6567927356078639,
+      "CLalpha": 4.557642524050917,
+      "mu_g": 163.590980464205,
+      "Kg": 0.8523845525250622,
+      "dn": 1.192017661654569,
+      "n_pos": 2.1920176616545692,
+      "n_neg": -0.19201766165456902
+     }
+    },
+    "min_flying": {
+     "W_N": 10296.9825,
+     "S_ref": 3.7500088888888894,
+     "wing_loading_Pa": 2745.855491305502,
+     "VS1": 61.12166400958012,
+     "VA": 149.71688905330623,
+     "VG_neg": 118.36159340079453,
+     "VC": 178.8,
+     "VD": 223.5,
+     "VA_exceeds_VC": false,
+     "gust_VC": {
+      "V": 178.8,
+      "mach": 0.5254341884862911,
+      "CLalpha": 4.289936272988316,
+      "mu_g": 140.37660015890185,
+      "Kg": 0.8479838766492862,
+      "dn": 2.2111557396357813,
+      "n_pos": 3.2111557396357813,
+      "n_neg": -1.2111557396357813
+     },
+     "gust_VD": {
+      "V": 223.5,
+      "mach": 0.6567927356078639,
+      "CLalpha": 4.557642524050917,
+      "mu_g": 132.13117652878094,
+      "Kg": 0.846063013372928,
+      "dn": 1.464886182978491,
+      "n_pos": 2.464886182978491,
+      "n_neg": -0.46488618297849094
+     }
+    }
+   },
+   "panel_lift_share_schrenk": 0.2115996311551412,
+   "conditions_limit": {
+    "PHAA_VA_noBodyLift": {
+     "V": 37654.32037343119,
+     "Mx_streamwise": 21319.226221960682,
+     "My_streamwise": 1408.7960126095877,
+     "M_bend": 21143.979570294065,
+     "T_ea": -3070.2183699645407,
+     "lift_panel": 38245.93499999999
+    },
+    "ROLL_PULLUP_VA_noBodyLift": {
+     "V": 29189.87388787465,
+     "Mx_streamwise": 18270.78417676941,
+     "My_streamwise": 1958.6419308160318,
+     "M_bend": 18277.344099926184,
+     "T_ea": -1896.4507112317915,
+     "lift_panel": 29584.28363892053
+    },
+    "NEG_VD_noBodyLift": {
+     "V": -18827.160186715595,
+     "Mx_streamwise": -10659.613110980341,
+     "My_streamwise": -1.8282630867929583,
+     "M_bend": -10425.406707609824,
+     "T_ea": 2222.2173609379406,
+     "lift_panel": -19122.967499999995
+    },
+    "PHAA_VA": {
+     "V": 15594.036851798199,
+     "Mx_streamwise": 8824.837784018788,
+     "My_streamwise": 724.1931184210442,
+     "M_bend": 8781.722680871027,
+     "T_ea": -1132.9449868768493,
+     "lift_panel": 16185.651478367005
+    },
+    "PLAA_VD": {
+     "V": 15594.036851798199,
+     "Mx_streamwise": 8824.837784018788,
+     "My_streamwise": 968.5543929343429,
+     "M_bend": 8832.705843745378,
+     "T_ea": -893.9614109033294,
+     "lift_panel": 16185.651478367005
+    },
+    "NEG_VD": {
+     "V": -7797.018425899099,
+     "Mx_streamwise": -4412.418892009394,
+     "My_streamwise": 340.47318400747884,
+     "M_bend": -4244.278262898304,
+     "T_ea": 1253.5806693940947,
+     "lift_panel": -8092.825739183502
+    },
+    "GUST_POS": {
+     "V": 8345.813490123943,
+     "Mx_streamwise": 4722.988083584438,
+     "My_streamwise": 575.9897822250596,
+     "M_bend": 4739.222140181819,
+     "T_ea": -422.08313507972275,
+     "lift_panel": 8662.441274083762
+    },
+    "GUST_NEG": {
+     "V": -3147.8012061912127,
+     "Mx_streamwise": -1781.3754889115107,
+     "My_streamwise": 267.3708110970561,
+     "M_bend": -1686.388629713972,
+     "T_ea": 633.1501975778358,
+     "lift_panel": -3267.224114628094
+    },
+    "ROLL_PULLUP_VA_100pct": {
+     "V": 14483.018206785995,
+     "Mx_streamwise": 9941.19188480815,
+     "My_streamwise": 1502.2400013570032,
+     "M_bend": 10035.839506977496,
+     "T_ea": -604.9351225066638,
+     "lift_panel": 14877.427957831871
+    },
+    "ROLL_PULLUP_VD_100pct": {
+     "V": 12848.14682874079,
+     "Mx_streamwise": 8317.93180916383,
+     "My_streamwise": 1379.5364846710113,
+     "M_bend": 8422.70210714154,
+     "T_ea": -386.2637813611068,
+     "lift_panel": 13242.556579786664
+    },
+    "FLAPS_30deg_n2": {
+     "V": 7320.271430663206,
+     "Mx_streamwise": 3694.8080845099453,
+     "My_streamwise": 402.81483760587383,
+     "M_bend": 3697.5385107379225,
+     "T_ea": -376.92908665354713,
+     "lift_panel": 7517.476306186142
+    },
+    "PRIOR_8g_at_VA": {
+     "V": 20792.04913573093,
+     "Mx_streamwise": 11766.450378691714,
+     "My_streamwise": 910.1879036041743,
+     "M_bend": 11697.404393734563,
+     "T_ea": -1564.77697564894,
+     "lift_panel": 21580.868637822678
+    }
+   },
+   "root_envelope_limit": {
+    "V": 37654.32037343119,
+    "M_bend": 21143.979570294065,
+    "T_ea": -3070.2183699645407,
+    "Mx_streamwise": 21319.226221960682,
+    "My_streamwise": 1958.6419308160318
+   },
+   "root_envelope_ultimate": {
+    "V": 56481.48056014678,
+    "M_bend": 31715.9693554411,
+    "T_ea": -4605.327554946811,
+    "Mx_streamwise": 31978.839332941025,
+    "My_streamwise": 2937.9628962240477
+   },
+   "box_sizing": {
+    "rows": [
+     {
+      "y": 1.13125,
+      "chord": 0.796,
+      "h": 0.0787443,
+      "box_w": 0.3206683511649359,
+      "t_cap": 0.003973471497488873,
+      "t_web": 0.0027757340608241077,
+      "t_skin": 0.003973471497488873,
+      "EI": 373981.3026368909,
+      "GJ": 256027.31566017875
+     },
+     {
+      "y": 1.26625,
+      "chord": 0.748,
+      "h": 0.0733227,
+      "box_w": 0.3013315661700654,
+      "t_cap": 0.0035166976666634177,
+      "t_web": 0.002553854673841813,
+      "t_skin": 0.0035166976666634177,
+      "EI": 271096.8681371112,
+      "GJ": 186275.48349709992
+     },
+     {
+      "y": 1.40125,
+      "chord": 0.7000000000000001,
+      "h": 0.0679875,
+      "box_w": 0.28199478117519494,
+      "t_cap": 0.0030462104243571793,
+      "t_web": 0.0023173947278160864,
+      "t_skin": 0.0030462104243571793,
+      "EI": 190196.31186060034,
+      "GJ": 131121.78919121673
+     },
+     {
+      "y": 1.5362500000000001,
+      "chord": 0.652,
+      "h": 0.06273870000000001,
+      "box_w": 0.2626579961803244,
+      "t_cap": 0.0025654958562430987,
+      "t_web": 0.0020648482444858636,
+      "t_skin": 0.0025654958562430987,
+      "EI": 128093.627027975,
+      "GJ": 88570.7668483684
+     },
+     {
+      "y": 1.6712500000000001,
+      "chord": 0.6040000000000001,
+      "h": 0.05757630000000001,
+      "box_w": 0.2433212111854539,
+      "t_cap": 0.002080027412391388,
+      "t_web": 0.0017980723964273462,
+      "t_skin": 0.002080027412391388,
+      "EI": 81834.4109824544,
+      "GJ": 56754.430146731596
+     },
+     {
+      "y": 1.8062500000000004,
+      "chord": 0.5559999999999999,
+      "h": 0.0525003,
+      "box_w": 0.22398442619058337,
+      "t_cap": 0.0015982098839073878,
+      "t_web": 0.001525502762011098,
+      "t_skin": 0.0015982098839073878,
+      "EI": 48694.75320744053,
+      "GJ": 33914.90991374828
+     },
+     {
+      "y": 1.9412500000000001,
+      "chord": 0.508,
+      "h": 0.0475107,
+      "box_w": 0.20464764119571288,
+      "t_cap": 0.0011328190637284157,
+      "t_web": 0.0012246558823654735,
+      "t_skin": 0.0011328190637284157,
+      "EI": 26178.71940731905,
+      "GJ": 18310.52687979899
+     },
+     {
+      "y": 2.0762500000000004,
+      "chord": 0.45999999999999996,
+      "h": 0.0426075,
+      "box_w": 0.18531085620084237,
+      "t_cap": 0.001,
+      "t_web": 0.001,
+      "t_skin": 0.001,
+      "EI": 16842.377984509076,
+      "GJ": 11668.017640449014
+     },
+     {
+      "y": 2.21125,
+      "chord": 0.41200000000000003,
+      "h": 0.0377907,
+      "box_w": 0.16597407120597188,
+      "t_cap": 0.001,
+      "t_web": 0.001,
+      "t_skin": 0.001,
+      "EI": 11794.394567172722,
+      "GJ": 8231.812206907005
+     },
+     {
+      "y": 2.34625,
+      "chord": 0.3640000000000001,
+      "h": 0.03306030000000001,
+      "box_w": 0.1466372862111014,
+      "t_cap": 0.001,
+      "t_web": 0.001,
+      "t_skin": 0.001,
+      "EI": 7912.958386277899,
+      "GJ": 5573.2083717105625
+     }
+    ],
+    "masses": {
+     "box_kg": 3.25065257464177,
+     "secondary_kg": 6.804000000000001,
+     "tongue_kg": 5.9942011149418954,
+     "panel_kg": 10.054652574641771,
+     "total_kg": 16.048853689583666
+    },
+    "material_basis": "strain-limited IM7/8552-class, see MATERIAL",
+    "raymer_check": {
+     "whole_wing_kg": 62.45419688633736,
+     "exposed_panel_kg_each": 12.59073624757747,
+     "basis": "DERIVED statistical (metal GA database); composite typically 10-25% lighter"
+    }
+   },
+   "root_joint": {
+    "applied_ultimate_with_fitting_factor": {
+     "Mx": 36775.66523288217,
+     "V": 64953.70264416879,
+     "My": 3378.6573306576547,
+     "fitting_factor": 1.15
+    },
+    "options": {
+     "A_vertical_couple_A8_plate_46mm": {
+      "kind": "depth-limited lug/bearing couple",
+      "couple_separation_m": 0.046,
+      "max_pin_force_N": 831947.83464561,
+      "pins": 2,
+      "pin_diameter_m": 0.024125005064368665,
+      "ti_lug_thickness_m": 0.028509322998104252,
+      "bearings": [
+       {
+        "part": "SKF GEH 50 TXE-2LS",
+        "C0_kN": 1160,
+        "margin_C0": 0.3943181912290601
+       },
+       {
+        "part": "SKF GE 80 TXE-2LS",
+        "C0_kN": 1900,
+        "margin_C0": 1.2837970373579433
+       }
+      ],
+      "note": "moment reacted by upper/lower lugs separated by available depth"
+     },
+     "A_vertical_couple_A8_fairing_160mm": {
+      "kind": "depth-limited lug/bearing couple",
+      "couple_separation_m": 0.16,
+      "max_pin_force_N": 262324.75902759796,
+      "pins": 2,
+      "pin_diameter_m": 0.013546871354408374,
+      "ti_lug_thickness_m": 0.016008789636567117,
+      "bearings": [
+       {
+        "part": "SKF GEH 50 TXE-2LS",
+        "C0_kN": 1160,
+        "margin_C0": 3.421999678185016
+       },
+       {
+        "part": "SKF GE 80 TXE-2LS",
+        "C0_kN": 1900,
+        "margin_C0": 6.242930507372009
+       }
+      ],
+      "note": "moment reacted by upper/lower lugs separated by available depth"
+     },
+     "A_vertical_couple_root_box_depth": {
+      "kind": "depth-limited lug/bearing couple",
+      "couple_separation_m": 0.0792,
+      "max_pin_force_N": 496816.0588079704,
+      "pins": 2,
+      "pin_diameter_m": 0.01864305917059589,
+      "ti_lug_thickness_m": 0.02203112472512125,
+      "bearings": [
+       {
+        "part": "SKF GEH 50 TXE-2LS",
+        "C0_kN": 1160,
+        "margin_C0": 1.3348681658624963
+       },
+       {
+        "part": "SKF GE 80 TXE-2LS",
+        "C0_kN": 1900,
+        "margin_C0": 2.8243530302920203
+       }
+      ],
+      "note": "moment reacted by upper/lower lugs separated by available depth"
+     },
+     "C_spanwise_tongue_couple": {
+      "kind": "tongue in carry-through sleeve, 2 stations x 2 pins",
+      "couple_separation_m": 0.76,
+      "max_pin_force_N": 59017.65773562148,
+      "pins": 4,
+      "pin_diameter_m": 0.006425550631326109,
+      "ti_lug_thickness_m": 0.007593287458401727,
+      "bearings": [
+       {
+        "part": "SKF GEH 50 TXE-2LS",
+        "C0_kN": 1160,
+        "margin_C0": 18.65513448867109
+       },
+       {
+        "part": "SKF GE 80 TXE-2LS",
+        "C0_kN": 1900,
+        "margin_C0": 31.19375476592679
+       }
+      ],
+      "note": "moment reacted by vertical forces at outboard (sleeve mouth) and inboard (tongue end) stations"
+     }
+    },
+    "rotational_stiffness": {
+     "bending_Nm_per_rad": 173280000.0,
+     "torsion_Nm_per_rad": 38880000.0,
+     "basis": "DERIVED from SYNTHETIC pin stiffness"
+    }
+   },
+   "aeroelastic": {
+    "station_eta": 0.7,
+    "semichord_m": 0.23200000000000004,
+    "mass_per_m": 6.667512175376171,
+    "I_alpha": 0.0910099836630406,
+    "a": -0.19999999999999996,
+    "x_alpha": 0.05999999999999994,
+    "r_alpha2": 0.2536,
+    "f_bending_Hz": 30.579851917204778,
+    "f_torsion_Hz": 146.64706455948186,
+    "f_bending_beam_only_Hz": 30.604710081507623,
+    "f_torsion_beam_only_Hz": 146.86730313614316,
+    "flutter_SL": {
+     "mu": 32.18858504321002,
+     "V_over_b_omega_alpha": 3.1726830833592348,
+     "k_flutter": 0.1718761064127083,
+     "VF_TAS": 678.2158269415215,
+     "VF_EAS": 678.2158269415215,
+     "margin_vs_1p2VD": 1.5287689296850169
+    },
+    "flutter_3000m": {
+     "mu": 43.36414459246924,
+     "V_over_b_omega_alpha": 3.6475242767252833,
+     "k_flutter": 0.14595330980285653,
+     "VF_TAS": 779.7213363678437,
+     "VF_EAS": 671.7767510718107,
+     "margin_vs_1p2VD": 1.5047604439664832
+    },
+    "K_theta_at_aileron": 33203.417116019096,
+    "q_reversal": 314783.5108323342,
+    "V_reversal_EAS": 716.8906908193206,
+    "q_divergence_unswept": 374429.47726114164,
+    "V_divergence_EAS_unswept": 781.865354305387,
+    "note": "typical-section screens; sweep-back bending/torsion coupling raises divergence and lowers reversal speed; not a coupled model"
+   },
+   "control_surfaces": {
+    "aileron": {
+     "geometry": {
+      "y0": 1.8625000000000003,
+      "y1": 2.4025,
+      "span": 0.5399999999999996,
+      "area": 0.06652799999999996,
+      "cf_mean": 0.12320000000000003,
+      "depth_at_hinge": 0.024805000000000004
+     },
+     "travel_deg": [
+      -20.0,
+      20.0
+     ],
+     "rate_deg_s": 80.0,
+     "hinge_moments_Nm": {
+      "VA_full": -47.8620173577626,
+      "VC_2/3": -28.952532899604158,
+      "VD_1/3": -23.058014579112587
+     },
+     "H_max_nominal_Nm": 47.8620173577626,
+     "actuator_stall_torque_Nm": 77.77577820636424,
+     "linear_EMA": {
+      "horn_radius_m": 0.02,
+      "stall_force_N": 4290.803815151325,
+      "stroke_m": 0.01368080573302675
+     },
+     "mech_power_peak_W": 54.297736320076226,
+     "elec_power_peak_W": 77.56819474296604,
+     "hinge_inertia_kg_m2": 0.003635200622591999,
+     "basis": "DERIVED; hinge coefficients SYNTHETIC_UNVALIDATED",
+     "actuator_min_stiffness_Nm_per_rad": 6944.1227171716855,
+     "stiffness_rule": "surface rotation frequency on actuator >= 1.5 x wing torsion frequency, plus mass balance to hinge line"
+    },
+    "flap": {
+     "geometry": {
+      "y0": 1.1875,
+      "y1": 1.7950000000000002,
+      "span": 0.6075000000000002,
+      "area": 0.11362680000000007,
+      "cf_mean": 0.18704000000000007,
+      "depth_at_hinge": 0.03940365000000001
+     },
+     "travel_deg": [
+      -5,
+      35.0
+     ],
+     "rate_deg_s": 15.0,
+     "hinge_moments_Nm": {
+      "VF_full": -34.88862906543627,
+      "VF_gust": -36.677789530330436
+     },
+     "H_max_nominal_Nm": 36.677789530330436,
+     "actuator_stall_torque_Nm": 59.60140798678696,
+     "linear_EMA": {
+      "horn_radius_m": 0.03152292000000001,
+      "stall_force_N": 2086.1924438375445,
+      "stroke_m": 0.036161608233958246
+     },
+     "mech_power_peak_W": 7.80180606145408,
+     "elec_power_peak_W": 11.145437230648687,
+     "hinge_inertia_kg_m2": 0.014310416188551183,
+     "basis": "DERIVED; hinge coefficients SYNTHETIC_UNVALIDATED",
+     "actuator_min_stiffness_Nm_per_rad": 27336.39665704167,
+     "stiffness_rule": "surface rotation frequency on actuator >= 1.5 x wing torsion frequency, plus mass balance to hinge line"
+    }
+   },
+   "roll": {
+    "Ixx_kg_m2": 660.0113195749066,
+    "cases": [
+     {
+      "V": 166.58957529878208,
+      "delta_deg": 20.0,
+      "Cl_delta_a": 0.1805820342555582,
+      "Cl_p": -0.6488284502366388,
+      "effectiveness": 0.9460004973053723,
+      "pb_2V": 0.09190589828013003,
+      "p_deg_s": 355.1541422517093,
+      "roll_time_constant_s": 0.21787699951654438,
+      "initial_roll_accel_deg_s2": 1630.0671619297789,
+      "time_to_90deg_bank_s": 0.443
+     },
+     {
+      "V": 178.8,
+      "delta_deg": 13.3,
+      "Cl_delta_a": 0.18506880832889797,
+      "Cl_p": -0.6649493599415718,
+      "effectiveness": 0.9377944481646316,
+      "pb_2V": 0.06058726135463832,
+      "p_deg_s": 251.2896003952959,
+      "roll_time_constant_s": 0.19807652344014415,
+      "initial_roll_accel_deg_s2": 1268.6490858732784,
+      "time_to_90deg_bank_s": 0.544
+     },
+     {
+      "V": 223.5,
+      "delta_deg": 6.7,
+      "Cl_delta_a": 0.20881700551201793,
+      "Cl_p": -0.7502762643468676,
+      "effectiveness": 0.9028038252572369,
+      "pb_2V": 0.029382599604399227,
+      "p_deg_s": 152.33279958690537,
+      "roll_time_constant_s": 0.14043984994848038,
+      "initial_roll_accel_deg_s2": 1084.6835826354688,
+      "time_to_90deg_bank_s": 0.731
+     },
+     {
+      "V": 80.0,
+      "delta_deg": 20.0,
+      "Cl_delta_a": 0.16200339164661715,
+      "Cl_p": -0.5820756752933663,
+      "effectiveness": 0.9875469970150758,
+      "pb_2V": 0.0959422263656774,
+      "p_deg_s": 178.0432274604724,
+      "roll_time_constant_s": 0.5057310912736835,
+      "initial_roll_accel_deg_s2": 352.05118002943146,
+      "time_to_90deg_bank_s": 0.931
+     }
+    ]
+   },
+   "longitudinal": {
+    "neutral_point": {
+     "x_np": -0.09436776699017034,
+     "x_np_without_body": -0.5368408379250041
+    },
+    "trim": [
+     {
+      "x_cg": -0.25,
+      "x_wing_ac": -0.8271652354931044,
+      "x_canard_ac": 1.7,
+      "canard_S": 0.64,
+      "min_speed_full_wingborne_trim": 70,
+      "rows": [
+       {
+        "V": 30,
+        "CL_wing": 5.047640504591634,
+        "CL_canard": 6.5595263916553455,
+        "canard_lift_share": 0.18152524530850192,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 40,
+        "CL_wing": 2.9657295118500357,
+        "CL_canard": 2.9489209329588815,
+        "canard_lift_share": 0.14507919933073757,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 50,
+        "CL_wing": 2.0021021380667827,
+        "CL_canard": 1.2777264063622324,
+        "canard_lift_share": 0.09821999735932627,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 60,
+        "CL_wing": 1.4136699465961908,
+        "CL_canard": 0.7506617921993983,
+        "canard_lift_share": 0.08309384418122798,
+        "alpha_deg": 18.147063707079234,
+        "wing_feasible": false,
+        "canard_feasible": true
+       },
+       {
+        "V": 70,
+        "CL_wing": 1.0202150036172002,
+        "CL_canard": 0.6593173336151013,
+        "canard_lift_share": 0.09933735972786807,
+        "alpha_deg": 12.432314749364723,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 80,
+        "CL_wing": 0.7648476127414131,
+        "CL_canard": 0.6000312667454848,
+        "canard_lift_share": 0.11807987766629885,
+        "alpha_deg": 8.72322287777117,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 90,
+        "CL_wing": 0.6424724503425279,
+        "CL_canard": 0.2505724051974483,
+        "canard_lift_share": 0.06240800500625266,
+        "alpha_deg": 9.33161174226575,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 110,
+        "CL_wing": 0.4245811772652313,
+        "CL_canard": 0.19998678993285202,
+        "canard_lift_share": 0.0744061303777385,
+        "alpha_deg": 6.16684294743056,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 140,
+        "CL_wing": 0.2557432328845457,
+        "CL_canard": 0.16078939034963485,
+        "canard_lift_share": 0.09690261544927439,
+        "alpha_deg": 3.714550800922427,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 178.8,
+        "CL_wing": 0.1503508625243652,
+        "CL_canard": 0.13632150862326273,
+        "canard_lift_share": 0.13400513842304226,
+        "alpha_deg": 2.183775932250707,
+        "wing_feasible": true,
+        "canard_feasible": true
+       }
+      ]
+     },
+     {
+      "x_cg": -0.5,
+      "x_wing_ac": -0.8271652354931044,
+      "x_canard_ac": 1.7,
+      "canard_S": 0.64,
+      "min_speed_full_wingborne_trim": 70,
+      "rows": [
+       {
+        "V": 30,
+        "CL_wing": 5.6577243119884395,
+        "CL_canard": 2.984808109303476,
+        "canard_lift_share": 0.08260017444695232,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 40,
+        "CL_wing": 3.308901653510739,
+        "CL_canard": 0.9381418991359551,
+        "canard_lift_share": 0.04615412846918799,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 50,
+        "CL_wing": 2.221732308729633,
+        "CL_canard": -0.009172175284440589,
+        "canard_lift_share": -0.0007050735022233169,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": true
+       },
+       {
+        "V": 60,
+        "CL_wing": 1.6038010334400814,
+        "CL_canard": -0.3633901854860641,
+        "canard_lift_share": -0.04022515567402918,
+        "alpha_deg": 20.908628785264746,
+        "wing_feasible": false,
+        "canard_feasible": true
+       },
+       {
+        "V": 70,
+        "CL_wing": 1.159903149053528,
+        "CL_canard": -0.15916983366401408,
+        "canard_lift_share": -0.023981640127389087,
+        "alpha_deg": 14.461219704766322,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 80,
+        "CL_wing": 0.8717963490911017,
+        "CL_canard": -0.026622970702587803,
+        "canard_lift_share": -0.005239122188958301,
+        "alpha_deg": 10.276603234250521,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 90,
+        "CL_wing": 0.7269751556064793,
+        "CL_canard": -0.24456180710720166,
+        "canard_lift_share": -0.060910994849004495,
+        "alpha_deg": 10.558973999237088,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 110,
+        "CL_wing": 0.4811491039295294,
+        "CL_canard": -0.13146669103141784,
+        "canard_lift_share": -0.04891286947751869,
+        "alpha_deg": 6.9884656153204645,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 140,
+        "CL_wing": 0.2906652692436277,
+        "CL_canard": -0.04383240147014397,
+        "canard_lift_share": -0.02641638440598277,
+        "alpha_deg": 4.221777039772827,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 178.8,
+        "CL_wing": 0.1717610565295779,
+        "CL_canard": 0.010870855760163884,
+        "canard_lift_share": 0.01068613856778503,
+        "alpha_deg": 2.4947489828098615,
+        "wing_feasible": true,
+        "canard_feasible": true
+       }
+      ]
+     },
+     {
+      "x_cg": -0.75,
+      "x_wing_ac": -0.8271652354931044,
+      "x_canard_ac": 1.7,
+      "canard_S": 0.64,
+      "min_speed_full_wingborne_trim": 80,
+      "rows": [
+       {
+        "V": 30,
+        "CL_wing": 6.267808119385244,
+        "CL_canard": -0.5899101730483932,
+        "canard_lift_share": -0.01632489641459725,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": true
+       },
+       {
+        "V": 40,
+        "CL_wing": 3.6520737951714417,
+        "CL_canard": -1.0726371346869716,
+        "canard_lift_share": -0.0527709423923616,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 50,
+        "CL_wing": 2.4413624793924824,
+        "CL_canard": -1.2960707569311134,
+        "canard_lift_share": -0.09963014436377288,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 60,
+        "CL_wing": 1.783692135018726,
+        "CL_canard": -1.417442107285956,
+        "canard_lift_share": -0.15690250232883113,
+        "alpha_deg": 22.918311805232932,
+        "wing_feasible": false,
+        "canard_feasible": false
+       },
+       {
+        "V": 70,
+        "CL_wing": 1.2995912944898562,
+        "CL_canard": -0.9776570009431298,
+        "canard_lift_share": -0.1473006399826463,
+        "alpha_deg": 16.490124660167925,
+        "wing_feasible": true,
+        "canard_feasible": false
+       },
+       {
+        "V": 80,
+        "CL_wing": 0.9787450854407903,
+        "CL_canard": -0.6532772081506607,
+        "canard_lift_share": -0.1285581220442155,
+        "alpha_deg": 11.829983590729872,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 90,
+        "CL_wing": 0.8114778608704308,
+        "CL_canard": -0.7396960194118519,
+        "canard_lift_share": -0.1842299947042617,
+        "alpha_deg": 11.786336256208429,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 110,
+        "CL_wing": 0.5377170305938275,
+        "CL_canard": -0.4629201719956877,
+        "canard_lift_share": -0.17223186933277587,
+        "alpha_deg": 7.810088283210369,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 140,
+        "CL_wing": 0.3255873056027097,
+        "CL_canard": -0.2484541932899229,
+        "canard_lift_share": -0.14973538426123997,
+        "alpha_deg": 4.729003278623228,
+        "wing_feasible": true,
+        "canard_feasible": true
+       },
+       {
+        "V": 178.8,
+        "CL_wing": 0.1931712505347906,
+        "CL_canard": -0.11457979710293491,
+        "canard_lift_share": -0.11263286128747216,
+        "alpha_deg": 2.8057220333690154,
+        "wing_feasible": true,
+        "canard_feasible": true
+       }
+      ]
+     }
+    ]
+   },
+   "canard": {
+    "input": {
+     "name": "A8 canard",
+     "S": 0.64,
+     "c": 0.55,
+     "span": 0.65,
+     "x_ac": 1.7,
+     "CLalpha": 3.0,
+     "basis": "MEASURED planform ~0.32 m^2 per side from pinned source; CLalpha SYNTHETIC"
+    },
+    "hinge_cases": [
+     {
+      "V": 166.58957529878208,
+      "CL": 1.0,
+      "x_ac": 0.23,
+      "H_Nm": -59.83349870578079
+     },
+     {
+      "V": 166.58957529878208,
+      "CL": 1.0,
+      "x_ac": 0.3,
+      "H_Nm": 359.00099223468493
+     },
+     {
+      "V": 178.8,
+      "CL": 0.5,
+      "x_ac": 0.23,
+      "H_Nm": -103.38916896
+     },
+     {
+      "V": 178.8,
+      "CL": 0.5,
+      "x_ac": 0.3,
+      "H_Nm": 137.85222528
+     },
+     {
+      "V": 223.5,
+      "CL": 0.35,
+      "x_ac": 0.23,
+      "H_Nm": -177.70013415000003
+     },
+     {
+      "V": 223.5,
+      "CL": 0.35,
+      "x_ac": 0.3,
+      "H_Nm": 86.15764079999995
+     }
+    ],
+    "H_max_Nm": 359.00099223468493,
+    "actuator_stall_torque_Nm": 583.376612381363,
+    "rate_deg_s": 40.0,
+    "travel_deg": [
+     -20,
+     25
+    ],
+    "ultimate_lift_N": 16318.226919758408,
+    "spindle_root_moment_ult_Nm": 4773.081374029335,
+    "spindle_bearing_separation_m": 0.2,
+    "spindle_bearing_force_ult_N": 40183.633789905085,
+    "ti_spindle_outer_diameter_m": 0.04271306025657393,
+    "basis": "DERIVED; canard CL limits and pivot location SYNTHETIC_UNVALIDATED"
+   },
+   "cassette_mechanism": {
+    "q_deploy_Pa": 600.0,
+    "normal_force_transit_N": 544.32,
+    "roller_reaction_max_N": 1541.3102913607233,
+    "slide_actuator_force_N": 185.87495386308476,
+    "slide_stroke_m": 1.3800000000000001,
+    "deploy_time_s": 6.0,
+    "slide_speed_mps": 0.276,
+    "slide_mech_power_W": 51.301487266211396,
+    "slide_energy_J": 256.50743633105697,
+    "stowed_retention_N": {
+     "fwd_9g": 1416.4694193146006,
+     "down_6g": 944.3129462097338,
+     "up_3g": 472.1564731048669,
+     "side_1p5g": 236.07823655243345
+    },
+    "hatch_door_area_m2": 0.04586400000000001,
+    "hatch_door_load_at_VD_N": 2104.8654319875004,
+    "basis": "DERIVED from SYNTHETIC_UNVALIDATED transit q, CN=1.2, mu_pad=0.08, a=0.5 m/s^2, 10 deg slope"
+   }
+  }
+ }
+}
