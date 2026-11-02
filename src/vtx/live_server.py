@@ -9,6 +9,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime,timezone
 import hashlib
+import hmac
 import gzip
 import json
 import math
@@ -19,8 +20,8 @@ import time
 import uuid
 import mujoco as mj
 import numpy as np
-from fastapi import FastAPI,HTTPException,WebSocket,WebSocketDisconnect
-from fastapi.responses import FileResponse
+from fastapi import FastAPI,HTTPException,WebSocket,WebSocketDisconnect,Request
+from fastapi.responses import FileResponse,HTMLResponse,JSONResponse,RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel,Field,field_validator,ConfigDict
 from ._rotation import Rotation
@@ -56,14 +57,14 @@ class Action(BaseModel):
 
 class Mission(BaseModel):
     model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
-    departure:list[float]
-    destination:list[float]
+    departure:list[float]=Field(default_factory=lambda:[0.,0.])
+    destination:list[float]=Field(default_factory=lambda:[-50.,20.])
     authority:str='manual'
     time_scale:float=Field(default=1.,ge=.01,le=1)
     stability_assist:float=Field(default=0.,ge=0,le=1,allow_inf_nan=False)
     reference_rpm:float=1200.
-    gear_variant:str='baseline'
-    airframe_variant:str='light'
+    gear_variant:str='critical-damping-proposal'
+    airframe_variant:str='r6'
     fuel_kg:float=Field(default=10.,ge=1.,le=110.)
     engine_power_limit_kw:float=Field(default=300.,ge=10.,le=469.8)
     label:str='user selected mission'
@@ -96,20 +97,24 @@ class Mission(BaseModel):
 
 class Laboratory:
     def __init__(self):
-        self.world=TestWorld();self.aircraft=Aircraft(self.world,rpm=1200.,fuel_kg=10.,engine_power_limit_kw=300.);self.aircraft.spawn(0,0,0)
+        self.world=TestWorld();self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
         self.mission=None;self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
         self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
         self.retry_hint=None
-        self.checkpoint_path=ROOT/'pilot/live-flight-checkpoint.json'
+        self.data_root=Path(os.environ.get('VTX_DATA_ROOT',str(ROOT))).resolve()
+        self.checkpoint_path=self.data_root/'pilot/live-flight-checkpoint.json'
         self.last_checkpoint_t=-1.
-        self.memory_path=ROOT/'pilot/colin-memory.json'
-        self.memory_path.parent.mkdir(exist_ok=True)
+        self.memory_path=self.data_root/'pilot/colin-memory.json'
+        self.memory_path.parent.mkdir(parents=True,exist_ok=True)
         if not self.memory_path.exists():self.memory_path.write_text(json.dumps(dict(schema_version=1,pilot='Colin',experience_count=0,lessons=[],aircraft_familiarity='cold start; no VTX-specific solution',stage2_accessed=False,history=[]),indent=2))
         restored=self.restore_checkpoint()
-        completed=sorted((ROOT/'evidence/flights').glob('*/summary.json'))
+        # Never replace or classify a saved sortie merely because its checkpoint
+        # cannot be decoded by this build. It remains available for recovery.
+        self.recovery_blocked=self.checkpoint_path.exists() and not restored
+        completed=sorted((self.data_root/'evidence/flights').glob('*/summary.json'))
         if completed and not restored:
             last=json.loads(completed[-1].read_text())
             meta_path=completed[-1].parent/'metadata.json'
@@ -119,9 +124,9 @@ class Laboratory:
         # If the process died without stop(), the latest metadata is still
         # enough to retry at the departure point. Never reconstruct mid-flight
         # physics from a render frame or claim the interrupted flight landed.
-        unfinished=sorted(p for p in (ROOT/'evidence/flights').glob('*/metadata.json')
+        unfinished=sorted(p for p in (self.data_root/'evidence/flights').glob('*/metadata.json')
                           if not (p.parent/'summary.json').exists())
-        if not restored and unfinished and (not completed or unfinished[-1].parent.name>completed[-1].parent.name):
+        if not restored and not self.recovery_blocked and unfinished and (not completed or unfinished[-1].parent.name>completed[-1].parent.name):
             path=unfinished[-1]
             try:
                 meta=json.loads(path.read_text())
@@ -196,12 +201,16 @@ class Laboratory:
             if state['schema']!=1:
                 raise ValueError('Unsupported checkpoint schema')
             run_id=state['run_id']
-            evidence=ROOT/'evidence/flights'/run_id
+            evidence=self.data_root/'evidence/flights'/run_id
             metadata=json.loads((evidence/'metadata.json').read_text())
             if (metadata['run_id']!=run_id or
                     (evidence/'summary.json').exists()):
                 raise ValueError('Checkpoint does not identify an unfinished sortie')
-            request=Mission(**metadata['request'])
+            saved_request=dict(metadata['request'])
+            # Older checkpoints omitted these fields and used the former defaults.
+            saved_request.setdefault('airframe_variant','light')
+            saved_request.setdefault('gear_variant','baseline')
+            request=Mission(**saved_request)
             candidate=Aircraft(self.world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw)
@@ -331,6 +340,7 @@ class Laboratory:
         return obs
 
     def start(self,request:Mission):
+        if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
         self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
@@ -343,7 +353,7 @@ class Laboratory:
         self.mission=dict(departure=request.departure,destination=request.destination,
                           departure_z_m=mission.departure_surface_z_m,destination_z_m=mission.destination_surface_z_m,
                           environment=self.world.id,environment_version=self.world.version,label=request.label)
-        self.log_path=ROOT/'evidence/flights'/self.run_id;self.log_path.mkdir(parents=True)
+        self.log_path=self.data_root/'evidence/flights'/self.run_id;self.log_path.mkdir(parents=True)
         self.audit_file=(self.log_path/'events.jsonl').open('w')
         self.wall_started=time.monotonic();self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.last_obs=None;self.obs_id=0;self.last_sensor_t=-1.;self.last_audit_t=-1.;self.observations={}
@@ -432,6 +442,7 @@ class Laboratory:
 
     def retry(self,request):
         """Explicit new sortie. Preserve the failed run and the learned state."""
+        if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before retrying a mission')
         if self.active:
             if not self.aircraft.crashed:raise HTTPException(409,'Current sortie has no recorded crash; end it before starting another')
             self.stop('User requested retry after crash; failed sortie archived')
@@ -442,7 +453,7 @@ class Laboratory:
                   authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
                   stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
-                  airframe_variant=request.get('airframe_variant','light'),
+                  airframe_variant=request.get('airframe_variant',old.get('airframe_variant','light')),
                   fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
                   engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
                   label='Explicit retry of '+hint['run_id'])
@@ -495,6 +506,44 @@ async def lifespan(app):
     task.cancel()
 
 app=FastAPI(title='VTX live engineering laboratory',lifespan=lifespan)
+
+# Authentication is opt-in for the existing PC/LAN installation. Public cloud
+# instances must set a unique high-entropy token and run behind HTTPS.
+_access_token=os.environ.get('VTX_CLOUD_ACCESS_TOKEN','')
+if _access_token and len(_access_token)<32:
+    raise RuntimeError('VTX_CLOUD_ACCESS_TOKEN must contain at least 32 characters')
+def _authorized(headers,cookies):
+    if not _access_token:return True
+    bearer=headers.get('authorization','')
+    cookie=cookies.get('vtx_session','')
+    expected=hmac.new(_access_token.encode(),b'vtx-browser-session',hashlib.sha256).hexdigest()
+    return hmac.compare_digest(bearer,'Bearer '+_access_token) or hmac.compare_digest(cookie,expected)
+
+@app.middleware('http')
+async def cloud_access(request:Request,call_next):
+    if _access_token and request.url.path!='/login' and not _authorized(request.headers,request.cookies):
+        if request.url.path=='/':return RedirectResponse('/login',status_code=303)
+        return JSONResponse({'detail':'Authentication required'},status_code=401)
+    valid_bearer=bool(_access_token) and hmac.compare_digest(request.headers.get('authorization',''),'Bearer '+_access_token)
+    if _access_token and request.method not in ('GET','HEAD','OPTIONS') and request.url.path!='/login' and not valid_bearer:
+        origin=request.headers.get('origin','')
+        if origin!='https://'+request.headers.get('host',''):
+            return JSONResponse({'detail':'Invalid origin'},status_code=403)
+    return await call_next(request)
+
+@app.get('/login',response_class=HTMLResponse)
+async def login_page():
+    return '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>VTX access</title><body style="background:#101d25;color:white;font:18px sans-serif;padding:2em"><h1>VTX simulator</h1><form method="post"><label>Access token <input name="token" type="password" autocomplete="current-password" required></label><button>Sign in</button></form></body>'
+
+@app.post('/login')
+async def login(request:Request):
+    from urllib.parse import parse_qs
+    token=parse_qs((await request.body()).decode(errors='replace')).get('token',[''])[0]
+    if not _access_token or not hmac.compare_digest(token,_access_token):
+        return HTMLResponse('Invalid access token',status_code=401)
+    response=RedirectResponse('/',status_code=303)
+    response.set_cookie('vtx_session',hmac.new(_access_token.encode(),b'vtx-browser-session',hashlib.sha256).hexdigest(),secure=True,httponly=True,samesite='strict')
+    return response
 @app.get('/api/world')
 async def world():return lab.world.public()
 @app.get('/api/observe')
@@ -568,7 +617,7 @@ async def lesson(request:dict):
 @app.get('/api/runs')
 async def runs():
     result=[]
-    for path in sorted((ROOT/'evidence/flights').glob('*/summary.json'),reverse=True):
+    for path in sorted((lab.data_root/'evidence/flights').glob('*/summary.json'),reverse=True):
         s=json.loads(path.read_text());result.append({k:v for k,v in s.items() if k!='final'})
     return result
 def read_replay_frames(path, limit=1200):
@@ -592,13 +641,15 @@ def read_replay_frames(path, limit=1200):
 @app.get('/api/replay/{run_id}')
 async def replay(run_id:str):
     if not run_id.replace('-','').isalnum():raise HTTPException(422,'Invalid run ID')
-    path=ROOT/'evidence/flights'/run_id/'events.jsonl'
+    path=lab.data_root/'evidence/flights'/run_id/'events.jsonl'
     compressed=path.with_suffix('.jsonl.gz')
     if not path.exists() and not compressed.exists():raise HTTPException(404,'Run not found')
     # Large historical logs must not block the event loop and live physics.
     return await asyncio.to_thread(read_replay_frames,path if path.exists() else compressed)
 @app.websocket('/ws')
 async def stream(ws:WebSocket):
+    if not _authorized(ws.headers,ws.cookies):
+        await ws.close(code=1008);return
     await ws.accept()
     try:
         while True:
