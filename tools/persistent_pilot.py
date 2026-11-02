@@ -19,7 +19,7 @@ import time
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from argon_calibration import load_calibration
+from argon_calibration import from_instrument_observation
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROLS = ROOT / "tools" / "pilot_controls.json"
@@ -127,11 +127,9 @@ class Pilot:
         temp.replace(self.status)
 
     def refresh_calibration(self, observation):
-        """Expose advisory reference only after instrument metadata verifies compatibility."""
-        revision=observation.get("aircraft_revision")
-        fuel=observation.get("fuel_kg")
+        """Expose Argon's measured/estimated R6 reference from permitted instruments."""
         try:
-            self.calibration=load_calibration(aircraft_revision=revision,fuel_kg=fuel)
+            self.calibration=from_instrument_observation(observation)
             self.calibration_error=None
         except (OSError,ValueError,TypeError,KeyError,json.JSONDecodeError) as exc:
             self.calibration=None
@@ -195,6 +193,8 @@ class Pilot:
                 self.last_state="manual_authority"
             return
         if view.get("paused"):
+            # Read-only instrument inspection is permitted while flight remains paused.
+            self.refresh_calibration(request(self.base,"/api/observe"))
             self.status_update(state="paused",authority="colin",calibration=self.calibration,calibration_error=self.calibration_error)
             return
         if self.settings_run!=run:
