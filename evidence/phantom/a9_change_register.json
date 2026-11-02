@@ -1,0 +1,397 @@
+{
+ "base": "A8 version_a5589426caea8f9c2a6b690671aa8a9387ceff32eaef358186236dbd4de18752",
+ "removed": [
+  "CANARD_LEFT_FLUSH_AERO_COVER",
+  "CANARD_LEFT_TITANIUM_CLEVIS_MOUNT_RESERVATION",
+  "CANARD_RIGHT_FLUSH_AERO_COVER",
+  "CANARD_RIGHT_TITANIUM_CLEVIS_MOUNT_RESERVATION",
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_LEFT_SEALING_PERIMETER",
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_LEFT_SWEPT_CENTER_GUIDE",
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_RIGHT_SEALING_PERIMETER",
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_RIGHT_SWEPT_CENTER_GUIDE",
+  "MOUNT_001_WING_CARBON_CARRY_THROUGH_BENDING_BOX",
+  "PHANTOM_LEFT_CANARD_AMBER_EDGE",
+  "PHANTOM_LEFT_NOSE_CANARD_STOWED_BLADE",
+  "PHANTOM_LEFT_WING_AERODYNAMIC_ENVELOPE",
+  "PHANTOM_LEFT_WING_AMBER_OUTER_EDGE",
+  "PHANTOM_LEFT_WING_TITANIUM_ROOT_FAIRING",
+  "PHANTOM_NOSE_CANARD_HINGE_LEFT",
+  "PHANTOM_NOSE_CANARD_HINGE_RIGHT",
+  "PHANTOM_RIGHT_CANARD_AMBER_EDGE",
+  "PHANTOM_RIGHT_NOSE_CANARD_STOWED_BLADE",
+  "PHANTOM_RIGHT_WING_AERODYNAMIC_ENVELOPE",
+  "PHANTOM_RIGHT_WING_AMBER_OUTER_EDGE",
+  "PHANTOM_RIGHT_WING_TITANIUM_ROOT_FAIRING",
+  "PHANTOM_WING_HINGE_LEFT",
+  "PHANTOM_WING_HINGE_RIGHT",
+  "WING_LEFT_SEALED_REMOVABLE_FLUSH_FAIRING",
+  "WING_LEFT_TITANIUM_BEARING_LOAD_DISTRIBUTION",
+  "WING_RIGHT_SEALED_REMOVABLE_FLUSH_FAIRING",
+  "WING_RIGHT_TITANIUM_BEARING_LOAD_DISTRIBUTION"
+ ],
+ "added": [
+  "A9_CANARD_L_ALL_MOVING_BLADE",
+  "A9_CANARD_L_AMBER_EDGE",
+  "A9_CANARD_L_FOLD_YOKE_AND_PITCH_EMA",
+  "A9_CANARD_L_ROOT_STRUCTURE",
+  "A9_CANARD_L_TI_SPINDLE",
+  "A9_CANARD_R_ALL_MOVING_BLADE",
+  "A9_CANARD_R_AMBER_EDGE",
+  "A9_CANARD_R_FOLD_YOKE_AND_PITCH_EMA",
+  "A9_CANARD_R_ROOT_STRUCTURE",
+  "A9_CANARD_R_TI_SPINDLE",
+  "A9_HATCH_L_AMBER_EDGE",
+  "A9_HATCH_L_FLUSH_DOOR",
+  "A9_HATCH_R_AMBER_EDGE",
+  "A9_HATCH_R_FLUSH_DOOR",
+  "A9_HAUNCH_L_AMBER_CREASE",
+  "A9_HAUNCH_R_AMBER_CREASE",
+  "A9_INDUCTION_DUCT_L",
+  "A9_INDUCTION_DUCT_R",
+  "A9_JOINT_AILERON_L",
+  "A9_JOINT_AILERON_R",
+  "A9_JOINT_CANARD_L_FOLD",
+  "A9_JOINT_CANARD_L_PITCH",
+  "A9_JOINT_CANARD_R_FOLD",
+  "A9_JOINT_CANARD_R_PITCH",
+  "A9_JOINT_FLAP_L",
+  "A9_JOINT_FLAP_R",
+  "A9_JOINT_HATCH_L",
+  "A9_JOINT_HATCH_R",
+  "A9_JOINT_WING_L_LOCK_FRONT_IN",
+  "A9_JOINT_WING_L_LOCK_FRONT_OUT",
+  "A9_JOINT_WING_L_LOCK_REAR_IN",
+  "A9_JOINT_WING_L_LOCK_REAR_OUT",
+  "A9_JOINT_WING_L_SLIDE",
+  "A9_JOINT_WING_R_LOCK_FRONT_IN",
+  "A9_JOINT_WING_R_LOCK_FRONT_OUT",
+  "A9_JOINT_WING_R_LOCK_REAR_IN",
+  "A9_JOINT_WING_R_LOCK_REAR_OUT",
+  "A9_JOINT_WING_R_SLIDE",
+  "A9_SLEEVE_CARRY_THROUGH_BOX",
+  "A9_SLEEVE_SUPPORT_POST_L_A",
+  "A9_SLEEVE_SUPPORT_POST_L_F",
+  "A9_SLEEVE_SUPPORT_POST_R_A",
+  "A9_SLEEVE_SUPPORT_POST_R_F",
+  "A9_WING_L_AILERON",
+  "A9_WING_L_AILERON_ROTARY_EMA",
+  "A9_WING_L_FLAP",
+  "A9_WING_L_FLAP_ROTARY_EMA",
+  "A9_WING_L_LOCK_ACTUATOR_REAR_IN",
+  "A9_WING_L_LOCK_ACTUATOR_REAR_OUT",
+  "A9_WING_L_LOCK_PIN_FRONT_IN",
+  "A9_WING_L_LOCK_PIN_FRONT_OUT",
+  "A9_WING_L_LOCK_PIN_REAR_IN",
+  "A9_WING_L_LOCK_PIN_REAR_OUT",
+  "A9_WING_L_PANEL_CFRP_TORSION_BOX",
+  "A9_WING_L_ROOT_SEAL_STOP_PLATE",
+  "A9_WING_L_SLIDE_BALL_SCREW",
+  "A9_WING_L_SLIDE_MOTOR",
+  "A9_WING_L_SLIDE_NUT_ARM",
+  "A9_WING_L_SLIDE_NUT_CARRIAGE",
+  "A9_WING_L_TONGUE_CARRY_THROUGH_BOX",
+  "A9_WING_R_AILERON",
+  "A9_WING_R_AILERON_ROTARY_EMA",
+  "A9_WING_R_FLAP",
+  "A9_WING_R_FLAP_ROTARY_EMA",
+  "A9_WING_R_LOCK_ACTUATOR_REAR_IN",
+  "A9_WING_R_LOCK_ACTUATOR_REAR_OUT",
+  "A9_WING_R_LOCK_PIN_FRONT_IN",
+  "A9_WING_R_LOCK_PIN_FRONT_OUT",
+  "A9_WING_R_LOCK_PIN_REAR_IN",
+  "A9_WING_R_LOCK_PIN_REAR_OUT",
+  "A9_WING_R_PANEL_CFRP_TORSION_BOX",
+  "A9_WING_R_ROOT_SEAL_STOP_PLATE",
+  "A9_WING_R_SLIDE_BALL_SCREW",
+  "A9_WING_R_SLIDE_MOTOR",
+  "A9_WING_R_SLIDE_NUT_ARM",
+  "A9_WING_R_SLIDE_NUT_CARRIAGE",
+  "A9_WING_R_TONGUE_CARRY_THROUGH_BOX"
+ ],
+ "changed": [
+  "JOINT_LEG_SLIDE_FL",
+  "JOINT_LEG_SLIDE_FR",
+  "JOINT_LEG_SLIDE_RL",
+  "JOINT_LEG_SLIDE_RR",
+  "JOINT_WHEEL_POD_FL",
+  "JOINT_WHEEL_POD_FR",
+  "JOINT_WHEEL_POD_RL",
+  "JOINT_WHEEL_POD_RR",
+  "PHANTOM_A8_INTEGRATED_DUCTED_FACETED_CFRP_HULL",
+  "PHANTOM_CARBON_CENTRAL_REAR_DORSAL",
+  "PHANTOM_FRONT_LEFT_FENDER_TOP_RIDGE",
+  "PHANTOM_FRONT_LEFT_WIDEBODY_ANGULAR_FENDER",
+  "PHANTOM_FRONT_RIGHT_FENDER_TOP_RIDGE",
+  "PHANTOM_FRONT_RIGHT_WIDEBODY_ANGULAR_FENDER",
+  "PHANTOM_LEFT_AFT_WHEEL_TO_ENGINE_FAIRING",
+  "PHANTOM_LEFT_ANGULAR_RAKED_V_TAIL",
+  "PHANTOM_LEFT_BOOSTER_FAIRING_TAPER",
+  "PHANTOM_LEFT_CANOPY_GASKET_LINE",
+  "PHANTOM_LEFT_FIN_AMBER_RAKE",
+  "PHANTOM_LEFT_NOSE_TO_WHEEL_SHOULDER",
+  "PHANTOM_LEFT_SIDEBLADE_AMBER",
+  "PHANTOM_LEFT_TRIANGULAR_COUP\u00c9_SIDEGLASS",
+  "PHANTOM_REAR_LEFT_FENDER_TOP_RIDGE",
+  "PHANTOM_REAR_LEFT_WIDEBODY_ANGULAR_FENDER",
+  "PHANTOM_REAR_RIGHT_FENDER_TOP_RIDGE",
+  "PHANTOM_REAR_RIGHT_WIDEBODY_ANGULAR_FENDER",
+  "PHANTOM_RIGHT_AFT_WHEEL_TO_ENGINE_FAIRING",
+  "PHANTOM_RIGHT_ANGULAR_RAKED_V_TAIL",
+  "PHANTOM_RIGHT_BOOSTER_FAIRING_TAPER",
+  "PHANTOM_RIGHT_CANOPY_GASKET_LINE",
+  "PHANTOM_RIGHT_FIN_AMBER_RAKE",
+  "PHANTOM_RIGHT_NOSE_TO_WHEEL_SHOULDER",
+  "PHANTOM_RIGHT_SIDEBLADE_AMBER",
+  "PHANTOM_RIGHT_TRIANGULAR_COUP\u00c9_SIDEGLASS",
+  "TUB_L_BONDED_ROOF_SHEAR_LONGERON",
+  "TUB_L_REAR_CONTINUOUS_SHEAR_WALL",
+  "TUB_R_BONDED_ROOF_SHEAR_LONGERON",
+  "TUB_R_REAR_CONTINUOUS_SHEAR_WALL"
+ ],
+ "preservation": {
+  "schemaVersion": "1.0",
+  "targets": [
+   {
+    "objectId": "704946b1-9ed6-4520-bd54-0a63ba554ab3",
+    "allowedChanges": [
+     "transform"
+    ]
+   },
+   {
+    "objectId": "f10c6639-ea99-43c2-b5c3-2e6b360554cf",
+    "allowedChanges": [
+     "transform"
+    ]
+   },
+   {
+    "objectId": "a75dce6b-175e-437f-b460-26f0870b084f",
+    "allowedChanges": [
+     "transform"
+    ]
+   },
+   {
+    "objectId": "4920ad8d-8d7e-465a-a5e2-2402088960b7",
+    "allowedChanges": [
+     "transform"
+    ]
+   },
+   {
+    "objectId": "cb4b3634-79aa-4af8-9221-014975826f98",
+    "allowedChanges": [
+     "transform"
+    ]
+   },
+   {
+    "objectId": "43383fb5-98b3-4d94-8414-2ab3084ddc7c",
+    "allowedChanges": [
+     "transform"
+    ]
+   },
+   {
+    "objectId": "fc2fcf82-02b3-4b44-ad47-704b4460506d",
+    "allowedChanges": [
+     "transform"
+    ]
+   },
+   {
+    "objectId": "8a8eaeb3-6315-412b-8c75-5f3c7d565e9e",
+    "allowedChanges": [
+     "transform"
+    ]
+   },
+   {
+    "objectId": "fabea4a8-a5c5-414b-898c-395b06ff8f2d",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "1ef0c8cd-1d61-473e-ab95-3ad18909a908",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "50fd5f38-089e-4c34-86ca-d3a5ebdeaff5",
+    "allowedChanges": [
+     "geometry",
+     "materials"
+    ]
+   },
+   {
+    "objectId": "59f55dd8-78a9-4ded-92a4-76dfefdf10ab",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "fcfb84f5-9cc7-405c-95e1-183d75c916c2",
+    "allowedChanges": [
+     "geometry",
+     "materials"
+    ]
+   },
+   {
+    "objectId": "abdf1f86-5f88-4983-af57-a68da4468d5c",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "3d84e13b-77aa-41cc-9d24-0d01cd7364c2",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "f7de4633-b253-4861-bff5-9bf3671eb39e",
+    "allowedChanges": [
+     "geometry",
+     "transform"
+    ]
+   },
+   {
+    "objectId": "7a1b6560-ab8d-45db-99f2-49043ca6c189",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "7b1138e7-06fa-4646-aff5-f8ef69b3a5d6",
+    "allowedChanges": [
+     "geometry",
+     "materials"
+    ]
+   },
+   {
+    "objectId": "264e359c-880d-435d-9420-851f1f063dd8",
+    "allowedChanges": [
+     "geometry",
+     "transform"
+    ]
+   },
+   {
+    "objectId": "04ead70f-158a-4a3f-bb0d-3f23763696f9",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "c1d08bd5-31d1-471e-96ae-8fd4b164751b",
+    "allowedChanges": [
+     "geometry",
+     "materials"
+    ]
+   },
+   {
+    "objectId": "56735875-8cbf-45dd-9e29-3162bc35a44b",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "af860b7a-b0a1-475c-8909-08b13a5d4c66",
+    "allowedChanges": [
+     "geometry",
+     "materials"
+    ]
+   },
+   {
+    "objectId": "c54dfb9f-731c-431d-8d36-51a2a353bd85",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "ea1255c5-257e-4ee4-afe2-0aafa778a968",
+    "allowedChanges": [
+     "geometry",
+     "materials"
+    ]
+   },
+   {
+    "objectId": "7a3b52a9-f152-43e9-a621-7b409f9f1efe",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "758ee321-aaf6-4232-a845-3662ba2e9879",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "7609726f-f076-42ab-af2d-555536e48181",
+    "allowedChanges": [
+     "geometry",
+     "transform"
+    ]
+   },
+   {
+    "objectId": "45dcb454-53aa-4333-afed-92250533d7f7",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "134edaa1-e1d7-4986-a0c7-db6ba3353e7a",
+    "allowedChanges": [
+     "geometry",
+     "materials"
+    ]
+   },
+   {
+    "objectId": "dc3dddc7-a653-453e-a92a-350b8b405981",
+    "allowedChanges": [
+     "geometry",
+     "transform"
+    ]
+   },
+   {
+    "objectId": "ba2bd1c6-ed9f-4c2e-91a8-7dbd1d04c56d",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "983b0eba-4887-4f67-ac10-2d7cab25ca23",
+    "allowedChanges": [
+     "geometry",
+     "materials"
+    ]
+   },
+   {
+    "objectId": "c53147ed-e29f-46ad-a22c-d9fbd6e4b536",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "c0081057-09b0-4748-99dd-de4d20f02ba0",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "1cb00e91-fdb3-4806-a93c-63e255b87341",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "fd05ed76-1b6e-4a15-ba36-fef2adac2f77",
+    "allowedChanges": [
+     "geometry"
+    ]
+   },
+   {
+    "objectId": "51814831-f92c-437c-a0f8-8c9ac2be1f48",
+    "allowedChanges": [
+     "geometry"
+    ]
+   }
+  ],
+  "toleranceMicrometers": 0
+ }
+}
