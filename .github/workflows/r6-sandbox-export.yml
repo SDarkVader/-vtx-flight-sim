@@ -1,0 +1,60 @@
+name: VTX R6 private sandbox export
+on:
+  push:
+    branches:
+      - 'sandbox/r6-flight-export-20261102'
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout private engineering source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Package source and exact R6 GLB without flight logs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, tarfile
+          roots = [
+              'src', 'public', 'scripts', 'tools', 'tests', 'inputs',
+              'evidence/source', 'requirements.txt', 'pyproject.toml',
+              'VERSION.txt', 'evidence/r6_clearance_audit.json',
+              'evidence/argon_task01_transmission_tanks.json',
+              'evidence/ARGON_CALIBRATION_REPORT.md',
+              'docs/LIVE_ACCESS.md', 'docs/PERSISTENT_PILOT_STATION.md',
+          ]
+          glb = Path('public/assets/airframe-r6.glb')
+          assert glb.is_file(), 'R6 airframe asset missing'
+          files = []
+          for root in roots:
+              p = Path(root)
+              if p.is_file():
+                  files.append(p)
+              elif p.is_dir():
+                  files.extend(x for x in p.rglob('*') if x.is_file() and not x.is_symlink())
+          files = sorted(set(files))
+          manifest = {
+              'commit': '18992323bc31874e4b510b45de46ed337b4933e1',
+              'r6_asset_sha256': hashlib.sha256(glb.read_bytes()).hexdigest(),
+              'r6_asset_bytes': glb.stat().st_size,
+              'file_count': len(files),
+          }
+          Path('vtx-r6-export-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+          files.append(Path('vtx-r6-export-manifest.json'))
+          with tarfile.open('vtx-r6-sandbox-source.tar.gz', 'w:gz') as archive:
+              for file in files:
+                  archive.add(file, arcname=file.as_posix(), recursive=False)
+          print(json.dumps(manifest))
+          print('Archive bytes:', Path('vtx-r6-sandbox-source.tar.gz').stat().st_size)
+          PY
+      - name: Upload short-lived private R6 artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: vtx-r6-sandbox-source
+          path: vtx-r6-sandbox-source.tar.gz
+          if-no-files-found: error
+          retention-days: 1
