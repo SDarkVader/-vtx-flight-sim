@@ -442,7 +442,7 @@ class Laboratory:
                   authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
                   stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
-                  airframe_variant=request.get('airframe_variant','light'),
+                  airframe_variant=request.get('airframe_variant',old.get('airframe_variant','light')),
                   fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
                   engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
                   label='Explicit retry of '+hint['run_id'])
