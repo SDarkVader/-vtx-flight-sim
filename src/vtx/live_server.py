@@ -410,6 +410,27 @@ class Laboratory:
         self.checkpoint(force=True)
         return dict(run_id=self.run_id,observation=self.sensor_observation())
 
+    def update_destination(self, destination):
+        """Retarget the current sortie without altering the aircraft or pilot authority."""
+        if not self.active:
+            raise HTTPException(409, 'Start a sortie before changing its live destination')
+        if not isinstance(destination, list) or len(destination) != 2 or any(
+            isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x)
+            for x in destination
+        ):
+            raise HTTPException(422, 'Destination must be two finite map coordinates')
+        point = MapPoint(*destination)
+        mission = select_mission(self.world.id, self.world.version,
+                                 MapPoint(*self.mission['departure']), point, self.world)
+        previous = list(self.mission['destination'])
+        self.mission['destination'] = list(destination)
+        self.mission['destination_z_m'] = mission.destination_surface_z_m
+        self.settled_s = 0.
+        self.log('destination_changed', dict(previous=previous, destination=destination,
+                 destination_z_m=mission.destination_surface_z_m, t_s=float(self.aircraft.data.time)))
+        self.checkpoint(force=True)
+        return dict(run_id=self.run_id, destination=self.mission['destination'],
+                    destination_z_m=self.mission['destination_z_m'])
     def accept_action(self,a:Action):
         if not self.active:raise HTTPException(409,'No active sortie')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
@@ -622,6 +643,12 @@ async def update_destination(request:dict):
 async def mission(request:Mission):
     try:return lab.start(request)
     except ValueError as e:raise HTTPException(422,str(e))
+@app.post('/api/destination')
+async def destination(request:dict):
+    try:
+        return lab.update_destination(request.get('destination'))
+    except ValueError as e:
+        raise HTTPException(422,str(e))
 @app.post('/api/action')
 async def action(a:Action):
     try:return lab.accept_action(a)
