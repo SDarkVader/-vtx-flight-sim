@@ -26,8 +26,8 @@ else:
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROLS = ROOT / "tools" / "pilot_controls.json"
-STATUS = ROOT / "pilot" / "pilot_status.json"
-EVENTS = ROOT / "pilot" / "pilot_events.jsonl"
+STATUS = Path(os.environ.get("LOCALAPPDATA", str(ROOT / "pilot"))) / "VTX" / "r6-live" / "pilot_status.json"
+EVENTS = STATUS.with_name("pilot_events.jsonl")
 BASE = "http://192.168.55.121:8765"
 SAFE = dict(engine=0.0, collective_deg=[0.0]*4,
             tilt_deg=[[0.0,0.0] for _ in range(4)],
@@ -208,7 +208,7 @@ class Pilot:
             self.refresh_calibration(request(self.base,"/api/observe"))
             self.status_update(state="paused",authority="colin",calibration=self.calibration,calibration_error=self.calibration_error)
             return
-        if self.settings_run!=run:
+        if self.settings_run!=run and cfg["armed"] and cfg["arm_run_id"]==run:
             result=request(self.base,"/api/operator",{
                 "experimental_assist_wire":cfg["experimental_assist_wire"],
                 "stability_assist":cfg["stability_assist"]})
@@ -231,7 +231,7 @@ class Pilot:
                        attitude=attitude,rates=rates)
         armed=matched and self.blocked_serial!=cfg["serial"] and not guard
         setpoints={k:cfg[k] for k in SAFE} if armed else dict(SAFE)
-        if now-self.last_sent>=0.55:
+        if armed and now-self.last_sent>=0.55:
             action={**setpoints,"authority":"colin","observation_id":obs["observation_id"],
                     "reason":cfg["reason"] if armed else "Persistent pilot safe idle / disarmed heartbeat"}
             ack=request(self.base,"/api/action",action)
@@ -256,7 +256,7 @@ def main():
     parser.add_argument("--once",action="store_true",help="Single monitoring step")
     args=parser.parse_args()
     pilot=Pilot(base=args.base)
-    print("VTX PERSISTENT PILOT",args.base,"cabin leveling OFF",flush=True)
+    print("VTX PERSISTENT PILOT",args.base,"disarmed unless explicitly authorized",flush=True)
     while True:
         try:
             pilot.tick()
