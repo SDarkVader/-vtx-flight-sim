@@ -1,0 +1,20 @@
+# Mobile / PC-free connection investigation — 3 November 2026
+
+## Evidence reviewed
+
+- `20261031T114125-81987f`: cloud-hosted flight with user-reported phone disconnection, later manual takeover and landing observations. Local native `metadata.json`, `summary.json`, and `events.jsonl.gz` were inspected. The original outcome remains `airborne attempt ended`, reason `server shutdown`.
+- `20261101T151650-a47d96`: Raymond Flight Two observation recorder, a separate PC-local run. It is not the same run as the cloud flight. The later recovery run `20261101T152613-3de759` ended in a recorded collision; see `docs/RAYMOND_COCKPIT_LOG_2026-11-01.md`.
+- Read-only Vercel Sandbox session and snapshot metadata for project `prj_elJEQpC8KCD9BFprF5mWeCoHfoLH`, named sandbox `vtx-flight-lab`, session `sbx_b37cN7XskUOv9rYsdH3rbL1CKzWg`.
+
+## Findings
+
+1. The 31 October cloud session started at 11:41:07.587 UTC and stopped at 12:26:11.868 UTC, after 2,704.281 s with a configured 2,700 s (45 min) timeout. The matching simulator sortie logged `sortie_end` at 12:26:07.774 UTC, reason `server shutdown`, about 4.1 s before the session ended. This timing strongly supports sandbox expiration as the cause of that final service loss. It does not establish the cause of any earlier phone connection drop.
+2. In the same native log, authority changed from Colin to manual at 11:51:35.735 UTC; a command lease expired at 12:07:49.175 UTC (31.675 simulation seconds), and the recorded behavior was feather collective and engine idle. At that run's 0.02× clock, five simulated seconds corresponds to about 250 seconds of wall time, provided the clock is keeping pace. The event does not identify why commands stopped; do not attribute it to a specific network failure without client logs.
+3. The flight log contains no per-client WebSocket disconnect/reconnect events, close code, phone connectivity state, or server-side manual owner identifier. Consequently it cannot determine whether an earlier interruption originated in the phone, browser, tunnel, pilot process, server load or another layer.
+4. The current frontend reconnects a closed WebSocket after a fixed two seconds. A live pilot's browser heartbeat and the physics clock are independent: a disconnected or suspended phone does not pause the aircraft. A command lease expiry changes aircraft inputs and is not automatic recovery. The existing browser ownership coordination is local to cooperating tabs; the server does not enforce an exclusive per-phone manual lease.
+5. The named sandbox was stopped at inspection. Its most recent snapshot was reported created and expires **9 November 2026 at 02:51:05 UTC** unless retention changes. Snapshot retention is not equivalent to a live service or a verified independent backup. The cloud filesystem was not reopened or copied during this read-only inspection; the known cloud flight has a local compressed event log and summary. Do not assume every run is backed up until inventories are compared.
+6. Current checkpoint code stores flight state periodically and restores a matching checkpoint paused, but the historical cloud version and this stopped snapshot were not tested for recovery in this investigation. A sandbox snapshot alone does not restart the service, provide an always-on address, or keep physics running between sessions.
+
+## Next engineering work
+
+Use a stateful cloud service with an independent persistent volume and off-host backups rather than an expiring 45-minute sandbox for uninterrupted PC-free operation. Decide explicitly with the operator what should happen on loss of the controlling client; pausing is a simulator policy change, not an implicit safe landing. Add visible connection/recording status, WebSocket close and reconnect diagnostics, authoritative ownership and stale-command handling. Preserve existing model and run history. Test real browser/network interruptions, process restart and storage recovery in an isolated environment, including manual takeover, run ID continuity and evidence integrity. No new hosting, flight, or deployment was performed as part of this investigation.

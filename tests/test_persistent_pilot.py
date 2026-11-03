@@ -47,7 +47,7 @@ class FakeServer:
         raise AssertionError(path)
 
 
-def test_link_requires_session_binding_and_no_cabin_level():
+def test_link_requires_session_binding_with_cabin_level():
     with TemporaryDirectory() as tmp:
         directory=Path(tmp)
         controls=directory/"controls.json"
@@ -60,12 +60,26 @@ def test_link_requires_session_binding_and_no_cabin_level():
         with patch("tools.persistent_pilot.request",side_effect=fake):
             pilot.tick(now=100)
             assert fake.actions[-1]["engine"]==0
-            assert fake.actions[-1]["cabin_level"] is False
+            assert fake.actions[-1]["cabin_level"] is True
             cfg["arm_run_id"]="run-a"
             controls.write_text(json.dumps(cfg))
             pilot.tick(now=101)
             assert fake.actions[-1]["engine"]==0.4
-            assert fake.actions[-1]["cabin_level"] is False
+            assert fake.actions[-1]["cabin_level"] is True
+
+
+def test_explicit_cabin_level_opt_out_is_respected_for_armed_pilot():
+    with TemporaryDirectory() as tmp:
+        directory=Path(tmp)
+        controls=directory/'controls.json'
+        cfg=dict(DEFAULT,armed=True,arm_run_id='run-a',serial=1,cabin_level=False,
+                 engine=.4,reason='Manual cabin test')
+        controls.write_text(json.dumps(cfg))
+        pilot=Pilot(controls=controls,status=directory/'status.json',events=directory/'events.jsonl')
+        fake=FakeServer()
+        with patch('tools.persistent_pilot.request',side_effect=fake):
+            pilot.tick(now=100)
+            assert fake.actions[-1]['cabin_level'] is False
 
 
 def test_crash_retries_disarmed_and_keeps_lineage():
@@ -87,7 +101,7 @@ def test_crash_retries_disarmed_and_keeps_lineage():
             assert fake.retry_calls[0]["stability_assist"]==1
             pilot.tick(now=106)
             assert fake.actions[-1]["engine"]==0
-            assert fake.actions[-1]["cabin_level"] is False
+            assert fake.actions[-1]["cabin_level"] is True
             assert len(fake.operators)==2
 
 
@@ -122,10 +136,10 @@ def test_manual_pause_and_guard_disallow_control():
             assert fake.actions[-1]["engine"]==0.7
 
 
-def test_rejects_cabin_level_and_excessive_tilt():
+def test_rejects_invalid_cabin_level_and_excessive_tilt():
     with TemporaryDirectory() as tmp:
         path=Path(tmp)/"controls.json"
-        cfg=dict(DEFAULT,cabin_level=True)
+        cfg=dict(DEFAULT,cabin_level="on")
         path.write_text(json.dumps(cfg))
         try:
             load_config(path)
@@ -160,7 +174,7 @@ def test_interrupted_colin_sortie_restarts_from_metadata_not_airborne_state():
             assert fake.retry_calls[0]["authority"]=="colin"
             pilot.tick(now=101)
             assert fake.actions[-1]["engine"]==0
-            assert fake.actions[-1]["cabin_level"] is False
+            assert fake.actions[-1]["cabin_level"] is True
 
 
 def test_does_not_recover_interrupted_manual_sortie():
