@@ -101,10 +101,37 @@ class Mission(BaseModel):
 
 
 def mission_dump(request):
-    """Legacy metadata stays byte-identical: the optional phantom block is omitted when unset."""
+    """Legacy metadata stays byte-identical: the optional phantom block is omitted when unset.
+
+    Phantom requests also record whether the top-level fuel_kg was set by the
+    operator; an unset value is the four-fan default and is not Phantom fuel."""
     d=request.model_dump()
     if d.get('phantom') is None:d.pop('phantom',None)
+    if phantom_live.is_phantom_variant(d.get('airframe_variant')):d['fuel_kg_explicit']='fuel_kg' in request.model_fields_set
     return d
+
+def foot_clearance_m(p):
+    """Radar clearance: ray straight down from just below the lowest gear foot.
+
+    Replaces the former fixed cabin-sphere point (read 0.75 m on the gear and
+    ignored trees, audit F4). The ray uses the MuJoCo scene, so terrain, boxes
+    and trees are all seen."""
+    m,d=p.model,p.data
+    gids=getattr(p,'_foot_gids',None)
+    if gids is None:
+        gids=[g for g in range(m.ngeom) if (mj.mj_id2name(m,mj.mjtObj.mjOBJ_BODY,int(m.geom_bodyid[g])) or '').startswith('gear')]
+        p._foot_gids=gids
+    def lowest(g):
+        R=d.geom_xmat[g].reshape(3,3)
+        if m.geom_type[g]==mj.mjtGeom.mjGEOM_BOX:return float(d.geom_xpos[g][2]-np.abs(R[2])@m.geom_size[g])
+        return float(d.geom_xpos[g][2]-m.geom_rbound[g])
+    low=min(lowest(g) for g in gids)
+    x,y=d.xpos[p.bids['airframe']][:2]
+    gid=np.zeros(1,np.int32)
+    # Start 5 cm above the foot plane under the airframe centre (clear of the airframe, which
+    # sits well above its feet) so a compressed foot never puts the origin inside the terrain.
+    dist=mj.mj_ray(m,d,np.array([x,y,low+.05]),np.array([0.,0.,-1.]),None,1,-1,gid)
+    return max(0.,(dist if dist>=0 else low+.05)-.05)
 
 class Laboratory:
     def __init__(self):
@@ -165,7 +192,8 @@ class Laboratory:
                        time_scale=self.time_scale,paused=self.paused,plant=p.checkpoint_state(),
                        session=dict(action_log=self.action_log,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
                                     lease_expired=self.lease_expired,obs_id=self.obs_id,settled_s=self.settled_s,left_ground=self.left_ground,
-                                    last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state))
+                                    last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state,
+                                    phantom_cg_gate=getattr(self,'phantom_cg_gate',None)))
             return self._write_checkpoint(state)
         state=dict(schema=1,run_id=self.run_id,
                    model_xml_sha256=p.provenance['model_xml_sha256'],
@@ -323,7 +351,9 @@ class Laboratory:
         run_id=state['run_id'];evidence=self.data_root/'evidence/flights'/run_id
         metadata=json.loads((evidence/'metadata.json').read_text())
         if metadata['run_id']!=run_id or (evidence/'summary.json').exists():raise ValueError('Checkpoint does not identify an unfinished sortie')
-        request=Mission(**metadata['request'])
+        saved=dict(metadata['request'])
+        if saved.pop('fuel_kg_explicit',True) is False:saved.pop('fuel_kg',None)
+        request=Mission(**saved)
         candidate=phantom_live.make_aircraft(self.world,request)
         if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:raise ValueError('Checkpoint model differs from current physics model')
         candidate.restore_state(state['plant'])
@@ -340,6 +370,7 @@ class Laboratory:
         self.last_command_time=session['last_command_time'];self.lease_expired=session['lease_expired'];self.obs_id=session['obs_id']
         self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.last_audit_t=session['last_audit_t']
         self.settled_s=session['settled_s'];self.left_ground=session['left_ground'];self.last_checkpoint_t=float(candidate.data.time);self.end_summary=None
+        self.phantom_cg_gate=session.get('phantom_cg_gate');self.phantom_landing_site=None
         self.log('flight_checkpoint_restored',dict(checkpoint_t_s=candidate.data.time,paused=True,pending_actions_cancelled=True,variant=candidate.variant,
                  reason='Explicit operator resume required; physics position and velocity retained'))
         return True
@@ -362,14 +393,14 @@ class Laboratory:
         bid=p.bids['airframe'];q=d.xquat[bid]
         euler=Rotation.from_quat([q[1],q[2],q[3],q[0]]).as_euler('xyz',degrees=True)
         velocity=np.zeros(6);mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,bid,velocity,0)
-        pos=d.xpos[bid];surface=self.world.surface_z(float(pos[0]),float(pos[1]))
+        pos=d.xpos[bid]
         # Quantized independent instruments, not privileged accelerations, thrust,
         # inertia, future trajectory, contact manifold or optimizer state.
         noise=self.sensor_rng.normal
         obs=dict(observation_id=self.obs_id,t_s=round(float(d.time),3),
             gnss_xy_m=np.round(pos[:2]+noise(0,.015,2),2).tolist(),
             baro_m=round(float(pos[2]+noise(0,.01)),2),
-            radar_clearance_m=round(float(pos[2]+1.56-.95-surface+noise(0,.005)),3),
+            radar_clearance_m=round(float(foot_clearance_m(p)+noise(0,.005)),3),
             attitude_xyz_deg=np.round(euler+noise(0,.008,3),3).tolist(),
             gyro_world_deg_s=np.round(np.degrees(velocity[:3])+noise(0,.008,3),3).tolist(),
             gnss_velocity_mps=np.round(velocity[3:]+noise(0,.005,3),3).tolist(),
@@ -389,12 +420,21 @@ class Laboratory:
             mission=self.mission,authority=self.authority,active=self.active,paused=self.paused,
             time_scale=self.time_scale,
             sensor_status='Provisional sensor models: GNSS/baro/IMU/shaft/angle/fuel/gear transducers; no certified sensor integration')
+        # Body-axis channels derived from the already-noised world channels:
+        # no extra RNG draws, so the legacy noise sequence is unchanged (audit F2).
+        Rb=d.xmat[bid].reshape(3,3)
+        obs['gyro_body_deg_s']=np.round(Rb.T@np.array(obs['gyro_world_deg_s']),3).tolist()
+        obs['velocity_body_mps']=np.round(Rb.T@np.array(obs['gnss_velocity_mps']),3).tolist()
+        obs['frame_labels']=dict(attitude_xyz_deg='extrinsic xyz (= ZYX yaw-pitch-roll); roll/pitch already heading-relative',
+            gyro_world_deg_s='world axes',gyro_body_deg_s='airframe body axes',gnss_velocity_mps='world axes',velocity_body_mps='airframe body axes',
+            radar_clearance_m='downward ray from the lowest gear foot to terrain, buildings or trees; ~0 on the gear')
         self.last_obs=obs;self.observations[self.obs_id]=obs
         if len(self.observations)>3000:del self.observations[min(self.observations)]
         self.log('observation',obs)
         return obs
 
     def start(self,request:Mission):
+        self.phantom_landing_site=None;self.phantom_cg_gate=None
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
@@ -426,7 +466,7 @@ class Laboratory:
                   runtime_source_sha256=hashlib.sha256(b''.join(p.read_bytes() for p in sorted((ROOT/'src/vtx').glob('*.py')))).hexdigest(),
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
-                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; experimental rate damping is shadow-only and does not control aircraft')
+                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/engine shutdown; experimental rate damping is shadow-only and does not control aircraft')
         (self.log_path/'metadata.json').write_text(json.dumps(meta,indent=2))
         (self.log_path/'model.xml').write_text(self.aircraft.xml)
         (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
@@ -470,7 +510,7 @@ class Laboratory:
             self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
         if p.data.time-self.last_command_time>5 and not self.lease_expired:
             p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
-            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine idle; no flight rescue'))
+            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine shutdown (spool to 0); no flight rescue'))
         p.step()
         if p.data.time-self.last_audit_t>=.05:
             self.last_audit_t=float(p.data.time)
@@ -491,7 +531,7 @@ class Laboratory:
         if not self.active:return self.end_summary or dict(status='No active sortie')
         self.active=False;self.last_obs=None;p=self.aircraft
         self.checkpoint_path.unlink(missing_ok=True)
-        outcome='landed' if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
+        outcome=('landed_at_departure' if getattr(self,'phantom_landing_site',None)=='departure' else 'landed') if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
         summary=dict(run_id=self.run_id,outcome=outcome,reason=reason,simulated_seconds=float(p.data.time),
                      wall_seconds=time.monotonic()-self.wall_started,decisions=len(self.action_log),
                      left_ground=self.left_ground,max_airframe_origin_altitude_m=p.max_alt,
@@ -514,18 +554,24 @@ class Laboratory:
         hint=self.retry_hint
         if not hint:raise HTTPException(409,'No retained mission to retry')
         old=hint['request']
+        variant=request.get('airframe_variant',old.get('airframe_variant','light'))
+        # Phantom fuel comes from its own options/load state; never inherit the
+        # legacy four-fan fuel default through a retry (flight campaign D-2).
+        fuel_kw={}
+        if not phantom_live.is_phantom_variant(variant):fuel_kw['fuel_kg']=request.get('fuel_kg',old.get('fuel_kg',60.))
+        elif 'fuel_kg' in request:fuel_kw['fuel_kg']=request['fuel_kg']
+        elif old.get('fuel_kg') is not None and old.get('fuel_kg_explicit'):fuel_kw['fuel_kg']=old['fuel_kg']
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
                   authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
                   stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
-                  airframe_variant=request.get('airframe_variant',old.get('airframe_variant','light')),
-                  fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
+                  airframe_variant=variant,**fuel_kw,
                   engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
                   label='Explicit retry of '+hint['run_id'],
                   **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}))
         result=self.start(m)
         self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
-                                      previous_fuel_kg=old.get('fuel_kg',60.),new_fuel_kg=m.fuel_kg,
+                                      previous_fuel_kg=old.get('fuel_kg',60.),new_fuel_kg=m.fuel_kg if not phantom_live.is_phantom_variant(variant) else float(self.aircraft.fuel_initial.sum()),
                                       previous_power_limit_kw=old.get('engine_power_limit_kw',469.8),new_power_limit_kw=m.engine_power_limit_kw))
         return result
 
@@ -537,7 +583,20 @@ class Laboratory:
                     recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
                     end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
 
-lab=Laboratory()
+_lab_instance=None
+
+def get_lab():
+    """Create the Laboratory on first use. Importing this module must not touch
+    evidence: the constructor may write an 'interrupted' summary (audit F16)."""
+    global _lab_instance
+    if _lab_instance is None:_lab_instance=Laboratory()
+    return _lab_instance
+
+class _LazyLab:
+    def __getattr__(self,name):return getattr(get_lab(),name)
+    def __setattr__(self,name,value):setattr(get_lab(),name,value)
+
+lab=_LazyLab()
 
 async def physical_clock():
     last=time.monotonic();accum=0.;seen_run=None;seen_epoch=lab.clock_epoch
@@ -563,6 +622,7 @@ async def physical_clock():
 
 @asynccontextmanager
 async def lifespan(app):
+    get_lab()
     task=asyncio.create_task(physical_clock())
     yield
     if lab.active:

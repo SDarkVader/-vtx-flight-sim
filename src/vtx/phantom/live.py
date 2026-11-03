@@ -17,6 +17,9 @@ from .plant import PhantomAircraft
 from .ledger import config_table
 
 LEASE_S = 5.0
+CG_GATE_SETTLE_S = 1.0          # the aircraft spawns ~0.06 m above its compressed gear (D-3, D-10)
+CG_GATE_MAX_SPEED_M_S = 0.05
+LANDED_GEAR_LOAD_FRACTION = 0.8  # weight on the gear required to call a landing (D-8)
 
 
 class PhantomOptions(BaseModel):
@@ -39,7 +42,10 @@ def is_phantom_variant(v):
 
 def make_aircraft(world, request):
     o = request.phantom or PhantomOptions()
-    fuel = o.fuel_kg if o.fuel_kg is not None else (None if o.load_state in ('FX-A', 'FX-C') else request.fuel_kg)
+    # Mission.fuel_kg defaults to the four-fan 10 kg; it is Phantom fuel only when the operator set it
+    # explicitly (flight campaign D-2). Otherwise: load-state fuel, else full tanks.
+    explicit = 'fuel_kg' in request.model_fields_set
+    fuel = o.fuel_kg if o.fuel_kg is not None else (None if o.load_state in ('FX-A', 'FX-C') or not explicit else request.fuel_kg)
     return PhantomAircraft(world, request.airframe_variant, fuel_kg=fuel, occupants=o.occupants, start_configuration=o.start_configuration,
                            engines_running=o.engines_running, buffer_soc=o.buffer_soc, wind=o.wind_world_m_s,
                            load_state=None if o.load_state == 'nominal' else o.load_state)
@@ -51,13 +57,15 @@ def after_start(lab, request):
     led = dict(components=p.L.records(), configurations=config_table(p.L), live_mass_kg=float(sum(p.model.body_mass)))
     (lab.log_path / 'phantom_ledger.json').write_text(json.dumps(led, indent=1))
     p.step_log = gzip.open(lab.log_path / 'phantom_steps.csv.gz', 'wt')
+    lab.phantom_cg_gate = None
     lab.phantom_wall = dict(started=time.monotonic())
     lab.log('phantom_run_keys', dict(variant=p.variant, config_sha256=p.P.config_sha256, parameter_file_sha256=p.P.file_sha256,
                                      design_proposals=p.P.variant_info.get('design_proposals'), time_scale=lab.time_scale,
                                      fbw_mode=p.fcc.cmd['stability_mode'], fbw_gains={k: v['v'] for k, v in p.P.tree['fbw'].items()},
                                      load_state=p.load_state, occupants=p.L.occupants, fuel_kg=p.fuel.tolist(),
                                      options=(request.phantom.model_dump() if request.phantom else None),
-                                     cg_gate=leg_load_cg_gate(p),
+                                     cg_gate=dict(status='pending', evaluate_after_s=CG_GATE_SETTLE_S,
+                                                  note='evaluated once settled on the gear, logged as cg_gate'),
                                      source_status_map={k: v['l'] for k, v in _flat(p.P.tree).items()}))
 
 
@@ -87,6 +95,32 @@ def leg_load_cg_gate(p):
     off = cg - (xf + xr) / 2
     gate = p.P['fbw.leg_loadcell_cg_gate_m']
     return dict(status='GO' if abs(off) <= gate else 'NO_GO', cg_x_estimate_m=cg, pod_centroid_offset_m=off, gate_m=gate, leg_loads_n=loads)
+
+
+def maybe_evaluate_cg_gate(lab):
+    """Run the leg load-cell CG gate once, after the spawn drop has settled and before lift-off."""
+    if getattr(lab, 'phantom_cg_gate', None) is not None:
+        return lab.phantom_cg_gate
+    p = lab.aircraft
+    if lab.left_ground or p.airborne:
+        lab.phantom_cg_gate = dict(status='not_evaluated_before_liftoff', t_s=float(p.data.time))
+    elif p.data.time >= CG_GATE_SETTLE_S and float(np.linalg.norm(p.data.qvel[:3])) < CG_GATE_MAX_SPEED_M_S:
+        lab.phantom_cg_gate = dict(leg_load_cg_gate(p), t_s=float(p.data.time))
+    else:
+        return None
+    lab.log('cg_gate', lab.phantom_cg_gate)
+    return lab.phantom_cg_gate
+
+
+def gear_weight_fraction(p):
+    """Share of the weight NOT carried by the lift fans: 1 - (vertical fan thrust / weight).
+
+    Uses the modelled fan thrust (smooth) rather than single-step contact forces, which scatter by
+    +-20 % between solver steps. Boosters are excluded: they thrust along the body x axis."""
+    from .geometry import PODS
+    w = float(sum(p.model.body_mass)) * p.P['atmosphere.gravity_m_s2']
+    lift = sum(float(st.get('thrust_n', 0.0)) * abs(float(p.pod_axis(k)[2])) for k, st in zip(PODS, p.fan_state))
+    return max(0.0, 1.0 - lift / w) if w > 0 else 0.0
 
 
 def sensor_observation(lab):
@@ -149,6 +183,7 @@ def integrate(lab):
         lab.log('physics_audit', p.physical_snapshot())
         lab.sensor_observation()
         lab.checkpoint()
+        maybe_evaluate_cg_gate(lab)
         support = p.support_count()
         if support == 0 and p.data.time > 1:
             lab.left_ground = True
@@ -156,12 +191,16 @@ def integrate(lab):
         speed = float(np.linalg.norm(p.data.qvel[:3]))
         level = float(p.R()[2, 2]) > .98
         near = float(np.linalg.norm(p.data.qpos[:2] - dest)) < 2.
-        if lab.left_ground and support >= 3 and near and level and speed < .15 and not p.crashed:
+        home = float(np.linalg.norm(p.data.qpos[:2] - np.array(lab.mission['departure']))) < 2.
+        # A landing needs the weight on the gear, not just touching feet (D-8).
+        loaded = gear_weight_fraction(p) >= LANDED_GEAR_LOAD_FRACTION
+        if lab.left_ground and support >= 3 and (near or home) and loaded and level and speed < .15 and not p.crashed:
             lab.settled_s += .05
         else:
             lab.settled_s = 0.
         if lab.settled_s >= 2:
-            lab.stop('supported stationary landing at destination')
+            lab.phantom_landing_site = 'destination' if near else 'departure'
+            lab.stop('supported stationary landing at ' + lab.phantom_landing_site)
 
 
 def checkpoint_plant(p):
@@ -175,6 +214,7 @@ def summary_extras(lab):
     mp = p.mass_properties(); E = p.bus.energy
     return dict(variant=p.variant, config_sha256=p.P.config_sha256, time_scale=lab.time_scale, load_state=p.load_state,
                 mass_start_kg=p.provenance['ledger_mass_kg'], mass_end_kg=mp['mass_kg'], energy=E, events=p.events[-100:], faults=p.faults,
-                lease_expired=lab.lease_expired, crash_capture='crash_ring.npz' if p.crashed else None,
+                lease_expired=lab.lease_expired, cg_gate=getattr(lab, 'phantom_cg_gate', None),
+                landing_site=getattr(lab, 'phantom_landing_site', None), crash_capture='crash_ring.npz' if p.crashed else None,
                 material_synthetic_assumptions=['pod fan FM_open and duct sigma', 'turbogenerator mass/SFC/spool', 'buffer power/energy density',
                                                'component masses (ledger)', 'wing polars (handover, SYNTHETIC)', 'ground effect model'])

@@ -14,7 +14,7 @@ def run(level,axis):
  for step in range(400):
   p.step()
   if step in [0,199,399]:
-   vel=np.zeros(6);mj.mj_objectVelocity(p.model,p.data,mj.mjtObj.mjOBJ_BODY,p.bids['airframe'],vel,1)
+   vel=np.zeros(6);mj.mj_objectVelocity(p.model,p.data,mj.mjtObj.mjOBJ_XBODY,p.bids['airframe'],vel,1)
    vals.append(dict(t=round(float(p.data.time),3),rate_deg_s=round(math.degrees(vel[axis]),3),clearance=round(float(p.data.qpos[2]),3),pitch=[round(float(x),3) for x in p.pitch]))
  return dict(assist=level,axis=['roll','pitch'][axis],observations=vals,crashed=p.crashed)
 print(json.dumps([run(level,axis) for axis in range(2) for level in [0,.5,1]],indent=2))

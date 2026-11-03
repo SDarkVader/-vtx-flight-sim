@@ -21,6 +21,7 @@ from .energy_bus import EnergyBus
 from .surface_aero import SurfaceAero
 from .controls import FlightControl, default_command
 
+AIRBORNE_DEBOUNCE_S = 0.25   # continuous no-support time before the plant counts itself airborne
 VEH = dict(contype='2', conaffinity='1', group='3')
 WING_STATES = ('stowed', 'hatch_opening', 'sliding_out', 'pinning', 'locked', 'unpinning', 'sliding_in', 'hatch_closing')
 
@@ -193,6 +194,7 @@ class PhantomAircraft:
         self.motor_torque = np.zeros(4); self.booster_torque = np.zeros(2); self.prop_scale = 1.0
         self.aero_out = dict(force_body=np.zeros(3), moment_body=np.zeros(3), surfaces=[], hinge_moments={})
         self.alloc = {}; self.contacts = {}; self.airborne = False; self.first_contact_sink = None
+        self.no_support_since = None; self.support_force_n = 0.0
         self.ring = np.zeros((int(20 / DT), 32)); self.ring_i = 0; self.ring_full = False
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
@@ -245,6 +247,11 @@ class PhantomAircraft:
         self.data.qvel[:] = 0
         mj.mj_forward(self.model, self.data)
         self.spawn_z = float(self.data.qpos[2])
+        rp = self.data.site_xpos[self.model.site('radar').id]
+        h = self.ray_height(rp, np.array([0, 0, -1.0]))
+        # Radar antenna height above the surface with the feet 5 mm clear; the static gear sink
+        # changes it by a few cm (flight campaign D-18: the offset was unlabelled).
+        self.radar_ground_reference_m = None if h is None else round(h - 0.005, 3)
 
     def apply_fuel_mass(self, force=False):
         m = self.model
@@ -502,7 +509,7 @@ class PhantomAircraft:
     # ------------------------------------------------------------ contacts
     def check_contacts(self):
         d, m = self.data, self.model
-        sup = set(); f6 = np.zeros(6); hard = 0.0
+        sup = set(); f6 = np.zeros(6); hard = 0.0; sup_force = 0.0
         for i in range(d.ncon):
             con = d.contact[i]
             g1, g2 = con.geom1, con.geom2
@@ -513,19 +520,25 @@ class PhantomAircraft:
             fn = abs(f6[0]); name = m.geom(veh).name
             self.max_impact_n = max(self.max_impact_n, fn)
             if name.startswith(('foot_', 'tyre_')):
-                sup.add(name)
+                sup.add(name); sup_force += fn
             else:
                 hard = max(hard, fn)
         if hard > self.P['contact.crash_force_n'] and not self.crashed:
             self.crashed = True; self.events.append(dict(event='collision', t_s=float(d.time), force_n=hard))
-        if not sup and d.time > 1:
+        # Debounced air/ground state: a bounce shorter than AIRBORNE_DEBOUNCE_S is not a new
+        # flight phase, so one touchdown no longer logs several events (flight campaign D-14).
+        if sup:
+            self.no_support_since = None
+        elif self.no_support_since is None:
+            self.no_support_since = float(d.time)
+        if not sup and d.time > 1 and float(d.time) - self.no_support_since >= AIRBORNE_DEBOUNCE_S:
             self.airborne = True
         elif sup and self.airborne:
             sink = float(-d.qvel[2]); self.airborne = False; self.first_contact_sink = sink
             self.events.append(dict(event='touchdown', t_s=float(d.time), sink_rate_m_s=sink, supports=sorted(sup)))
             if sink > self.P['contact.gear_sink_limit_m_s']:
                 self.events.append(dict(event='hard_landing', t_s=float(d.time), sink_rate_m_s=sink)); self.flags.add('hard_landing')
-        self.support = sorted(sup)
+        self.support = sorted(sup); self.support_force_n = sup_force
 
     def support_count(self):
         return len(getattr(self, 'support', []))
@@ -592,6 +605,10 @@ class PhantomAircraft:
             self.STEP_COLS = list(row)
             self.step_log.write(','.join(self.STEP_COLS) + '\n')
         self.step_log.write(','.join(f'{v:.6g}' if isinstance(v, float) else str(v) for v in (row[c] for c in self.STEP_COLS)) + '\n')
+        # Sync-flush once per simulated second so the log is readable mid-run and survives an
+        # abnormal stop up to the last flush (flight campaign D-12).
+        if self.step_count % int(round(1.0 / DT)) == 0:
+            self.step_log.flush()
 
     # ------------------------------------------------------------ telemetry
     def physical_snapshot(self):
@@ -626,10 +643,12 @@ class PhantomAircraft:
         h = self.ray_height(rp, np.array([0, 0, -1.0]))
         return dict(
             frame_labels=dict(attitude='roll right-down +, pitch nose-up +, yaw nose-left + (ENU heading)', body_rates='p roll-right +, q nose-up +, r nose-left + (body axes)',
-                              velocity_body='u forward, v left, w up (body axes)', velocity_world='x, y, z world (z up)'),
+                              velocity_body='u forward, v left, w up (body axes)', velocity_world='x, y, z world (z up)',
+                              radar_altimeter='antenna-to-surface distance along -z world, NOT gear clearance; on the gear it reads about radar_altimeter_ground_reference_m'),
             gnss_xy_m=np.round(d.qpos[:2] + n(0, P['sensors.gnss_noise_m'], 2), 2).tolist(),
             baro_m=round(float(d.qpos[2] + n(0, 0.01)), 2),
             radar_altimeter_m=None if h is None else round(h + n(0, P['sensors.radar_noise_m']), 3),
+            radar_altimeter_ground_reference_m=getattr(self, 'radar_ground_reference_m', None),
             attitude_deg=dict(roll=round(math.degrees(att['roll']) + n(0, P['sensors.attitude_noise_deg']), 3),
                               pitch=round(math.degrees(att['pitch_up']) + n(0, P['sensors.attitude_noise_deg']), 3),
                               yaw=round(math.degrees(att['yaw_left']) + n(0, P['sensors.attitude_noise_deg']), 3)),

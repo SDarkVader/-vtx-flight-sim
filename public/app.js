@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {OrbitControls} from './vendor/OrbitControls.js';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
-import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-5';
+import {tiltFromDirection,cockpitToBody} from './tilt-direction.js?v=fan-direction-6';
 import {zoomDistance} from './camera-zoom.js?v=1';
 import {rotorVisualOffset} from './rotor-visual.js?v=1';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
@@ -260,10 +260,12 @@ setInterval(()=>{
  if(!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames||!keys.size)return;
  const down=k=>keys.has(k)?1:0,delta=.12;
  const lift=(down('KeyR')-down('KeyF'))*delta;
- const pitch=(down('KeyW')-down('KeyS'))*.06,roll=(down('KeyD')-down('KeyA'))*.06;
+ let pitch=(down('KeyW')-down('KeyS'))*.06,roll=(down('KeyD')-down('KeyA'))*.06;
  const yaw=(down('KeyE')-down('KeyQ'))*.15;
- const tx=(down('ArrowUp')-down('ArrowDown'))*.15;
- const ty=(down('ArrowRight')-down('ArrowLeft'))*.15;
+ let tx=(down('ArrowUp')-down('ArrowDown'))*.15;
+ let ty=(down('ArrowRight')-down('ArrowLeft'))*.15;
+ // In the cockpit the pilot looks along cabin -Y: map pilot-relative keys to body axes (audit F14).
+ if(cameraMode==='cockpit'){const cy=last.observation?.cabin_feedback_deg?.[2]??0;[tx,ty]=cockpitToBody(tx,ty,cy);[pitch,roll]=cockpitToBody(pitch,roll,cy);}
  // Collective torque mix: north/south produce body X torque; east/west Y.
  const differential=[-roll,pitch,roll,-pitch];
  const yawX=[-yaw,0,yaw,0],yawY=[0,-yaw,0,yaw];
@@ -300,7 +302,7 @@ function drawMap(canvas){
 
 let lastMapMs=0;
 function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return;lastMapMs=performance.now();drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
-function updateEngineering(){if(!last)return;const t=last.rendering_truth,o=last.observation;$('engineering-content').textContent=JSON.stringify({live:{simulation_time_s:o.t_s,observation_id:o.observation_id,clock_scale:last.time_scale,active:last.active,paused:last.paused,authority:last.authority,command_warnings:o.warning_lamps,rotor_rpm:o.rotor_rpm,shaft_torque_nm:o.shaft_torque_nm,shaft_power_kw:o.engine_shaft_kw,collective_deg:o.collective_feedback_deg,fan_tilt_deg:o.tilt_feedback_deg,cabin_gimbal_deg:o.cabin_feedback_deg,attitude_deg:o.attitude_xyz_deg,angular_rate_deg_s:o.gyro_world_deg_s,velocity_m_s:o.gnss_velocity_mps,clearance_m:o.radar_clearance_m,fuel_kg:o.fuel_kg,scheduler_backlog_s:o.scheduler_backlog_s},engineering:{revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses}},null,2);}
+function updateEngineering(){if(!last)return;const t=last.rendering_truth,o=last.observation;$('engineering-content').textContent=JSON.stringify({live:{simulation_time_s:o.t_s,observation_id:o.observation_id,clock_scale:last.time_scale,active:last.active,paused:last.paused,authority:last.authority,command_warnings:o.warning_lamps,rotor_rpm:o.rotor_rpm,shaft_torque_nm:o.shaft_torque_nm,shaft_power_kw:o.engine_shaft_kw,collective_deg:o.collective_feedback_deg,fan_tilt_deg:o.tilt_feedback_deg,cabin_gimbal_deg:o.cabin_feedback_deg,attitude_deg:o.attitude_xyz_deg,angular_rate_world_deg_s:o.gyro_world_deg_s,angular_rate_body_deg_s:o.gyro_body_deg_s,velocity_world_m_s:o.gnss_velocity_mps,velocity_body_m_s:o.velocity_body_mps,clearance_m:o.radar_clearance_m,fuel_kg:o.fuel_kg,scheduler_backlog_s:o.scheduler_backlog_s},engineering:{revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses}},null,2);}
 function updateView(v){last=v;latestTruthReceivedMs=performance.now();
  if(v.rendering_truth?.phantom){phantomPanel??=createPhantomPanel({api,toast});phantomPanel.show(true);phantomPanel.update(v);$('start').disabled=v.active;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';$('state').textContent=v.active?'LIVE EXPERIMENT · PHANTOM':'INSPECTION';return;}phantomPanel?.show(false);
  // Always ingest the latest physical pose; avoid repainting the entire HUD at

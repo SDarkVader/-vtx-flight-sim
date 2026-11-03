@@ -181,6 +181,25 @@ def hover(variant, load_state=None, seconds=10.0):
                 crashed=a.crashed, energy_balance_residual_j=a.bus.energy['residual_j'], fuel_used_kg=float(a.fuel_initial.sum() - a.fuel.sum()))
 
 
+def allocator_ceiling(variant, load_state=None, seconds=3.0):
+    """Thrust the FBW allocator actually delivers at full collective, as a fraction of weight.
+
+    `collective_margin` in hover() is the ideal 4*T_max/W - 1. It ignores the CG pod share, the
+    attitude-priority desaturation and the motor/generator power limits, so it overstated the
+    as-drawn aircraft (flight campaign D-9: bench 0.79 W against a live ceiling of 0.53 W)."""
+    a = plant(variant, load_state=load_state)
+    W_n = float(sum(a.model.body_mass)) * a.P['atmosphere.gravity_m_s2']
+    a.set_command(dict(stability_mode='attitude', collective=1.0, brake=[0] * 4))
+    peak = 0.0; per_pod = [0.0] * 4
+    for _ in range(int(round(seconds / DT))):
+        a.step()
+        T = [s.get('thrust_n', 0.0) * abs(float(a.pod_axis(k)[2])) for k, s in zip(PODS, a.fan_state)]
+        if sum(T) > peak:
+            peak = sum(T); per_pod = T
+    return dict(variant=variant, load_state=load_state, delivered_peak_w=peak / W_n, ideal_w=4 * a.fan.thrust_max / W_n,
+                per_pod_n=per_pod, left_ground=bool(not a.support), power_limited=bool(a.prop_scale < 0.999))
+
+
 def energy_residual(variant):
     a = plant(variant)
     a.set_command(dict(collective=0.4, stability_mode='rate_damping', brake=[0] * 4)); run(a, 3)
@@ -198,6 +217,7 @@ def main():
                          ('power_limited_thrust', power_limited), ('mass_update', mass_update), ('contact_no_pose_jumps', contact_jumps), ('energy_residual', energy_residual)]:
             r[name] = fn(v); print(v, name, 'done', round(time.time() - t, 1), flush=True)
         r['hover'] = [hover(v)] + ([hover(v, 'FX-C'), hover(v, 'FX-A')] if v == 'phantom-fx' else [])
+        r['allocator_ceiling'] = allocator_ceiling(v)
     out['wall_s'] = time.time() - t
     (ROOT / 'evidence/phantom/phantom_bench_results.json').write_text(json.dumps(out, indent=1, default=float))
     print(json.dumps({v: {k: (x.get('passed') if isinstance(x, dict) and 'passed' in x else '...') for k, x in r.items()} for v, r in out['results'].items()}, indent=1))

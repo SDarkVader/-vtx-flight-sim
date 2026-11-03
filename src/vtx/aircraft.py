@@ -46,7 +46,7 @@ def proposed_variator_components():
     Status: PROPOSED_VARIATOR_ARCHITECTURE_CANDIDATE (not in source CAD).
     Places coaxial 20:60 4-planet epicyclic variator (Ø220x120mm, 8.5kg) +
     EMRAX 268 axial-flux motor-generator (Ø268x91mm, 20.5kg) at the base of
-    each vertical column F1..F4 (r=2.600m, z=0.420..0.641m), plus twin dual-channel
+    each vertical column F1..F4 (r=2.600m, z=0.660..0.881m), plus twin dual-channel
     SiC inverters (2x9.5kg) and twin DC-bus/cooling/lube modules (2x7.0kg) in
     the lower truss bay at (±0.650, ±0.650, 0.300m). Total net delta: +149.0 kg.
     """
@@ -126,7 +126,7 @@ def inertial(parent,info,pivot):
 def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_fuel_kg=None,variator_package=False):
     xml=ET.Element('mujoco',model='VTX-P0-V4A-experimental')
     ET.SubElement(xml,'compiler',angle='radian',autolimits='true',inertiafromgeom='false',fusestatic='false')
-    ET.SubElement(xml,'option',timestep=str(DT),gravity=f'0 0 {-G}',integrator='implicitfast',
+    ET.SubElement(xml,'option',timestep=str(DT),gravity=f'0 0 {-G}',integrator='implicit',
                   solver='Newton',iterations='50',tolerance='1e-10',cone='elliptic',jacobian='dense')
     size=ET.SubElement(xml,'size',njmax='4000',nconmax='2000')
     default=ET.SubElement(xml,'default')
@@ -409,8 +409,10 @@ class Aircraft:
         # actuators. Keep the same physical ranges, but slew operator inputs
         # slowly enough to observe and counter the response.
         if self.stability_assist and self.step_count%20==0:
+            # Body-axis rates: XBODY uses xmat (body frame). mjOBJ_BODY with
+            # flg_local rotates into the principal-inertia frame (audit F1).
             body_velocity=np.zeros(6)
-            mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,self.bids['airframe'],body_velocity,1)
+            mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_XBODY,self.bids['airframe'],body_velocity,1)
             self.assisted_collective_deg=assisted_collective(self.command['collective_deg'],np.degrees(body_velocity[:3]),self.stability_assist)
         elif not self.stability_assist:self.assisted_collective_deg=list(self.command['collective_deg'])
         pitch_target=self.assisted_collective_deg if self._bench_apply_experimental_assist else self.command['collective_deg']
@@ -458,7 +460,7 @@ class Aircraft:
         d.qfrc_applied[self.vadr['rotor1_spin']]+=torque
         engine_power=torque*max(omega,0)/.95+servo_power
         burn=engine_power/3.6e6*.4*DT
-        if burn>0:self.fuel=np.maximum(self.fuel-burn/4,0.)
+        if burn>0:self.draw_fuel(burn)
         chemical=burn/DT*43e6
         self.power=dict(engine_w=engine_power,rotor_aero_w=aero_power,servo_w=servo_power,
                         gear_loss_w=torque*max(omega,0)*(1/.95-1),fuel_chemical_w=chemical)
@@ -477,6 +479,17 @@ class Aircraft:
         altitude=float(d.xpos[self.bids['airframe'],2]-self.world.surface_z(*d.xpos[self.bids['airframe'],:2]))
         self.max_alt=max(self.max_alt,altitude)
         if not np.all(np.isfinite(d.qpos)) or not np.all(np.isfinite(d.qvel)):raise RuntimeError('Nonfinite physical state')
+
+    def draw_fuel(self,burn):
+        """Draw burn mass from the tanks that still hold fuel, conserving the total.
+
+        The former equal quarter split discarded an empty tank's share (audit F3)."""
+        remaining=float(burn)
+        while remaining>1e-15 and (self.fuel>0).any():
+            live=self.fuel>0;share=remaining/live.sum()
+            take=np.minimum(self.fuel[live],share);self.fuel[live]-=take;remaining-=float(take.sum())
+        if not (self.fuel>0).any():self.flags.add('FUEL_EXHAUSTED')
+        return float(burn)-remaining
 
     def check_contacts(self):
         for c in self.data.contact[:self.data.ncon]:
