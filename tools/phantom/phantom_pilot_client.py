@@ -34,7 +34,7 @@ ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDe
 sub = ap.add_subparsers(dest='mode', required=True)
 sub.add_parser('observe')
 st = sub.add_parser('start')
-st.add_argument('--variant', choices=['phantom', 'phantom-fx'], default='phantom-fx'); st.add_argument('--load-state', choices=['nominal', 'FX-A', 'FX-C'])
+st.add_argument('--variant', choices=['phantom', 'phantom-fx', 'phantom-a10', 'phantom-fx-a10'], default='phantom-fx'); st.add_argument('--load-state', choices=['nominal', 'FX-A', 'FX-C'])
 st.add_argument('--departure', default='13.7,-28.4'); st.add_argument('--destination', default='-45,18'); st.add_argument('--time-scale', type=float, default=0.2)
 st.add_argument('--authority', default='manual'); st.add_argument('--start-configuration', choices=['vtol', 'road'], default='vtol')
 a = sub.add_parser('action')

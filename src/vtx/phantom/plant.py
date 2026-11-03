@@ -198,7 +198,7 @@ class PhantomAircraft:
         self.ring = np.zeros((int(20 / DT), 32)); self.ring_i = 0; self.ring_full = False
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
-        self.provenance = dict(revision=f'{variant}-a9', airframe_variant=variant, render_asset='/assets/phantom-a9.glb',
+        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a10') else f'{variant}-a9', airframe_variant=variant, render_asset=f'/assets/phantom-{P.cassette_revision.lower()}.glb',
                                model_xml_sha256=hashlib.sha256(self.xml.encode()).hexdigest(), parameter_file_sha256=P.file_sha256,
                                config_sha256=P.config_sha256, wing_cassette_revision=P.tree['geometry_sources']['wing_cassette_revision'],
                                ledger_mass_kg=self.mass_properties()['mass_kg'] if False else None)
@@ -342,7 +342,7 @@ class PhantomAircraft:
                 new = 'locked'
             elif new == 'unpinning' and max(pins) < -0.065:
                 new = 'sliding_in'
-            elif new == 'sliding_in' and slide < -1.367:
+            elif new == 'sliding_in' and slide < -(P.wing_stroke_m - 0.003):
                 new = 'hatch_closing'
             elif new == 'hatch_closing' and hatch > math.pi - 0.05:
                 new = 'stowed'
@@ -355,7 +355,7 @@ class PhantomAircraft:
             pin_t = 0.0 if st in ('pinning', 'locked') else -0.07
             if abs(slide) > 0.003:
                 pin_t = min(pin_t, -0.06)    # pins blocked by the mouth flange until the slide is on its stop
-            slide_t = 0.0 if st in ('sliding_out', 'pinning', 'locked') else (-1.37 if st in ('sliding_in', 'hatch_closing', 'stowed') else self.targets[f'wing_{s}'])
+            slide_t = 0.0 if st in ('sliding_out', 'pinning', 'locked') else (-P.wing_stroke_m if st in ('sliding_in', 'hatch_closing', 'stowed') else self.targets[f'wing_{s}'])
             self.ramp(f'hatch_{s}', hatch_t, math.radians(hl['hatch']['rate_deg_s']), dt)
             for p in PINS:
                 self.ramp(f'pin_{s}_{p.lower()}', pin_t, 0.07 / hl['locks']['engage_time_s'], dt)
@@ -451,7 +451,7 @@ class PhantomAircraft:
             self.fuel = np.maximum(0.0, self.fuel - fuel * share)
         # surface aero (held for the next 4 physics steps)
         Rb = self.R(); wind_b = Rb.T @ self.wind
-        st = dict(wing_frac={s: (self.joint(f'wing_{s}')[0] + 1.37) / 1.37 for s in WING_SIDES},
+        st = dict(wing_frac={s: (self.joint(f'wing_{s}')[0] + P.wing_stroke_m) / P.wing_stroke_m for s in WING_SIDES},
                   wing_locked={s: self.wing_locked(s) for s in WING_SIDES},
                   flap={s: self.joint(f'flap_{s}')[0] for s in WING_SIDES}, aileron={s: self.joint(f'aileron_{s}')[0] for s in WING_SIDES},
                   canard_pitch={s: self.joint(f'canard_{s}')[0] for s in WING_SIDES},

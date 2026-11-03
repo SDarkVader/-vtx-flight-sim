@@ -96,7 +96,7 @@ class Mission(BaseModel):
     @field_validator('airframe_variant')
     @classmethod
     def airframe(cls,v):
-        if v not in ['baseline','light','r6','r6_variator','phantom','phantom-fx']:raise ValueError('Unknown airframe revision')
+        if v not in ['baseline','light','r6','r6_variator','phantom','phantom-fx','phantom-a10','phantom-fx-a10']:raise ValueError('Unknown airframe revision')
         return v
 
 
@@ -679,7 +679,7 @@ async def view():return lab.view()
 @app.get('/api/validate')
 async def validate(x:float,y:float,variant:str|None=None):
     from dataclasses import asdict
-    if variant in ('phantom','phantom-fx'):
+    if phantom_live.is_phantom_variant(variant):
         from .phantom.mission import validate_phantom
         return validate_phantom(lab.world,MapPoint(x,y),variant)
     return asdict(lab.world.validate(MapPoint(x,y),'mission'))

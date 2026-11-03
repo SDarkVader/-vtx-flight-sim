@@ -26,6 +26,10 @@
    "date": "2026-11-03",
    "change": "CG study adopted: hover pitch trim from front/rear pod thrust differential only; leg load-cell CG go/no-go gate; P3 (booster vector-down) and P5 (1.5x canard with flap) as proposal parameters, off by default. Nose battery: CG study N2 (193 kg P50B at x 1.24) recorded as alternative; phantom-fx keeps the propulsion-sized FX-A buffer (311 kg at x 1.80) per coordinator reconcile instruction; CG recomputed by the ledger (fx base CG x -0.151).",
    "basis": "research_notes/.../cg_and_compensation.md"
+  },
+  {
+   "date": "2026-11-03",
+   "change": "Added selectable A10 wing-cassette variants phantom-a10 and phantom-fx-a10 (inherit phantom / phantom-fx; only the cassette revision changes). A9 variants unchanged.", "basis": "owner direction 2026-11-03: make A10 an available selection in the live sim"
   }
  ],
  "base": {
@@ -1802,6 +1806,30 @@
       "l": "SYNTHETIC_UNVALIDATED",
       "s": "bay"
      }
+    }
+   }
+  },
+  "phantom-a10": {
+   "inherits": "phantom",
+   "description": "As drawn with the A10 wing cassette. A10 split-level wing cassette (evidence/phantom/a10_handover.json): both wings at one height (z 0.9873, residual 0.0 mm vs A9's 118 mm), slide stroke 1.205 m, span 4.858 m, S_ref 3.934 m2, +9 kg bay mass. DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED; not yet flight-tested.",
+   "design_proposals": [
+    "A10 split-level wing cassette (evidence/phantom/a10_handover.json): both wings at one height (z 0.9873, residual 0.0 mm vs A9's 118 mm), slide stroke 1.205 m, span 4.858 m, S_ref 3.934 m2, +9 kg bay mass. DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED; not yet flight-tested."
+   ],
+   "overlay": {
+    "geometry_sources": {
+     "wing_cassette_revision": "A10"
+    }
+   }
+  },
+  "phantom-fx-a10": {
+   "inherits": "phantom-fx",
+   "description": "FX-A feasibility design point with the A10 wing cassette. A10 split-level wing cassette (evidence/phantom/a10_handover.json): both wings at one height (z 0.9873, residual 0.0 mm vs A9's 118 mm), slide stroke 1.205 m, span 4.858 m, S_ref 3.934 m2, +9 kg bay mass. DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED; not yet flight-tested.",
+   "design_proposals": [
+    "A10 split-level wing cassette (evidence/phantom/a10_handover.json): both wings at one height (z 0.9873, residual 0.0 mm vs A9's 118 mm), slide stroke 1.205 m, span 4.858 m, S_ref 3.934 m2, +9 kg bay mass. DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED; not yet flight-tested."
+   ],
+   "overlay": {
+    "geometry_sources": {
+     "wing_cassette_revision": "A10"
     }
    }
   }

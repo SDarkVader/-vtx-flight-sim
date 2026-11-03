@@ -1,9 +1,11 @@
-"""Export the A9 Phantom cassette as the browser GLB (render only; never saves the .blend).
+"""Export a Phantom wing-cassette revision (A9 or A10) as the browser GLB (render only; never saves the .blend).
 
 Run with the project Python; it writes the joint map from the simulator ledger and then calls
-Blender in background mode on assets/derived/phantom-a9-cassette.blend (read-only):
+Blender in background mode on assets/derived/phantom-<rev>-cassette.blend (read-only):
 
-  PYTHONPATH=src .venv/Scripts/python.exe tools/phantom/export_phantom_glb.py [--blender <exe>] [--out public/assets/phantom-a9.glb]
+  PYTHONPATH=src .venv/Scripts/python.exe tools/phantom/export_phantom_glb.py [--revision A9|A10] [--blender <exe>]
+
+Default output public/assets/phantom-<rev>.glb (the plant's provenance.render_asset for that revision).
 
 Output: frame 1 (road stance, wings stowed), Z-up (export_yup=False, same frame as MuJoCo), no
 animations, renderable meshes only. A root empty 'airframe' (extras physical_body='airframe')
@@ -17,16 +19,17 @@ import json, math, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-BLEND = ROOT / 'assets/derived/phantom-a9-cassette.blend'
+BLEND = {'A9': ROOT / 'assets/derived/phantom-a9-cassette.blend', 'A10': ROOT / 'assets/derived/phantom-a10-cassette.blend'}
+VARIANT = {'A9': 'phantom', 'A10': 'phantom-a10'}
 BLENDER = r'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
 
 
-def write_map(path):
+def write_map(path, revision='A9'):
     sys.path.insert(0, str(ROOT / 'src'))
     from vtx.phantom.params import Params
     from vtx.phantom.ledger import PhantomLedger
     from vtx.phantom.geometry import SIDE
-    L = PhantomLedger(Params('phantom'))
+    L = PhantomLedger(Params(VARIANT[revision]))
     out = {}
     for b in L.bodies.values():
         if not (b.cad and b.joint):
@@ -96,7 +99,10 @@ if __name__ == '__main__':
         blender_main(sys.argv[sys.argv.index('--') + 1:])
     else:
         import argparse
-        ap = argparse.ArgumentParser(); ap.add_argument('--blender', default=BLENDER); ap.add_argument('--out', default=str(ROOT / 'public/assets/phantom-a9.glb'))
-        ap.add_argument('--report', default=str(ROOT / 'evidence/phantom/phantom_glb_export.json')); x = ap.parse_args()
-        mp = ROOT / 'evidence/phantom/phantom_glb_joint_map.json'; write_map(mp)
-        subprocess.run([x.blender, '-b', '--disable-autoexec', str(BLEND), '--python', __file__, '--', '--map', str(mp), '--out', x.out, '--report', x.report], check=True)
+        ap = argparse.ArgumentParser(); ap.add_argument('--revision', choices=sorted(BLEND), default='A9'); ap.add_argument('--blender', default=BLENDER)
+        ap.add_argument('--out'); ap.add_argument('--report'); x = ap.parse_args()
+        sfx = '' if x.revision == 'A9' else '_' + x.revision.lower()   # A9 keeps its original evidence file names
+        x.out = x.out or str(ROOT / f'public/assets/phantom-{x.revision.lower()}.glb')
+        x.report = x.report or str(ROOT / f'evidence/phantom/phantom_glb_export{sfx}.json')
+        mp = ROOT / f'evidence/phantom/phantom_glb_joint_map{sfx}.json'; write_map(mp, x.revision)
+        subprocess.run([x.blender, '-b', '--disable-autoexec', str(BLEND[x.revision]), '--python', __file__, '--', '--map', str(mp), '--out', x.out, '--report', x.report], check=True)
