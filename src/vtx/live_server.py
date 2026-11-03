@@ -33,6 +33,7 @@ from .phantom.controls import PhantomAction
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from .release import EXPECTED_RELEASE, actual_release, assert_expected_release
+from .pilot_api_recorder import get_recorder, record_decision, openai_transport, close_recorders
 
 class Action(BaseModel):
     model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
@@ -662,6 +663,7 @@ async def lifespan(app):
         if lab.audit_file:
             lab.audit_file.close();lab.audit_file=None
     task.cancel()
+    await asyncio.to_thread(close_recorders)
 
 app=FastAPI(title='VTX live engineering laboratory',lifespan=lifespan)
 
@@ -705,7 +707,32 @@ async def login(request:Request):
 @app.get('/api/world')
 async def world():return lab.world.public()
 @app.get('/api/observe')
-async def observe():return lab.sensor_observation()
+async def observe():
+    observation=lab.sensor_observation()
+    if lab.active and lab.run_id:
+        get_recorder(lab.data_root).emit(dict(schema_version=1,run_id=lab.run_id,
+            decision_id=None,wall_utc=datetime.now(timezone.utc).isoformat(),
+            kind='pilot_observation_served',payload=observation))
+    return observation
+
+class PilotPrompt(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    instruction:str=Field(min_length=1,max_length=2000)
+    model:str=Field(default='gpt-5.1',min_length=1,max_length=100)
+
+@app.post('/api/pilot/openai-decision')
+async def pilot_openai_decision(prompt:PilotPrompt):
+    """Opt-in model request; records response but NEVER commands the aircraft."""
+    if not lab.active or lab.authority!='colin':
+        raise HTTPException(409,'Active Colin-authority sortie required')
+    observation=lab.sensor_observation()
+    try:
+        return await asyncio.to_thread(record_decision,run_id=lab.run_id,
+            instruction=prompt.instruction,observation=observation,
+            model=prompt.model,transport=openai_transport,data_root=lab.data_root)
+    except Exception:
+        raise HTTPException(502,'OpenAI pilot request failed; aircraft control unchanged')
+
 @app.get('/api/release')
 async def release_identity():
     loaded=actual_release(lab.aircraft.provenance)
@@ -735,7 +762,13 @@ async def action(request:Request):
     try:body=await request.json()
     except ValueError:raise RequestValidationError([{'type':'json_invalid','loc':('body',),'msg':'JSON decode error','input':None}])
     a=parse_action(body)
-    try:return lab.accept_action(a)
+    try:
+        result=lab.accept_action(a)
+        if lab.run_id:
+            get_recorder(lab.data_root).emit(dict(schema_version=1,run_id=lab.run_id,
+                decision_id=None,wall_utc=datetime.now(timezone.utc).isoformat(),
+                kind='pilot_action_accepted',payload=dict(action=body,result=result)))
+        return result
     except HTTPException as e:
         lab.log('rejected_pilot_action',dict(request=a.model_dump(by_alias=True),reason=e.detail))
         raise
