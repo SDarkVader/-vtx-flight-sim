@@ -29,7 +29,8 @@
   },
   {
    "date": "2026-11-03",
-   "change": "Added selectable A10 wing-cassette variants phantom-a10 and phantom-fx-a10 (inherit phantom / phantom-fx; only the cassette revision changes). A9 variants unchanged.", "basis": "owner direction 2026-11-03: make A10 an available selection in the live sim"
+   "change": "A10 corrected wing cassette is now the main Phantom configuration: phantom and phantom-fx use A10. The A9 cassette stays selectable as the earlier version (phantom-a9, phantom-fx-a9). Flights before this change (incl. the 2026-11-03 campaign) were flown with A9; their recorded parameters say so. phantom-fx (FX-A A10) is the current prototype.",
+   "basis": "owner direction 2026-11-03: A10 is the main second vehicle; keep A9 explicitly as the earlier version"
   }
  ],
  "base": {
@@ -64,7 +65,7 @@
    }
   },
   "geometry_sources": {
-   "wing_cassette_revision": "A9",
+   "wing_cassette_revision": "A10",
    "revisions": {
     "A9": {
      "handover": "evidence/phantom/a9_handover.json",
@@ -1486,11 +1487,12 @@
  },
  "variants": {
   "phantom": {
-   "description": "As drawn: two 600 kW turbogenerators, ~12 kWh buffer in the centre floor bay, avionics under the console, fuel cells in the under-sleeve bay, A8-size wheel fans.",
-   "design_proposals": []
+   "description": "As drawn: two 600 kW turbogenerators, ~12 kWh buffer in the centre floor bay, avionics under the console, fuel cells in the under-sleeve bay, A8-size wheel fans. Main Phantom configuration: A10 corrected (level) wing cassette.",
+   "design_proposals": [],
+   "release_stage": "as_drawn_reference"
   },
   "phantom-fx": {
-   "description": "FX-A feasibility design point (research s9, owner direction 2026-11-03): ~1,915 kg, \u00d81.10 m fan-wheels with \u00d80.90 m fans (2.36 m2 total), FM 0.90 with deployable 10 deg diffuser, TG900-TO (900 kW_e <=5 min, 600 kW_e cont), 311 kg Amprius-class buffer in the nose at x 1.80, avionics x 1.70, fuel in the tub centre bay at x -0.06, mass-reduction set R. Pod pivots moved to y +/-1.25 to clear the sill in VTOL pose. Every change is a DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED.",
+   "description": "CURRENT PROTOTYPE (Phantom FX-A A10). FX-A feasibility design point (research s9, owner direction 2026-11-03): ~1,915 kg, \u00d81.10 m fan-wheels with \u00d80.90 m fans (2.36 m2 total), FM 0.90 with deployable 10 deg diffuser, TG900-TO (900 kW_e <=5 min, 600 kW_e cont), 311 kg Amprius-class buffer in the nose at x 1.80, avionics x 1.70, fuel in the tub centre bay at x -0.06, mass-reduction set R. Pod pivots moved to y +/-1.25 to clear the sill in VTOL pose. Every change is a DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED. Main Phantom configuration: A10 corrected (level) wing cassette.",
    "design_proposals": [
     "\u00d81.10 m fan-wheels, \u00d80.90 m fans, 2.36 m2 total disk (appearance cost: largest; fenders redrawn)",
     "Pod pivots y +/-1.04 -> +/-1.25 (packaging: clear the body sill in VTOL pose)",
@@ -1807,29 +1809,28 @@
       "s": "bay"
      }
     }
-   }
+   },
+   "release_stage": "current_prototype"
   },
-  "phantom-a10": {
+  "phantom-a9": {
    "inherits": "phantom",
-   "description": "As drawn with the A10 wing cassette. A10 split-level wing cassette (evidence/phantom/a10_handover.json): both wings at one height (z 0.9873, residual 0.0 mm vs A9's 118 mm), slide stroke 1.205 m, span 4.858 m, S_ref 3.934 m2, +9 kg bay mass. DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED; not yet flight-tested.",
-   "design_proposals": [
-    "A10 split-level wing cassette (evidence/phantom/a10_handover.json): both wings at one height (z 0.9873, residual 0.0 mm vs A9's 118 mm), slide stroke 1.205 m, span 4.858 m, S_ref 3.934 m2, +9 kg bay mass. DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED; not yet flight-tested."
-   ],
+   "release_stage": "earlier_version",
+   "description": "EARLIER VERSION: A9 wing cassette (wings stacked at different heights, 118 mm stagger; slide stroke 1.37 m). Kept for comparison with earlier flights; superseded by A10. Otherwise as phantom.",
+   "design_proposals": [],
    "overlay": {
     "geometry_sources": {
-     "wing_cassette_revision": "A10"
+     "wing_cassette_revision": "A9"
     }
    }
   },
-  "phantom-fx-a10": {
+  "phantom-fx-a9": {
    "inherits": "phantom-fx",
-   "description": "FX-A feasibility design point with the A10 wing cassette. A10 split-level wing cassette (evidence/phantom/a10_handover.json): both wings at one height (z 0.9873, residual 0.0 mm vs A9's 118 mm), slide stroke 1.205 m, span 4.858 m, S_ref 3.934 m2, +9 kg bay mass. DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED; not yet flight-tested.",
-   "design_proposals": [
-    "A10 split-level wing cassette (evidence/phantom/a10_handover.json): both wings at one height (z 0.9873, residual 0.0 mm vs A9's 118 mm), slide stroke 1.205 m, span 4.858 m, S_ref 3.934 m2, +9 kg bay mass. DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED; not yet flight-tested."
-   ],
+   "release_stage": "earlier_version",
+   "description": "EARLIER VERSION: A9 wing cassette (wings stacked at different heights, 118 mm stagger; slide stroke 1.37 m). Kept for comparison with earlier flights; superseded by A10. Otherwise as phantom-fx.",
+   "design_proposals": [],
    "overlay": {
     "geometry_sources": {
-     "wing_cassette_revision": "A10"
+     "wing_cassette_revision": "A9"
     }
    }
   }

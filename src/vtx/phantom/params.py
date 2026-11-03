@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[3]
 PARAMETER_FILE = ROOT / 'inputs/phantom_parameters_v1.json'
 MANIFEST_FILE = ROOT / 'inputs/phantom_simulation_manifest_v0.json'
 LABELS = {'MEASURED-K', 'DERIVED', 'SYNTHETIC_UNVALIDATED', 'MANUFACTURER', 'REGULATORY_REFERENCE'}
-VARIANTS = ('phantom', 'phantom-fx', 'phantom-a10', 'phantom-fx-a10')
+VARIANTS = ('phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')   # phantom/phantom-fx = A10 (main); -a9 = earlier version
 CASSETTE_REVISIONS = ('A9', 'A10')
 
 
@@ -44,7 +44,7 @@ class Params:
         self.file_sha256 = hashlib.sha256(Path(path).read_bytes()).hexdigest()
         self.variant = variant
         chain, v = [], variant
-        while v:   # a variant may inherit another (e.g. phantom-fx-a10 = phantom-fx + A10 cassette)
+        while v:   # a variant may inherit another (e.g. phantom-fx-a9 = phantom-fx + A9 cassette)
             chain.insert(0, raw['variants'][v]); v = raw['variants'][v].get('inherits')
         self.tree = copy.deepcopy(raw['base'])
         for entry in chain:

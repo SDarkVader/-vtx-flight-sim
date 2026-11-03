@@ -20,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 BLEND = {'A9': ROOT / 'assets/derived/phantom-a9-cassette.blend', 'A10': ROOT / 'assets/derived/phantom-a10-cassette.blend'}
-VARIANT = {'A9': 'phantom', 'A10': 'phantom-a10'}
+VARIANT = {'A9': 'phantom-a9', 'A10': 'phantom'}
 BLENDER = r'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
 
 
