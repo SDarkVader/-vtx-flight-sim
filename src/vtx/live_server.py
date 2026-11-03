@@ -602,6 +602,22 @@ async def view():return lab.view()
 async def validate(x:float,y:float):
     from dataclasses import asdict
     return asdict(lab.world.validate(MapPoint(x,y),'mission'))
+@app.post('/api/destination')
+async def update_destination(request:dict):
+    if not lab.active:raise HTTPException(409,'No active sortie; choose a destination before starting')
+    point=request.get('destination')
+    if not isinstance(point,list) or len(point)!=2 or any(type(v) not in (int,float) or not math.isfinite(v) for v in point):
+        raise HTTPException(422,'Destination must contain two finite coordinates')
+    from dataclasses import asdict
+    verdict=lab.world.validate(MapPoint(*point),'destination')
+    if not verdict.valid:raise HTTPException(422,verdict.reason)
+    old=lab.mission['destination'][:]
+    lab.mission['destination']=point[:]
+    lab.mission['destination_z_m']=verdict.surface_z_m
+    lab.settled_s=0.
+    lab.log('destination_changed',dict(previous=old,destination=point,sim_time_s=float(lab.aircraft.data.time)))
+    lab.checkpoint(force=True)
+    return dict(destination=point,previous=old,run_id=lab.run_id)
 @app.post('/api/mission')
 async def mission(request:Mission):
     try:return lab.start(request)
