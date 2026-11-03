@@ -22,8 +22,11 @@ from urllib.request import Request, urlopen
 
 if __package__:
     from .argon_calibration import from_instrument_observation
+    from .navigation_controller import navigate
+    from .waypoint_controller import command as waypoint_command
 else:
     from argon_calibration import from_instrument_observation
+    from waypoint_controller import command as waypoint_command
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROLS = ROOT / "tools" / "pilot_controls.json"
@@ -232,6 +235,15 @@ class Pilot:
                        attitude=attitude,rates=rates)
         armed=matched and self.blocked_serial!=cfg["serial"] and not guard
         setpoints={k:cfg[k] for k in SAFE} if armed else dict(SAFE)
+        if armed and cfg.get('waypoint_mode', False):
+            try:
+                setpoints, distance = waypoint_command(obs)
+                if distance < 2.0:
+                    setpoints['tilt_deg']=[[0.0,0.0] for _ in range(4)]
+            except (ValueError,KeyError,TypeError) as exc:
+                self.event('waypoint_guard',reason=str(exc))
+                self.blocked_serial=cfg['serial']
+                return
         if armed and now-self.last_sent>=0.55:
             action={**setpoints,"authority":"colin","observation_id":obs["observation_id"],
                     "reason":cfg["reason"] if armed else "Persistent pilot safe idle / disarmed heartbeat"}
