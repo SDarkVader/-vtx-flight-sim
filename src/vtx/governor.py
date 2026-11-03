@@ -27,13 +27,13 @@ class ShaftGovernor:
         overspeed=target_rad_s>1. and speed_rad_s>1.01*target_rad_s
         cap=torque_cap_nm if powered and not overspeed else 0.
         if not powered:self.integral_nm=0.
-        if self.mode=='pi' and powered:
+        if self.mode=='pi' and powered and not overspeed:
             raw=self.kp*error+self.integral_nm
             # Integrate within authority, or when the error unwinds saturation.
             if 0<=raw<=cap or (raw>cap and error<0) or (raw<0 and error>0):
                 self.integral_nm+=self.ki*error*dt
             self.integral_nm=max(0.,min(self.integral_nm,cap))
-        else:self.integral_nm=0.
+        elif not powered or self.mode!='pi':self.integral_nm=0.
         raw=self.kp*error+self.integral_nm
         torque=max(0.,min(raw,cap))
         self.telemetry=dict(mode=self.mode,target_rad_s=target_rad_s,

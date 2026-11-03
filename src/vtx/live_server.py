@@ -28,6 +28,7 @@ from ._rotation import Rotation
 from .aircraft import Aircraft,DT,ROOT
 from .mission_selection import MapPoint,select_mission
 from .world import TestWorld
+from .release import EXPECTED_RELEASE, actual_release, assert_expected_release
 
 class Action(BaseModel):
     model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
@@ -38,7 +39,7 @@ class Action(BaseModel):
     collective_deg:list[float]
     tilt_deg:list[list[float]]
     cabin_deg:list[float]=[0.,0.,0.]
-    cabin_level:bool=False
+    cabin_level:bool=True
     @field_validator('collective_deg')
     @classmethod
     def pitch(cls,v):
@@ -67,11 +68,23 @@ class Mission(BaseModel):
     airframe_variant:str='r6'
     fuel_kg:float=Field(default=10.,ge=1.,le=110.)
     engine_power_limit_kw:float=Field(default=300.,ge=10.,le=469.8)
+    atmosphere_model:str='constant'
+    wind_world_mps:list[float]=Field(default_factory=lambda:[0.,0.,0.])
     label:str='user selected mission'
     @field_validator('departure','destination')
     @classmethod
     def xy(cls,v):
         if len(v)!=2:raise ValueError('Expected map X/Y')
+        return v
+    @field_validator('wind_world_mps')
+    @classmethod
+    def wind_vector(cls,v):
+        if len(v)!=3 or not all(math.isfinite(x) for x in v):raise ValueError('Expected three finite wind components in world axes (m/s)')
+        return v
+    @field_validator('atmosphere_model')
+    @classmethod
+    def atmosphere(cls,v):
+        if v not in ('constant','isa'):raise ValueError('Atmosphere must be constant or isa')
         return v
     @field_validator('authority')
     @classmethod
@@ -159,6 +172,7 @@ class Laboratory:
                                 qacc_warmstart=d.qacc_warmstart.tolist()),
                    plant=dict(command=p.command,pitch=p.pitch.tolist(),
                               target_angles=p.target_angles.tolist(),
+                              actuator_telemetry=p.actuator_telemetry,
                               cabin_target=p.cabin_target.tolist(),
                               engine_spool=p.engine_spool,fuel=p.fuel.tolist(),
                               wind=p.wind.tolist(),rotors=p.rotors,
@@ -166,6 +180,7 @@ class Laboratory:
                               energy=p.energy,events=p.events,flags=list(p.flags),
                               crashed=p.crashed,max_alt=p.max_alt,
                               max_impact_n=p.max_impact_n,
+                              max_gear_load_n=p.max_gear_load_n,max_nongear_impact_n=p.max_nongear_impact_n,
                               step_count=p.step_count,last_mass_update=p.last_mass_update,
                               last_collision=p.last_collision,
                               stability_assist=p.stability_assist,
@@ -213,7 +228,8 @@ class Laboratory:
             request=Mission(**saved_request)
             candidate=Aircraft(self.world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
-                               engine_power_limit_kw=request.engine_power_limit_kw)
+                               engine_power_limit_kw=request.engine_power_limit_kw,
+                               atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
             if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:
                 raise ValueError('Checkpoint model differs from current physics model')
             d=candidate.data
@@ -231,10 +247,11 @@ class Laboratory:
             candidate.command=plant['command']
             candidate.pitch[:]=plant['pitch']
             candidate.target_angles[:]=plant['target_angles']
+            candidate.actuator_telemetry=plant.get('actuator_telemetry',candidate.actuator_telemetry)
             candidate.cabin_target[:]=plant['cabin_target']
             candidate.engine_spool=float(plant['engine_spool'])
             candidate.fuel[:]=plant['fuel']
-            candidate.wind[:]=plant['wind']
+            candidate.set_wind(plant['wind'])
             candidate.rotors=plant['rotors']
             candidate.integrity[:]=plant['integrity']
             candidate.power=plant['power']
@@ -244,6 +261,8 @@ class Laboratory:
             candidate.crashed=plant['crashed']
             candidate.max_alt=plant['max_alt']
             candidate.max_impact_n=plant['max_impact_n']
+            candidate.max_gear_load_n=plant.get('max_gear_load_n',0.)
+            candidate.max_nongear_impact_n=plant.get('max_nongear_impact_n',0.)
             candidate.step_count=plant['step_count']
             candidate.last_mass_update=plant['last_mass_update']
             candidate.last_collision=plant['last_collision']
@@ -307,14 +326,14 @@ class Laboratory:
         bid=p.bids['airframe'];q=d.xquat[bid]
         euler=Rotation.from_quat([q[1],q[2],q[3],q[0]]).as_euler('xyz',degrees=True)
         velocity=np.zeros(6);mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,bid,velocity,0)
-        pos=d.xpos[bid];surface=self.world.surface_z(float(pos[0]),float(pos[1]))
+        pos=d.xpos[bid];clearance=p.ground_clearance()
         # Quantized independent instruments, not privileged accelerations, thrust,
         # inertia, future trajectory, contact manifold or optimizer state.
         noise=self.sensor_rng.normal
         obs=dict(observation_id=self.obs_id,t_s=round(float(d.time),3),
             gnss_xy_m=np.round(pos[:2]+noise(0,.015,2),2).tolist(),
             baro_m=round(float(pos[2]+noise(0,.01)),2),
-            radar_clearance_m=round(float(pos[2]+1.56-.95-surface+noise(0,.005)),3),
+            radar_clearance_m=round(float(clearance+noise(0,.005)),3) if clearance is not None else None,
             attitude_xyz_deg=np.round(euler+noise(0,.008,3),3).tolist(),
             gyro_world_deg_s=np.round(np.degrees(velocity[:3])+noise(0,.008,3),3).tolist(),
             gnss_velocity_mps=np.round(velocity[3:]+noise(0,.005,3),3).tolist(),
@@ -324,28 +343,43 @@ class Laboratory:
             stability_assist=p.stability_assist,assistance_applied=bool(p.stability_assist and p._bench_apply_experimental_assist),assisted_collective_deg=p.assisted_collective_deg,
             tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
             cabin_feedback_deg=[round(math.degrees(p.joint(f'cabin_{a}')[0]),3) for a in 'xyz'],
+            cabin_level_enabled=bool(p.command['cabin_level']),
+            cabin_level_powered=bool(p.command['cabin_level'] and p.engine_spool>0 and p.fuel.sum()>1e-12),
+            cabin_level_limited=bool(p.cabin_level_limited),
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
             fuel_kg=np.round(p.fuel,4).tolist(),engine_shaft_kw=round(p.power['engine_w']/1000,2),
-            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=.001 else []),
+            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=1e-12 else [])+(['CLEARANCE_UNAVAILABLE'] if clearance is None else [])+(['CABIN_LEVEL_TRAVEL_LIMIT'] if p.cabin_level_limited else []),
             configuration=dict(airframe_revision=p.provenance['revision'],airframe_variant=p.airframe_variant,
                                engine_power_limit_kw=p.engine_power_limit_w/1000.,reference_rpm=p.reference_rpm,gear_variant=p.gear_variant,
-                               initial_fuel_kg=float(p.fuel_initial.sum())),
+                               initial_fuel_kg=float(p.fuel_initial.sum()),atmosphere_model=p.atmosphere_model,wind_world_mps=p.wind.tolist()),
             scheduler_backlog_s=round(self.clock_lag_s,3),
             mission=self.mission,authority=self.authority,active=self.active,paused=self.paused,
             time_scale=self.time_scale,
             sensor_status='Provisional sensor models: GNSS/baro/IMU/shaft/angle/fuel/gear transducers; no certified sensor integration')
+        body_from_world=d.xmat[bid].reshape(3,3).T
+        obs['gyro_body_deg_s']=np.round(body_from_world@np.asarray(obs['gyro_world_deg_s']),3).tolist()
+        obs['velocity_body_mps']=np.round(body_from_world@np.asarray(obs['gnss_velocity_mps']),3).tolist()
+        cabin_rotation=d.xmat[p.bids['cabin']].reshape(3,3)
+        cabin_forward=body_from_world@(-cabin_rotation[:,1])
+        obs['cabin_heading_body_deg']=round(math.degrees(math.atan2(cabin_forward[0],-cabin_forward[1])),3)
+        cabin_euler=Rotation.from_matrix(cabin_rotation).as_euler('xyz',degrees=True)
+        # Reuse the existing attitude sensor error; no extra RNG samples.
+        obs['cabin_attitude_xyz_deg']=np.round(cabin_euler+(np.asarray(obs['attitude_xyz_deg'])-euler),3).tolist()
         self.last_obs=obs;self.observations[self.obs_id]=obs
         if len(self.observations)>3000:del self.observations[min(self.observations)]
         self.log('observation',obs)
         return obs
 
     def start(self,request:Mission):
+        if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.airframe_variant!='r6':
+            raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
         self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
-                               engine_power_limit_kw=request.engine_power_limit_kw)
+                               engine_power_limit_kw=request.engine_power_limit_kw,
+                               atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
         self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
         self.aircraft.stability_assist=request.stability_assist
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
@@ -406,7 +440,7 @@ class Laboratory:
             self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
         if p.data.time-self.last_command_time>5 and not self.lease_expired:
             p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
-            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine idle; no flight rescue'))
+            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine shutdown; no flight rescue'))
         p.step()
         if p.data.time-self.last_audit_t>=.05:
             self.last_audit_t=float(p.data.time)
@@ -432,6 +466,7 @@ class Laboratory:
                      wall_seconds=time.monotonic()-self.wall_started,decisions=len(self.action_log),
                      left_ground=self.left_ground,max_airframe_origin_altitude_m=p.max_alt,
                      max_contact_force_n=p.max_impact_n,fuel_used_kg=float((p.fuel_initial-p.fuel).sum()),
+                     max_gear_load_n=p.max_gear_load_n,max_nongear_impact_n=p.max_nongear_impact_n,
                      final=p.physical_snapshot(),mission=self.mission,
                      claim='Conditional experimental model; not validated VTX performance')
         self.log('sortie_end',summary)
@@ -450,12 +485,14 @@ class Laboratory:
         if not hint:raise HTTPException(409,'No retained mission to retry')
         old=hint['request']
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
-                  authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
+                  authority=request.get('authority','manual'),time_scale=request.get('time_scale',old.get('time_scale',Mission.model_fields['time_scale'].default)),
                   stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
                   airframe_variant=request.get('airframe_variant',old.get('airframe_variant','light')),
                   fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
                   engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
+                  atmosphere_model=request.get('atmosphere_model',old.get('atmosphere_model','constant')),
+                  wind_world_mps=request.get('wind_world_mps',old.get('wind_world_mps',[0.,0.,0.])),
                   label='Explicit retry of '+hint['run_id'])
         result=self.start(m)
         self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
@@ -471,7 +508,9 @@ class Laboratory:
                     recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
                     end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
 
-lab=Laboratory()
+# Laboratory initialization restores checkpoints and may write evidence; it
+# belongs at server startup rather than at module import.
+lab=None
 
 async def physical_clock():
     last=time.monotonic();accum=0.;seen_run=None;seen_epoch=lab.clock_epoch
@@ -497,6 +536,10 @@ async def physical_clock():
 
 @asynccontextmanager
 async def lifespan(app):
+    global lab
+    if lab is None:lab=Laboratory()
+    if os.environ.get('VTX_ENFORCE_RELEASE')=='1':
+        assert_expected_release(lab.aircraft.provenance)
     task=asyncio.create_task(physical_clock())
     yield
     if lab.active:
@@ -548,6 +591,11 @@ async def login(request:Request):
 async def world():return lab.world.public()
 @app.get('/api/observe')
 async def observe():return lab.sensor_observation()
+@app.get('/api/release')
+async def release_identity():
+    loaded=actual_release(lab.aircraft.provenance)
+    return dict(expected=EXPECTED_RELEASE,loaded=loaded,matches=(loaded==EXPECTED_RELEASE),
+                enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1')
 @app.get('/api/view')
 async def view():return lab.view()
 @app.get('/api/validate')
