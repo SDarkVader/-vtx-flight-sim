@@ -1,0 +1,14 @@
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const source=await readFile(new URL('../public/cockpit-visibility.js',import.meta.url),'utf8');
+const {isCockpitObstruction,setCockpitVisibility}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const panel={isMesh:true,userData:{blendstra_id:'c2429ce8-6150-4824-a737-11e0f6d01426'},visible:true};
+const consoleMesh={isMesh:true,userData:{legacyCockpitPanel:true},visible:true};
+const airframe={isMesh:true,userData:{blendstra_id:'other'},visible:true};
+const harness={isMesh:true,userData:{blendstra_id:'39b901bd-b424-462a-b178-322ac4ef8bb8'},visible:true};
+const root={traverse(fn){[panel,consoleMesh,airframe,harness].forEach(fn)}};
+assert.equal(isCockpitObstruction(panel),true);
+setCockpitVisibility(root,true);
+assert.equal(panel.visible,false);assert.equal(consoleMesh.visible,false);assert.equal(harness.visible,false);assert.equal(airframe.visible,true);
+setCockpitVisibility(root,false);
+assert.equal(panel.visible,false);assert.equal(consoleMesh.visible,false);assert.equal(harness.visible,true);assert.equal(airframe.visible,true);
