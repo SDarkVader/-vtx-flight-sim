@@ -30,7 +30,13 @@ def server_alive(url):
 
 
 def stamp(message):
-    print(datetime.now(timezone.utc).isoformat(),message,flush=True)
+    line=datetime.now(timezone.utc).isoformat()+" "+message
+    home=Path(os.environ.get("LOCALAPPDATA") or str(ROOT/"pilot"))/"VTX"/"r6-live"
+    home.mkdir(parents=True,exist_ok=True)
+    with (home/"station-events.log").open("a",encoding="utf-8") as f:
+        f.write(line+"\n")
+    if sys.stdout is not None:
+        print(line,flush=True)
 
 
 def supervise(host=HOST,port=PORT,interval=2):
