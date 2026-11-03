@@ -438,7 +438,8 @@ export class TacticalMinimap {
       this.ctx.textAlign = 'left';
       this.ctx.fillText(`POS X: ${p[0].toFixed(1)}m  Y: ${p[1].toFixed(1)}m`, 14, 23);
       this.ctx.fillText(`HDG: ${((yawDeg % 360 + 360) % 360).toFixed(0).padStart(3, '0')}°  SPD: ${speed.toFixed(1)}m/s`, 14, 37);
-      this.ctx.fillText(`ALT: ${last.observation.radar_clearance_m.toFixed(1)}m AGL`, 14, 50);
+      const clearance = last.observation.radar_clearance_m;
+      this.ctx.fillText(`ALT: ${clearance == null ? 'unavailable' : clearance.toFixed(1) + 'm AGL'}`, 14, 50);
 
       // Tactical Mode Indicator & Zoom Pill
       this.ctx.fillStyle = this.tacticalMode ? '#f5b800' : 'rgba(235, 240, 245, 0.7)';

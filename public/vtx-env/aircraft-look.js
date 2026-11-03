@@ -4,6 +4,7 @@
 // Non-negotiable: airframe geometry, body poses, collision, and mass model are untouched.
 import * as THREE from 'three';
 import { makeCanvas, toTexture, carbonFiberTextures, brushedMetalTexture, cockpitDisplaysTexture } from './textures.js';
+import {avionicsReadings} from '../cockpit-avionics.js?v=2';
 
 const PEARL = new THREE.Color('#f0f4f6'), CARBON = new THREE.Color('#0c1013'), CYAN = new THREE.Color('#2fe3ff'), YEL = new THREE.Color('#f5b800');
 
@@ -197,6 +198,7 @@ export function enhanceAircraft(root, envTexture) {
     consoleMesh.position.set(-.02, -.48, .08);
     consoleMesh.rotation.x = Math.PI / 6;
     consoleMesh.userData.pitch_axis = 'decor';
+    consoleMesh.userData.legacyCockpitPanel = true;
     cabin.add(consoleMesh);
 
     // Illuminated screen face
@@ -206,25 +208,63 @@ export function enhanceAircraft(root, envTexture) {
     screenMesh.userData.pitch_axis = 'decor';
     consoleMesh.add(screenMesh);
 
-    // 2. Dual Flight Control Yokes (Fly-By-Wire)
-    for (const seatX of [-.30, .26]) {
-      const yokeBase = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, .32, 10), alloyMat);
-      yokeBase.position.set(seatX, -.32, -.02);
-      yokeBase.rotation.x = -Math.PI / 8;
-      yokeBase.userData.pitch_axis = 'decor';
-      cabin.add(yokeBase);
-
-      const yokeHandle = new THREE.Mesh(new THREE.TorusGeometry(.09, .016, 6, 24, Math.PI), darkMat);
-      yokeHandle.position.set(0, .16, 0);
-      yokeHandle.rotation.z = Math.PI;
-      yokeHandle.userData.pitch_axis = 'decor';
-      yokeBase.add(yokeHandle);
-
-      // Hat switch button (bright yellow)
-      const btn = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, .02, 8), new THREE.MeshStandardMaterial({ color: '#f5b800' }));
-      btn.position.set(-.06, .02, .01); btn.userData.pitch_axis = 'decor';
-      yokeHandle.add(btn);
+    // Compact pilot display, attached to the real cabin pose and placed below
+    // the forward view. Its canvas is populated only from live observations.
+    const avCanvas=makeCanvas(1024,512), avContext=avCanvas.getContext('2d');
+    const avTexture=toTexture(avCanvas);
+    const avPanel=new THREE.Group();
+    avPanel.name='vtx-live-cockpit-avionics';
+    avPanel.position.set(-.30,-.72,.005);
+    avPanel.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(
+      new THREE.Vector3(-1,0,0),new THREE.Vector3(0,0,1),new THREE.Vector3(0,1,0)));
+    avPanel.rotateX(-.28);
+    const avFrame=new THREE.Mesh(new THREE.BoxGeometry(.255,.14,.025),new THREE.MeshStandardMaterial({color:'#202a30',roughness:.5,metalness:.65,depthTest:false,depthWrite:false}));
+    const avScreen=new THREE.Mesh(new THREE.PlaneGeometry(.235,.118),new THREE.MeshBasicMaterial({map:avTexture,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));
+    avFrame.renderOrder=20;avScreen.renderOrder=21;avScreen.position.z=.013;
+    const mount=new THREE.Mesh(new THREE.BoxGeometry(.032,.045,.018),new THREE.MeshStandardMaterial({color:'#46565a',roughness:.55,metalness:.7,depthTest:false,depthWrite:false}));
+    mount.position.set(0,-.086,-.007);mount.renderOrder=19;
+    avPanel.add(mount,avFrame,avScreen);
+    const screwGeo=new THREE.CircleGeometry(.0022,12),screwMat=new THREE.MeshBasicMaterial({color:'#9aaeb0',depthTest:false,depthWrite:false});
+    for(const x of [-.120,.120])for(const y of [-.063,.063]){
+      const screw=new THREE.Mesh(screwGeo,screwMat);screw.position.set(x,y,.013);screw.renderOrder=22;avPanel.add(screw);
     }
+    avPanel.visible=true;cabin.add(avPanel);
+    fx.setCockpitMode = enabled => {
+      avPanel.traverse(node=>{if(node.isMesh)node.material.depthTest=!enabled;});
+    };
+    fx.updateAvionics = (observation, stale=false) => {
+      const read=avionicsReadings(observation);
+      const c=avContext;c.fillStyle='#10191d';c.fillRect(0,0,1024,512);
+      c.fillStyle='#27373c';c.fillRect(0,0,1024,48);
+      c.fillStyle='#dbe7e8';c.font='bold 26px sans-serif';c.fillText('VTX   FLIGHT INSTRUMENTS',26,32);
+      c.textAlign='right';c.fillStyle=stale?'#ffb35d':'#83e0c7';c.fillText(stale?'STALE':read?`${read.state}   ${read.time} s`:'WAITING',998,32);c.textAlign='left';
+      if (read) {
+        const gauge=(x,y,label,unit,raw,min,max,display)=>{
+          const radius=98,start=.75*Math.PI,end=2.25*Math.PI;
+          c.fillStyle='#050b0e';c.strokeStyle='#779095';c.lineWidth=8;c.beginPath();c.arc(x,y,radius,0,2*Math.PI);c.fill();c.stroke();
+          c.strokeStyle='#d0dfdc';c.lineWidth=3;
+          for(let i=0;i<=10;i++){const a=start+(end-start)*i/10,r=i%5===0?76:84;c.beginPath();c.moveTo(x+Math.cos(a)*r,y+Math.sin(a)*r);c.lineTo(x+Math.cos(a)*91,y+Math.sin(a)*91);c.stroke();}
+          c.fillStyle='#93adb1';c.font='bold 19px sans-serif';c.textAlign='center';c.fillText(label,x,y-42);c.fillText(unit,x,y+61);
+          if(Number.isFinite(raw)){const a=start+(end-start)*Math.max(0,Math.min(1,(raw-min)/(max-min)));c.strokeStyle='#ffb552';c.lineWidth=5;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(a)*68,y+Math.sin(a)*68);c.stroke();}
+          c.fillStyle='#e8f4f2';c.font='bold 25px sans-serif';c.fillText(display,x,y+28);c.textAlign='left';
+        };
+        gauge(135,177,'ROTOR AVG','RPM',read.meanRpm,0,1500,read.meanRpm===null?'—':read.meanRpm.toFixed(0));
+        gauge(365,177,'VERTICAL','m/s',read.verticalValue,-10,10,read.vertical);
+        c.fillStyle='#a5bcbf';c.font='bold 19px sans-serif';c.textAlign='center';
+        c.fillText('0',65,263);c.fillText('1500',207,263);c.fillText('-10',289,263);c.fillText('+10',438,263);c.textAlign='left';
+        c.fillStyle='#061016';c.fillRect(500,74,492,225);
+        c.fillStyle='#87a6aa';c.font='bold 24px sans-serif';c.fillText('CLEARANCE',525,110);c.fillText('GROUND SPEED',750,110);c.fillText('FUEL',525,209);c.fillText('SHAFT POWER',750,209);
+        c.fillStyle='#d8f7f0';c.font='bold 37px monospace';c.fillText(`${read.clearance} m`,525,161,200);c.fillText(`${read.speed} m/s`,750,161,220);c.fillText(`${read.fuel} kg`,525,259,200);c.fillText(`${read.power} kW`,750,259,220);
+        c.fillStyle='#b1c8c8';c.font='bold 24px sans-serif';c.fillText(`RPM 1–4   ${read.rpms}`,30,365,620);
+        c.fillStyle='#80dbc3';c.textAlign='right';c.fillText(`LEVEL ${read.level}`,990,365,350);c.textAlign='left';
+        c.fillStyle=read.warnings.length?'#ffc46b':'#7ad9bc';c.font='bold 21px sans-serif';
+        c.fillText(read.warnings.length?read.warnings.join(' · ').replaceAll('_',' '):'SYSTEM STATUS: NO ACTIVE WARNINGS',30,456,960);
+      }
+      avTexture.needsUpdate=true;
+    };
+    fx.updateAvionics(null);
+
+    // Decorative yokes removed: their stems projected into the seats.
 
     // 3. Dual High-G Bucket Seats & 5-point Harnesses
     for (const seatX of [-.30, .26]) {
@@ -232,11 +272,13 @@ export function enhanceAircraft(root, envTexture) {
       seatBack.position.set(seatX, .12, .18);
       seatBack.rotation.x = -Math.PI / 18;
       seatBack.userData.pitch_axis = 'decor';
+      seatBack.userData.cockpitObstruction = seatX === -.30;
       cabin.add(seatBack);
 
       const seatPan = new THREE.Mesh(new THREE.BoxGeometry(.34, .36, .08), decorMat('#252a2e', .7, .1));
       seatPan.position.set(seatX, -.08, -.06);
       seatPan.userData.pitch_axis = 'decor';
+      seatPan.userData.cockpitObstruction = seatX === -.30;
       cabin.add(seatPan);
 
       // Yellow/black shoulder harness straps
@@ -244,6 +286,7 @@ export function enhanceAircraft(root, envTexture) {
         const strap = new THREE.Mesh(new THREE.PlaneGeometry(.045, .44), new THREE.MeshStandardMaterial({ color: '#d4a000', roughness: .8 }));
         strap.position.set(strapX, .045, .02);
         strap.userData.pitch_axis = 'decor';
+        strap.userData.cockpitObstruction = true;
         seatBack.add(strap);
       }
       // Central rotary buckle
