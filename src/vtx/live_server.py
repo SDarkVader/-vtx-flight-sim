@@ -166,6 +166,7 @@ class Laboratory:
                               energy=p.energy,events=p.events,flags=list(p.flags),
                               crashed=p.crashed,max_alt=p.max_alt,
                               max_impact_n=p.max_impact_n,
+                              max_gear_load_n=p.max_gear_load_n,max_nongear_impact_n=p.max_nongear_impact_n,
                               step_count=p.step_count,last_mass_update=p.last_mass_update,
                               last_collision=p.last_collision,
                               stability_assist=p.stability_assist,
@@ -244,6 +245,8 @@ class Laboratory:
             candidate.crashed=plant['crashed']
             candidate.max_alt=plant['max_alt']
             candidate.max_impact_n=plant['max_impact_n']
+            candidate.max_gear_load_n=plant.get('max_gear_load_n',0.)
+            candidate.max_nongear_impact_n=plant.get('max_nongear_impact_n',0.)
             candidate.step_count=plant['step_count']
             candidate.last_mass_update=plant['last_mass_update']
             candidate.last_collision=plant['last_collision']
@@ -307,14 +310,14 @@ class Laboratory:
         bid=p.bids['airframe'];q=d.xquat[bid]
         euler=Rotation.from_quat([q[1],q[2],q[3],q[0]]).as_euler('xyz',degrees=True)
         velocity=np.zeros(6);mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,bid,velocity,0)
-        pos=d.xpos[bid];surface=self.world.surface_z(float(pos[0]),float(pos[1]))
+        pos=d.xpos[bid];clearance=p.ground_clearance()
         # Quantized independent instruments, not privileged accelerations, thrust,
         # inertia, future trajectory, contact manifold or optimizer state.
         noise=self.sensor_rng.normal
         obs=dict(observation_id=self.obs_id,t_s=round(float(d.time),3),
             gnss_xy_m=np.round(pos[:2]+noise(0,.015,2),2).tolist(),
             baro_m=round(float(pos[2]+noise(0,.01)),2),
-            radar_clearance_m=round(float(pos[2]+1.56-.95-surface+noise(0,.005)),3),
+            radar_clearance_m=round(float(clearance+noise(0,.005)),3) if clearance is not None else None,
             attitude_xyz_deg=np.round(euler+noise(0,.008,3),3).tolist(),
             gyro_world_deg_s=np.round(np.degrees(velocity[:3])+noise(0,.008,3),3).tolist(),
             gnss_velocity_mps=np.round(velocity[3:]+noise(0,.005,3),3).tolist(),
@@ -326,7 +329,7 @@ class Laboratory:
             cabin_feedback_deg=[round(math.degrees(p.joint(f'cabin_{a}')[0]),3) for a in 'xyz'],
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
             fuel_kg=np.round(p.fuel,4).tolist(),engine_shaft_kw=round(p.power['engine_w']/1000,2),
-            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=.001 else []),
+            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=1e-12 else [])+(['CLEARANCE_UNAVAILABLE'] if clearance is None else []),
             configuration=dict(airframe_revision=p.provenance['revision'],airframe_variant=p.airframe_variant,
                                engine_power_limit_kw=p.engine_power_limit_w/1000.,reference_rpm=p.reference_rpm,gear_variant=p.gear_variant,
                                initial_fuel_kg=float(p.fuel_initial.sum())),
@@ -334,6 +337,9 @@ class Laboratory:
             mission=self.mission,authority=self.authority,active=self.active,paused=self.paused,
             time_scale=self.time_scale,
             sensor_status='Provisional sensor models: GNSS/baro/IMU/shaft/angle/fuel/gear transducers; no certified sensor integration')
+        body_from_world=d.xmat[bid].reshape(3,3).T
+        obs['gyro_body_deg_s']=np.round(body_from_world@np.asarray(obs['gyro_world_deg_s']),3).tolist()
+        obs['velocity_body_mps']=np.round(body_from_world@np.asarray(obs['gnss_velocity_mps']),3).tolist()
         self.last_obs=obs;self.observations[self.obs_id]=obs
         if len(self.observations)>3000:del self.observations[min(self.observations)]
         self.log('observation',obs)
@@ -406,7 +412,7 @@ class Laboratory:
             self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
         if p.data.time-self.last_command_time>5 and not self.lease_expired:
             p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
-            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine idle; no flight rescue'))
+            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine shutdown; no flight rescue'))
         p.step()
         if p.data.time-self.last_audit_t>=.05:
             self.last_audit_t=float(p.data.time)
@@ -432,6 +438,7 @@ class Laboratory:
                      wall_seconds=time.monotonic()-self.wall_started,decisions=len(self.action_log),
                      left_ground=self.left_ground,max_airframe_origin_altitude_m=p.max_alt,
                      max_contact_force_n=p.max_impact_n,fuel_used_kg=float((p.fuel_initial-p.fuel).sum()),
+                     max_gear_load_n=p.max_gear_load_n,max_nongear_impact_n=p.max_nongear_impact_n,
                      final=p.physical_snapshot(),mission=self.mission,
                      claim='Conditional experimental model; not validated VTX performance')
         self.log('sortie_end',summary)
@@ -471,7 +478,9 @@ class Laboratory:
                     recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
                     end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
 
-lab=Laboratory()
+# Laboratory initialization restores checkpoints and may write evidence; it
+# belongs at server startup rather than at module import.
+lab=None
 
 async def physical_clock():
     last=time.monotonic();accum=0.;seen_run=None;seen_epoch=lab.clock_epoch
@@ -497,6 +506,8 @@ async def physical_clock():
 
 @asynccontextmanager
 async def lifespan(app):
+    global lab
+    if lab is None:lab=Laboratory()
     task=asyncio.create_task(physical_clock())
     yield
     if lab.active:

@@ -6,6 +6,7 @@ are internal. Aerodynamic loads and ground/obstacle contact are external.
 """
 from __future__ import annotations
 import hashlib
+import copy
 import json
 import math
 from pathlib import Path
@@ -126,7 +127,7 @@ def inertial(parent,info,pivot):
 def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_fuel_kg=None,variator_package=False):
     xml=ET.Element('mujoco',model='VTX-P0-V4A-experimental')
     ET.SubElement(xml,'compiler',angle='radian',autolimits='true',inertiafromgeom='false',fusestatic='false')
-    ET.SubElement(xml,'option',timestep=str(DT),gravity=f'0 0 {-G}',integrator='implicitfast',
+    ET.SubElement(xml,'option',timestep=str(DT),gravity=f'0 0 {-G}',integrator='implicit',
                   solver='Newton',iterations='50',tolerance='1e-10',cone='elliptic',jacobian='dense')
     size=ET.SubElement(xml,'size',njmax='4000',nconmax='2000')
     default=ET.SubElement(xml,'default')
@@ -206,7 +207,7 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
         if max(half)<.025:continue
         center=np.array(p['obb_center_m'])-pivot
         rot=np.array(p['obb_rotation']);q=np.zeros(4);mj.mju_mat2Quat(q,rot.ravel())
-        args=dict(name=f'part_{i}',contype='2',conaffinity='1',rgba='.35 .4 .45 1')
+        args=dict(name=f'part_{i}',contype='2',conaffinity='1',group='1',rgba='.35 .4 .45 1')
         # Annular ducts and load rings remain open collision shapes.
         annular=('duct' in p['name'] or 'ring' in p['name'].lower()) and (hi[0]-lo[0]>.5) and abs((hi[0]-lo[0])-(hi[1]-lo[1]))<.15
         if annular:
@@ -222,9 +223,9 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
                 ET.SubElement(b,'geom',**{**args,'name':f'part_{i}_{seg}'},type='capsule',fromto=fmt(pts),size=str(thickness))
         else:
             ET.SubElement(b,'geom',**args,type='box',pos=fmt(center),quat=fmt(q),size=fmt(np.maximum(half,.003)))
-    ET.SubElement(bodies['cabin'],'geom',name='cabin_shell',type='sphere',pos='0 0 0',size='.95',contype='2',conaffinity='1')
+    ET.SubElement(bodies['cabin'],'geom',name='cabin_shell',type='sphere',pos='0 0 0',size='.95',contype='2',conaffinity='1',group='1')
     for i in range(1,5):
-        ET.SubElement(bodies[f'rotor{i}'],'geom',name=f'rotor_disk{i}',type='cylinder',size=fmt([ledger['blade']['radius_m'],.044]),contype='2',conaffinity='1',friction='.8 .04 .001')
+        ET.SubElement(bodies[f'rotor{i}'],'geom',name=f'rotor_disk{i}',type='cylinder',size=fmt([ledger['blade']['radius_m'],.044]),contype='2',conaffinity='1',group='1',friction='.8 .04 .001')
     tendons=ET.SubElement(xml,'tendon')
     for i in range(1,5):
         pivot=pivots[f'nacelle{i}']
@@ -287,6 +288,7 @@ class Aircraft:
         self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm,tank_fuel_kg=tank_fuel_kg,variator_package=self.variator_package)
         self.data=mj.MjData(self.model)
         self.bids={name:mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,name) for name in self.ledger['bodies']}
+        self.foot_geoms=[i for i in range(self.model.ngeom) if (mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_BODY,int(self.model.geom_bodyid[i])) or '').startswith('gear')]
         self.jids={mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_JOINT,i):i for i in range(self.model.njnt)}
         self.qadr={n:int(self.model.jnt_qposadr[i]) for n,i in self.jids.items()}
         self.vadr={n:int(self.model.jnt_dofadr[i]) for n,i in self.jids.items()}
@@ -307,6 +309,7 @@ class Aircraft:
         self.power=dict(engine_w=0.,rotor_aero_w=0.,servo_w=0.,gear_loss_w=0.,fuel_chemical_w=0.)
         self.energy=dict(engine_j=0.,rotor_aero_j=0.,gear_loss_j=0.,servo_j=0.,fuel_chemical_j=0.)
         self.events=[];self.flags=set();self.crashed=False;self.max_alt=0.;self.max_impact_n=0.
+        self.max_gear_load_n=0.;self.max_nongear_impact_n=0.
         self.step_count=0;self.last_mass_update=0.;self.last_collision=None
         self.provenance={
             'revision':self.ledger['revision']+('+variator-candidate' if self.variator_package else ''),
@@ -322,11 +325,14 @@ class Aircraft:
             'shaft_governor':dict(mode=governor_mode,kp_nm_per_rad_s=180.,integral_time_s=2.,
                 status='Proposed local RPM regulation; no attitude/height/navigation feedback'),
             'physics':'MuJoCo '+mj.__version__,'dt_s':DT,'aero_rate_hz':100,
+            'physics_revision':'audit-fixes-20261103-r1',
+            'physics_revision_changes':['body-axis assist rates','conserving multi-tank fuel draw',
+                                        'fuel-limited final step','implicit integrator','overspeed integral hold'],
             'gear_variant':gear_variant,'reference_rpm':rpm,'model_xml_sha256':hashlib.sha256(self.xml.encode()).hexdigest(),
             'status':'CALIBRATION_BLOCKED — conditional engineering experiment',
             'hypotheses':dict(mass_distribution=self.ledger['allocation_method'],
                 polar='2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2',
-                nacelle_torque_limit_nm=1100.,nacelle_command_rate_deg_s=20.,
+                nacelle_torque_limit_nm=1100.,
                 pitch_rate_deg_s=4.,pitch_lag_s=.15,nacelle_target_rate_deg_s=5.,engine_spool_s=2.,
                 engine_continuous_w=469800.,transmission_efficiency=.95,
                 overall_ratio=6016/rpm,rotor_spin_senses=[1,-1,1,-1],
@@ -353,12 +359,37 @@ class Aircraft:
 
     def joint(self,name):return self.data.qpos[self.qadr[name]],self.data.qvel[self.vadr[name]]
 
+    def ground_clearance(self):
+        """Approximate lowest gear clearance using world-only downward rays.
+
+        Gear collision shapes are boxes. Rays from each foot and the airframe
+        centre include terrain and obstacles, but do not measure the entire footprint.
+        """
+        m,d=self.model,self.data
+        bottoms=[]
+        for geom in self.foot_geoms:
+            rotation=d.geom_xmat[geom].reshape(3,3)
+            height=float(np.abs(rotation[2,:])@m.geom_size[geom])
+            bottoms.append((d.geom_xpos[geom].copy(),height))
+        if not bottoms:return None
+        lowest=min(float(pos[2]-height) for pos,height in bottoms)
+        points=[(pos[0],pos[1],pos[2]-height) for pos,height in bottoms]
+        center=d.xpos[self.bids['airframe']]
+        points.append((center[0],center[1],lowest))
+        group=np.array([1,0,0,0,0,0],dtype=np.uint8)
+        distances=[]
+        for x,y,z in points:
+            gid=np.array([-1],dtype=np.int32)
+            distance=mj.mj_ray(m,d,np.array([x,y,z+.1]),np.array([0.,0.,-1.]),group,1,-1,gid)
+            if distance>=0:distances.append(max(0.,float(distance)-.1))
+        return min(distances) if distances else None
+
     def servo(self,name,target,limit=1100.):
         q,v=self.joint(name)
         # Local position servo only: no airframe attitude/altitude feedback.
         # Ten local servos share a provisional 5 kW engine-driven supply. With
         # no running engine there is no invented battery/actuator energy.
-        supply=self.engine_spool if self.fuel.sum()>.001 else 0.
+        supply=self.engine_spool if self.fuel.sum()>1e-12 else 0.
         cap=min(limit*supply,500*supply/max(abs(v),.1))
         torque=float(np.clip(4200*(target-q)-260*v,-cap,cap))
         self.data.qfrc_applied[self.vadr[name]]+=torque
@@ -390,7 +421,7 @@ class Aircraft:
         wanted=np.linalg.norm(rx@ry@tip-base)
         tid=mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_TENDON,f'ema{i}_{index}')
         speed=self.data.ten_velocity[tid]
-        supply=self.engine_spool if self.fuel.sum()>.001 else 0.
+        supply=self.engine_spool if self.fuel.sum()>1e-12 else 0.
         cap=min(4622*supply,500*supply/max(abs(speed),.01))
         force=float(np.clip(67200*(wanted-self.data.ten_length[tid])-4160*speed,-cap,cap))
         # MuJoCo 3.17 stores tendon Jacobians in CSR even when the constraint
@@ -404,13 +435,14 @@ class Aircraft:
         m,d=self.model,self.data
         d.qfrc_applied[:]=0.;d.xfrc_applied[:]=0.
         self.engine_spool+=np.clip(self.command['engine']-self.engine_spool,-DT/2,DT/2)
+        if self.fuel.sum()<=1e-12:self.engine_spool=0.
         # The first live lift-off showed that the original command rates could
         # build a large roll moment before a counter-command reached the
         # actuators. Keep the same physical ranges, but slew operator inputs
         # slowly enough to observe and counter the response.
         if self.stability_assist and self.step_count%20==0:
             body_velocity=np.zeros(6)
-            mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,self.bids['airframe'],body_velocity,1)
+            mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_XBODY,self.bids['airframe'],body_velocity,1)
             self.assisted_collective_deg=assisted_collective(self.command['collective_deg'],np.degrees(body_velocity[:3]),self.stability_assist)
         elif not self.stability_assist:self.assisted_collective_deg=list(self.command['collective_deg'])
         pitch_target=self.assisted_collective_deg if self._bench_apply_experimental_assist else self.command['collective_deg']
@@ -453,12 +485,23 @@ class Aircraft:
         power_cap=max(0.,self.engine_power_limit_w*self.engine_spool-servo_power)
         torque_cap=min(torque_cap,power_cap*.95/max(abs(omega),1.))
         torque=self.governor.update(target,omega,torque_cap,DT,
-            powered=self.fuel.sum()>.001 and self.command['engine']>0)
+            powered=self.fuel.sum()>1e-12 and self.command['engine']>0)
         # Nonregenerative servo supply is charged to the prime mover too.
-        d.qfrc_applied[self.vadr['rotor1_spin']]+=torque
         engine_power=torque*max(omega,0)/.95+servo_power
         burn=engine_power/3.6e6*.4*DT
-        if burn>0:self.fuel=np.maximum(self.fuel-burn/4,0.)
+        available=float(self.fuel.sum())
+        if burn>available and burn>0:
+            fraction=available/burn
+            d.qfrc_applied[:]*=fraction
+            torque*=fraction;servo_power*=fraction;engine_power*=fraction;burn=available
+        d.qfrc_applied[self.vadr['rotor1_spin']]+=torque
+        remaining=burn
+        while remaining>1e-15 and np.any(self.fuel>0):
+            live=self.fuel>0
+            take=np.minimum(self.fuel[live],remaining/int(live.sum()))
+            self.fuel[live]-=take
+            remaining-=float(take.sum())
+        if self.fuel.sum()<=1e-12:self.flags.add('FUEL_EXHAUSTED')
         chemical=burn/DT*43e6
         self.power=dict(engine_w=engine_power,rotor_aero_w=aero_power,servo_w=servo_power,
                         gear_loss_w=torque*max(omega,0)*(1/.95-1),fuel_chemical_w=chemical)
@@ -479,7 +522,8 @@ class Aircraft:
         if not np.all(np.isfinite(d.qpos)) or not np.all(np.isfinite(d.qvel)):raise RuntimeError('Nonfinite physical state')
 
     def check_contacts(self):
-        for c in self.data.contact[:self.data.ncon]:
+        loads={}
+        for idx,c in enumerate(self.data.contact[:self.data.ncon]):
             if c.dist>.002:continue
             g1,g2=int(c.geom1),int(c.geom2)
             b1,b2=int(self.model.geom_bodyid[g1]),int(self.model.geom_bodyid[g2])
@@ -487,9 +531,9 @@ class Aircraft:
             geom=g2 if b1==0 else g1;body=int(self.model.geom_bodyid[geom])
             name=mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_BODY,body)
             force=np.zeros(6)
-            idx=next((i for i in range(self.data.ncon) if self.data.contact[i].geom1==g1 and self.data.contact[i].geom2==g2),0)
             mj.mj_contactForce(self.model,self.data,idx,force)
             self.max_impact_n=max(self.max_impact_n,float(np.linalg.norm(force[:3])))
+            loads[body]=loads.get(body,0.)+float(np.linalg.norm(force[:3]))
             if name and not name.startswith('gear'):
                 if not self.crashed:
                     self.events.append(dict(type='collision',t_s=float(self.data.time),body=name,
@@ -499,6 +543,10 @@ class Aircraft:
                 # Rigid impacts continue; a rotor contact invalidates the intact
                 # aero model. No invented material strength threshold is used.
                 if name.startswith('rotor'):self.integrity[int(name[-1])-1]=0.
+        for body,load in loads.items():
+            name=mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_BODY,body) or ''
+            if name.startswith('gear'):self.max_gear_load_n=max(self.max_gear_load_n,load)
+            else:self.max_nongear_impact_n=max(self.max_nongear_impact_n,load)
 
     def mass_properties(self):
         m,d=self.model,self.data
@@ -514,6 +562,9 @@ class Aircraft:
         return dict(t_s=float(self.data.time),qpos=self.data.qpos.tolist(),qvel=self.data.qvel.tolist(),
                     body_poses={n:dict(position=self.data.xpos[b].tolist(),quaternion_wxyz=self.data.xquat[b].tolist()) for n,b in self.bids.items()},
                     pitch_deg=self.pitch.tolist(),
+                    command=copy.deepcopy(self.command),target_angles_rad=self.target_angles.tolist(),
+                    cabin_target_rad=self.cabin_target.tolist(),
+                    max_gear_load_n=self.max_gear_load_n,max_nongear_impact_n=self.max_nongear_impact_n,
                     # Rendering-only angular speed. The rotor pose remains MuJoCo-authoritative;
                     # this enables visual sub-frame motion without changing the physical plant.
                     rotor_spin_rad_s=[float(self.joint(f'rotor{i}_spin')[1]) for i in range(1,5)],
