@@ -6,7 +6,9 @@ The recorder writes only under VTX_DATA_ROOT; it does not modify flight physics.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import hashlib
+import queue
+import threading
+import atexit
 import json
 import os
 from pathlib import Path
@@ -19,11 +21,80 @@ def _stamp():
     return datetime.now(timezone.utc).isoformat()
 
 
-def _append(path: Path, event: dict):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(event, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n")
+class AsyncFlightRecorder:
+    """Bounded non-blocking enqueue; disk I/O happens on a daemon worker.
 
+    On overflow or write failure, count lost events; never block a flight.
+    close() is for shutdown/tests, not the flight-control loop.
+    """
+    def __init__(self, data_root, capacity=4096):
+        self.root = Path(data_root)
+        self.queue = queue.Queue(maxsize=capacity)
+        self.dropped = 0
+        self.write_errors = 0
+        self._closed = False
+        self._thread = threading.Thread(target=self._worker, name="vtx-pilot-recorder", daemon=True)
+        self._thread.start()
+
+    def emit(self, event):
+        if self._closed:
+            self.dropped += 1
+            return False
+        try:
+            self.queue.put_nowait(event)
+            return True
+        except queue.Full:
+            self.dropped += 1
+            return False
+
+    def _worker(self):
+        while True:
+            event = self.queue.get()
+            try:
+                if event is None:
+                    return
+                path = self.root / "evidence" / "flights" / event["run_id"] / "pilot-api.jsonl"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with path.open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps(event, ensure_ascii=False, allow_nan=False,
+                                            separators=(",", ":")) + "\\n")
+            except (OSError, ValueError, TypeError, KeyError):
+                self.write_errors += 1
+            finally:
+                self.queue.task_done()
+
+    def drain(self):
+        """Wait for queued writes; only use outside flight control."""
+        self.queue.join()
+
+    def close(self):
+        if not self._closed:
+            self._closed = True
+            self.queue.put(None)
+            self._thread.join(timeout=5)
+
+
+_recorders = {}
+_recorders_lock = threading.Lock()
+
+
+def get_recorder(data_root):
+    root = str(Path(data_root).resolve())
+    with _recorders_lock:
+        if root not in _recorders:
+            _recorders[root] = AsyncFlightRecorder(root)
+        return _recorders[root]
+
+
+def close_recorders():
+    with _recorders_lock:
+        recorders = list(_recorders.values())
+        _recorders.clear()
+    for recorder in recorders:
+        recorder.close()
+
+
+atexit.register(close_recorders)
 
 def _event(run_id, decision_id, kind, payload):
     return dict(schema_version=1, run_id=run_id, decision_id=decision_id,
@@ -53,14 +124,15 @@ def record_decision(*, run_id: str, instruction: str, observation: dict,
         ],
     }
     path = Path(data_root) / "evidence" / "flights" / run_id / "pilot-api.jsonl"
-    _append(path, _event(run_id, decision_id, "openai_request", request))
+    recorder = get_recorder(data_root)
+    recorder.emit(_event(run_id, decision_id, "openai_request", request))
     try:
         response = transport(request)
     except Exception as exc:
-        _append(path, _event(run_id, decision_id, "openai_error",
-                             {"type": type(exc).__name__, "message": str(exc)[:500]}))
+        recorder.emit(_event(run_id, decision_id, "openai_error",
+                             {"type": type(exc).__name__}))
         raise
-    _append(path, _event(run_id, decision_id, "openai_response", response))
+    recorder.emit(_event(run_id, decision_id, "openai_response", response))
     return {"decision_id": decision_id, "response": response, "audit_path": str(path)}
 
 
