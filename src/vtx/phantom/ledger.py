@@ -77,9 +77,10 @@ class PhantomLedger:
                         f'measured collection area {gr["area_m2"]:.2f} m2 x {frac} x {dens} areal density', coll))
         C.append(_c('console', 'interior', 'airframe', P['structure.console_mass_kg'], [0.48, 0, 0.57], [0.2, 0.4, 0.15], S, 'console', 'PHANTOM A7_10 DIRECT DRIVE CONTROL CONSOLE'))
         C.append(_c('harness', 'electrical', 'airframe', P['structure.harness_mass_kg'], P['structure.harness_position_m'], [1.8, 0.5, 0.2], S, 'harness'))
-        fp = hb['chassis_A9_fixed_parts']
-        C.append(_c('a9_cassette_fixed', 'structure', 'airframe', fp['mass_kg'], fp['com_world_m'], fp['inertia_about_com_world_axes_kg_m2'], 'DERIVED',
-                    'a9_handover chassis_A9_fixed_parts', 'A9_01 TELESCOPIC WING CASSETTE'))
+        rev = P.cassette_revision; rl = rev.lower(); stroke = P.wing_stroke_m
+        fp = hb[f'chassis_{rev}_fixed_parts']
+        C.append(_c(f'{rl}_cassette_fixed', 'structure', 'airframe', fp['mass_kg'], fp['com_world_m'], fp['inertia_about_com_world_axes_kg_m2'], 'DERIVED',
+                    f'{rl}_handover chassis_{rev}_fixed_parts', f'{rev}_01 WING CASSETTE'))
         for who, cushion in [('driver', 'SEAT_DRIVER_SEAT_CUSHION'), ('passenger', 'SEAT_PASSENGER_SEAT_CUSHION')]:
             cc = np.array(g[cushion]['area_centroid_m'])
             C.append(_c(f'seat_{who}', 'interior', 'airframe', P['structure.seat_mass_kg'], cc + [0, 0, 0.1], [0.25, 0.2, 0.3], S, 'seat', cushion))
@@ -142,15 +143,15 @@ class PhantomLedger:
             def addbody(jn, parent, bname, jtype, rng):
                 j = hj[jn]; hbj = hb[jn]
                 body(bname, parent, j['anchor_world_m'], jtype, j['axis_world'], rng, jn)
-                C.append(_c(bname, 'a9_cassette', bname, hbj['mass_kg'], hbj['com_world_m'], hbj['inertia_about_com_world_axes_kg_m2'], 'DERIVED', f'a9_handover {jn}', jn))
-            addbody(f'A9_JOINT_WING_{cs}_SLIDE', 'airframe', f'wing_{side}', 'slide', [-1.37, 0.0])
+                C.append(_c(bname, f'{rl}_cassette', bname, hbj['mass_kg'], hbj['com_world_m'], hbj['inertia_about_com_world_axes_kg_m2'], 'DERIVED', f'{rl}_handover {jn}', jn))
+            addbody(f'{rev}_JOINT_WING_{cs}_SLIDE', 'airframe', f'wing_{side}', 'slide', [-stroke, 0.0])
             for pin in PINS:
-                addbody(f'A9_JOINT_WING_{cs}_LOCK_{pin}', f'wing_{side}' if pin.startswith('FRONT') else 'airframe', f'pin_{side}_{pin.lower()}', 'slide', [-0.07, 0.0])
-            addbody(f'A9_JOINT_FLAP_{cs}', f'wing_{side}', f'flap_{side}', 'hinge', [math.radians(-5), math.radians(35)])
-            addbody(f'A9_JOINT_AILERON_{cs}', f'wing_{side}', f'aileron_{side}', 'hinge', [math.radians(-20), math.radians(20)])
-            addbody(f'A9_JOINT_CANARD_{cs}_FOLD', 'airframe', f'canard_{side}_fold', 'hinge', [math.radians(x) for x in hj[f'A9_JOINT_CANARD_{cs}_FOLD']['range_deg']])
-            addbody(f'A9_JOINT_CANARD_{cs}_PITCH', f'canard_{side}_fold', f'canard_{side}', 'hinge', [math.radians(-20), math.radians(25)])
-            addbody(f'A9_JOINT_HATCH_{cs}', 'airframe', f'hatch_{side}', 'hinge', [0.0, math.pi])
+                addbody(f'{rev}_JOINT_WING_{cs}_LOCK_{pin}', f'wing_{side}' if pin.startswith('FRONT') else 'airframe', f'pin_{side}_{pin.lower()}', 'slide', [-0.07, 0.0])
+            addbody(f'{rev}_JOINT_FLAP_{cs}', f'wing_{side}', f'flap_{side}', 'hinge', [math.radians(-5), math.radians(35)])
+            addbody(f'{rev}_JOINT_AILERON_{cs}', f'wing_{side}', f'aileron_{side}', 'hinge', [math.radians(-20), math.radians(20)])
+            addbody(f'{rev}_JOINT_CANARD_{cs}_FOLD', 'airframe', f'canard_{side}_fold', 'hinge', [math.radians(x) for x in hj[f'{rev}_JOINT_CANARD_{cs}_FOLD']['range_deg']])
+            addbody(f'{rev}_JOINT_CANARD_{cs}_PITCH', f'canard_{side}_fold', f'canard_{side}', 'hinge', [math.radians(-20), math.radians(25)])
+            addbody(f'{rev}_JOINT_HATCH_{cs}', 'airframe', f'hatch_{side}', 'hinge', [0.0, math.pi])
         bp = np.array(P['boosters.position_m'])
         for side in WING_SIDES:
             pos = bp * [1, WING_SIGN[side], 1]
@@ -197,7 +198,7 @@ class PhantomLedger:
             q[f'pod_{k}'] = SIDE[k] * math.pi / 2 if pods == 'vtol' else 0.0
             q[f'leg_{k}'] = -self.p['contact.leg_extension_m'] if legs == 'extended' else 0.0
         for side in WING_SIDES:
-            q[f'wing_{side}'] = -1.37 if wings == 'stowed' else 0.0
+            q[f'wing_{side}'] = -self.p.wing_stroke_m if wings == 'stowed' else 0.0
             if wings == 'stowed':
                 for pin in PINS:
                     q[f'pin_{side}_{pin.lower()}'] = -0.07

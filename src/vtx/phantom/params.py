@@ -7,7 +7,8 @@ ROOT = Path(__file__).resolve().parents[3]
 PARAMETER_FILE = ROOT / 'inputs/phantom_parameters_v1.json'
 MANIFEST_FILE = ROOT / 'inputs/phantom_simulation_manifest_v0.json'
 LABELS = {'MEASURED-K', 'DERIVED', 'SYNTHETIC_UNVALIDATED', 'MANUFACTURER', 'REGULATORY_REFERENCE'}
-VARIANTS = ('phantom', 'phantom-fx')
+VARIANTS = ('phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')   # phantom/phantom-fx = A10 (main); -a9 = earlier version
+CASSETTE_REVISIONS = ('A9', 'A10')
 
 
 class PhantomConfigError(ValueError):
@@ -42,7 +43,12 @@ class Params:
         raw = json.loads(Path(path).read_text())
         self.file_sha256 = hashlib.sha256(Path(path).read_bytes()).hexdigest()
         self.variant = variant
-        self.tree = _merge(copy.deepcopy(raw['base']), raw['variants'][variant].get('overlay', {}))
+        chain, v = [], variant
+        while v:   # a variant may inherit another (e.g. phantom-fx-a9 = phantom-fx + A9 cassette)
+            chain.insert(0, raw['variants'][v]); v = raw['variants'][v].get('inherits')
+        self.tree = copy.deepcopy(raw['base'])
+        for entry in chain:
+            _merge(self.tree, entry.get('overlay', {}))
         if overrides:
             _merge(self.tree, overrides)
         self.n_numbers = _check_labels(self.tree)
@@ -50,12 +56,16 @@ class Params:
         self.manifest_map = raw['manifest_map']
         self.revision_log = raw['revision_log']
         self.config_sha256 = hashlib.sha256(json.dumps(self.tree, sort_keys=True).encode()).hexdigest()
-        rev = self.tree['geometry_sources']['wing_cassette_revision']
+        rev = self.cassette_revision = self.tree['geometry_sources']['wing_cassette_revision']
+        if rev not in CASSETTE_REVISIONS:
+            raise PhantomConfigError(f'unknown wing cassette revision {rev!r}')
         files = self.tree['geometry_sources']['revisions'][rev]
         h = ROOT / files['handover']
         if not h.exists():
             raise PhantomConfigError(f'wing cassette revision {rev}: missing {h.relative_to(ROOT)}')
         self.handover = json.loads(h.read_text())
+        slide = next(j for j in self.handover['joints'] if j['name'] == f'{rev}_JOINT_WING_R_SLIDE')
+        self.wing_stroke_m = -float(slide['range_m'][0])   # stowed slide position is -stroke
         self.geometry = json.loads((ROOT / self.tree['geometry_sources']['measured']).read_text())
         self.manifest_coverage()
 
