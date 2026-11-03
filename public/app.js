@@ -148,7 +148,7 @@ function getMinimap(canvas){
   return null;
 }
 const onMap=async(event,canvas)=>{
-  if(last?.active){toast('End the current sortie before selecting the next mission.');return;}
+  // Map B remains editable throughout a sortie; A only sets the next departure.
   const rect=canvas.getBoundingClientRect();
   const mm=getMinimap(canvas);
   let x,y;
