@@ -25,28 +25,44 @@ function blobGeometry(seed) {
   g.computeVertexNormals(); return g;
 }
 
-export function buildTrees(scene, world) {
+// Fit a unit-space tree part inside the unit cylinder (radius <= .96, z in [z0, z1]).
+function fitUnit(g, z0, z1, rMax = .96) {
+  const p = g.attributes.position; let m = 0, lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < p.count; i++) { m = Math.max(m, Math.hypot(p.getX(i), p.getY(i))); lo = Math.min(lo, p.getZ(i)); hi = Math.max(hi, p.getZ(i)); }
+  for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) * rMax / m, p.getY(i) * rMax / m, z0 + (p.getZ(i) - lo) / (hi - lo) * (z1 - z0));
+  g.computeVertexNormals(); return g;
+}
+
+// Trees are dressed onto the physical cylinders (world.py): every crown and trunk is built in
+// unit space and scaled by the collider's own radius and height, so the whole tree stays
+// INSIDE its collider (nothing visible outside what the aircraft can hit). Three columnar
+// species keep the variety: spruce, cypress and a fastigiate broadleaf.
+export function buildTrees(scene, world, opts = {}) {
   const group = new THREE.Group(); group.name = 'vtx-trees';
   const trees = world.obstacles.filter((o) => o.kind === 'cylinder');
   if (!trees.length) return { group };
-  const cone = (r, h, z) => new THREE.ConeGeometry(r, h, 8).rotateX(Math.PI / 2).translate(0, 0, z + h / 2);
-  const conifer = shaded(mergeGeometries([cone(1, .5, 0), cone(.78, .45, .3), cone(.55, .42, .6)].map((g) => g.toNonIndexed())), new THREE.Color('#1f3a2a'), new THREE.Color('#4d7a52'));
-  const broad = shaded(blobGeometry(3).translate(0, 0, 1), new THREE.Color('#5d6b2a'), new THREE.Color('#c79a2c'));
-  const trunkGeo = new THREE.CylinderGeometry(.8, 1, 1, 8).rotateX(Math.PI / 2).translate(0, 0, .5);
-  const mk = (geo, mat, n) => { const m = new THREE.InstancedMesh(geo, mat, n); m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false; group.add(m); return m; };
-  const isBroad = (o, i) => i % 3 === 2;
-  const nB = trees.filter(isBroad).length, nC = trees.length - nB;
+  const cone = (r, h, z, s = 9) => new THREE.ConeGeometry(r, h, s).rotateX(Math.PI / 2).translate(0, 0, z + h / 2).toNonIndexed();
+  const spruce = shaded(fitUnit(mergeGeometries([cone(1, .34, 0), cone(.82, .32, .2), cone(.64, .3, .4), cone(.45, .3, .58), cone(.26, .26, .76)]), .16, 1), new THREE.Color('#1c3526'), new THREE.Color('#507d56'));
+  const cypressProfile = []; for (let k = 0; k <= 10; k++) { const t = k / 10; cypressProfile.push(new THREE.Vector2(Math.max(.02, Math.sin(Math.PI * Math.pow(t, .8)) * (1 - .35 * t)), t)); }
+  const cypress = shaded(fitUnit(new THREE.LatheGeometry(cypressProfile, 9).rotateX(Math.PI / 2), .08, 1), new THREE.Color('#203a26'), new THREE.Color('#5d8a4f'));
+  const broad = shaded(fitUnit(blobGeometry(3).scale(1, 1, 1.9), .3, 1), new THREE.Color('#566a2a'), new THREE.Color('#c39a34'));
+  const trunkGeo = fitUnit(new THREE.CylinderGeometry(.75, 1, 1, 7).rotateX(Math.PI / 2).translate(0, 0, .5), 0, .4, .24);
+  const mk = (geo, mat, n) => { const m = new THREE.InstancedMesh(geo, mat, Math.max(1, n)); m.count = n; m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false; group.add(m); return m; };
+  const kindOf = (i) => (i % 3 === 2 ? 2 : i % 3 === 1 ? 1 : 0);
+  const counts = [0, 0, 0]; trees.forEach((o, i) => counts[kindOf(i)]++);
   const trunks = mk(trunkGeo, new THREE.MeshStandardMaterial({ color: '#4a3524', roughness: 1 }), trees.length);
-  const cm = mk(conifer, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .95 }), Math.max(1, nC));
-  const bm = mk(broad, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .9 }), Math.max(1, nB));
-  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color(), r = rng(66);
-  let ic = 0, ib = 0;
+  const leaf = (rough) => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: rough });
+  const crowns = [mk(spruce, leaf(.95), counts[0]), mk(cypress, leaf(.92), counts[1]), mk(broad, leaf(.88), counts[2])];
+  crowns.forEach((c, k) => { c.name = ['tree-spruce', 'tree-cypress', 'tree-broadleaf'][k]; }); trunks.name = 'tree-trunks';
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color(), r = rng(66), at = [0, 0, 0];
   trees.forEach((o, i) => {
-    const [x, y, z] = o.center, rad = o.half[0], H = o.half[2] * 2, base = z - o.half[2];
+    const [x, y, z] = o.center, rad = o.half[0], H = o.half[2] * 2, base = z - o.half[2], k = kindOf(i);
     q.setFromAxisAngle(new THREE.Vector3(0, 0, 1), r() * 6.28);
-    m4.compose(new THREE.Vector3(x, y, base), q, new THREE.Vector3(rad, rad, H * .55)); trunks.setMatrixAt(i, m4);
-    if (isBroad(o, i)) { const R = rad * 1.9 + .6, h = H * .5; m4.compose(new THREE.Vector3(x, y, base + H * .45), q, new THREE.Vector3(R, R, h * .9)); bm.setMatrixAt(ib, m4); bm.setColorAt(ib++, col.setHSL(.1 + r() * .09, .55, .5 + r() * .15)); }
-    else { const R = rad * 1.8 + .5; m4.compose(new THREE.Vector3(x, y, base + H * .12), q, new THREE.Vector3(R, R, H * .92)); cm.setMatrixAt(ic, m4); cm.setColorAt(ic++, col.setHSL(.33 + r() * .04, .35, .8 + r() * .35)); }
+    m4.compose(new THREE.Vector3(x, y, base), q, new THREE.Vector3(rad, rad, H));
+    trunks.setMatrixAt(i, m4);
+    crowns[k].setMatrixAt(at[k], m4);
+    const hue = [.33 + r() * .04, .27 + r() * .05, .1 + r() * .09][k];
+    crowns[k].setColorAt(at[k]++, col.setHSL(hue, k === 2 ? .55 : .35, k === 2 ? .5 + r() * .15 : .8 + r() * .3));
   });
   scene.add(group); return { group };
 }

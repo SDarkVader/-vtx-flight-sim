@@ -1,0 +1,309 @@
+{
+ "terrain": {
+  "vertices": 10201,
+  "matrix_identity": true,
+  "vertices_on_grid": true,
+  "max_vertex_vs_heights_m": 1.9041207934833437e-06,
+  "max_vertex_vs_terrain_z_m": 2.3667688537898357e-06,
+  "triangles": 20000,
+  "triangles_with_wrong_diagonal": 0,
+  "interior_samples": 22000,
+  "max_interior_diff_m": 1.8648054336267705e-06
+ },
+ "trees": {
+  "instances": 58,
+  "max_radius_ratio": 0.9600074069832008,
+  "max_top_excess_m": 4.6388040608746905e-07,
+  "min_base_z": 0,
+  "max_centre_offset_m": 7.619646351332364e-06,
+  "outside_collider": 0
+ },
+ "paint": {
+  "vtx-airfield": {
+   "n": 2269,
+   "buried": 910,
+   "floating": 312,
+   "max_above": 1.1799999986588956,
+   "min_above": -49.616745085339886,
+   "outside_physics": 704,
+   "depthTest_off": 0
+  },
+  "vtx-service-roads": {
+   "n": 2400,
+   "buried": 7,
+   "floating": 484,
+   "max_above": 2.786142872734274,
+   "min_above": -1.0316454047900976,
+   "outside_physics": 1908,
+   "depthTest_off": 0
+  },
+  "water": {
+   "n": 495,
+   "buried": 0,
+   "floating": 0,
+   "max_above": 0.04147089875303145,
+   "min_above": 0.04004518529989315,
+   "outside_physics": 0,
+   "depthTest_off": 0
+  }
+ },
+ "rays": [
+  [
+   "stand-1",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "spawn-13.7,-28.4",
+   0.0,
+   0.0,
+   "terrain-visual|terrain-visual",
+   true
+  ],
+  [
+   "pad-b",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "dest-45,18",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "dest-30,20",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "dest-100,100",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "roof-hangar",
+   0.0,
+   0.0,
+   "vtx-buildings|Mesh",
+   true
+  ],
+  [
+   "roof-workshop",
+   0.0,
+   0.0,
+   "vtx-buildings|Mesh",
+   true
+  ],
+  [
+   "roof-freight",
+   0.0,
+   0.0,
+   "vtx-buildings|Mesh",
+   true
+  ],
+  [
+   "roof-dispatch",
+   0.0,
+   0.0,
+   "vtx-buildings|Mesh",
+   true
+  ],
+  [
+   "roof-arcade",
+   0.0,
+   0.0,
+   "vtx-buildings|Mesh",
+   true
+  ],
+  [
+   "roof-operations",
+   0.0,
+   0.0,
+   "vtx-buildings|Mesh",
+   true
+  ],
+  [
+   "roof-terminal",
+   0.0,
+   0.0,
+   "vtx-buildings|Mesh",
+   true
+  ],
+  [
+   "stand-A-40,0",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "stand-70,-8",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "stand--30,-4",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "exp-stand-2",
+   -0.0,
+   0.0,
+   "terrain-visual|terrain-visual",
+   false
+  ],
+  [
+   "exp-stand-3",
+   -0.0,
+   -0.0,
+   "terrain-visual|terrain-visual",
+   false
+  ],
+  [
+   "exp-stand-4",
+   0.0,
+   0.0,
+   "terrain-visual|terrain-visual",
+   false
+  ],
+  [
+   "runway-east-300",
+   0.0,
+   0.0,
+   "terrain-visual|terrain-visual",
+   false
+  ],
+  [
+   "runway-west--400",
+   -0.0,
+   -0.0,
+   "terrain-visual|terrain-visual",
+   false
+  ],
+  [
+   "rwy0321-300,92",
+   -0.0,
+   -0.0,
+   "terrain-visual|terrain-visual",
+   false
+  ],
+  [
+   "taxi-A",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "road-west",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "road-north",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ],
+  [
+   "portal",
+   0.02,
+   0.02,
+   "vtx-airfield|Mesh",
+   true
+  ]
+ ],
+ "boxes": [
+  [
+   "hangar",
+   5253,
+   2
+  ],
+  [
+   "workshop",
+   5318,
+   1
+  ],
+  [
+   "tower",
+   5317,
+   4
+  ],
+  [
+   "freight",
+   5305,
+   1
+  ],
+  [
+   "ridge-block",
+   5370,
+   1
+  ],
+  [
+   "dispatch",
+   5309,
+   1
+  ],
+  [
+   "arcade",
+   5361,
+   1
+  ],
+  [
+   "operations",
+   5322,
+   1
+  ],
+  [
+   "terminal",
+   5339,
+   1
+  ]
+ ],
+ "vehicles": {
+  "vtx-gsv-follow-me-cab": {
+   "samples": 600,
+   "conflicts": {}
+  },
+  "vtx-gsv-baggage-train": {
+   "samples": 600,
+   "conflicts": {}
+  },
+  "vtx-gsv-fuel-bowser": {
+   "samples": 600,
+   "conflicts": {}
+  },
+  "vtx-gsv-fire-crash-tender": {
+   "samples": 600,
+   "conflicts": {}
+  },
+  "vtx-gsv-pushback-tug": {
+   "samples": 600,
+   "conflicts": {}
+  }
+ },
+ "inventory": {
+  "vtx-airfield": 41,
+  "vtx-buildings": 4,
+  "vtx-service-roads": 22,
+  "vtx-volcano-basement": 167
+ }
+}

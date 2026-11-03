@@ -41,18 +41,22 @@ const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(p
 const mobileView=mobile;
 // Phones default to the lighter display path. The physics and model are unchanged.
 const lightweightView=mobile||new URLSearchParams(location.search).has('lite');
+// Rendering quality tier (visual only; physics unaffected): phone low, ?lite lite, desktop high, ?quality= overrides.
+import {resolveQuality} from './vtx-env/quality.js?v=gfx-20261103-1';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
+const quality=resolveQuality({mobile,search:location.search});scene.userData.quality=quality.name;
 // On phones keep retained-flight actions and indicator bar directly below the flight view.
 if (innerWidth <= 800) {
  document.querySelector('header').after($('retry-bar'));
  $('viewport').after(document.querySelector('footer'));
 }
 const camera=new THREE.PerspectiveCamera(48,1,.1,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
-const renderer=new THREE.WebGLRenderer({antialias:!mobileView,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileView ? .8 : 1.2));renderer.shadowMap.enabled=!mobile&&!lightweightView;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;viewport.appendChild(renderer.domElement);
+const renderer=new THREE.WebGLRenderer({antialias:quality.antialias,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,quality.pixelRatio));renderer.shadowMap.enabled=quality.shadows;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=quality.toneMapping;renderer.toneMappingExposure=quality.exposure;viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
 const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
-const sky=buildSky(scene,renderer,{shadows:!mobile,shadowSize:mobile?1024:2048}),environment={};
+const sky=buildSky(scene,renderer,{quality}),environment={};
+const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 function plane(w,h,color,x,y,z){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({color,roughness:.95}));m.position.set(x,y,z);m.receiveShadow=true;scene.add(m);return m;}
 function makeLabel(text,color='#7cdfcb'){
@@ -66,10 +70,12 @@ function buildWorld(w){
  world=w;
  // Ground uses the same heightfield samples as the physics terrain; the distant landscape lies outside the +/-500 m test area.
  scene.add(buildTerrain(w));
- const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,mobile?350:lightweightView?700:1700));
+ const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,quality.forest));const ground=createGround(w,hills.mesh);
+ const groundZ=(x,y)=>Math.max(Math.abs(x),Math.abs(y))<=w.half_m?surfaceZ(x,y):ground.heightAt(x,y);
  // Buildings are dressed onto the physical obstacle boxes; airfield markings are flush paint.
- environment.buildings=buildBuildings(scene,w,{ppm:mobile||lightweightView?14:24});buildAirfield(scene,{ppm:mobile||lightweightView?7:11});buildTrees(scene,w);buildForecourt(scene,w);environment.volcano=buildVolcanoBasement(scene,w);environment.serviceRoads=buildServiceRoads(scene,w,surfaceZ);
+ environment.buildings=buildBuildings(scene,w,{ppm:quality.facadePpm,quality});buildAirfield(scene,{ppm:quality.airfieldPpm,quality});buildTrees(scene,w,{quality});buildForecourt(scene,w);environment.volcano=buildVolcanoBasement(scene,w);environment.serviceRoads=buildServiceRoads(scene,w,groundZ);
  scene.add(makeWater(w,surfaceZ(w.water.x,w.water.y)+.1));
+ environment.dressing=dressWorld(scene,w,ground,{quality,lightPool,extraTextures:[markerA.material.map,markerB.material.map]});
  updateMarkers();drawMaps();console.log('VTX: terrain ready');
 }
 let aircraftFx=null,loadedAsset=null,assetRetryAfter=0,modelReady=false;
