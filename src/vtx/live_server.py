@@ -28,6 +28,7 @@ from ._rotation import Rotation
 from .aircraft import Aircraft,DT,ROOT
 from .mission_selection import MapPoint,select_mission
 from .world import TestWorld
+from .release import EXPECTED_RELEASE, actual_release, assert_expected_release
 
 class Action(BaseModel):
     model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
@@ -370,6 +371,8 @@ class Laboratory:
         return obs
 
     def start(self,request:Mission):
+        if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.airframe_variant!='r6':
+            raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
@@ -535,6 +538,8 @@ async def physical_clock():
 async def lifespan(app):
     global lab
     if lab is None:lab=Laboratory()
+    if os.environ.get('VTX_ENFORCE_RELEASE')=='1':
+        assert_expected_release(lab.aircraft.provenance)
     task=asyncio.create_task(physical_clock())
     yield
     if lab.active:
@@ -586,6 +591,11 @@ async def login(request:Request):
 async def world():return lab.world.public()
 @app.get('/api/observe')
 async def observe():return lab.sensor_observation()
+@app.get('/api/release')
+async def release_identity():
+    loaded=actual_release(lab.aircraft.provenance)
+    return dict(expected=EXPECTED_RELEASE,loaded=loaded,matches=(loaded==EXPECTED_RELEASE),
+                enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1')
 @app.get('/api/view')
 async def view():return lab.view()
 @app.get('/api/validate')
