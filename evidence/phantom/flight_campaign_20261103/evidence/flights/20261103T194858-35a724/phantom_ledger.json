@@ -1,0 +1,3273 @@
+{
+ "components": [
+  {
+   "id": "hull_shell",
+   "kind": "structure",
+   "body": "airframe",
+   "mass_kg": 68.6016802969632,
+   "position_m": [
+    -0.3926548659801483,
+    1.2619587323570158e-05,
+    0.6689028143882751
+   ],
+   "inertia_kg_m2": [
+    [
+     38.645613233955935,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     137.43203286158294,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     164.64403271271166
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "measured area 36.11 m2 x hull areal density",
+   "cad_object": "PHANTOM_A8_INTEGRATED_DUCTED_FACETED_CFRP_HULL",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "fenders_doors_panels",
+   "kind": "structure",
+   "body": "airframe",
+   "mass_kg": 18.088735635173233,
+   "position_m": [
+    0.024459377582196483,
+    0.004555473389180686,
+    0.7027335114045828
+   ],
+   "inertia_kg_m2": [
+    [
+     9.225255173938349,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     29.725822227134685,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     37.86575326296264
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "measured collection area 11.31 m2 x 1.0 x panel areal density",
+   "cad_object": "PHANTOM A6_02 SHAPED OVERLAPPING FENDER AND SIDE PANELS",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "safety_tub",
+   "kind": "structure",
+   "body": "airframe",
+   "mass_kg": 50.47693772627535,
+   "position_m": [
+    -0.1723548859580315,
+    2.8284550751230337e-09,
+    0.4469173842237458
+   ],
+   "inertia_kg_m2": [
+    [
+     9.7588746270799,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     44.5879616582099,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     51.31822002171328
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "measured collection area 21.03 m2 x 0.5 x tub areal density",
+   "cad_object": "02 INTERNAL BONDED CFRP SAFETY CELL",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "nose_splitter",
+   "kind": "structure",
+   "body": "airframe",
+   "mass_kg": 5.775166448147502,
+   "position_m": [
+    1.8794389872631934,
+    6.450533213041633e-09,
+    0.5092648592529919
+   ],
+   "inertia_kg_m2": [
+    [
+     1.2753492572992402,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.3513226255956397,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.5400443861726674
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "measured collection area 2.31 m2 x 1.0 x trim areal density",
+   "cad_object": "PHANTOM A6_03 V-SPLITTER CHEVRON AND LIGHTS",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "canopy_glazing",
+   "kind": "structure",
+   "body": "airframe",
+   "mass_kg": 9.99572260901914,
+   "position_m": [
+    -0.02540181573057485,
+    0.00016739953634013332,
+    0.9802369331486207
+   ],
+   "inertia_kg_m2": [
+    [
+     1.2744546326499404,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.2073887428250605,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     3.3319075363397133
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "measured collection area 1.33 m2 x 1.0 x glazing areal density",
+   "cad_object": "PHANTOM A6_04 LOW ANGULAR CANOPY",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "tail_fins_fairings",
+   "kind": "structure",
+   "body": "airframe",
+   "mass_kg": 4.14001228599318,
+   "position_m": [
+    -2.002762014107972,
+    0.00025259911902738815,
+    0.8455558359299753
+   ],
+   "inertia_kg_m2": [
+    [
+     0.6210018428989769,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.345001023832765,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.7176021295721512
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "measured collection area 1.66 m2 x 1.0 x trim areal density",
+   "cad_object": "PHANTOM A6_05 TWIN V TAIL AND REAR BOOSTER FAIRINGS",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "rear_reaction_boxes",
+   "kind": "structure",
+   "body": "airframe",
+   "mass_kg": 9.463988961826544,
+   "position_m": [
+    -1.9878604546574774,
+    -7.675744457545018e-09,
+    0.48603994552761
+   ],
+   "inertia_kg_m2": [
+    [
+     1.261865194910206,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.6309325974551031,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.6404247533832679
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "measured collection area 3.15 m2 x 0.5 x reaction_box areal density",
+   "cad_object": "07 REAR PROPULSION AND REACTION BULKHEAD",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "console",
+   "kind": "interior",
+   "body": "airframe",
+   "mass_kg": 6.0,
+   "position_m": [
+    0.48,
+    0.0,
+    0.57
+   ],
+   "inertia_kg_m2": [
+    [
+     0.36500000000000005,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.125,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.4000000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "console",
+   "cad_object": "PHANTOM A7_10 DIRECT DRIVE CONTROL CONSOLE",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "harness",
+   "kind": "electrical",
+   "body": "airframe",
+   "mass_kg": 17.0,
+   "position_m": [
+    -0.2,
+    0.0,
+    0.45
+   ],
+   "inertia_kg_m2": [
+    [
+     1.6433333333333335,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     18.58666666666667,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     19.776666666666667
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "harness",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "a9_cassette_fixed",
+   "kind": "structure",
+   "body": "airframe",
+   "mass_kg": 77.48095008701256,
+   "position_m": [
+    -0.7927762866020203,
+    0.001755264587700367,
+    0.9064400792121887
+   ],
+   "inertia_kg_m2": [
+    [
+     47.606597900390625,
+     0.09910541772842407,
+     2.471682548522949
+    ],
+    [
+     0.09910541772842407,
+     83.28813934326172,
+     0.14327232539653778
+    ],
+    [
+     2.471682548522949,
+     0.14327232539653778,
+     128.8987274169922
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover chassis_A9_fixed_parts",
+   "cad_object": "A9_01 TELESCOPIC WING CASSETTE",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "seat_driver",
+   "kind": "interior",
+   "body": "airframe",
+   "mass_kg": 12.0,
+   "position_m": [
+    -0.16999998688697815,
+    -0.30000001192092896,
+    0.6649999380111694
+   ],
+   "inertia_kg_m2": [
+    [
+     0.52,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.61,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.41
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "seat",
+   "cad_object": "SEAT_DRIVER_SEAT_CUSHION",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "occupant_driver",
+   "kind": "occupant",
+   "body": "airframe",
+   "mass_kg": 85.0,
+   "position_m": [
+    -0.11999998688697815,
+    -0.30000001192092896,
+    0.7849999380111694
+   ],
+   "inertia_kg_m2": [
+    [
+     4.604166666666666,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     4.604166666666666,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.266666666666667
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "occupant state mass (driver at -Y, physical right)",
+   "cad_object": null,
+   "limits": null,
+   "tags": [
+    "occupant"
+   ]
+  },
+  {
+   "id": "seat_passenger",
+   "kind": "interior",
+   "body": "airframe",
+   "mass_kg": 12.0,
+   "position_m": [
+    -0.16999998688697815,
+    0.29999998211860657,
+    0.6649999380111694
+   ],
+   "inertia_kg_m2": [
+    [
+     0.52,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.61,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.41
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "seat",
+   "cad_object": "SEAT_PASSENGER_SEAT_CUSHION",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "occupant_passenger",
+   "kind": "occupant",
+   "body": "airframe",
+   "mass_kg": 85.0,
+   "position_m": [
+    -0.11999998688697815,
+    0.29999998211860657,
+    0.7849999380111694
+   ],
+   "inertia_kg_m2": [
+    [
+     4.604166666666666,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     4.604166666666666,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.266666666666667
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "occupant state mass (driver at -Y, physical right)",
+   "cad_object": null,
+   "limits": null,
+   "tags": [
+    "occupant"
+   ]
+  },
+  {
+   "id": "avionics_fcc",
+   "kind": "avionics",
+   "body": "airframe",
+   "mass_kg": 25.0,
+   "position_m": [
+    1.7,
+    0.0,
+    0.45
+   ],
+   "inertia_kg_m2": [
+    [
+     0.41666666666666674,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.41666666666666674,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.6666666666666669
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "FCC/IMU/air data",
+   "cad_object": null,
+   "limits": {
+    "power_w": 1500.0
+   },
+   "tags": []
+  },
+  {
+   "id": "hv_junction",
+   "kind": "electrical",
+   "body": "airframe",
+   "mass_kg": 40.0,
+   "position_m": [
+    -1.3,
+    0.0,
+    0.35
+   ],
+   "inertia_kg_m2": [
+    [
+     0.6666666666666669,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.6666666666666669,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0666666666666669
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "HV bus/contactors",
+   "cad_object": null,
+   "limits": {
+    "voltage_v": 800.0
+   },
+   "tags": []
+  },
+  {
+   "id": "radiator",
+   "kind": "cooling",
+   "body": "airframe",
+   "mass_kg": 34.0,
+   "position_m": [
+    1.18,
+    0.0,
+    0.39
+   ],
+   "inertia_kg_m2": [
+    [
+     2.0184666666666664,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.33546666666666675,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.1272666666666664
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "radiator core + coolant",
+   "cad_object": "THERMAL_FRONT_CENTRAL_DUAL_RADIATOR_CORE",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "cooling_fan_left",
+   "kind": "cooling",
+   "body": "airframe",
+   "mass_kg": 3.0,
+   "position_m": [
+    1.03,
+    0.27,
+    0.39
+   ],
+   "inertia_kg_m2": [
+    [
+     0.028800000000000003,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0169,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0169
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "powered cooling fan",
+   "cad_object": null,
+   "limits": {
+    "power_w": 1000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "cooling_fan_right",
+   "kind": "cooling",
+   "body": "airframe",
+   "mass_kg": 3.0,
+   "position_m": [
+    1.03,
+    -0.27,
+    0.39
+   ],
+   "inertia_kg_m2": [
+    [
+     0.028800000000000003,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0169,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0169
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "powered cooling fan",
+   "cad_object": null,
+   "limits": {
+    "power_w": 1000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "turbogenerator_1",
+   "kind": "powertrain",
+   "body": "airframe",
+   "mass_kg": 310.0,
+   "position_m": [
+    -1.75,
+    0.0,
+    0.55
+   ],
+   "inertia_kg_m2": [
+    [
+     10.591666666666667,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     17.039666666666665,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     14.714666666666668
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "turbogenerator incl. rectifier",
+   "cad_object": null,
+   "limits": {
+    "power_w": 600000.0,
+    "takeoff_power_w": 900000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "buffer_battery",
+   "kind": "powertrain",
+   "body": "buffer",
+   "mass_kg": 311.284046692607,
+   "position_m": [
+    1.8,
+    0.0,
+    0.42
+   ],
+   "inertia_kg_m2": [
+    [
+     24.010376134889754,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     9.48378728923476,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     27.49675745784695
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "energy / pack specific energy",
+   "cad_object": null,
+   "limits": {
+    "energy_j": 288000000.0,
+    "p_cont_w": 800622.5680933852,
+    "p_peak_w": 1200933.8521400776
+   },
+   "tags": []
+  },
+  {
+   "id": "fuel_tank_left",
+   "kind": "fuel_system",
+   "body": "airframe",
+   "mass_kg": 5.0,
+   "position_m": [
+    -0.06,
+    0.12,
+    0.26
+   ],
+   "inertia_kg_m2": [
+    [
+     0.03233333333333333,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.3541666666666667,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.3781666666666668
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "cell structure",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "fuel_left",
+   "kind": "fuel",
+   "body": "fuel_left",
+   "mass_kg": 64.5,
+   "position_m": [
+    -0.06,
+    0.12,
+    0.26
+   ],
+   "inertia_kg_m2": [
+    [
+     0.4171,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     17.46875,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     17.77835
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "Jet A-1 state mass (full)",
+   "cad_object": null,
+   "limits": null,
+   "tags": [
+    "fuel"
+   ]
+  },
+  {
+   "id": "fuel_tank_right",
+   "kind": "fuel_system",
+   "body": "airframe",
+   "mass_kg": 5.0,
+   "position_m": [
+    -0.06,
+    -0.12,
+    0.26
+   ],
+   "inertia_kg_m2": [
+    [
+     0.03233333333333333,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.3541666666666667,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.3781666666666668
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "cell structure",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "fuel_right",
+   "kind": "fuel",
+   "body": "fuel_right",
+   "mass_kg": 64.5,
+   "position_m": [
+    -0.06,
+    -0.12,
+    0.26
+   ],
+   "inertia_kg_m2": [
+    [
+     0.4171,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     17.46875,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     17.77835
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "Jet A-1 state mass (full)",
+   "cad_object": null,
+   "limits": null,
+   "tags": [
+    "fuel"
+   ]
+  },
+  {
+   "id": "pod_FL_pylon",
+   "kind": "pod",
+   "body": "airframe",
+   "mass_kg": 6.0,
+   "position_m": [
+    1.54,
+    1.1,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.0256,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0328,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0328
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "fixed bracket, pin, pylon, tilt EMA stator",
+   "cad_object": "JOINT_WHEEL_POD_FR",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FL_structure",
+   "kind": "pod",
+   "body": "pod_FL",
+   "mass_kg": 12.5,
+   "position_m": [
+    1.54,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.6776041666666667,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.2352083333333332,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.6776041666666667
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "pod allowance 190 kg / 4 minus wheel, rotor, hub motor, brake",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FL_fan_motor_inverter",
+   "kind": "pod",
+   "body": "pod_FL",
+   "mass_kg": 40.8,
+   "position_m": [
+    1.54,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.28287999999999996,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.39168,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.28287999999999996
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "163 kg / 4 at 12 kW/kg",
+   "cad_object": null,
+   "limits": {
+    "p_cont_w": 400000.0,
+    "p_peak_w": 490000.0,
+    "torque_nm": 1000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "pod_FL_hub_motor_stator",
+   "kind": "pod",
+   "body": "pod_FL",
+   "mass_kg": 6.0,
+   "position_m": [
+    1.54,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.02320000000000001,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.04000000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.02320000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "traction motor stator in the pod",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FL_brake",
+   "kind": "pod",
+   "body": "pod_FL",
+   "mass_kg": 3.0,
+   "position_m": [
+    1.54,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.010900000000000002,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.020000000000000004,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.010900000000000002
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "brake calliper + disc share",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FL_fan_rotor",
+   "kind": "rotor",
+   "body": "pod_FL_fan",
+   "mass_kg": 7.0,
+   "position_m": [
+    1.54,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.3021947873799726,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.6,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.3021947873799726
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "fan rotor; axial inertia = pods.rotor_inertia_kg_m2",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FL_wheel_tyre",
+   "kind": "wheel",
+   "body": "pod_FL_wheel",
+   "mass_kg": 19.0,
+   "position_m": [
+    1.54,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     1.16774,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.299000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.16774
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "rim + tyre + hub-motor rotor",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FR_pylon",
+   "kind": "pod",
+   "body": "airframe",
+   "mass_kg": 6.0,
+   "position_m": [
+    1.54,
+    -1.1,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.0256,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0328,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0328
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "fixed bracket, pin, pylon, tilt EMA stator",
+   "cad_object": "JOINT_WHEEL_POD_FL",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FR_structure",
+   "kind": "pod",
+   "body": "pod_FR",
+   "mass_kg": 12.5,
+   "position_m": [
+    1.54,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.6776041666666667,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.2352083333333332,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.6776041666666667
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "pod allowance 190 kg / 4 minus wheel, rotor, hub motor, brake",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FR_fan_motor_inverter",
+   "kind": "pod",
+   "body": "pod_FR",
+   "mass_kg": 40.8,
+   "position_m": [
+    1.54,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.28287999999999996,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.39168,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.28287999999999996
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "163 kg / 4 at 12 kW/kg",
+   "cad_object": null,
+   "limits": {
+    "p_cont_w": 400000.0,
+    "p_peak_w": 490000.0,
+    "torque_nm": 1000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "pod_FR_hub_motor_stator",
+   "kind": "pod",
+   "body": "pod_FR",
+   "mass_kg": 6.0,
+   "position_m": [
+    1.54,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.02320000000000001,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.04000000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.02320000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "traction motor stator in the pod",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FR_brake",
+   "kind": "pod",
+   "body": "pod_FR",
+   "mass_kg": 3.0,
+   "position_m": [
+    1.54,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.010900000000000002,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.020000000000000004,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.010900000000000002
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "brake calliper + disc share",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FR_fan_rotor",
+   "kind": "rotor",
+   "body": "pod_FR_fan",
+   "mass_kg": 7.0,
+   "position_m": [
+    1.54,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.3021947873799726,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.6,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.3021947873799726
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "fan rotor; axial inertia = pods.rotor_inertia_kg_m2",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_FR_wheel_tyre",
+   "kind": "wheel",
+   "body": "pod_FR_wheel",
+   "mass_kg": 19.0,
+   "position_m": [
+    1.54,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     1.16774,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.299000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.16774
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "rim + tyre + hub-motor rotor",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RL_pylon",
+   "kind": "pod",
+   "body": "airframe",
+   "mass_kg": 6.0,
+   "position_m": [
+    -1.59,
+    1.1,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.0256,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0328,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0328
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "fixed bracket, pin, pylon, tilt EMA stator",
+   "cad_object": "JOINT_WHEEL_POD_RR",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RL_structure",
+   "kind": "pod",
+   "body": "pod_RL",
+   "mass_kg": 12.5,
+   "position_m": [
+    -1.59,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.6776041666666667,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.2352083333333332,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.6776041666666667
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "pod allowance 190 kg / 4 minus wheel, rotor, hub motor, brake",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RL_fan_motor_inverter",
+   "kind": "pod",
+   "body": "pod_RL",
+   "mass_kg": 40.8,
+   "position_m": [
+    -1.59,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.28287999999999996,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.39168,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.28287999999999996
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "163 kg / 4 at 12 kW/kg",
+   "cad_object": null,
+   "limits": {
+    "p_cont_w": 400000.0,
+    "p_peak_w": 490000.0,
+    "torque_nm": 1000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "pod_RL_hub_motor_stator",
+   "kind": "pod",
+   "body": "pod_RL",
+   "mass_kg": 6.0,
+   "position_m": [
+    -1.59,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.02320000000000001,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.04000000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.02320000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "traction motor stator in the pod",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RL_brake",
+   "kind": "pod",
+   "body": "pod_RL",
+   "mass_kg": 3.0,
+   "position_m": [
+    -1.59,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.010900000000000002,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.020000000000000004,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.010900000000000002
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "brake calliper + disc share",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RL_fan_rotor",
+   "kind": "rotor",
+   "body": "pod_RL_fan",
+   "mass_kg": 7.0,
+   "position_m": [
+    -1.59,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.3021947873799726,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.6,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.3021947873799726
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "fan rotor; axial inertia = pods.rotor_inertia_kg_m2",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RL_wheel_tyre",
+   "kind": "wheel",
+   "body": "pod_RL_wheel",
+   "mass_kg": 19.0,
+   "position_m": [
+    -1.59,
+    1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     1.16774,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.299000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.16774
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "rim + tyre + hub-motor rotor",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RR_pylon",
+   "kind": "pod",
+   "body": "airframe",
+   "mass_kg": 6.0,
+   "position_m": [
+    -1.59,
+    -1.1,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.0256,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0328,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0328
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "fixed bracket, pin, pylon, tilt EMA stator",
+   "cad_object": "JOINT_WHEEL_POD_RL",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RR_structure",
+   "kind": "pod",
+   "body": "pod_RR",
+   "mass_kg": 12.5,
+   "position_m": [
+    -1.59,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.6776041666666667,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.2352083333333332,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.6776041666666667
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "pod allowance 190 kg / 4 minus wheel, rotor, hub motor, brake",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RR_fan_motor_inverter",
+   "kind": "pod",
+   "body": "pod_RR",
+   "mass_kg": 40.8,
+   "position_m": [
+    -1.59,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.28287999999999996,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.39168,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.28287999999999996
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "163 kg / 4 at 12 kW/kg",
+   "cad_object": null,
+   "limits": {
+    "p_cont_w": 400000.0,
+    "p_peak_w": 490000.0,
+    "torque_nm": 1000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "pod_RR_hub_motor_stator",
+   "kind": "pod",
+   "body": "pod_RR",
+   "mass_kg": 6.0,
+   "position_m": [
+    -1.59,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.02320000000000001,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.04000000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.02320000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "traction motor stator in the pod",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RR_brake",
+   "kind": "pod",
+   "body": "pod_RR",
+   "mass_kg": 3.0,
+   "position_m": [
+    -1.59,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.010900000000000002,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.020000000000000004,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.010900000000000002
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "brake calliper + disc share",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RR_fan_rotor",
+   "kind": "rotor",
+   "body": "pod_RR_fan",
+   "mass_kg": 7.0,
+   "position_m": [
+    -1.59,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     0.3021947873799726,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.6,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.3021947873799726
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "fan rotor; axial inertia = pods.rotor_inertia_kg_m2",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pod_RR_wheel_tyre",
+   "kind": "wheel",
+   "body": "pod_RR_wheel",
+   "mass_kg": 19.0,
+   "position_m": [
+    -1.59,
+    -1.25,
+    0.61
+   ],
+   "inertia_kg_m2": [
+    [
+     1.16774,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.299000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.16774
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "rim + tyre + hub-motor rotor",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_FL_cartridge",
+   "kind": "leg",
+   "body": "airframe",
+   "mass_kg": 5.5,
+   "position_m": [
+    1.100000023841858,
+    0.5299999713897705,
+    0.5200000107288361
+   ],
+   "inertia_kg_m2": [
+    [
+     0.07791666666666669,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.07791666666666669,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.009166666666666668
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "cartridge + EMA",
+   "cad_object": "JOINT_LEG_SLIDE_FR",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_FL_slider",
+   "kind": "leg",
+   "body": "leg_FL",
+   "mass_kg": 4.5,
+   "position_m": [
+    1.100000023841858,
+    0.5299999713897705,
+    0.37000001072883604
+   ],
+   "inertia_kg_m2": [
+    [
+     0.06240000000000001,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.06240000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0048000000000000004
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "main slider",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_FL_oleo_foot",
+   "kind": "leg",
+   "body": "leg_FL_oleo",
+   "mass_kg": 3.0,
+   "position_m": [
+    1.100000023841858,
+    0.5299999713897705,
+    0.40499999999999997
+   ],
+   "inertia_kg_m2": [
+    [
+     0.01,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.01,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.007200000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "oleo piston + foot",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_FR_cartridge",
+   "kind": "leg",
+   "body": "airframe",
+   "mass_kg": 5.5,
+   "position_m": [
+    1.100000023841858,
+    -0.5299999713897705,
+    0.5200000107288361
+   ],
+   "inertia_kg_m2": [
+    [
+     0.07791666666666669,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.07791666666666669,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.009166666666666668
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "cartridge + EMA",
+   "cad_object": "JOINT_LEG_SLIDE_FL",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_FR_slider",
+   "kind": "leg",
+   "body": "leg_FR",
+   "mass_kg": 4.5,
+   "position_m": [
+    1.100000023841858,
+    -0.5299999713897705,
+    0.37000001072883604
+   ],
+   "inertia_kg_m2": [
+    [
+     0.06240000000000001,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.06240000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0048000000000000004
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "main slider",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_FR_oleo_foot",
+   "kind": "leg",
+   "body": "leg_FR_oleo",
+   "mass_kg": 3.0,
+   "position_m": [
+    1.100000023841858,
+    -0.5299999713897705,
+    0.40499999999999997
+   ],
+   "inertia_kg_m2": [
+    [
+     0.01,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.01,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.007200000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "oleo piston + foot",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_RL_cartridge",
+   "kind": "leg",
+   "body": "airframe",
+   "mass_kg": 5.5,
+   "position_m": [
+    -1.1799999475479126,
+    0.5299999713897705,
+    0.5200000107288361
+   ],
+   "inertia_kg_m2": [
+    [
+     0.07791666666666669,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.07791666666666669,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.009166666666666668
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "cartridge + EMA",
+   "cad_object": "JOINT_LEG_SLIDE_RR",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_RL_slider",
+   "kind": "leg",
+   "body": "leg_RL",
+   "mass_kg": 4.5,
+   "position_m": [
+    -1.1799999475479126,
+    0.5299999713897705,
+    0.37000001072883604
+   ],
+   "inertia_kg_m2": [
+    [
+     0.06240000000000001,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.06240000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0048000000000000004
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "main slider",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_RL_oleo_foot",
+   "kind": "leg",
+   "body": "leg_RL_oleo",
+   "mass_kg": 3.0,
+   "position_m": [
+    -1.1799999475479126,
+    0.5299999713897705,
+    0.40499999999999997
+   ],
+   "inertia_kg_m2": [
+    [
+     0.01,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.01,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.007200000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "oleo piston + foot",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_RR_cartridge",
+   "kind": "leg",
+   "body": "airframe",
+   "mass_kg": 5.5,
+   "position_m": [
+    -1.1799999475479126,
+    -0.5299999713897705,
+    0.5200000107288361
+   ],
+   "inertia_kg_m2": [
+    [
+     0.07791666666666669,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.07791666666666669,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.009166666666666668
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "cartridge + EMA",
+   "cad_object": "JOINT_LEG_SLIDE_RL",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_RR_slider",
+   "kind": "leg",
+   "body": "leg_RR",
+   "mass_kg": 4.5,
+   "position_m": [
+    -1.1799999475479126,
+    -0.5299999713897705,
+    0.37000001072883604
+   ],
+   "inertia_kg_m2": [
+    [
+     0.06240000000000001,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.06240000000000001,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0048000000000000004
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "main slider",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "leg_RR_oleo_foot",
+   "kind": "leg",
+   "body": "leg_RR_oleo",
+   "mass_kg": 3.0,
+   "position_m": [
+    -1.1799999475479126,
+    -0.5299999713897705,
+    0.40499999999999997
+   ],
+   "inertia_kg_m2": [
+    [
+     0.01,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.01,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.007200000000000001
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "oleo piston + foot",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "wing_left",
+   "kind": "a9_cassette",
+   "body": "wing_left",
+   "mass_kg": 20.740000000000002,
+   "position_m": [
+    -1.0823149681091309,
+    1.2924151420593262,
+    0.9981973171234131
+   ],
+   "inertia_kg_m2": [
+    [
+     7.005121231079102,
+     0.22071312367916107,
+     0.010426925495266914
+    ],
+    [
+     0.22071312367916107,
+     0.8367640972137451,
+     0.043062590062618256
+    ],
+    [
+     0.010426925495266914,
+     0.043062590062618256,
+     7.821348190307617
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_R_SLIDE",
+   "cad_object": "A9_JOINT_WING_R_SLIDE",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pin_left_front_out",
+   "kind": "a9_cassette",
+   "body": "pin_left_front_out",
+   "mass_kg": 0.35,
+   "position_m": [
+    -0.6825000047683716,
+    1.1699999570846558,
+    0.999500036239624
+   ],
+   "inertia_kg_m2": [
+    [
+     4.4069118303013965e-05,
+     4.081374573615561e-21,
+     -1.7569362658756407e-21
+    ],
+    [
+     5.301275741746261e-21,
+     0.0004420346231199801,
+     -3.454798790148889e-22
+    ],
+    [
+     -8.4201038977761575e-22,
+     -4.973718782497994e-22,
+     0.0004420345358084887
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_R_LOCK_FRONT_OUT",
+   "cad_object": "A9_JOINT_WING_R_LOCK_FRONT_OUT",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pin_left_front_in",
+   "kind": "a9_cassette",
+   "body": "pin_left_front_in",
+   "mass_kg": 0.35,
+   "position_m": [
+    -0.6825000047683716,
+    0.24000000953674316,
+    0.999500036239624
+   ],
+   "inertia_kg_m2": [
+    [
+     4.4069154682802036e-05,
+     -3.042866884065316e-21,
+     -2.592978777754853e-21
+    ],
+    [
+     -3.3478418731754034e-21,
+     0.0004420346231199801,
+     -2.993723867320241e-16
+    ],
+    [
+     -2.592978777754853e-21,
+     -2.993722279133465e-16,
+     0.0004420346231199801
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_R_LOCK_FRONT_IN",
+   "cad_object": "A9_JOINT_WING_R_LOCK_FRONT_IN",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pin_left_rear_out",
+   "kind": "a9_cassette",
+   "body": "pin_left_rear_out",
+   "mass_kg": 0.35,
+   "position_m": [
+    -1.4884999990463257,
+    1.1699999570846558,
+    0.999500036239624
+   ],
+   "inertia_kg_m2": [
+    [
+     4.4069118303013965e-05,
+     -3.840759527209963e-21,
+     -3.847864475528039e-21
+    ],
+    [
+     -1.4009544646452745e-21,
+     0.0004420338082127273,
+     -5.24176892181779e-22
+    ],
+    [
+     -3.237913285617514e-21,
+     -5.24176892181779e-22,
+     0.00044203372090123594
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_R_LOCK_REAR_OUT",
+   "cad_object": "A9_JOINT_WING_R_LOCK_REAR_OUT",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pin_left_rear_in",
+   "kind": "a9_cassette",
+   "body": "pin_left_rear_in",
+   "mass_kg": 0.35,
+   "position_m": [
+    -1.4884999990463257,
+    0.24000000953674316,
+    0.999500036239624
+   ],
+   "inertia_kg_m2": [
+    [
+     4.4069158320780843e-05,
+     3.0723721499432054e-21,
+     1.9800702555957373e-21
+    ],
+    [
+     3.0723721499432054e-21,
+     0.0004420338082127273,
+     -2.9937246614136293e-16
+    ],
+    [
+     1.502181626117763e-22,
+     -2.9937246614136293e-16,
+     0.0004420337500050664
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_R_LOCK_REAR_IN",
+   "cad_object": "A9_JOINT_WING_R_LOCK_REAR_IN",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "flap_left",
+   "kind": "a9_cassette",
+   "body": "flap_left",
+   "mass_kg": 1.0,
+   "position_m": [
+    -1.327189326286316,
+    1.5718367099761963,
+    0.992003858089447
+   ],
+   "inertia_kg_m2": [
+    [
+     0.02975887805223465,
+     0.0020597015973180532,
+     -0.00011473811900941655
+    ],
+    [
+     0.0020597015973180532,
+     0.002574626822024584,
+     0.0001116867279051803
+    ],
+    [
+     -0.00011473811900941655,
+     0.0001116867279051803,
+     0.032165344804525375
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_FLAP_R",
+   "cad_object": "A9_JOINT_FLAP_R",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "aileron_left",
+   "kind": "a9_cassette",
+   "body": "aileron_left",
+   "mass_kg": 0.8,
+   "position_m": [
+    -1.371632695198059,
+    2.2142298221588135,
+    0.9895927906036377
+   ],
+   "inertia_kg_m2": [
+    [
+     0.01830972172319889,
+     0.0012597962049767375,
+     -4.302154411561787e-05
+    ],
+    [
+     0.0012597962049767375,
+     0.0009509933879598975,
+     6.850822683190927e-05
+    ],
+    [
+     -4.302154411561787e-05,
+     6.850822683190927e-05,
+     0.019205112010240555
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_AILERON_R",
+   "cad_object": "A9_JOINT_AILERON_R",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "canard_left_fold",
+   "kind": "a9_cassette",
+   "body": "canard_left_fold",
+   "mass_kg": 2.2,
+   "position_m": [
+    1.8762412071228027,
+    1.1699999570846558,
+    0.9493249654769897
+   ],
+   "inertia_kg_m2": [
+    [
+     0.005597796756774187,
+     -7.978270228420295e-19,
+     7.432768325088546e-05
+    ],
+    [
+     -3.2642046236202724e-19,
+     0.009744598530232906,
+     -1.5632016758500636e-14
+    ],
+    [
+     7.432768325088546e-05,
+     -1.5631930361140016e-14,
+     0.013533464632928371
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_CANARD_R_FOLD",
+   "cad_object": "A9_JOINT_CANARD_R_FOLD",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "canard_left",
+   "kind": "a9_cassette",
+   "body": "canard_left",
+   "mass_kg": 4.525143217320501,
+   "position_m": [
+    1.7378734350204468,
+    1.4371663331985474,
+    0.949999988079071
+   ],
+   "inertia_kg_m2": [
+    [
+     0.1660154163837433,
+     0.010215282440185547,
+     3.4313274444031094e-10
+    ],
+    [
+     0.010215282440185547,
+     0.055053334683179855,
+     -4.841410050637762e-10
+    ],
+    [
+     3.4313274444031094e-10,
+     -4.841410050637762e-10,
+     0.2200147807598114
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_CANARD_R_PITCH",
+   "cad_object": "A9_JOINT_CANARD_R_PITCH",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "hatch_left",
+   "kind": "a9_cassette",
+   "body": "hatch_left",
+   "mass_kg": 0.8188016751714906,
+   "position_m": [
+    -1.0555000305175781,
+    1.2554080486297607,
+    0.8817945122718811
+   ],
+   "inertia_kg_m2": [
+    [
+     0.0008896765648387372,
+     1.46410257563547e-20,
+     2.3703367100832197e-19
+    ],
+    [
+     1.4771720293138077e-20,
+     0.05018565431237221,
+     -3.857753654301632e-06
+    ],
+    [
+     2.3703367100832197e-19,
+     -3.857753654301632e-06,
+     0.0493013821542263
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_HATCH_R",
+   "cad_object": "A9_JOINT_HATCH_R",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "wing_right",
+   "kind": "a9_cassette",
+   "body": "wing_right",
+   "mass_kg": 20.740000000000002,
+   "position_m": [
+    -1.0823149681091309,
+    -1.2924151420593262,
+    0.8779988288879395
+   ],
+   "inertia_kg_m2": [
+    [
+     7.00490140914917,
+     -0.22071318328380585,
+     -0.009155279956758022
+    ],
+    [
+     -0.22071318328380585,
+     0.8365450501441956,
+     -0.01518209744244814
+    ],
+    [
+     -0.009155279956758022,
+     -0.01518209744244814,
+     7.821348190307617
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_L_SLIDE",
+   "cad_object": "A9_JOINT_WING_L_SLIDE",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pin_right_front_out",
+   "kind": "a9_cassette",
+   "body": "pin_right_front_out",
+   "mass_kg": 0.35,
+   "position_m": [
+    -0.6825000047683716,
+    -1.1699999570846558,
+    0.8815000057220459
+   ],
+   "inertia_kg_m2": [
+    [
+     4.406914740684442e-05,
+     3.2439277126202128e-21,
+     -2.1273213293272474e-21
+    ],
+    [
+     2.3290019374963837e-21,
+     0.00044203465222381055,
+     1.6678326974478232e-22
+    ],
+    [
+     -2.7372717114442056e-21,
+     3.573927389127828e-22,
+     0.0004420345358084887
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_L_LOCK_FRONT_OUT",
+   "cad_object": "A9_JOINT_WING_L_LOCK_FRONT_OUT",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pin_right_front_in",
+   "kind": "a9_cassette",
+   "body": "pin_right_front_in",
+   "mass_kg": 0.35,
+   "position_m": [
+    -0.6825000047683716,
+    -0.24000000953674316,
+    0.8815000057220459
+   ],
+   "inertia_kg_m2": [
+    [
+     4.406918378663249e-05,
+     -1.882367825621972e-21,
+     -6.5457809892616e-22
+    ],
+    [
+     -4.322166930709104e-21,
+     0.00044203465222381055,
+     2.2039198494419525e-22
+    ],
+    [
+     5.653214031303082e-22,
+     2.2039198494419525e-22,
+     0.00044203459401614964
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_L_LOCK_FRONT_IN",
+   "cad_object": "A9_JOINT_WING_L_LOCK_FRONT_IN",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pin_right_rear_out",
+   "kind": "a9_cassette",
+   "body": "pin_right_rear_out",
+   "mass_kg": 0.35,
+   "position_m": [
+    -1.4884999990463257,
+    -1.1699999570846558,
+    0.8815000057220459
+   ],
+   "inertia_kg_m2": [
+    [
+     4.406914740684442e-05,
+     -4.686035725404547e-22,
+     -4.4535177997656265e-21
+    ],
+    [
+     1.0562735944422914e-21,
+     0.00044203383731655777,
+     1.4891379057132422e-22
+    ],
+    [
+     -5.368444180734631e-21,
+     4.139803191080551e-22,
+     0.00044203372090123594
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_L_LOCK_REAR_OUT",
+   "cad_object": "A9_JOINT_WING_L_LOCK_REAR_OUT",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "pin_right_rear_in",
+   "kind": "a9_cassette",
+   "body": "pin_right_rear_in",
+   "mass_kg": 0.35,
+   "position_m": [
+    -1.4884999990463257,
+    -0.24000000953674316,
+    0.8815000057220459
+   ],
+   "inertia_kg_m2": [
+    [
+     4.40691874246113e-05,
+     3.327055729110741e-21,
+     -1.235216328314827e-21
+    ],
+    [
+     2.4121301559353034e-21,
+     0.0004420338082127273,
+     7.616933434387671e-22
+    ],
+    [
+     -6.252659461978687e-22,
+     7.616933434387671e-22,
+     0.00044203377910889685
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_WING_L_LOCK_REAR_IN",
+   "cad_object": "A9_JOINT_WING_L_LOCK_REAR_IN",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "flap_right",
+   "kind": "a9_cassette",
+   "body": "flap_right",
+   "mass_kg": 1.0,
+   "position_m": [
+    -1.3271892070770264,
+    -1.5718368291854858,
+    0.8740038275718689
+   ],
+   "inertia_kg_m2": [
+    [
+     0.029758881777524948,
+     -0.0020597002003341913,
+     -0.0001147389120887965
+    ],
+    [
+     -0.0020597002003341913,
+     0.002574625425040722,
+     -0.00011168683704454452
+    ],
+    [
+     -0.0001147389120887965,
+     -0.00011168683704454452,
+     0.032165348529815674
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_FLAP_L",
+   "cad_object": "A9_JOINT_FLAP_L",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "aileron_right",
+   "kind": "a9_cassette",
+   "body": "aileron_right",
+   "mass_kg": 0.8,
+   "position_m": [
+    -1.371632695198059,
+    -2.2142298221588135,
+    0.8715927004814148
+   ],
+   "inertia_kg_m2": [
+    [
+     0.018309710547327995,
+     -0.0012597909662872553,
+     -4.302188608562574e-05
+    ],
+    [
+     -0.0012597909662872553,
+     0.0009509926894679666,
+     -6.85086561134085e-05
+    ],
+    [
+     -4.302188608562574e-05,
+     -6.85086561134085e-05,
+     0.01920510083436966
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_AILERON_L",
+   "cad_object": "A9_JOINT_AILERON_L",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "canard_right_fold",
+   "kind": "a9_cassette",
+   "body": "canard_right_fold",
+   "mass_kg": 2.2,
+   "position_m": [
+    1.8762412071228027,
+    -1.1699999570846558,
+    0.9493249654769897
+   ],
+   "inertia_kg_m2": [
+    [
+     0.005597796756774187,
+     -6.072494693959107e-19,
+     7.432768325088546e-05
+    ],
+    [
+     -4.786839921116672e-19,
+     0.009744598530232906,
+     1.563186429257013e-14
+    ],
+    [
+     7.432768325088546e-05,
+     1.563195068993075e-14,
+     0.013533464632928371
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_CANARD_L_FOLD",
+   "cad_object": "A9_JOINT_CANARD_L_FOLD",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "canard_right",
+   "kind": "a9_cassette",
+   "body": "canard_right",
+   "mass_kg": 4.525143215337153,
+   "position_m": [
+    1.7378734350204468,
+    -1.4371663331985474,
+    0.949999988079071
+   ],
+   "inertia_kg_m2": [
+    [
+     0.1660153567790985,
+     -0.010215284302830696,
+     3.4312672148040235e-10
+    ],
+    [
+     -0.010215284302830696,
+     0.05505333095788956,
+     4.840814971096563e-10
+    ],
+    [
+     3.4312672148040235e-10,
+     4.840814971096563e-10,
+     0.220014750957489
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_CANARD_L_PITCH",
+   "cad_object": "A9_JOINT_CANARD_L_PITCH",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "hatch_right",
+   "kind": "a9_cassette",
+   "body": "hatch_right",
+   "mass_kg": 0.8161155843504138,
+   "position_m": [
+    -1.0555000305175781,
+    -1.2554211616516113,
+    0.9990466833114624
+   ],
+   "inertia_kg_m2": [
+    [
+     0.0008833479369059205,
+     -1.673969929267537e-20,
+     8.887542571408558e-20
+    ],
+    [
+     -1.673969929267537e-20,
+     0.050017647445201874,
+     -3.349101689309464e-06
+    ],
+    [
+     8.887542571408558e-20,
+     -3.349101689309464e-06,
+     0.049139611423015594
+    ]
+   ],
+   "source_status": "DERIVED",
+   "provenance": "a9_handover A9_JOINT_HATCH_L",
+   "cad_object": "A9_JOINT_HATCH_L",
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "booster_left_housing",
+   "kind": "booster",
+   "body": "airframe",
+   "mass_kg": 31.0,
+   "position_m": [
+    -2.14,
+    0.4,
+    0.51
+   ],
+   "inertia_kg_m2": [
+    [
+     0.465,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.6458333333333334,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.6458333333333334
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "EDF motor, inverter, duct",
+   "cad_object": "POWER_R_REAR_THRUST_NOZZLE",
+   "limits": {
+    "power_w": 300000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "booster_left_rotor",
+   "kind": "rotor",
+   "body": "booster_left_rotor",
+   "mass_kg": 4.0,
+   "position_m": [
+    -2.29,
+    0.4,
+    0.51
+   ],
+   "inertia_kg_m2": [
+    [
+     0.03,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.015,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.015
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "EDF rotor",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  },
+  {
+   "id": "booster_right_housing",
+   "kind": "booster",
+   "body": "airframe",
+   "mass_kg": 31.0,
+   "position_m": [
+    -2.14,
+    -0.4,
+    0.51
+   ],
+   "inertia_kg_m2": [
+    [
+     0.465,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.6458333333333334,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.6458333333333334
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "EDF motor, inverter, duct",
+   "cad_object": "POWER_L_REAR_THRUST_NOZZLE",
+   "limits": {
+    "power_w": 300000.0
+   },
+   "tags": []
+  },
+  {
+   "id": "booster_right_rotor",
+   "kind": "rotor",
+   "body": "booster_right_rotor",
+   "mass_kg": 4.0,
+   "position_m": [
+    -2.29,
+    -0.4,
+    0.51
+   ],
+   "inertia_kg_m2": [
+    [
+     0.03,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.015,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.015
+    ]
+   ],
+   "source_status": "SYNTHETIC_UNVALIDATED",
+   "provenance": "EDF rotor",
+   "cad_object": null,
+   "limits": null,
+   "tags": []
+  }
+ ],
+ "configurations": [
+  {
+   "configuration": "base: VTOL, legs ext., wings stowed, canards folded, fuel full, 2 occ.",
+   "mass_kg": 1888.4724444351964,
+   "cg_m": [
+    -0.1508379340227841,
+    0.0001193299954734864,
+    0.5524595900026259
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     902.4716559869831,
+     0.17694579708673386,
+     109.45854481074662
+    ],
+    [
+     0.17694579708673386,
+     4148.482866283453,
+     0.07501733822165249
+    ],
+    [
+     109.45854481074662,
+     0.07501733822165249,
+     4855.076593798717
+    ]
+   ]
+  },
+  {
+   "configuration": "road: pods 0, legs retracted",
+   "mass_kg": 1888.4724444351964,
+   "cg_m": [
+    -0.1508379340227841,
+    0.0001193299954734864,
+    0.5607202347612874
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     888.9748509215095,
+     0.17694579708673386,
+     107.72947244489845
+    ],
+    [
+     0.17694579708673386,
+     4143.471538735128,
+     0.07687888615103751
+    ],
+    [
+     107.72947244489845,
+     0.07687888615103751,
+     4846.591116281571
+    ]
+   ]
+  },
+  {
+   "configuration": "wings deployed",
+   "mass_kg": 1888.4724444351964,
+   "cg_m": [
+    -0.15073414643479063,
+    0.00011932693415006512,
+    0.5524592857087149
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     983.1717012270085,
+     0.17696411842753923,
+     109.38196896195706
+    ],
+    [
+     0.17696411842753923,
+     4148.1022924349145,
+     -3.504324674813008
+    ],
+    [
+     109.38196896195706,
+     -3.504324674813008,
+     4935.396957141324
+    ]
+   ]
+  },
+  {
+   "configuration": "canards deployed",
+   "mass_kg": 1888.4724444351964,
+   "cg_m": [
+    -0.15095968485176475,
+    0.00011932999594535046,
+    0.5524595900026259
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     912.9881693717958,
+     0.1769183549084672,
+     109.54978900647012
+    ],
+    [
+     0.1769183549084672,
+     4147.221306018396,
+     0.07501733786733415
+    ],
+    [
+     109.54978900647012,
+     0.07501733786733415,
+     4864.331546918476
+    ]
+   ]
+  },
+  {
+   "configuration": "wings + canards deployed",
+   "mass_kg": 1888.4724444351964,
+   "cg_m": [
+    -0.15085589726377133,
+    0.00011932693462193296,
+    0.5524592857087149
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     993.6882146118218,
+     0.17693667695319082,
+     109.47321322764478
+    ],
+    [
+     0.17693667695319082,
+     4146.840779896184,
+     -3.5043246751673167
+    ],
+    [
+     109.47321322764478,
+     -3.5043246751673167,
+     4944.6519579874075
+    ]
+   ]
+  },
+  {
+   "configuration": "fuel reserve",
+   "mass_kg": 1769.4724444351964,
+   "cg_m": [
+    -0.15694693797065945,
+    0.0001273551385075038,
+    0.5721279896546031
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     889.1256268031274,
+     0.17556912444410777,
+     106.08453046476849
+    ],
+    [
+     0.17556912444410777,
+     4104.342836887687,
+     0.07944963978116978
+    ],
+    [
+     106.08453046476849,
+     0.07944963978116978,
+     4819.514656636524
+    ]
+   ]
+  },
+  {
+   "configuration": "fuel empty",
+   "mass_kg": 1759.4724444351964,
+   "cg_m": [
+    -0.15749793800636494,
+    0.00012807896421395518,
+    0.5739019758891803
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     887.9371840465167,
+     0.17544495581010855,
+     105.78021211091448
+    ],
+    [
+     0.17544495581010855,
+     4100.560206362041,
+     0.07984941007734049
+    ],
+    [
+     105.78021211091448,
+     0.07984941007734049,
+     4816.519801874589
+    ]
+   ]
+  },
+  {
+   "configuration": "1 occupant (driver)",
+   "mass_kg": 1803.4724444351964,
+   "cg_m": [
+    -0.15229136654659756,
+    -0.014014434847520343,
+    0.5414996612043146
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     885.050297904516,
+     1.0000483962606945,
+     110.0968139471632
+    ],
+    [
+     1.0000483962606945,
+     4138.981047304532,
+     6.2818041913069065
+    ],
+    [
+     110.0968139471632,
+     6.2818041913069065,
+     4844.721102052498
+    ]
+   ]
+  },
+  {
+   "configuration": "1 occupant, fuel reserve",
+   "mass_kg": 1684.4724444351964,
+   "cg_m": [
+    -0.1588113144717342,
+    -0.015004488292659426,
+    0.5613862789961215
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     872.4461652037189,
+     1.1648377789953082,
+     106.7867871130766
+    ],
+    [
+     1.1648377789953082,
+     4095.5706922039053,
+     5.779176945166512
+    ],
+    [
+     106.7867871130766,
+     5.779176945166512,
+     4809.096899816522
+    ]
+   ]
+  },
+  {
+   "configuration": "load state FX-A (2 occ., 129 kg fuel requested)",
+   "mass_kg": 1888.4724444351964,
+   "cg_m": [
+    -0.1508379340227841,
+    0.0001193299954734864,
+    0.5524595900026259
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     902.4716559869831,
+     0.17694579708673386,
+     109.45854481074662
+    ],
+    [
+     0.17694579708673386,
+     4148.482866283453,
+     0.07501733822165249
+    ],
+    [
+     109.45854481074662,
+     0.07501733822165249,
+     4855.076593798717
+    ]
+   ]
+  },
+  {
+   "configuration": "load state FX-C (1 occ., 60 kg fuel requested)",
+   "mass_kg": 1734.4724444351964,
+   "cg_m": [
+    -0.15596286003855034,
+    -0.014571950769771727,
+    0.5526981536827711
+   ],
+   "inertia_about_cg_kg_m2": [
+    [
+     877.9111911406629,
+     1.0928440984964687,
+     108.23288157851887
+    ],
+    [
+     1.0928440984964687,
+     4113.997230057994,
+     5.9987662461773255
+    ],
+    [
+     108.23288157851887,
+     5.9987662461773255,
+     4824.083609533467
+    ]
+   ]
+  }
+ ],
+ "live_mass_kg": 1888.4724446989992
+}

@@ -1,0 +1,65 @@
+{
+  "run_id": "20261103T144853-5e8e48",
+  "mission": {
+    "departure": [
+      13.7,
+      -28.4
+    ],
+    "destination": [
+      -45.0,
+      18.0
+    ],
+    "departure_z_m": 0.0,
+    "destination_z_m": 0.0,
+    "environment": "stage1-valley",
+    "environment_version": "2",
+    "label": "G-2/G-3/G-4 phantom-fx FX-C"
+  },
+  "operator": "colin",
+  "request": {
+    "departure": [
+      13.7,
+      -28.4
+    ],
+    "destination": [
+      -45.0,
+      18.0
+    ],
+    "authority": "colin",
+    "time_scale": 0.25,
+    "stability_assist": 0.0,
+    "reference_rpm": 1200.0,
+    "gear_variant": "critical-damping-proposal",
+    "airframe_variant": "phantom-fx",
+    "fuel_kg": 10.0,
+    "engine_power_limit_kw": 300.0,
+    "label": "G-2/G-3/G-4 phantom-fx FX-C",
+    "phantom": {
+      "occupants": null,
+      "load_state": "FX-C",
+      "fuel_kg": null,
+      "start_configuration": "vtol",
+      "buffer_soc": null,
+      "engines_running": true,
+      "wind_world_m_s": null,
+      "policy_version": "testpilot-20261103-v1",
+      "card_id": "G-2/G-3/G-4",
+      "attempt": 1
+    }
+  },
+  "airframe": {
+    "revision": "phantom-fx-a9",
+    "airframe_variant": "phantom-fx",
+    "render_asset": "/assets/phantom-a9.glb",
+    "model_xml_sha256": "c7556ca9965207d3e2d0d5bb5c11fdaad562d0757d8cc580f50b0ce54c9d61f5",
+    "parameter_file_sha256": "cdf325387b873afa915dd8eb62a09a61daf6d55a5388943aff738c90a01ff463",
+    "config_sha256": "547bdca038bc071eb27d08fc32df85e74880e560b82ec92ef03645f2498ef2f2",
+    "wing_cassette_revision": "A9",
+    "ledger_mass_kg": 1734.4724446989992
+  },
+  "software_commit": "5e2657e3b142752fa0ef446ae943af4af81128b3",
+  "runtime_source_sha256": "3155dfe8e1713a81eb22e09e4240eae587c7796691172c813c8d0455eca54ad5",
+  "learning_checkpoint_sha256": "8cf3c7a036d40850fcaf14c7b520f0f2c822f67aa20f090aaf441488961f587f",
+  "clocks": "400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale",
+  "controls": "20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; experimental rate damping is shadow-only and does not control aircraft"
+}
