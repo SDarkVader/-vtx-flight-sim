@@ -1,0 +1,511 @@
+{
+ "compiled": true,
+ "nbody": 22,
+ "njnt": 20,
+ "nu": 20,
+ "articulated_mass_kg": 75.54779999999937,
+ "chassis_placeholder_mass_kg": 1100.0,
+ "joints": {
+  "A10_JOINT_CANARD_L_FOLD": {
+   "range": [
+    -1.5707963267948966,
+    0.0
+   ],
+   "units": "rad",
+   "cap": 150.0,
+   "rate": 60.0,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 5.581435653085994e-24,
+    "error": 5.581435653085994e-24,
+    "t95_s": null,
+    "peak_actuator_force": 3.328112601547124e-05,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -1.5707963267948966,
+    "achieved": -1.5707963267948926,
+    "error": 3.9968028886505635e-15,
+    "t95_s": 1.475,
+    "peak_actuator_force": 13.476144359235974,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_CANARD_L_PITCH": {
+   "range": [
+    -0.3490658503988659,
+    0.4363323129985824
+   ],
+   "units": "rad",
+   "cap": 420.0,
+   "rate": 40.0,
+   "to_hi": {
+    "target": 0.4363323129985824,
+    "achieved": 0.436885452442919,
+    "error": 0.0005531394443366033,
+    "t95_s": 0.645,
+    "peak_actuator_force": 4.456533433735899,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.3490658503988659,
+    "achieved": -0.34776945374713225,
+    "error": 0.0012963966517336445,
+    "t95_s": 0.538,
+    "peak_actuator_force": 5.081018257242933,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_CANARD_R_FOLD": {
+   "range": [
+    0.0,
+    1.5707963267948966
+   ],
+   "units": "rad",
+   "cap": 150.0,
+   "rate": 60.0,
+   "to_hi": {
+    "target": 1.5707963267948966,
+    "achieved": 1.5707963267948926,
+    "error": -3.9968028886505635e-15,
+    "t95_s": 1.475,
+    "peak_actuator_force": 13.476144359235978,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": 0.0,
+    "achieved": -5.6093657361087096e-24,
+    "error": -5.6093657361087096e-24,
+    "t95_s": null,
+    "peak_actuator_force": 3.3281125983148564e-05,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_CANARD_R_PITCH": {
+   "range": [
+    -0.3490658503988659,
+    0.4363323129985824
+   ],
+   "units": "rad",
+   "cap": 420.0,
+   "rate": 40.0,
+   "to_hi": {
+    "target": 0.4363323129985824,
+    "achieved": 0.436885452442919,
+    "error": 0.0005531394443366033,
+    "t95_s": 0.645,
+    "peak_actuator_force": 4.456533433735899,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.3490658503988659,
+    "achieved": -0.34776945374713225,
+    "error": 0.0012963966517336445,
+    "t95_s": 0.538,
+    "peak_actuator_force": 5.081018257242933,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_HATCH_L": {
+   "range": [
+    0.0,
+    3.141592653589793
+   ],
+   "units": "rad",
+   "cap": 25.0,
+   "rate": 180.0,
+   "to_hi": {
+    "target": 3.141592653589793,
+    "achieved": 3.1416388472595655,
+    "error": 4.619366977243189e-05,
+    "t95_s": 1.0010000000000001,
+    "peak_actuator_force": 2.042921870740429,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": 0.0,
+    "achieved": -4.610777141062793e-05,
+    "error": -4.610777141062793e-05,
+    "t95_s": null,
+    "peak_actuator_force": 0.021515245806316717,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_HATCH_R": {
+   "range": [
+    0.0,
+    3.141592653589793
+   ],
+   "units": "rad",
+   "cap": 25.0,
+   "rate": 180.0,
+   "to_hi": {
+    "target": 3.141592653589793,
+    "achieved": 3.1416388456738353,
+    "error": 4.6192084042218085e-05,
+    "t95_s": 1.0010000000000001,
+    "peak_actuator_force": 2.0429218307173187,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": 0.0,
+    "achieved": -4.6106188617131925e-05,
+    "error": -4.6106188617131925e-05,
+    "t95_s": null,
+    "peak_actuator_force": 0.021514506390921125,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_L_SLIDE": {
+   "range": [
+    -1.205,
+    0.0
+   ],
+   "units": "m",
+   "cap": 2500.0,
+   "rate": 0.3,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": -1.6125730711297005e-22,
+    "error": -1.6125730711297005e-22,
+    "t95_s": null,
+    "peak_actuator_force": 0.00025295527167627975,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -1.205,
+    "achieved": -1.2049999999999952,
+    "error": 4.884981308350689e-15,
+    "t95_s": 3.865,
+    "peak_actuator_force": 209.5541265988826,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_AILERON_L": {
+   "range": [
+    -0.3490658503988659,
+    0.3490658503988659
+   ],
+   "units": "rad",
+   "cap": 72.0,
+   "rate": 80.0,
+   "to_hi": {
+    "target": 0.3490658503988659,
+    "achieved": 0.3496434940926418,
+    "error": 0.0005776436937758866,
+    "t95_s": 0.318,
+    "peak_actuator_force": 0.38585294505918455,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.3490658503988659,
+    "achieved": -0.3482817007886972,
+    "error": 0.0007841496101687051,
+    "t95_s": 0.323,
+    "peak_actuator_force": 1.0232356968461431,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_FLAP_L": {
+   "range": [
+    -0.08726646259971647,
+    0.6108652381980153
+   ],
+   "units": "rad",
+   "cap": 60.0,
+   "rate": 15.0,
+   "to_hi": {
+    "target": 0.6108652381980153,
+    "achieved": 0.6115197948481296,
+    "error": 0.0006545566501142686,
+    "t95_s": 2.263,
+    "peak_actuator_force": 0.4467139895508012,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.08726646259971647,
+    "achieved": -0.08589728297170558,
+    "error": 0.0013691796280108914,
+    "t95_s": 0.40800000000000003,
+    "peak_actuator_force": 0.687389851959211,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_L_LOCK_FRONT_IN": {
+   "range": [
+    -0.07,
+    0.0
+   ],
+   "units": "m",
+   "cap": 1500.0,
+   "rate": 0.14,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 0.0,
+    "error": 0.0,
+    "t95_s": null,
+    "peak_actuator_force": 0.0,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.07,
+    "achieved": -0.0699999999999995,
+    "error": 5.134781488891349e-16,
+    "t95_s": 0.534,
+    "peak_actuator_force": 28.48554913294798,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_L_LOCK_FRONT_OUT": {
+   "range": [
+    -0.07,
+    0.0
+   ],
+   "units": "m",
+   "cap": 1500.0,
+   "rate": 0.14,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 0.0,
+    "error": 0.0,
+    "t95_s": null,
+    "peak_actuator_force": 0.0,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.07,
+    "achieved": -0.0699999999999995,
+    "error": 5.134781488891349e-16,
+    "t95_s": 0.534,
+    "peak_actuator_force": 28.48554913294798,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_L_LOCK_REAR_IN": {
+   "range": [
+    -0.07,
+    0.0
+   ],
+   "units": "m",
+   "cap": 1500.0,
+   "rate": 0.14,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 0.0,
+    "error": 0.0,
+    "t95_s": null,
+    "peak_actuator_force": 0.0,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.07,
+    "achieved": -0.0699999999999995,
+    "error": 5.134781488891349e-16,
+    "t95_s": 0.534,
+    "peak_actuator_force": 28.48554913294798,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_L_LOCK_REAR_OUT": {
+   "range": [
+    -0.07,
+    0.0
+   ],
+   "units": "m",
+   "cap": 1500.0,
+   "rate": 0.14,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 0.0,
+    "error": 0.0,
+    "t95_s": null,
+    "peak_actuator_force": 0.0,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.07,
+    "achieved": -0.0699999999999995,
+    "error": 5.134781488891349e-16,
+    "t95_s": 0.534,
+    "peak_actuator_force": 28.48554913294798,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_R_SLIDE": {
+   "range": [
+    -1.205,
+    0.0
+   ],
+   "units": "m",
+   "cap": 2500.0,
+   "rate": 0.3,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": -1.612750731673272e-22,
+    "error": -1.612750731673272e-22,
+    "t95_s": null,
+    "peak_actuator_force": 0.0002529552716762805,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -1.205,
+    "achieved": -1.2049999999999952,
+    "error": 4.884981308350689e-15,
+    "t95_s": 3.865,
+    "peak_actuator_force": 209.5541265988826,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_AILERON_R": {
+   "range": [
+    -0.3490658503988659,
+    0.3490658503988659
+   ],
+   "units": "rad",
+   "cap": 72.0,
+   "rate": 80.0,
+   "to_hi": {
+    "target": 0.3490658503988659,
+    "achieved": 0.3496434940926418,
+    "error": 0.0005776436937758866,
+    "t95_s": 0.318,
+    "peak_actuator_force": 0.38585294505918455,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.3490658503988659,
+    "achieved": -0.34828170078869713,
+    "error": 0.0007841496101687606,
+    "t95_s": 0.323,
+    "peak_actuator_force": 1.0232356968461431,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_FLAP_R": {
+   "range": [
+    -0.08726646259971647,
+    0.6108652381980153
+   ],
+   "units": "rad",
+   "cap": 60.0,
+   "rate": 15.0,
+   "to_hi": {
+    "target": 0.6108652381980153,
+    "achieved": 0.6115197948481296,
+    "error": 0.0006545566501142686,
+    "t95_s": 2.263,
+    "peak_actuator_force": 0.4467139895508012,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.08726646259971647,
+    "achieved": -0.08589728297170558,
+    "error": 0.0013691796280108914,
+    "t95_s": 0.40800000000000003,
+    "peak_actuator_force": 0.6873898519592121,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_R_LOCK_FRONT_IN": {
+   "range": [
+    -0.07,
+    0.0
+   ],
+   "units": "m",
+   "cap": 1500.0,
+   "rate": 0.14,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 0.0,
+    "error": 0.0,
+    "t95_s": null,
+    "peak_actuator_force": 0.0,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.07,
+    "achieved": -0.0699999999999995,
+    "error": 5.134781488891349e-16,
+    "t95_s": 0.534,
+    "peak_actuator_force": 28.48554913294798,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_R_LOCK_FRONT_OUT": {
+   "range": [
+    -0.07,
+    0.0
+   ],
+   "units": "m",
+   "cap": 1500.0,
+   "rate": 0.14,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 0.0,
+    "error": 0.0,
+    "t95_s": null,
+    "peak_actuator_force": 0.0,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.07,
+    "achieved": -0.0699999999999995,
+    "error": 5.134781488891349e-16,
+    "t95_s": 0.534,
+    "peak_actuator_force": 28.48554913294798,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_R_LOCK_REAR_IN": {
+   "range": [
+    -0.07,
+    0.0
+   ],
+   "units": "m",
+   "cap": 1500.0,
+   "rate": 0.14,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 0.0,
+    "error": 0.0,
+    "t95_s": null,
+    "peak_actuator_force": 0.0,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.07,
+    "achieved": -0.0699999999999995,
+    "error": 5.134781488891349e-16,
+    "t95_s": 0.534,
+    "peak_actuator_force": 28.48554913294798,
+    "saturated": false
+   }
+  },
+  "A10_JOINT_WING_R_LOCK_REAR_OUT": {
+   "range": [
+    -0.07,
+    0.0
+   ],
+   "units": "m",
+   "cap": 1500.0,
+   "rate": 0.14,
+   "to_hi": {
+    "target": 0.0,
+    "achieved": 0.0,
+    "error": 0.0,
+    "t95_s": null,
+    "peak_actuator_force": 0.0,
+    "saturated": false
+   },
+   "to_lo": {
+    "target": -0.07,
+    "achieved": -0.0699999999999995,
+    "error": 5.134781488891349e-16,
+    "t95_s": 0.534,
+    "peak_actuator_force": 28.48554913294798,
+    "saturated": false
+   }
+  }
+ },
+ "all_joints_reach_both_limits": true
+}

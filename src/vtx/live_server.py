@@ -28,6 +28,10 @@ from ._rotation import Rotation
 from .aircraft import Aircraft,DT,ROOT
 from .mission_selection import MapPoint,select_mission
 from .world import TestWorld
+from .phantom import live as phantom_live
+from .phantom.controls import PhantomAction
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from .release import EXPECTED_RELEASE, actual_release, assert_expected_release
 
 class Action(BaseModel):
@@ -71,6 +75,7 @@ class Mission(BaseModel):
     atmosphere_model:str='constant'
     wind_world_mps:list[float]=Field(default_factory=lambda:[0.,0.,0.])
     label:str='user selected mission'
+    phantom:phantom_live.PhantomOptions|None=None
     @field_validator('departure','destination')
     @classmethod
     def xy(cls,v):
@@ -104,9 +109,42 @@ class Mission(BaseModel):
     @field_validator('airframe_variant')
     @classmethod
     def airframe(cls,v):
-        if v not in ['baseline','light','r6','r6_variator']:raise ValueError('Unknown airframe revision')
+        if v not in ['baseline','light','r6','r6_variator','phantom','phantom-fx','phantom-a9','phantom-fx-a9']:raise ValueError('Unknown airframe revision')
         return v
 
+
+def mission_dump(request):
+    """Legacy metadata stays byte-identical: the optional phantom block is omitted when unset.
+
+    Phantom requests also record whether the top-level fuel_kg was set by the
+    operator; an unset value is the four-fan default and is not Phantom fuel."""
+    d=request.model_dump()
+    if d.get('phantom') is None:d.pop('phantom',None)
+    if phantom_live.is_phantom_variant(d.get('airframe_variant')):d['fuel_kg_explicit']='fuel_kg' in request.model_fields_set
+    return d
+
+def foot_clearance_m(p):
+    """Radar clearance: ray straight down from just below the lowest gear foot.
+
+    Replaces the former fixed cabin-sphere point (read 0.75 m on the gear and
+    ignored trees, audit F4). The ray uses the MuJoCo scene, so terrain, boxes
+    and trees are all seen."""
+    m,d=p.model,p.data
+    gids=getattr(p,'_foot_gids',None)
+    if gids is None:
+        gids=[g for g in range(m.ngeom) if (mj.mj_id2name(m,mj.mjtObj.mjOBJ_BODY,int(m.geom_bodyid[g])) or '').startswith('gear')]
+        p._foot_gids=gids
+    def lowest(g):
+        R=d.geom_xmat[g].reshape(3,3)
+        if m.geom_type[g]==mj.mjtGeom.mjGEOM_BOX:return float(d.geom_xpos[g][2]-np.abs(R[2])@m.geom_size[g])
+        return float(d.geom_xpos[g][2]-m.geom_rbound[g])
+    low=min(lowest(g) for g in gids)
+    x,y=d.xpos[p.bids['airframe']][:2]
+    gid=np.zeros(1,np.int32)
+    # Start 5 cm above the foot plane under the airframe centre (clear of the airframe, which
+    # sits well above its feet) so a compressed foot never puts the origin inside the terrain.
+    dist=mj.mj_ray(m,d,np.array([x,y,low+.05]),np.array([0.,0.,-1.]),None,1,-1,gid)
+    return max(0.,(dist if dist>=0 else low+.05)-.05)
 
 class Laboratory:
     def __init__(self):
@@ -162,6 +200,14 @@ class Laboratory:
         if not force and p.data.time-self.last_checkpoint_t < .5:
             return
         d=p.data
+        if getattr(p,'is_phantom',False):
+            state=dict(schema='phantom-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],mission=self.mission,authority=self.authority,
+                       time_scale=self.time_scale,paused=self.paused,plant=p.checkpoint_state(),
+                       session=dict(action_log=self.action_log,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
+                                    lease_expired=self.lease_expired,obs_id=self.obs_id,settled_s=self.settled_s,left_ground=self.left_ground,
+                                    last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state,
+                                    phantom_cg_gate=getattr(self,'phantom_cg_gate',None)))
+            return self._write_checkpoint(state)
         state=dict(schema=1,run_id=self.run_id,
                    model_xml_sha256=p.provenance['model_xml_sha256'],
                    mission=self.mission,authority=self.authority,
@@ -180,7 +226,7 @@ class Laboratory:
                               energy=p.energy,events=p.events,flags=list(p.flags),
                               crashed=p.crashed,max_alt=p.max_alt,
                               max_impact_n=p.max_impact_n,
-                              max_gear_load_n=p.max_gear_load_n,max_nongear_impact_n=p.max_nongear_impact_n,
+                              max_gear_load_n=getattr(p,'max_gear_load_n',None),max_nongear_impact_n=getattr(p,'max_nongear_impact_n',None),
                               step_count=p.step_count,last_mass_update=p.last_mass_update,
                               last_collision=p.last_collision,
                               stability_assist=p.stability_assist,
@@ -195,7 +241,11 @@ class Laboratory:
                                 settled_s=self.settled_s,left_ground=self.left_ground,
                                 last_audit_t=self.last_audit_t,
                                 sensor_rng_state=self.sensor_rng.bit_generator.state))
-        payload=json.dumps(state,allow_nan=False,separators=(',',':'))
+        return self._write_checkpoint(state)
+
+    def _write_checkpoint(self,state):
+        d=self.aircraft.data
+        payload=json.dumps(state,allow_nan=False,separators=(',',':'),default=float)
         target=self.checkpoint_path
         target.parent.mkdir(parents=True,exist_ok=True)
         temporary=target.with_suffix('.tmp')
@@ -213,6 +263,8 @@ class Laboratory:
             return False
         try:
             state=json.loads(path.read_text(encoding='utf-8'))
+            if state['schema']=='phantom-1':
+                return self._restore_phantom(state)
             if state['schema']!=1:
                 raise ValueError('Unsupported checkpoint schema')
             run_id=state['run_id']
@@ -314,6 +366,34 @@ class Laboratory:
             self.error='Flight checkpoint unavailable: '+str(exc)
             return False
 
+    def _restore_phantom(self,state):
+        run_id=state['run_id'];evidence=self.data_root/'evidence/flights'/run_id
+        metadata=json.loads((evidence/'metadata.json').read_text())
+        if metadata['run_id']!=run_id or (evidence/'summary.json').exists():raise ValueError('Checkpoint does not identify an unfinished sortie')
+        saved=dict(metadata['request'])
+        if saved.pop('fuel_kg_explicit',True) is False:saved.pop('fuel_kg',None)
+        request=Mission(**saved)
+        candidate=phantom_live.make_aircraft(self.world,request)
+        if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:raise ValueError('Checkpoint model differs from current physics model')
+        candidate.restore_state(state['plant'])
+        session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']
+        self.aircraft=candidate;self.run_id=run_id;self.log_path=evidence
+        self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
+        import gzip as _gz
+        candidate.step_log=_gz.open(evidence/'phantom_steps.csv.gz','at');candidate.STEP_COLS=None
+        self.mission=state['mission'];self.authority=state['authority'];self.time_scale=state['time_scale']
+        self.active=True;self.paused=True;self.wall_started=time.monotonic()
+        self.action_log=session['action_log'];self.next_pending_action=session['next_pending_action']
+        for action in self.action_log[self.next_pending_action:]:action['cancelled']=True
+        self.next_pending_action=len(self.action_log)
+        self.last_command_time=session['last_command_time'];self.lease_expired=session['lease_expired'];self.obs_id=session['obs_id']
+        self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.last_audit_t=session['last_audit_t']
+        self.settled_s=session['settled_s'];self.left_ground=session['left_ground'];self.last_checkpoint_t=float(candidate.data.time);self.end_summary=None
+        self.phantom_cg_gate=session.get('phantom_cg_gate');self.phantom_landing_site=None
+        self.log('flight_checkpoint_restored',dict(checkpoint_t_s=candidate.data.time,paused=True,pending_actions_cancelled=True,variant=candidate.variant,
+                 reason='Explicit operator resume required; physics position and velocity retained'))
+        return True
+
     def log(self,kind,payload):
         if self.audit_file:
             row=dict(kind=kind,wall_utc=datetime.now(timezone.utc).isoformat(),t_s=round(float(self.aircraft.data.time),9),payload=payload)
@@ -323,6 +403,12 @@ class Laboratory:
         p=self.aircraft;d=p.data;m=p.model
         if self.last_obs is not None and d.time-self.last_sensor_t<.05:return self.last_obs
         self.last_sensor_t=float(d.time);self.obs_id+=1
+        if getattr(p,'is_phantom',False):
+            obs=phantom_live.sensor_observation(self)
+            self.last_obs=obs;self.observations[self.obs_id]=obs
+            if len(self.observations)>3000:del self.observations[min(self.observations)]
+            self.log('observation',obs)
+            return obs
         bid=p.bids['airframe'];q=d.xquat[bid]
         euler=Rotation.from_quat([q[1],q[2],q[3],q[0]]).as_euler('xyz',degrees=True)
         velocity=np.zeros(6);mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,bid,velocity,0)
@@ -356,6 +442,8 @@ class Laboratory:
             mission=self.mission,authority=self.authority,active=self.active,paused=self.paused,
             time_scale=self.time_scale,
             sensor_status='Provisional sensor models: GNSS/baro/IMU/shaft/angle/fuel/gear transducers; no certified sensor integration')
+        # Body-axis channels derived from the already-noised world channels:
+        # no extra RNG draws, so the legacy noise sequence is unchanged (audit F2).
         body_from_world=d.xmat[bid].reshape(3,3).T
         obs['gyro_body_deg_s']=np.round(body_from_world@np.asarray(obs['gyro_world_deg_s']),3).tolist()
         obs['velocity_body_mps']=np.round(body_from_world@np.asarray(obs['gnss_velocity_mps']),3).tolist()
@@ -365,6 +453,10 @@ class Laboratory:
         cabin_euler=Rotation.from_matrix(cabin_rotation).as_euler('xyz',degrees=True)
         # Reuse the existing attitude sensor error; no extra RNG samples.
         obs['cabin_attitude_xyz_deg']=np.round(cabin_euler+(np.asarray(obs['attitude_xyz_deg'])-euler),3).tolist()
+        obs['frame_labels']=dict(attitude_xyz_deg='extrinsic xyz (= ZYX yaw-pitch-roll); roll/pitch already heading-relative',
+            gyro_world_deg_s='world axes',gyro_body_deg_s='airframe body axes',gnss_velocity_mps='world axes',velocity_body_mps='airframe body axes',
+            radar_clearance_m='min of downward rays from each gear foot and the airframe centre to terrain, buildings or trees; ~0 on the gear; null if no return',
+            cabin_heading_body_deg='cabin forward in airframe body axes',cabin_attitude_xyz_deg='cabin extrinsic xyz, sharing the attitude sensor error')
         self.last_obs=obs;self.observations[self.obs_id]=obs
         if len(self.observations)>3000:del self.observations[min(self.observations)]
         self.log('observation',obs)
@@ -373,10 +465,14 @@ class Laboratory:
     def start(self,request:Mission):
         if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.airframe_variant!='r6':
             raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
+        self.phantom_landing_site=None;self.phantom_cg_gate=None
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
-        self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
+        if phantom_live.is_phantom_variant(request.airframe_variant):
+            self.aircraft=phantom_live.make_aircraft(self.world,request)
+        else:
+            self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
@@ -397,33 +493,39 @@ class Laboratory:
         except (subprocess.CalledProcessError,FileNotFoundError):
             pin=ROOT/'BUILD_COMMIT'
             commit=pin.read_text().strip() if pin.exists() else 'UNKNOWN_BUILD_COMMIT'
-        meta=dict(run_id=self.run_id,mission=self.mission,operator=request.authority,request=request.model_dump(),
+        meta=dict(run_id=self.run_id,mission=self.mission,operator=request.authority,request=mission_dump(request),
                   airframe=self.aircraft.provenance,software_commit=commit,
                   runtime_source_sha256=hashlib.sha256(b''.join(p.read_bytes() for p in sorted((ROOT/'src/vtx').glob('*.py')))).hexdigest(),
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
-                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; experimental rate damping is shadow-only and does not control aircraft')
+                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/engine shutdown; experimental rate damping is shadow-only and does not control aircraft')
         (self.log_path/'metadata.json').write_text(json.dumps(meta,indent=2))
         (self.log_path/'model.xml').write_text(self.aircraft.xml)
         (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
         self.log('mission_start',meta)
+        if getattr(self.aircraft,'is_phantom',False):phantom_live.after_start(self,request)
         self.checkpoint(force=True)
         return dict(run_id=self.run_id,observation=self.sensor_observation())
 
-    def accept_action(self,a:Action):
+    def accept_action(self,a):
         if not self.active:raise HTTPException(409,'No active sortie')
+        if isinstance(a,PhantomAction)!=bool(getattr(self.aircraft,'is_phantom',False)):
+            raise HTTPException(409,'Action schema does not match the active airframe (Phantom requires schema phantom-fbw-1)')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
         if self.authority=='colin' and a.observation_id not in self.observations:raise HTTPException(409,'Colin action requires an actual permitted observation ID')
         obs=self.observations.get(a.observation_id)
         if obs and self.aircraft.data.time-obs['t_s']>1.:raise HTTPException(409,'Observation is more than one simulated second old; observe again')
         row=dict(sequence=len(self.action_log)+1,issued_t_s=float(self.aircraft.data.time),
-                 apply_t_s=float(self.aircraft.data.time)+.02,observation=obs,decision=a.reason,issued=a.model_dump())
+                 apply_t_s=float(self.aircraft.data.time)+.02,observation=obs,decision=a.reason,
+                 issued=a.model_dump(by_alias=True,exclude_none=True) if isinstance(a,PhantomAction) else a.model_dump())
+        if isinstance(a,PhantomAction):phantom_live.accept_timing(self,row)
         self.action_log.append(row);self.last_command_time=float(self.aircraft.data.time);self.lease_expired=False
         self.log('pilot_decision',row)
         return dict(accepted=True,sequence=row['sequence'],apply_t_s=row['apply_t_s'])
 
     def integrate(self):
         p=self.aircraft
+        if getattr(p,'is_phantom',False):return phantom_live.integrate(self)
         while self.next_pending_action<len(self.action_log):
             row=self.action_log[self.next_pending_action]
             if row.get('cancelled'):
@@ -440,7 +542,7 @@ class Laboratory:
             self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
         if p.data.time-self.last_command_time>5 and not self.lease_expired:
             p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
-            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine shutdown; no flight rescue'))
+            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine shutdown (spool to 0); no flight rescue'))
         p.step()
         if p.data.time-self.last_audit_t>=.05:
             self.last_audit_t=float(p.data.time)
@@ -461,16 +563,17 @@ class Laboratory:
         if not self.active:return self.end_summary or dict(status='No active sortie')
         self.active=False;self.last_obs=None;p=self.aircraft
         self.checkpoint_path.unlink(missing_ok=True)
-        outcome='landed' if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
+        outcome=('landed_at_departure' if getattr(self,'phantom_landing_site',None)=='departure' else 'landed') if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
         summary=dict(run_id=self.run_id,outcome=outcome,reason=reason,simulated_seconds=float(p.data.time),
                      wall_seconds=time.monotonic()-self.wall_started,decisions=len(self.action_log),
                      left_ground=self.left_ground,max_airframe_origin_altitude_m=p.max_alt,
                      max_contact_force_n=p.max_impact_n,fuel_used_kg=float((p.fuel_initial-p.fuel).sum()),
-                     max_gear_load_n=p.max_gear_load_n,max_nongear_impact_n=p.max_nongear_impact_n,
+                     max_gear_load_n=getattr(p,'max_gear_load_n',None),max_nongear_impact_n=getattr(p,'max_nongear_impact_n',None),
                      final=p.physical_snapshot(),mission=self.mission,
                      claim='Conditional experimental model; not validated VTX performance')
+        if getattr(p,'is_phantom',False):summary['phantom']=phantom_live.summary_extras(self)
         self.log('sortie_end',summary)
-        (self.log_path/'summary.json').write_text(json.dumps(summary,indent=2));self.audit_file.close();self.audit_file=None
+        (self.log_path/'summary.json').write_text(json.dumps(summary,indent=2,default=float));self.audit_file.close();self.audit_file=None
         self.end_summary={k:v for k,v in summary.items() if k!='final'}
         self.retry_hint=dict(run_id=self.run_id,mission=self.mission,request=json.loads((self.log_path/'metadata.json').read_text())['request'])
         return self.end_summary
@@ -484,19 +587,26 @@ class Laboratory:
         hint=self.retry_hint
         if not hint:raise HTTPException(409,'No retained mission to retry')
         old=hint['request']
+        variant=request.get('airframe_variant',old.get('airframe_variant','light'))
+        # Phantom fuel comes from its own options/load state; never inherit the
+        # legacy four-fan fuel default through a retry (flight campaign D-2).
+        fuel_kw={}
+        if not phantom_live.is_phantom_variant(variant):fuel_kw['fuel_kg']=request.get('fuel_kg',old.get('fuel_kg',60.))
+        elif 'fuel_kg' in request:fuel_kw['fuel_kg']=request['fuel_kg']
+        elif old.get('fuel_kg') is not None and old.get('fuel_kg_explicit'):fuel_kw['fuel_kg']=old['fuel_kg']
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
                   authority=request.get('authority','manual'),time_scale=request.get('time_scale',old.get('time_scale',Mission.model_fields['time_scale'].default)),
                   stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
-                  airframe_variant=request.get('airframe_variant',old.get('airframe_variant','light')),
-                  fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
+                  airframe_variant=variant,**fuel_kw,
                   engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
                   atmosphere_model=request.get('atmosphere_model',old.get('atmosphere_model','constant')),
                   wind_world_mps=request.get('wind_world_mps',old.get('wind_world_mps',[0.,0.,0.])),
-                  label='Explicit retry of '+hint['run_id'])
+                  label='Explicit retry of '+hint['run_id'],
+                  **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}))
         result=self.start(m)
         self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
-                                      previous_fuel_kg=old.get('fuel_kg',60.),new_fuel_kg=m.fuel_kg,
+                                      previous_fuel_kg=old.get('fuel_kg',60.),new_fuel_kg=m.fuel_kg if not phantom_live.is_phantom_variant(variant) else float(self.aircraft.fuel_initial.sum()),
                                       previous_power_limit_kw=old.get('engine_power_limit_kw',469.8),new_power_limit_kw=m.engine_power_limit_kw))
         return result
 
@@ -509,8 +619,14 @@ class Laboratory:
                     end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
 
 # Laboratory initialization restores checkpoints and may write evidence; it
-# belongs at server startup rather than at module import.
+# belongs at server startup rather than at module import (audit F16).
 lab=None
+
+def get_lab():
+    """Create the Laboratory on first use."""
+    global lab
+    if lab is None:lab=Laboratory()
+    return lab
 
 async def physical_clock():
     last=time.monotonic();accum=0.;seen_run=None;seen_epoch=lab.clock_epoch
@@ -536,8 +652,7 @@ async def physical_clock():
 
 @asynccontextmanager
 async def lifespan(app):
-    global lab
-    if lab is None:lab=Laboratory()
+    get_lab()
     if os.environ.get('VTX_ENFORCE_RELEASE')=='1':
         assert_expected_release(lab.aircraft.provenance)
     task=asyncio.create_task(physical_clock())
@@ -599,18 +714,30 @@ async def release_identity():
 @app.get('/api/view')
 async def view():return lab.view()
 @app.get('/api/validate')
-async def validate(x:float,y:float):
+async def validate(x:float,y:float,variant:str|None=None):
     from dataclasses import asdict
+    if phantom_live.is_phantom_variant(variant):
+        from .phantom.mission import validate_phantom
+        return validate_phantom(lab.world,MapPoint(x,y),variant)
     return asdict(lab.world.validate(MapPoint(x,y),'mission'))
 @app.post('/api/mission')
 async def mission(request:Mission):
     try:return lab.start(request)
     except ValueError as e:raise HTTPException(422,str(e))
+def parse_action(body):
+    """One endpoint, two schemas: 'phantom-fbw-1' -> PhantomAction, anything else -> the unchanged legacy Action."""
+    model=PhantomAction if isinstance(body,dict) and body.get('schema')=='phantom-fbw-1' else Action
+    try:return model.model_validate(body)
+    except ValidationError as e:
+        raise RequestValidationError([{**err,'loc':('body',*err['loc'])} for err in e.errors()])
 @app.post('/api/action')
-async def action(a:Action):
+async def action(request:Request):
+    try:body=await request.json()
+    except ValueError:raise RequestValidationError([{'type':'json_invalid','loc':('body',),'msg':'JSON decode error','input':None}])
+    a=parse_action(body)
     try:return lab.accept_action(a)
     except HTTPException as e:
-        lab.log('rejected_pilot_action',dict(request=a.model_dump(),reason=e.detail))
+        lab.log('rejected_pilot_action',dict(request=a.model_dump(by_alias=True),reason=e.detail))
         raise
 @app.post('/api/stop')
 async def stop(request:dict):return lab.stop(str(request.get('reason','Operator ended sortie')))

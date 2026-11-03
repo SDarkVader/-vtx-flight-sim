@@ -377,7 +377,7 @@ def joint_options(w: Wing, root_ult):
     if D:
         F_in = Mx / D
         F_out = Mx / D + V
-        Ft = My / (2 * box_w)  # torsion shared by two stations, pin pair separated by box width
+        Ft = My / (2 * w.joint.get("pin_pair_separation_m", box_w))  # torsion shared by two stations (pin pair x-separation; default box width)
         F_pin = max(F_out / 2 + Ft / 2, F_in / 2 + Ft / 2)
         entry("C_spanwise_tongue_couple", F_pin, 4, D, "tongue in carry-through sleeve, 2 stations x 2 pins",
               "moment reacted by vertical forces at outboard (sleeve mouth) and inboard (tongue end) stations")
@@ -771,6 +771,37 @@ def carry_through(root_ult_ff, lock_stations=(1.17, 0.24), support_y=0.62, depth
                 basis="DERIVED closed-form; supports idealised as rigid tub posts at |y|=0.62 m; not FEA")
 
 
+def tongue_check(root_ult_ff, depth, width, length, lock_spacing=0.94, label=""):
+    """Root tongue at the outboard lock station: strain-limited CFRP caps for the full root moment,
+    webs for the couple shear (method as size_box). Closed-form screening only."""
+    E, eps = MATERIAL["E_cap_Pa"]["value"], MATERIAL["strain_allow_ult"]["value"]
+    tau, rho = MATERIAL["tau_allow_ult_Pa"]["value"], MATERIAL["cfrp_density"]["value"]
+    M, V = root_ult_ff["Mx"], root_ult_ff["V"]
+    h = depth
+    t_cap = M / (0.9 * h * E * eps * width)
+    shear = M / lock_spacing + V
+    t_web = shear / (2 * 0.8 * h * tau)
+    mass = rho * (2 * width * t_cap + 2 * h * t_web) * length * 1.6   # +60% lug inserts, ribs, bores (SYNTHETIC)
+    return dict(label=label, depth_m=depth, width_m=width, length_m=length, cap_thickness_m=t_cap, web_thickness_m=t_web,
+                web_shear_N=shear, mass_estimate_kg=mass, EI_Nm2=2 * E * t_cap * width * (h / 2) ** 2,
+                basis="DERIVED closed-form, strain-limited caps; +60% fittings factor SYNTHETIC_UNVALIDATED")
+
+
+def divider_spar_check(root_ult_ff, lock_stations=(1.17, 0.24), mouth_y=1.235, post_y=0.635, depth=0.114, cap_w=0.03):
+    """A10 divider spar: one pin of each station pair. Outboard pin load goes 0.065 m to the Ti mouth-flange
+    bulkhead; inboard pin load cantilevers 0.395 m from the divider post."""
+    M, V = root_ult_ff["Mx"], root_ult_ff["V"]
+    D = lock_stations[0] - lock_stations[1]
+    P_out, P_in = (M / D + V) / 2, (M / D) / 2
+    M_div = max(P_out * (mouth_y - lock_stations[0]), P_in * (post_y - lock_stations[1]))
+    E, eps = MATERIAL["E_cap_Pa"]["value"], MATERIAL["strain_allow_ult"]["value"]
+    A_cap = M_div / (0.9 * depth * E * eps)
+    t_web = P_out / (0.8 * depth * MATERIAL["tau_allow_ult_Pa"]["value"])
+    return dict(pin_load_out_N=P_out, pin_load_in_N=P_in, max_bending_Nm=M_div, cap_area_m2=A_cap,
+                cap_thickness_at_width_m=A_cap / cap_w, cap_width_m=cap_w, web_thickness_m=t_web,
+                basis="DERIVED closed-form; rigid mouth-flange bulkhead and post idealised; not FEA")
+
+
 def flutter_validation():
     """Reference typical section (Hodges & Pierce, 'Introduction to Structural Dynamics and
     Aeroelasticity', Ch.5 example): a=-1/5, x_a=0.1, mu=20, r^2=6/25, sigma=0.4.
@@ -817,6 +848,13 @@ def main():
               x_le_root=-0.66, x_le_tip=-1.14, tc_root=0.11, tc_tip=0.10, z=0.95,
               joint=dict(tongue_length_m=1.05, lock_spacing_m=0.94),
               source="A9 revision geometry (tools/phantom/build_a9_cassette.py); bay x -0.62..-1.49, z 0.815..1.066, |y|<=1.245")
+    # A10: split-level cassette. Panels share one level (common height); tongues run side by side in fore/aft
+    # channels. Stroke 1.205 m keeps each panel on its own side: exposed span 1.184 m (tip |y| 2.429), tip chord
+    # 0.32 -> 0.42 m. Tongue 1.05 m, stations 0.94 m apart; pin pair x-separation 0.41 m (channel width).
+    a10 = Wing(name="A10_split_level", y_root=1.245, span_exp=1.184, c_root=0.80, c_tip=0.42,
+               x_le_root=-0.66, x_le_tip=-1.04, tc_root=0.11, tc_tip=0.10, z=0.987,
+               joint=dict(tongue_length_m=1.05, lock_spacing_m=0.94, pin_pair_separation_m=0.41),
+               source="A10 revision geometry (tools/phantom/build_a10_cassette.py); both chord planes z 0.987 (MEASURED-K)")
     canard_a8 = dict(name="A8 canard", S=0.32 * 2, c=0.55, span=0.65, x_ac=1.70, CLalpha=3.0,
                      basis="MEASURED planform ~0.32 m^2 per side from pinned source; CLalpha SYNTHETIC")
     canard_a9 = dict(name="A9 telescopic all-moving canard", S=(0.60 + 0.36) / 2 * 0.58 * 2, c=0.49, span=0.58, x_ac=1.71,
@@ -834,10 +872,17 @@ def main():
         cases={},
     )
     n_pos, n_neg = ENVELOPE["n_pos_limit"]["value"], ENVELOPE["n_neg_limit"]["value"]
-    for w, cn in ((a8, canard_a8), (opt_t, canard_a8), (a9, canard_a9)):
+    for w, cn in ((a8, canard_a8), (opt_t, canard_a8), (a9, canard_a9), (a10, canard_a9)):
         results["cases"][w.name] = analyse(w, cn, body_munk, x_cgs, n_pos, n_neg, w.name)
     a9r = results["cases"][a9.name]
     a9r["carry_through"] = carry_through(a9r["root_joint"]["applied_ultimate_with_fitting_factor"])
+    a10r = results["cases"][a10.name]
+    ff10 = a10r["root_joint"]["applied_ultimate_with_fitting_factor"]
+    a10r["carry_through"] = carry_through(ff10)
+    a10r["tongue_check"] = tongue_check(ff10, 0.095, 0.394, 1.05, label="A10 half-chord tongue 0.095 x 0.394 m")
+    a10r["tongue_check_A9_reference"] = tongue_check(a9r["root_joint"]["applied_ultimate_with_fitting_factor"], 0.090, 0.822, 1.05,
+                                                     label="A9 full-chord tongue 0.090 x 0.822 m (same method, comparison)")
+    a10r["divider_spar"] = divider_spar_check(ff10)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(results, indent=1, default=float))
     print(json.dumps(summary(results), indent=1, default=lambda v: round(v, 3) if isinstance(v, float) else v))

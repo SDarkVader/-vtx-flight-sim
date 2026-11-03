@@ -1,0 +1,2056 @@
+{
+ "schema": "phantom-parameters-1",
+ "doc": "Every number is {v: value, u: SI unit, l: provenance label, s: source}. Labels: MEASURED-K (measured from the A9 CAD), DERIVED (computed from labelled inputs), SYNTHETIC_UNVALIDATED (declared engineering assumption), MANUFACTURER (published figure, often for a different machine), REGULATORY_REFERENCE. Positions are in the CAD frame = MuJoCo body frame (X forward, Y = CAD-RIGHT = physical LEFT/port, Z up), at the build pose (pods road 0, legs retracted, wings deployed slide 0, pins home, hatches open, canards deployed). Variants overlay 'base' by deep merge.",
+ "revision_log": [
+  {
+   "date": "2026-11-03",
+   "change": "Initial parameter set for the live-sim build.",
+   "basis": "A9 handover, phantom_geometry.json (measured), SYSTEMS_CONTRACT, SYNTHETIC_COMPONENTS"
+  },
+  {
+   "date": "2026-11-03",
+   "change": "Adopted research_notes/Phantom CG compensation and test flights/propulsion_and_energy_components.md section 8 recommended values: fan annulus r_hub 0.110 / r_tip 0.245 m (replaces planned 0.065 / 0.25 m), FM_open 0.80, sigma 1.0, pod motor 370 kW cont / 460 kW peak / 530 N m, motor+inverter 38 kg, pod structure 25 kg, TG600-class 600 kW at 270 kg each (DERIVED estimate), generator efficiency 0.96, SFC 0.36 kg/kWh_e, spool tau 1.0 s, ramp 0.3 P/s, boosters 300 kW / 35 kg / exit area 0.0445 m2, bus 800 V, radiator 45 kW at zero airspeed, cooling fans 2 kW, accessory load, buffer chemistry 182 Wh/kg, buffer T limit 333.15 K, body Cd 0.32.",
+   "basis": "research note section 8 table"
+  },
+  {
+   "date": "2026-11-03",
+   "change": "Flight-test research (flight_test_methods.md): added attitude + vertical-speed FBW mode, PTI generator, crash ring buffer, pilot-loop timing and logging channels per section 3 table.",
+   "basis": "coordinator direction"
+  },
+  {
+   "date": "2026-11-03",
+   "change": "phantom-fx set to research s9 FX-A; FX-A/FX-C load states added; take-off generator rating parameters added.",
+   "basis": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+  },
+  {
+   "date": "2026-11-03",
+   "change": "CG study adopted: hover pitch trim from front/rear pod thrust differential only; leg load-cell CG go/no-go gate; P3 (booster vector-down) and P5 (1.5x canard with flap) as proposal parameters, off by default. Nose battery: CG study N2 (193 kg P50B at x 1.24) recorded as alternative; phantom-fx keeps the propulsion-sized FX-A buffer (311 kg at x 1.80) per coordinator reconcile instruction; CG recomputed by the ledger (fx base CG x -0.151).",
+   "basis": "research_notes/.../cg_and_compensation.md"
+  },
+  {
+   "date": "2026-11-03",
+   "change": "A10 corrected wing cassette is now the main Phantom configuration: phantom and phantom-fx use A10. The A9 cassette stays selectable as the earlier version (phantom-a9, phantom-fx-a9). Flights before this change (incl. the 2026-11-03 campaign) were flown with A9; their recorded parameters say so. phantom-fx (FX-A A10) is the current prototype.",
+   "basis": "owner direction 2026-11-03: A10 is the main second vehicle; keep A9 explicitly as the earlier version"
+  }
+ ],
+ "base": {
+  "atmosphere": {
+   "density_kg_m3": {
+    "v": 1.225,
+    "u": "kg/m^3",
+    "l": "REGULATORY_REFERENCE",
+    "s": "ISA sea level"
+   },
+   "temperature_k": {
+    "v": 288.15,
+    "u": "K",
+    "l": "REGULATORY_REFERENCE",
+    "s": "ISA sea level"
+   },
+   "gravity_m_s2": {
+    "v": 9.80665,
+    "u": "m/s^2",
+    "l": "REGULATORY_REFERENCE",
+    "s": "standard gravity"
+   },
+   "wind_world_m_s": {
+    "v": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "u": "m/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "calm default; settable per mission"
+   }
+  },
+  "geometry_sources": {
+   "wing_cassette_revision": "A10",
+   "revisions": {
+    "A9": {
+     "handover": "evidence/phantom/a9_handover.json",
+     "fragment": "evidence/phantom/a9_mujoco_fragment.xml",
+     "wing_loads": "evidence/phantom/wing_loads_results.json",
+     "wing_loads_case": "A9_cassette_build"
+    },
+    "A10": {
+     "handover": "evidence/phantom/a10_handover.json",
+     "fragment": "evidence/phantom/a10_mujoco_fragment.xml",
+     "wing_loads": "evidence/phantom/wing_loads_results.json",
+     "wing_loads_case": "A10_cassette_build"
+    }
+   },
+   "measured": "evidence/phantom/phantom_geometry.json"
+  },
+  "structure": {
+   "hull_areal_density_kg_m2": {
+    "v": 2.4,
+    "u": "kg/m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "CFRP skin + thin core aero shell over the tub",
+    "range": [
+     1.8,
+     3.2
+    ]
+   },
+   "panel_areal_density_kg_m2": {
+    "v": 2.0,
+    "u": "kg/m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "fenders, doors, side panels",
+    "range": [
+     1.5,
+     3.0
+    ]
+   },
+   "tub_areal_density_kg_m2": {
+    "v": 6.0,
+    "u": "kg/m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "CFRP/Nomex structural sandwich; measured closed-solid area halved to panel area",
+    "range": [
+     4.5,
+     8.0
+    ]
+   },
+   "trim_areal_density_kg_m2": {
+    "v": 2.5,
+    "u": "kg/m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "splitter, fins, fairings"
+   },
+   "glazing_areal_density_kg_m2": {
+    "v": 7.5,
+    "u": "kg/m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "6 mm polycarbonate"
+   },
+   "reaction_box_areal_density_kg_m2": {
+    "v": 6.0,
+    "u": "kg/m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "rear reaction boxes, half closed area"
+   },
+   "console_mass_kg": {
+    "v": 6.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "control console"
+   },
+   "seat_mass_kg": {
+    "v": 12.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "CFRP bucket seat with anchors and restraint"
+   },
+   "harness_mass_kg": {
+    "v": 22.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "LV/HV harness"
+   },
+   "harness_position_m": {
+    "v": [
+     -0.2,
+     0.0,
+     0.45
+    ],
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "distributed"
+   },
+   "pod_pylon_mass_kg": {
+    "v": 6.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "fixed Ti bracket, pin, pylon and tilt EMA stator per pod"
+   },
+   "leg_fixed_mass_kg": {
+    "v": 7.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "leg cartridge + extension EMA per leg"
+   },
+   "leg_moving_mass_kg": {
+    "v": 6.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "main slider per leg"
+   },
+   "oleo_moving_mass_kg": {
+    "v": 4.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "oleo piston + foot per leg"
+   }
+  },
+  "occupants": {
+   "count": {
+    "v": 2,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "manifest vehicle.occupants; 1 = driver only"
+   },
+   "mass_each_kg": {
+    "v": 85.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "repo baseline 170 kg / 2 (PHYSICS_AND_RESEARCH_BASELINE); FAA AC 120-27F ~86 kg reference",
+    "range": [
+     70,
+     100
+    ]
+   },
+   "seated_cg_offset_m": {
+    "v": [
+     0.05,
+     0.0,
+     0.22
+    ],
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "seated torso CG relative to cushion area centroid"
+   }
+  },
+  "pods": {
+   "hinge_x_front_m": {
+    "v": 1.54,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "JOINT_WHEEL_POD_F* anchor"
+   },
+   "hinge_x_rear_m": {
+    "v": -1.59,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "JOINT_WHEEL_POD_R* anchor"
+   },
+   "hinge_y_m": {
+    "v": 1.04,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "pod anchor |y|"
+   },
+   "hinge_z_m": {
+    "v": 0.42,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "pod anchor z = wheel centre"
+   },
+   "tyre_radius_m": {
+    "v": 0.36,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "tyre OD 0.72"
+   },
+   "tyre_half_width_m": {
+    "v": 0.053,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "tyre width ~0.106"
+   },
+   "fan_r_tip_m": {
+    "v": 0.245,
+    "u": "m",
+    "l": "DERIVED",
+    "s": "largest annulus inside tyre bore (research note s1)",
+    "range": [
+     0.19,
+     0.25
+    ]
+   },
+   "fan_r_hub_m": {
+    "v": 0.11,
+    "u": "m",
+    "l": "DERIVED",
+    "s": "research note s1",
+    "range": [
+     0.065,
+     0.13
+    ]
+   },
+   "fm_open": {
+    "v": 0.8,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "figure of merit vs open-rotor ideal P=T^1.5/sqrt(2 rho A); research s8",
+    "range": [
+     0.65,
+     1.0
+    ]
+   },
+   "duct_sigma": {
+    "v": 1.0,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "exit/fan area ratio; sets wake velocity and ram-drag mass flow",
+    "range": [
+     0.85,
+     1.2
+    ]
+   },
+   "zero_thrust_advance_ratio": {
+    "v": 0.8,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "J0 for C_T(J) = C_T0 (1 - J/J0), J = V_axial/(omega R)"
+   },
+   "tip_speed_max_m_s": {
+    "v": 230.0,
+    "u": "m/s",
+    "l": "DERIVED",
+    "s": "research s8 tip 210 [190-230] m/s"
+   },
+   "design_speed_fraction": {
+    "v": 0.97,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "peak-power thrust reached at this fraction of the tip-speed limit (sets k_T)"
+   },
+   "rotor_inertia_kg_m2": {
+    "v": 0.1,
+    "u": "kg m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8 [0.05-0.20]"
+   },
+   "rotor_mass_kg": {
+    "v": 6.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "fan rotor + blades"
+   },
+   "motor_power_cont_w": {
+    "v": 370000.0,
+    "u": "W",
+    "l": "DERIVED",
+    "s": "research s2"
+   },
+   "motor_power_peak_w": {
+    "v": 460000.0,
+    "u": "W",
+    "l": "DERIVED",
+    "s": "research s2, <=30 s"
+   },
+   "motor_peak_time_s": {
+    "v": 30.0,
+    "u": "s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "peak rating duration"
+   },
+   "motor_torque_peak_nm": {
+    "v": 530.0,
+    "u": "N m",
+    "l": "DERIVED",
+    "s": "research s2"
+   },
+   "motor_efficiency": {
+    "v": 0.95,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "inverter_efficiency": {
+    "v": 0.98,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "motor_inverter_mass_kg": {
+    "v": 38.0,
+    "u": "kg",
+    "l": "DERIVED",
+    "s": "research s2 nominal [30-50]"
+   },
+   "motor_specific_power_w_kg": {
+    "v": 12100.0,
+    "u": "W/kg",
+    "l": "DERIVED",
+    "s": "460 kW / 38 kg, used to rescale motor mass in the sweep"
+   },
+   "pod_structure_mass_kg": {
+    "v": 25.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8 pod without motor [20-35]"
+   },
+   "wheel_mass_kg": {
+    "v": 14.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "rim + road tyre"
+   },
+   "hub_motor_rotor_mass_kg": {
+    "v": 5.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "traction motor rotor on the wheel"
+   },
+   "hub_motor_stator_mass_kg": {
+    "v": 6.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "traction motor stator in the pod"
+   },
+   "brake_mass_kg": {
+    "v": 3.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "brake calliper + disc share"
+   },
+   "hub_motor_torque_nm": {
+    "v": 600.0,
+    "u": "N m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "per-wheel traction torque"
+   },
+   "hub_motor_power_w": {
+    "v": 60000.0,
+    "u": "W",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "per-wheel traction power"
+   },
+   "brake_torque_nm": {
+    "v": 2500.0,
+    "u": "N m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "max brake torque per wheel"
+   },
+   "tilt_rate_rad_s": {
+    "v": 1.26,
+    "u": "rad/s",
+    "l": "MEASURED-K",
+    "s": "A8 animation timing (90 deg in 1.25 s); not an actuator rating"
+   },
+   "tilt_stall_torque_nm": {
+    "v": 1500.0,
+    "u": "N m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "tilt EMA"
+   },
+   "tilt_kp_nm_rad": {
+    "v": 20000.0,
+    "u": "N m/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "servo stiffness"
+   },
+   "tilt_kv_nms_rad": {
+    "v": 1500.0,
+    "u": "N m s/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "servo damping"
+   },
+   "tilt_armature_kg_m2": {
+    "v": 5.0,
+    "u": "kg m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "reflected EMA inertia"
+   },
+   "fan_enable_tilt_deg": {
+    "v": 45.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "interlock: fans only run with pod at least this far toward fan mode"
+   },
+   "ground_effect_cap": {
+    "v": 1.25,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "Cheeseman-Bennett T_IGE/T_OGE cap"
+   },
+   "rotor_spin_sense": {
+    "v": {
+     "FL": 1,
+     "FR": -1,
+     "RL": -1,
+     "RR": 1
+    },
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "+1 = counter-clockwise seen from above in fan mode; diagonals alike"
+   }
+  },
+  "boosters": {
+   "position_m": {
+    "v": [
+     -2.29,
+     0.4,
+     0.51
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "POWER_*_REAR_THRUST_NOZZLE centroid (|y|)"
+   },
+   "exit_area_m2": {
+    "v": 0.0445,
+    "u": "m^2",
+    "l": "MEASURED-K",
+    "s": "research s5 (ceramic liner bore)"
+   },
+   "fm_open": {
+    "v": 1.2,
+    "u": "-",
+    "l": "DERIVED",
+    "s": "reproduces research s5: 2,420 N static at 300 kW on 0.0445 m2"
+   },
+   "shaft_power_max_w": {
+    "v": 300000.0,
+    "u": "W",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s5"
+   },
+   "torque_max_nm": {
+    "v": 160.0,
+    "u": "N m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "EDF motor torque"
+   },
+   "tip_speed_max_m_s": {
+    "v": 300.0,
+    "u": "m/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "EDF rotor"
+   },
+   "rotor_radius_m": {
+    "v": 0.12,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "0.24 m liner diameter"
+   },
+   "rotor_inertia_kg_m2": {
+    "v": 0.03,
+    "u": "kg m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "EDF rotor"
+   },
+   "rotor_mass_kg": {
+    "v": 4.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "EDF rotor"
+   },
+   "housing_mass_kg": {
+    "v": 31.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s5 35 kg each incl. rotor"
+   },
+   "efficiency": {
+    "v": 0.93,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "motor x inverter"
+   }
+  },
+  "generators": {
+   "count": {
+    "v": 2,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "as drawn: two turbogenerators"
+   },
+   "power_each_w": {
+    "v": 600000.0,
+    "u": "W",
+    "l": "MANUFACTURER",
+    "s": "Safran TG600 class electrical rating (external machine, not selected)"
+   },
+   "mass_each_kg": {
+    "v": 270.0,
+    "u": "kg",
+    "l": "DERIVED",
+    "s": "research s3 estimate [240-320]"
+   },
+   "efficiency": {
+    "v": 0.96,
+    "u": "-",
+    "l": "MANUFACTURER",
+    "s": "generator + rectifier (research s3 anchored)"
+   },
+   "sfc_kg_per_kwh": {
+    "v": 0.36,
+    "u": "kg/kWh",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8 [0.31-0.42], per electrical kWh"
+   },
+   "idle_fraction": {
+    "v": 0.15,
+    "u": "-",
+    "l": "REGULATORY_REFERENCE",
+    "s": "<=15% to 95% in <=5 s bound"
+   },
+   "spool_tau_s": {
+    "v": 1.0,
+    "u": "s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "ramp_fraction_per_s": {
+    "v": 0.3,
+    "u": "1/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "positions_m": {
+    "v": [
+     [
+      -1.75,
+      0.4,
+      0.55
+     ],
+     [
+      -1.75,
+      -0.4,
+      0.55
+     ],
+     [
+      -1.1,
+      0.0,
+      0.42
+     ]
+    ],
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "rear engine bay ahead of booster EDFs; third slot (fx sweep only) under the sleeve"
+   },
+   "box_half_m": {
+    "v": [
+     0.32,
+     0.2,
+     0.25
+    ],
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "envelope for inertia"
+   },
+   "takeoff_power_each_w": {
+    "v": 600000.0,
+    "u": "W",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "as drawn: no take-off rating above continuous"
+   },
+   "takeoff_time_s": {
+    "v": 300.0,
+    "u": "s",
+    "l": "REGULATORY_REFERENCE",
+    "s": "14 CFR 1.1 take-off rating <= 5 min"
+   }
+  },
+  "buffer": {
+   "energy_j": {
+    "v": 43200000.0,
+    "u": "J",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "as drawn ~12 kWh"
+   },
+   "specific_energy_wh_kg": {
+    "v": 182.0,
+    "u": "Wh/kg",
+    "l": "DERIVED",
+    "s": "research s8 pack level"
+   },
+   "specific_power_cont_w_kg": {
+    "v": 2000.0,
+    "u": "W/kg",
+    "l": "DERIVED",
+    "s": "research s4 P50B-class 2.0 kW/kg"
+   },
+   "specific_power_peak_w_kg": {
+    "v": 3000.0,
+    "u": "W/kg",
+    "l": "DERIVED",
+    "s": "research s4 10 s peak (between 2.0 and 3.9)"
+   },
+   "peak_time_s": {
+    "v": 10.0,
+    "u": "s",
+    "l": "DERIVED",
+    "s": "research s8"
+   },
+   "charge_power_fraction": {
+    "v": 0.5,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "charge power / continuous discharge power"
+   },
+   "soc_initial": {
+    "v": 0.9,
+    "u": "-",
+    "l": "MANUFACTURER",
+    "s": "research s8 (Lilium practice)"
+   },
+   "soc_min": {
+    "v": 0.1,
+    "u": "-",
+    "l": "MANUFACTURER",
+    "s": "research s8"
+   },
+   "nominal_voltage_v": {
+    "v": 800.0,
+    "u": "V",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "bus 800 V"
+   },
+   "round_trip_efficiency": {
+    "v": 0.9,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "heat_capacity_j_kg_k": {
+    "v": 700.0,
+    "u": "J/(kg K)",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "temperature_max_k": {
+    "v": 333.15,
+    "u": "K",
+    "l": "MANUFACTURER",
+    "s": "60 C discharge limit (P50B family)"
+   },
+   "position_m": {
+    "v": [
+     -0.06,
+     0.0,
+     0.26
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "TUB_CENTER battery bay centroid"
+   },
+   "box_half_m": {
+    "v": [
+     0.9,
+     0.27,
+     0.05
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "battery bay bounds"
+   }
+  },
+  "electrical": {
+   "architecture": "A_series_turboelectric",
+   "bus_voltage_v": {
+    "v": 800.0,
+    "u": "V",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "hv_junction_mass_kg": {
+    "v": 12.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "contactors, busbars, protection"
+   },
+   "hv_junction_position_m": {
+    "v": [
+     -1.3,
+     0.0,
+     0.35
+    ],
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "between TG bay and sleeve bay"
+   },
+   "avionics_power_w": {
+    "v": 1500.0,
+    "u": "W",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "FCC, sensors, displays"
+   },
+   "avionics_mass_kg": {
+    "v": 15.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "triplex FCC, IMU, air data"
+   },
+   "avionics_position_m": {
+    "v": [
+     0.48,
+     0.0,
+     0.5
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "under the console"
+   },
+   "actuator_standby_power_w": {
+    "v": 2000.0,
+    "u": "W",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "all EMAs powered and holding"
+   },
+   "actuator_efficiency": {
+    "v": 0.6,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "EMA mechanical/electrical"
+   },
+   "accessory_power_w": {
+    "v": 20000.0,
+    "u": "W",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "pumps, ECS, TG accessories (research s8 25 kW incl. actuators)"
+   }
+  },
+  "fuel": {
+   "density_kg_l": {
+    "v": 0.8,
+    "u": "kg/L",
+    "l": "REGULATORY_REFERENCE",
+    "s": "Jet A-1, repo baseline"
+   },
+   "tank_capacity_kg": {
+    "v": 55.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "each of two cells; Mission fuel_kg <= 110"
+   },
+   "reserve_kg": {
+    "v": 10.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "total reserve case for the CG table"
+   },
+   "tank_mass_kg": {
+    "v": 5.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "bladder cell + gauging, each"
+   },
+   "positions_m": {
+    "v": [
+     [
+      -1.05,
+      0.3,
+      0.45
+     ],
+     [
+      -1.05,
+      -0.3,
+      0.45
+     ]
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "under-sleeve bay centre (x -1.5..-0.6)"
+   },
+   "box_half_m": {
+    "v": [
+     0.4,
+     0.25,
+     0.2
+    ],
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "cell envelope"
+   }
+  },
+  "thermal": {
+   "radiator_mass_kg": {
+    "v": 24.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "core + coolant"
+   },
+   "radiator_position_m": {
+    "v": [
+     1.18,
+     0.0,
+     0.39
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "THERMAL_FRONT_CENTRAL_DUAL_RADIATOR_CORE centroid"
+   },
+   "cooling_fan_mass_kg": {
+    "v": 3.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "each of two"
+   },
+   "cooling_fan_position_m": {
+    "v": [
+     1.03,
+     0.27,
+     0.39
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "fan reservations (|y|)"
+   },
+   "radiator_rejection_static_w": {
+    "v": 45000.0,
+    "u": "W",
+    "l": "DERIVED",
+    "s": "research s5: A8 core with 2 x 0.25 m fans at zero airspeed at 60 K loop-ambient difference"
+   },
+   "radiator_rejection_ram_w_per_m_s": {
+    "v": 1500.0,
+    "u": "W/(m/s)",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "added ram-air rejection per m/s airspeed"
+   },
+   "cooling_fan_power_w": {
+    "v": 2000.0,
+    "u": "W",
+    "l": "DERIVED",
+    "s": "research s8"
+   },
+   "loop_heat_capacity_j_k": {
+    "v": 120000.0,
+    "u": "J/K",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "coolant + inverter/generator thermal mass"
+   },
+   "loop_temperature_limit_k": {
+    "v": 368.15,
+    "u": "K",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "95 C coolant derate start"
+   },
+   "motor_heat_capacity_j_k": {
+    "v": 19000.0,
+    "u": "J/K",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "38 kg x 500 J/kgK"
+   },
+   "motor_cooling_ua_w_k": {
+    "v": 300.0,
+    "u": "W/K",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "fan-stream cooled winding at hover flow"
+   },
+   "motor_winding_limit_k": {
+    "v": 423.15,
+    "u": "K",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "150 C research s8"
+   }
+  },
+  "aero": {
+   "wing_basis": {
+    "v": "screening",
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "screening = half S_ref per side (body carry-over); exposed = exposed panel only (sensitivity)"
+   },
+   "wing_cd0": {
+    "v": 0.008,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "wing_oswald_e": {
+    "v": 0.75,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "flap_delta_cd_per_rad": {
+    "v": 0.07,
+    "u": "1/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "~0.04 at 35 deg (research s8)"
+   },
+   "aileron_strip_area_m2": {
+    "v": 0.238,
+    "u": "m^2",
+    "l": "DERIVED",
+    "s": "wing planform between aileron eta stations"
+   },
+   "flap_strip_area_m2": {
+    "v": 0.406,
+    "u": "m^2",
+    "l": "DERIVED",
+    "s": "wing planform between flap eta stations"
+   },
+   "stall_blend_rate": {
+    "v": 30.0,
+    "u": "1/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "attached/flat-plate sigmoid sharpness"
+   },
+   "flat_plate_cn": {
+    "v": 1.98,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "flat plate normal-force coefficient at 90 deg"
+   },
+   "canard_cd0": {
+    "v": 0.01,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "NACA 0009"
+   },
+   "canard_stall_deg": {
+    "v": 14.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "NACA 0009 low-Re"
+   },
+   "canard_hinge_ch_alpha": {
+    "v": -0.05,
+    "u": "1/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "pivot at 25% MAC, near AC"
+   },
+   "fin_area_each_m2": {
+    "v": 0.211,
+    "u": "m^2",
+    "l": "MEASURED-K",
+    "s": "half of V_TAIL object surface area"
+   },
+   "fin_position_m": {
+    "v": [
+     -2.06,
+     0.541,
+     1.032
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "V_TAIL area centroid (|y|)"
+   },
+   "fin_cant_deg": {
+    "v": 13.0,
+    "u": "deg",
+    "l": "MEASURED-K",
+    "s": "from V_TAIL bounds"
+   },
+   "fin_cl_alpha": {
+    "v": 2.5,
+    "u": "1/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "low aspect ratio"
+   },
+   "body_cd_frontal": {
+    "v": 0.32,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research s8"
+   },
+   "body_cd_side": {
+    "v": 0.9,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "crossflow"
+   },
+   "body_cd_plan": {
+    "v": 1.0,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "vertical flow"
+   },
+   "body_centre_m": {
+    "v": [
+     -0.2,
+     0.0,
+     0.62
+    ],
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "body force reference (no Munk moment modelled)"
+   }
+  },
+  "contact": {
+   "tyre_stiffness_n_m": {
+    "v": 250000.0,
+    "u": "N/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "radial tyre"
+   },
+   "tyre_damping_ns_m": {
+    "v": 4000.0,
+    "u": "N s/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "tyre"
+   },
+   "tyre_friction": {
+    "v": 1.0,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "dry asphalt"
+   },
+   "foot_friction": {
+    "v": 0.8,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "foot pad"
+   },
+   "oleo_stroke_m": {
+    "v": 0.12,
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "oleo stroke"
+   },
+   "oleo_stiffness_n_m": {
+    "v": 60000.0,
+    "u": "N/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "oleo spring rate"
+   },
+   "oleo_preload_n": {
+    "v": 2000.0,
+    "u": "N",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "oleo preload"
+   },
+   "oleo_damping_ns_m": {
+    "v": 8000.0,
+    "u": "N s/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "oleo damping"
+   },
+   "leg_force_max_n": {
+    "v": 9000.0,
+    "u": "N",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "extension EMA force"
+   },
+   "leg_rate_m_s": {
+    "v": 0.3,
+    "u": "m/s",
+    "l": "MEASURED-K",
+    "s": "A8 animation 0.52 m in ~1.8 s"
+   },
+   "leg_kp_n_m": {
+    "v": 200000.0,
+    "u": "N/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "servo"
+   },
+   "leg_kv_ns_m": {
+    "v": 6000.0,
+    "u": "N s/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "servo"
+   },
+   "leg_armature_kg": {
+    "v": 20.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "reflected screw inertia"
+   },
+   "leg_extension_m": {
+    "v": 0.52,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "A8 animation range"
+   },
+   "foot_radius_m": {
+    "v": 0.06,
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "foot sphere"
+   },
+   "foot_bottom_retracted_z_m": {
+    "v": 0.295,
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "VTOL foot bottom -0.225 + 0.52"
+   },
+   "crash_force_n": {
+    "v": 15000.0,
+    "u": "N",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "non-gear contact force classed as collision"
+   },
+   "gear_sink_limit_m_s": {
+    "v": 3.0,
+    "u": "m/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "gear limit sink rate at first contact"
+   }
+  },
+  "wing_actuators": {
+   "slide_kp_n_m": {
+    "v": 25000.0,
+    "u": "N/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "ball-screw servo"
+   },
+   "slide_kv_ns_m": {
+    "v": 2500.0,
+    "u": "N s/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "ball-screw servo"
+   },
+   "slide_armature_kg": {
+    "v": 10.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "reflected screw inertia"
+   },
+   "pin_kp_n_m": {
+    "v": 4000.0,
+    "u": "N/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "lock EMA"
+   },
+   "pin_kv_ns_m": {
+    "v": 120.0,
+    "u": "N s/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "lock EMA"
+   },
+   "pin_armature_kg": {
+    "v": 2.0,
+    "u": "kg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "reflected"
+   },
+   "pin_force_n": {
+    "v": 1500.0,
+    "u": "N",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "handover lock EMA"
+   },
+   "surface_kp_nm_rad": {
+    "v": 1500.0,
+    "u": "N m/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "flap/aileron EMA"
+   },
+   "surface_kv_nms_rad": {
+    "v": 25.0,
+    "u": "N m s/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "flap/aileron EMA"
+   },
+   "surface_armature_kg_m2": {
+    "v": 0.4,
+    "u": "kg m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "reflected"
+   },
+   "canard_kp_nm_rad": {
+    "v": 8000.0,
+    "u": "N m/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "canard pitch EMA"
+   },
+   "canard_kv_nms_rad": {
+    "v": 250.0,
+    "u": "N m s/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "canard pitch EMA"
+   },
+   "canard_armature_kg_m2": {
+    "v": 2.0,
+    "u": "kg m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "reflected"
+   },
+   "fold_stall_torque_nm": {
+    "v": 150.0,
+    "u": "N m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "handover summary"
+   },
+   "fold_kp_nm_rad": {
+    "v": 3000.0,
+    "u": "N m/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "fold EMA"
+   },
+   "fold_kv_nms_rad": {
+    "v": 150.0,
+    "u": "N m s/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "fold EMA"
+   },
+   "hatch_stall_torque_nm": {
+    "v": 25.0,
+    "u": "N m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "handover"
+   },
+   "hatch_kp_nm_rad": {
+    "v": 200.0,
+    "u": "N m/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "hatch EMA"
+   },
+   "hatch_kv_nms_rad": {
+    "v": 6.0,
+    "u": "N m s/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "hatch EMA"
+   },
+   "hatch_armature_kg_m2": {
+    "v": 0.2,
+    "u": "kg m^2",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "reflected"
+   }
+  },
+  "fbw": {
+   "transport_delay_s": {
+    "v": 0.02,
+    "u": "s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "same as legacy live interface"
+   },
+   "lease_s": {
+    "v": 5.0,
+    "u": "s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "coordinator decision 5"
+   },
+   "moment_authority_fraction": {
+    "v": 0.35,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "max differential thrust per pod as a fraction of its rated thrust (pilot + augmentation)"
+   },
+   "augmentation_authority_fraction": {
+    "v": 0.2,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "max augmentation share of rated pod thrust (rate damping / attitude loops)"
+   },
+   "rate_damping_gain_s": {
+    "v": [
+     0.25,
+     0.25,
+     0.5
+    ],
+    "u": "s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "normalised moment per rad/s, roll/pitch/yaw"
+   },
+   "attitude_gain": {
+    "v": [
+     1.2,
+     1.2
+    ],
+    "u": "1/rad",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "normalised moment per rad, roll/pitch"
+   },
+   "attitude_bank_max_deg": {
+    "v": 15.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "attitude mode full stick"
+   },
+   "attitude_pitch_max_deg": {
+    "v": 10.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "attitude mode full stick"
+   },
+   "yaw_rate_max_deg_s": {
+    "v": 20.0,
+    "u": "deg/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "attitude mode full pedal"
+   },
+   "vs_max_m_s": {
+    "v": 3.0,
+    "u": "m/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "vertical-speed command limit"
+   },
+   "vs_kp_per_m_s": {
+    "v": 0.08,
+    "u": "s/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "collective fraction per m/s error"
+   },
+   "vs_ki_per_m": {
+    "v": 0.04,
+    "u": "1/m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "leaky integral (no altitude reference)"
+   },
+   "vs_leak_tau_s": {
+    "v": 4.0,
+    "u": "s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "integrator leak so the mode cannot act as altitude hold"
+   },
+   "vs_authority": {
+    "v": 0.25,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "max |collective correction| around the trim estimate"
+   },
+   "yaw_tilt_authority_deg": {
+    "v": 8.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "max diagonal tilt-back for yaw"
+   },
+   "pti_attitude_limits_deg": {
+    "v": [
+     30.0,
+     20.0
+    ],
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "PTI auto-stop bank / pitch (limit lines)"
+   },
+   "leg_loadcell_cg_gate_m": {
+    "v": 0.25,
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research_notes/.../cg_and_compensation.md: pre-takeoff leg load-cell CG estimate go/no-go; max |CG x - pod centroid| vs trim authority"
+   }
+  },
+  "sensors": {
+   "gyro_noise_deg_s": {
+    "v": 0.02,
+    "u": "deg/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "MEMS IMU"
+   },
+   "attitude_noise_deg": {
+    "v": 0.01,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "AHRS"
+   },
+   "gnss_noise_m": {
+    "v": 0.015,
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "RTK"
+   },
+   "velocity_noise_m_s": {
+    "v": 0.005,
+    "u": "m/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "GNSS velocity"
+   },
+   "radar_noise_m": {
+    "v": 0.005,
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "radar altimeter"
+   },
+   "radar_position_m": {
+    "v": [
+     0.0,
+     0.0,
+     0.17
+    ],
+    "u": "m",
+    "l": "MEASURED-K",
+    "s": "hull belly"
+   }
+  },
+  "load_states": {
+   "nominal": {
+    "occupants": 2,
+    "fuel_kg": null,
+    "s": "Mission fuel_kg, two occupants"
+   },
+   "FX-A": {
+    "occupants": 2,
+    "fuel_kg": 129.0,
+    "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+   },
+   "FX-C": {
+    "occupants": 1,
+    "fuel_kg": 60.0,
+    "s": "FX-C calibration loading, recommended first hover case (research s9)"
+   }
+  },
+  "proposals": {
+   "p3_booster_vector_down_total_n": {
+    "v": 0.0,
+    "u": "N",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research_notes/.../cg_and_compensation.md P3 (proposal): boosters vectored down for ~2 kN total; 0 = off"
+   },
+   "p3_booster_vector_angle_deg": {
+    "v": 0.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research_notes/.../cg_and_compensation.md P3 nozzle deflection below horizontal; 0 = off"
+   },
+   "p5_canard_area_scale": {
+    "v": 1.0,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research_notes/.../cg_and_compensation.md P5 (proposal): 1.5x canard with flap; 1.0 = off"
+   },
+   "p5_canard_flap": {
+    "v": 0.0,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "research_notes/.../cg_and_compensation.md P5 canard plain flap enabled (1) / off (0)"
+   }
+  }
+ },
+ "variants": {
+  "phantom": {
+   "description": "As drawn: two 600 kW turbogenerators, ~12 kWh buffer in the centre floor bay, avionics under the console, fuel cells in the under-sleeve bay, A8-size wheel fans. Main Phantom configuration: A10 corrected (level) wing cassette.",
+   "design_proposals": [],
+   "release_stage": "as_drawn_reference"
+  },
+  "phantom-fx": {
+   "description": "CURRENT PROTOTYPE (Phantom FX-A A10). FX-A feasibility design point (research s9, owner direction 2026-11-03): ~1,915 kg, \u00d81.10 m fan-wheels with \u00d80.90 m fans (2.36 m2 total), FM 0.90 with deployable 10 deg diffuser, TG900-TO (900 kW_e <=5 min, 600 kW_e cont), 311 kg Amprius-class buffer in the nose at x 1.80, avionics x 1.70, fuel in the tub centre bay at x -0.06, mass-reduction set R. Pod pivots moved to y +/-1.25 to clear the sill in VTOL pose. Every change is a DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED. Main Phantom configuration: A10 corrected (level) wing cassette.",
+   "design_proposals": [
+    "\u00d81.10 m fan-wheels, \u00d80.90 m fans, 2.36 m2 total disk (appearance cost: largest; fenders redrawn)",
+    "Pod pivots y +/-1.04 -> +/-1.25 (packaging: clear the body sill in VTOL pose)",
+    "Deployable 10 deg diffuser skirt, FM_open 0.80 -> 0.90",
+    "TG900-TO single turbogenerator (900 kW_e <=5 min, 600 kW_e cont); induction area ~2x A9",
+    "311 kg Amprius-class buffer in nose bay at x 1.80; avionics x 1.70 (owner approved CG fix)",
+    "Fuel 129 kg in tub centre bay at x -0.06 (owner approved)",
+    "Mass-reduction set R (structure, legs, HV, interior, avionics)",
+    "Alternative (not active): CG study N2 nose battery 193 kg P50B at x 1.24 against front bulkhead, radiator moved forward, 18 kg avionics; mount design load ~53 kN forward"
+   ],
+   "overlay": {
+    "structure": {
+     "hull_areal_density_kg_m2": {
+      "v": 1.9,
+      "u": "kg/m^2",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "R: structure 300->240 kg"
+     },
+     "tub_areal_density_kg_m2": {
+      "v": 4.8,
+      "u": "kg/m^2",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "R"
+     },
+     "panel_areal_density_kg_m2": {
+      "v": 1.6,
+      "u": "kg/m^2",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "R"
+     },
+     "harness_mass_kg": {
+      "v": 17.0,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "R"
+     },
+     "leg_fixed_mass_kg": {
+      "v": 5.5,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "R legs 50->40"
+     },
+     "leg_moving_mass_kg": {
+      "v": 4.5,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "R"
+     },
+     "oleo_moving_mass_kg": {
+      "v": 3.0,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "R"
+     }
+    },
+    "pods": {
+     "hinge_y_m": {
+      "v": 1.25,
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "packaging: pivots outboard to clear the sill with \u00d81.1 m pods"
+     },
+     "hinge_z_m": {
+      "v": 0.61,
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "wheel centre for \u00d81.10 m wheel, 0.06 m road clearance kept"
+     },
+     "tyre_radius_m": {
+      "v": 0.55,
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "tyre_half_width_m": {
+      "v": 0.06,
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "thin-section tread on large-bore ring"
+     },
+     "fan_r_tip_m": {
+      "v": 0.45,
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "fan_r_hub_m": {
+      "v": 0.121,
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "hub giving 0.59 m2 per pod (2.36 m2 total)"
+     },
+     "fm_open": {
+      "v": 0.9,
+      "u": "-",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "clean duct + 10 deg diffuser (Pereira-based)"
+     },
+     "duct_sigma": {
+      "v": 1.2,
+      "u": "-",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "rotor_inertia_kg_m2": {
+      "v": 0.6,
+      "u": "kg m^2",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "scaled for \u00d80.90 m rotor"
+     },
+     "rotor_mass_kg": {
+      "v": 7.0,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "motor_power_cont_w": {
+      "v": 400000.0,
+      "u": "W",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "motor_power_peak_w": {
+      "v": 490000.0,
+      "u": "W",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "motor_torque_peak_nm": {
+      "v": 1000.0,
+      "u": "N m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "490 kW at 0.97 x tip-speed-limited omega"
+     },
+     "motor_inverter_mass_kg": {
+      "v": 40.8,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "163 kg / 4 at 12 kW/kg"
+     },
+     "pod_structure_mass_kg": {
+      "v": 12.5,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "pod allowance 190 kg / 4 minus wheel, rotor, hub motor, brake"
+     },
+     "wheel_mass_kg": {
+      "v": 14.0,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "tilt_stall_torque_nm": {
+      "v": 3000.0,
+      "u": "N m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     }
+    },
+    "generators": {
+     "count": {
+      "v": 1,
+      "u": "-",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "power_each_w": {
+      "v": 600000.0,
+      "u": "W",
+      "l": "MANUFACTURER",
+      "s": "TG600-class continuous"
+     },
+     "takeoff_power_each_w": {
+      "v": 900000.0,
+      "u": "W",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "TG900-TO proposal: Arrano + 3 x GENeUS-class"
+     },
+     "mass_each_kg": {
+      "v": 310.0,
+      "u": "kg",
+      "l": "DERIVED",
+      "s": "175 + 90-110 + 30-60"
+     },
+     "positions_m": {
+      "v": [
+       [
+        -1.75,
+        0.0,
+        0.55
+       ]
+      ],
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     }
+    },
+    "buffer": {
+     "energy_j": {
+      "v": 288000000.0,
+      "u": "J",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "~80 kWh Amprius-class, 64 kWh usable"
+     },
+     "specific_energy_wh_kg": {
+      "v": 257.0,
+      "u": "Wh/kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "pack level, 80 kWh / 311 kg"
+     },
+     "specific_power_cont_w_kg": {
+      "v": 2572.0,
+      "u": "W/kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "10C uncooled"
+     },
+     "specific_power_peak_w_kg": {
+      "v": 3858.0,
+      "u": "W/kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "1.2 MW cooled 30 s"
+     },
+     "peak_time_s": {
+      "v": 30.0,
+      "u": "s",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "position_m": {
+      "v": [
+       1.8,
+       0.0,
+       0.42
+      ],
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "nose bay (owner approved)"
+     },
+     "box_half_m": {
+      "v": [
+       0.25,
+       0.45,
+       0.17
+      ],
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "~0.15 m3 packed in 0.49 m3 bay"
+     }
+    },
+    "electrical": {
+     "avionics_mass_kg": {
+      "v": 25.0,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "research_notes/.../propulsion_and_energy_components.md s9 FX-A (design proposal)"
+     },
+     "avionics_position_m": {
+      "v": [
+       1.7,
+       0.0,
+       0.45
+      ],
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "nose bay (owner approved)"
+     },
+     "hv_junction_mass_kg": {
+      "v": 40.0,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "HV distribution incl. 3.5 m runs to the aft TG"
+     }
+    },
+    "thermal": {
+     "radiator_mass_kg": {
+      "v": 34.0,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "thermal 40 kg incl. fans"
+     }
+    },
+    "fuel": {
+     "tank_capacity_kg": {
+      "v": 64.5,
+      "u": "kg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "129 kg total; needs ~0.06 m3 beyond the 0.101 m3 bay"
+     },
+     "positions_m": {
+      "v": [
+       [
+        -0.06,
+        0.12,
+        0.26
+       ],
+       [
+        -0.06,
+        -0.12,
+        0.26
+       ]
+      ],
+      "u": "m",
+      "l": "MEASURED-K",
+      "s": "tub centre bay near CG"
+     },
+     "box_half_m": {
+      "v": [
+       0.9,
+       0.13,
+       0.05
+      ],
+      "u": "m",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "bay"
+     }
+    }
+   },
+   "release_stage": "current_prototype"
+  },
+  "phantom-a9": {
+   "inherits": "phantom",
+   "release_stage": "earlier_version",
+   "description": "EARLIER VERSION: A9 wing cassette (wings stacked at different heights, 118 mm stagger; slide stroke 1.37 m). Kept for comparison with earlier flights; superseded by A10. Otherwise as phantom.",
+   "design_proposals": [],
+   "overlay": {
+    "geometry_sources": {
+     "wing_cassette_revision": "A9"
+    }
+   }
+  },
+  "phantom-fx-a9": {
+   "inherits": "phantom-fx",
+   "release_stage": "earlier_version",
+   "description": "EARLIER VERSION: A9 wing cassette (wings stacked at different heights, 118 mm stagger; slide stroke 1.37 m). Kept for comparison with earlier flights; superseded by A10. Otherwise as phantom-fx.",
+   "design_proposals": [],
+   "overlay": {
+    "geometry_sources": {
+     "wing_cassette_revision": "A9"
+    }
+   }
+  }
+ },
+ "manifest_map": {
+  "vehicle.required_takeoff_speed_m_s": {
+   "not_modelled": "rolling take-off speed is an output, not an input"
+  },
+  "mass.mass_kg": {
+   "computed": "ledger.total"
+  },
+  "mass.centre_of_gravity_m": {
+   "computed": "ledger.cg"
+  },
+  "mass.inertia_about_cg_kg_m2": {
+   "computed": "ledger.inertia"
+  },
+  "mass.empty_mass_kg": {
+   "computed": "ledger.empty"
+  },
+  "mass.fuel_mass_kg": {
+   "param": "fuel.tank_capacity_kg"
+  },
+  "mass.occupant_masses_kg": {
+   "param": "occupants.mass_each_kg"
+  },
+  "structural.design_limit_g_positive": {
+   "not_modelled": "no structural failure model in Phase 2"
+  },
+  "structural.design_limit_g_negative": {
+   "not_modelled": "no structural failure model in Phase 2"
+  },
+  "structural.design_ultimate_g_positive": {
+   "not_modelled": "no structural failure model in Phase 2"
+  },
+  "structural.wing_carrythrough_mass_kg": {
+   "computed": "handover chassis_A9_fixed_parts"
+  },
+  "structural.wing_root_lock_force_rating_n": {
+   "computed": "handover control_limits.locks.ultimate_pin_force_N"
+  },
+  "structural.wing_root_bearing_part_number": {
+   "not_modelled": "no part selected"
+  },
+  "structural.wing_root_loadpath_arm_m": {
+   "not_modelled": "lock modelled as rigid equality when 4/4 pins home"
+  },
+  "propulsion.wheel_pods[].position_body_m": {
+   "param": "pods.hinge_x_front_m"
+  },
+  "propulsion.wheel_pods[].thrust_max_n": {
+   "computed": "propulsion.DuctedFan.thrust_max"
+  },
+  "propulsion.wheel_pods[].shaft_power_max_w": {
+   "param": "pods.motor_power_peak_w"
+  },
+  "propulsion.wheel_pods[].effective_disc_radius_m": {
+   "computed": "propulsion.DuctedFan.equivalent_radius"
+  },
+  "propulsion.wheel_pods[].spool_time_s": {
+   "computed": "rotor inertia / motor torque dynamics (not a lag constant)"
+  },
+  "propulsion.wheel_pods[].tilt_rate_rad_s": {
+   "param": "pods.tilt_rate_rad_s"
+  },
+  "propulsion.rear_thrusters[].position_body_m": {
+   "param": "boosters.position_m"
+  },
+  "propulsion.rear_thrusters[].thrust_max_n": {
+   "computed": "propulsion.DuctedFan.thrust_max"
+  },
+  "propulsion.rear_thrusters[].shaft_power_max_w": {
+   "param": "boosters.shaft_power_max_w"
+  },
+  "propulsion.rear_thrusters[].spool_time_s": {
+   "computed": "rotor inertia / motor torque dynamics"
+  },
+  "aerodynamic_surfaces.wing_L.area_m2": {
+   "computed": "handover aero_surfaces.wing.S_ref_m2 / 2 (screening) or S_exposed_each_m2"
+  },
+  "aerodynamic_surfaces.wing_R.area_m2": {
+   "computed": "handover aero_surfaces.wing.S_ref_m2 / 2 (screening) or S_exposed_each_m2"
+  },
+  "aerodynamic_surfaces.wing_L.mean_chord_m": {
+   "computed": "handover aero_surfaces.wing.mac_m"
+  },
+  "aerodynamic_surfaces.wing_R.mean_chord_m": {
+   "computed": "handover aero_surfaces.wing.mac_m"
+  },
+  "aerodynamic_surfaces.wing_L.centre_of_pressure_body_m": {
+   "computed": "handover x_ac_mac_m, y_mac_m, ac_height_*"
+  },
+  "aerodynamic_surfaces.wing_R.centre_of_pressure_body_m": {
+   "computed": "handover x_ac_mac_m, y_mac_m, ac_height_*"
+  },
+  "aerodynamic_surfaces.aileron_L.area_m2": {
+   "param": "aero.aileron_strip_area_m2"
+  },
+  "aerodynamic_surfaces.aileron_R.area_m2": {
+   "param": "aero.aileron_strip_area_m2"
+  },
+  "aerodynamic_surfaces.aileron_L.hinge_moment_coefficient": {
+   "computed": "handover aero_surfaces.aileron.Ch_delta/Ch_alpha"
+  },
+  "aerodynamic_surfaces.aileron_R.hinge_moment_coefficient": {
+   "computed": "handover aero_surfaces.aileron.Ch_delta/Ch_alpha"
+  },
+  "aerodynamic_surfaces.aileron_L.deflection_min_rad": {
+   "computed": "handover joints range_deg"
+  },
+  "aerodynamic_surfaces.aileron_L.deflection_max_rad": {
+   "computed": "handover joints range_deg"
+  },
+  "aerodynamic_surfaces.aileron_R.deflection_min_rad": {
+   "computed": "handover joints range_deg"
+  },
+  "aerodynamic_surfaces.aileron_R.deflection_max_rad": {
+   "computed": "handover joints range_deg"
+  },
+  "aerodynamic_surfaces.flap_L.area_m2": {
+   "param": "aero.flap_strip_area_m2"
+  },
+  "aerodynamic_surfaces.flap_R.area_m2": {
+   "param": "aero.flap_strip_area_m2"
+  },
+  "aerodynamic_surfaces.flap_L.hinge_moment_coefficient": {
+   "computed": "handover aero_surfaces.aileron Ch values reused (flap Ch not given)"
+  },
+  "aerodynamic_surfaces.flap_R.hinge_moment_coefficient": {
+   "computed": "handover aero_surfaces.aileron Ch values reused (flap Ch not given)"
+  },
+  "aerodynamic_surfaces.flap_L.deflection_min_rad": {
+   "computed": "handover joints range_deg"
+  },
+  "aerodynamic_surfaces.flap_L.deflection_max_rad": {
+   "computed": "handover joints range_deg"
+  },
+  "aerodynamic_surfaces.flap_R.deflection_min_rad": {
+   "computed": "handover joints range_deg"
+  },
+  "aerodynamic_surfaces.flap_R.deflection_max_rad": {
+   "computed": "handover joints range_deg"
+  },
+  "aerodynamic_surfaces.canard_L.area_m2": {
+   "computed": "handover aero_surfaces.canard.area_each_m2"
+  },
+  "aerodynamic_surfaces.canard_R.area_m2": {
+   "computed": "handover aero_surfaces.canard.area_each_m2"
+  },
+  "aerodynamic_surfaces.canard_L.centre_of_pressure_body_m": {
+   "computed": "handover canard x_pivot, y mean, z"
+  },
+  "aerodynamic_surfaces.canard_R.centre_of_pressure_body_m": {
+   "computed": "handover canard x_pivot, y mean, z"
+  },
+  "aerodynamic_surfaces.canard_L.hinge_moment_coefficient": {
+   "param": "aero.canard_hinge_ch_alpha"
+  },
+  "aerodynamic_surfaces.canard_R.hinge_moment_coefficient": {
+   "param": "aero.canard_hinge_ch_alpha"
+  },
+  "deployment.hatch_L.travel_max_rad": {
+   "computed": "handover control_limits.hatch.travel_deg"
+  },
+  "deployment.hatch_R.travel_max_rad": {
+   "computed": "handover control_limits.hatch.travel_deg"
+  },
+  "deployment.hatch_L.rate_max_rad_s": {
+   "computed": "handover control_limits.hatch.rate_deg_s"
+  },
+  "deployment.hatch_R.rate_max_rad_s": {
+   "computed": "handover control_limits.hatch.rate_deg_s"
+  },
+  "deployment.wing_L.slide_travel_m": {
+   "computed": "handover control_limits.wing_slide.stroke_m"
+  },
+  "deployment.wing_R.slide_travel_m": {
+   "computed": "handover control_limits.wing_slide.stroke_m"
+  },
+  "deployment.wing_L.fold_angle_max_rad": {
+   "not_modelled": "A9 wings telescope; no fold joint"
+  },
+  "deployment.wing_R.fold_angle_max_rad": {
+   "not_modelled": "A9 wings telescope; no fold joint"
+  },
+  "electrical.actuator_power_reserved_w": {
+   "param": "electrical.actuator_standby_power_w"
+  },
+  "electrical.architecture_selected": {
+   "param": "electrical.architecture"
+  },
+  "electrical.buffer_energy_j": {
+   "param": "buffer.energy_j"
+  },
+  "electrical.buffer_power_discharge_cont_w": {
+   "computed": "buffer mass x specific_power_cont"
+  },
+  "electrical.buffer_power_discharge_peak_w": {
+   "computed": "buffer mass x specific_power_peak"
+  },
+  "electrical.buffer_soc_initial": {
+   "param": "buffer.soc_initial"
+  },
+  "electrical.buffer_temperature_max_k": {
+   "param": "buffer.temperature_max_k"
+  },
+  "electrical.bus_voltage_v": {
+   "param": "electrical.bus_voltage_v"
+  },
+  "electrical.generator_power_cont_w": {
+   "param": "generators.power_each_w"
+  },
+  "electrical.generator_spool_time_s": {
+   "param": "generators.spool_tau_s"
+  },
+  "electrical.hover_cooling_fan_power_w": {
+   "param": "thermal.cooling_fan_power_w"
+  },
+  "electrical.radiator_heat_rejection_w": {
+   "param": "thermal.radiator_rejection_static_w"
+  }
+ }
+}

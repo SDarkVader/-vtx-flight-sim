@@ -1,0 +1,150 @@
+{
+ "label": "before-desktop",
+ "date": "2026-11-03T14:02:15.983Z",
+ "configs": {
+  "desktop": {
+   "viewport": [
+    1600,
+    900,
+    1
+   ],
+   "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Ti SUPER (0x00002689) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "quality": "(none)",
+   "pixelRatio": 1,
+   "antialias": true,
+   "shadows": true,
+   "views": {
+    "chase-stand1": {
+     "info": {
+      "calls": 625,
+      "triangles": 742272,
+      "points": 0,
+      "lines": 0,
+      "geometries": 373,
+      "textures": 67,
+      "programs": 68
+     },
+     "median_ms": 10.4,
+     "p90_ms": 12.5
+    },
+    "apron-hangar": {
+     "info": {
+      "calls": 899,
+      "triangles": 729782,
+      "points": 0,
+      "lines": 0,
+      "geometries": 487,
+      "textures": 142,
+      "programs": 68
+     },
+     "median_ms": 12,
+     "p90_ms": 14
+    },
+    "runway-grazing-east": {
+     "info": {
+      "calls": 792,
+      "triangles": 710940,
+      "points": 0,
+      "lines": 0,
+      "geometries": 499,
+      "textures": 156,
+      "programs": 68
+     },
+     "median_ms": 9.9,
+     "p90_ms": 12.3
+    },
+    "overview-sw": {
+     "info": {
+      "calls": 1454,
+      "triangles": 758376,
+      "points": 0,
+      "lines": 0,
+      "geometries": 647,
+      "textures": 181,
+      "programs": 71
+     },
+     "median_ms": 15.7,
+     "p90_ms": 18.7
+    },
+    "pad-b": {
+     "info": {
+      "calls": 76,
+      "triangles": 139510,
+      "points": 0,
+      "lines": 0,
+      "geometries": 648,
+      "textures": 181,
+      "programs": 71
+     },
+     "median_ms": 2.5,
+     "p90_ms": 3.4
+    },
+    "dispatch-tower": {
+     "info": {
+      "calls": 129,
+      "triangles": 139020,
+      "points": 0,
+      "lines": 0,
+      "geometries": 648,
+      "textures": 181,
+      "programs": 71
+     },
+     "median_ms": 2.7,
+     "p90_ms": 3.5
+    },
+    "trees-south": {
+     "info": {
+      "calls": 26,
+      "triangles": 128818,
+      "points": 0,
+      "lines": 0,
+      "geometries": 648,
+      "textures": 181,
+      "programs": 71
+     },
+     "median_ms": 2.3,
+     "p90_ms": 2.7
+    },
+    "top-stand1": {
+     "info": {
+      "calls": 583,
+      "triangles": 708610,
+      "points": 0,
+      "lines": 0,
+      "geometries": 648,
+      "textures": 181,
+      "programs": 71
+     },
+     "median_ms": 7,
+     "p90_ms": 8.6
+    },
+    "stands-north": {
+     "info": {
+      "calls": 246,
+      "triangles": 150066,
+      "points": 0,
+      "lines": 0,
+      "geometries": 648,
+      "textures": 181,
+      "programs": 71
+     },
+     "median_ms": 2.7,
+     "p90_ms": 3.8
+    },
+    "water-west": {
+     "info": {
+      "calls": 193,
+      "triangles": 139732,
+      "points": 0,
+      "lines": 0,
+      "geometries": 731,
+      "textures": 188,
+      "programs": 71
+     },
+     "median_ms": 3.1,
+     "p90_ms": 4
+    }
+   }
+  }
+ }
+}

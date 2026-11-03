@@ -1,0 +1,6 @@
+phantom G-3 nofuel-trap+panel-override: 20261103T144211-55c7ac; phantom G-2/G-3/liftoff: 20261103T144550-be8193
+fx FX-C G-2/G-3/G-4/H-1#1: 20261103T144853-5e8e48
+fx FX-C H-1#2 (adequate), H-2 1.4/3 m, O-1 partial, UNPLANNED X-1 from 3.1 m: 20261103T145427-98fc81
+fx FX-C O-1,O-2,O-3 PTIs,L-1 fwd 1.6/3.1 m/s & rearward 2.2 m/s, landing 0.35 m/s: 20261103T190252-3ef734
+T-2X hop 200 m E FX-C LANDED: 20261103T192918-14ade4
+FX-A H-1,O-2,O-3 part, X-5 1.5/2.5: 20261103T194858-35a724
