@@ -15,6 +15,7 @@ import mujoco as mj
 import numpy as np
 from ._rotation import Rotation
 from .aero import BladeElementModel, ideal_hover
+from .atmosphere import standard_air_density
 from .world import TestWorld
 from .governor import ShaftGovernor
 from .training_assist import assisted_collective
@@ -25,6 +26,9 @@ LEDGER_R4_PATH=ROOT/'evidence/source/airframe_ledger_r4.json'
 LEDGER_R6_PATH=ROOT/'evidence/source/airframe_ledger_r6.json'
 DT=.0025
 G=9.80665
+CABIN_PASSIVE_DAMPING=80.  # Nm/(rad/s), proposed joint damper; not measured hardware.
+CABIN_LEVEL_RATE_GAIN=1600.  # Nm/(rad/s), proposed inertial-rate feedback.
+CABIN_TARGET_RATE_DEG_S=45.  # commanded joint target slew; motor limits still apply.
 
 
 def _cylinder_inertia(mass,r,h):
@@ -159,7 +163,9 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
             limit=math.radians(20 if name!='cabin' else 15)
             for axis in ('xyz' if name=='cabin' else 'xy'):
                 bound=math.pi if axis=='z' else limit
-                ET.SubElement(b,'joint',name=name+'_'+axis,type='hinge',axis={'x':'1 0 0','y':'0 1 0','z':'0 0 1'}[axis],range=fmt([-bound,bound]))
+                args=dict(name=name+'_'+axis,type='hinge',axis={'x':'1 0 0','y':'0 1 0','z':'0 0 1'}[axis],range=fmt([-bound,bound]))
+                if name=='cabin':args['damping']=str(CABIN_PASSIVE_DAMPING)
+                ET.SubElement(b,'joint',**args)
         elif name.startswith('rotor'):
             ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis='0 0 1',limited='false')
         elif name.startswith('shaft'):
@@ -263,7 +269,7 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
 
 
 class Aircraft:
-    def __init__(self,world=None,gear_variant='baseline',rpm=800.,fuel_kg=60.,airframe_variant='light',governor_mode='pi',engine_power_limit_kw=469.8,tank_fuel_kg=None):
+    def __init__(self,world=None,gear_variant='baseline',rpm=800.,fuel_kg=60.,airframe_variant='light',governor_mode='pi',engine_power_limit_kw=469.8,tank_fuel_kg=None,atmosphere_model='constant',wind_world_mps=(0.,0.,0.)):
         if tank_fuel_kg is not None:
             if len(tank_fuel_kg)!=4 or any((not math.isfinite(x) or x<0 or x>27.5) for x in tank_fuel_kg):
                 raise ValueError('Each tank fuel load must be finite and between 0 and 27.5 kg')
@@ -298,12 +304,16 @@ class Aircraft:
         # Experimental live test wire, disabled by default. Operator opt-in only.
         self._bench_apply_experimental_assist=False
         self.pitch=np.zeros(4);self.target_angles=np.zeros((4,2));self.cabin_target=np.zeros(3)
+        self.cabin_level_limited=False
+        self.actuator_telemetry={'nacelle':[[{},{}] for _ in range(4)],'cabin':{}}
         self.engine_spool=0.
         self.fuel=np.full(4,fuel_kg/4) if tank_fuel_kg is None else np.array([float(x) for x in tank_fuel_kg],dtype=float)
         self.governor=ShaftGovernor(governor_mode)
         self.fuel_initial=np.maximum(self.fuel.copy(),1e-9);self.fuel_bids=[mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,f'fuel{i}') for i in range(1,5)]
         self.initial_fuel_inertia=self.model.body_inertia[self.fuel_bids].copy()
-        self.wind=np.zeros(3)
+        if atmosphere_model not in ('constant','isa'):raise ValueError('Unknown atmosphere model')
+        self.atmosphere_model=atmosphere_model
+        self.set_wind(wind_world_mps)
         self.rotors=[dict(thrust_n=0.,torque_nm=0.,induced_mps=0.,max_alpha_deg=0.) for _ in range(4)]
         self.integrity=np.ones(4)
         self.power=dict(engine_w=0.,rotor_aero_w=0.,servo_w=0.,gear_loss_w=0.,fuel_chemical_w=0.)
@@ -318,22 +328,26 @@ class Aircraft:
             'variator_package':self.variator_package,
             'initial_fuel_kg':float(fuel_kg),
             'initial_tank_fuel_kg':self.fuel.tolist(),
-            'cabin_gimbal':'Proposed yaw ±180°, roll/pitch ±15°, powered level assistance; travel, torque and power limits prevent guaranteed leveling',
+            'cabin_gimbal':'Proposed yaw ±180°, roll/pitch ±15°, passive joint dampers and powered level assistance using cabin inertial-rate feedback; travel, torque, target-rate and power limits prevent guaranteed leveling',
             'engine_power_limit_kw':float(engine_power_limit_kw),'propulsion_revision':'P0-V4A-power-r1',
             'exhaust_lift':dict(status='CALIBRATION_BLOCKED',applied_force_n=0.,
                 reason='Installed exhaust airflow/state, duct mass and shaft backpressure penalty unknown'),
             'shaft_governor':dict(mode=governor_mode,kp_nm_per_rad_s=180.,integral_time_s=2.,
                 status='Proposed local RPM regulation; no attitude/height/navigation feedback'),
             'physics':'MuJoCo '+mj.__version__,'dt_s':DT,'aero_rate_hz':100,
-            'physics_revision':'audit-fixes-20261103-r1',
+            'physics_revision':'audit-fixes-20261103-r3',
             'physics_revision_changes':['body-axis assist rates','conserving multi-tank fuel draw',
-                                        'fuel-limited final step','implicit integrator','overspeed integral hold'],
+                                        'fuel-limited final step','implicit integrator','overspeed integral hold',
+                                        'optional ISA density and steady wind','gimbal passive damping and powered inertial-rate leveling'],
+            'atmosphere_model':atmosphere_model,'wind_world_mps':self.wind.tolist(),
             'gear_variant':gear_variant,'reference_rpm':rpm,'model_xml_sha256':hashlib.sha256(self.xml.encode()).hexdigest(),
             'status':'CALIBRATION_BLOCKED — conditional engineering experiment',
             'hypotheses':dict(mass_distribution=self.ledger['allocation_method'],
                 polar='2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2',
                 nacelle_torque_limit_nm=1100.,
                 pitch_rate_deg_s=4.,pitch_lag_s=.15,nacelle_target_rate_deg_s=5.,engine_spool_s=2.,
+                cabin_passive_damping_nm_s_rad=CABIN_PASSIVE_DAMPING,cabin_level_rate_gain_nm_s_rad=CABIN_LEVEL_RATE_GAIN,
+                cabin_target_rate_deg_s=CABIN_TARGET_RATE_DEG_S,
                 engine_continuous_w=469800.,transmission_efficiency=.95,
                 overall_ratio=6016/rpm,rotor_spin_senses=[1,-1,1,-1],
                 highspeed_shaft_topology='ideal equivalent ratio; CV/tooth compliance unmodeled',
@@ -358,6 +372,18 @@ class Aircraft:
         if len(self.command['cabin_deg'])==2:self.command['cabin_deg']=[*self.command['cabin_deg'],0.]
 
     def joint(self,name):return self.data.qpos[self.qadr[name]],self.data.qvel[self.vadr[name]]
+
+    def set_wind(self,wind_world_mps):
+        wind=np.asarray(wind_world_mps,dtype=float)
+        if wind.shape!=(3,) or not np.all(np.isfinite(wind)):raise ValueError('Wind must be three finite world-axis m/s components')
+        self.wind=wind.copy()
+        if hasattr(self,'provenance'):self.provenance['wind_world_mps']=self.wind.tolist()
+
+    def air_density(self,altitude_m):
+        if self.atmosphere_model=='constant':return 1.225
+        h=float(altitude_m)
+        if h < -1000 or h > 20000:self.flags.add('ATMOSPHERE_OUTSIDE_VALID_RANGE')
+        return standard_air_density(max(-1000.,min(20000.,h)))
 
     def ground_clearance(self):
         """Approximate lowest gear clearance using world-only downward rays.
@@ -391,13 +417,22 @@ class Aircraft:
         # no running engine there is no invented battery/actuator energy.
         supply=self.engine_spool if self.fuel.sum()>1e-12 else 0.
         cap=min(limit*supply,500*supply/max(abs(v),.1))
-        torque=float(np.clip(4200*(target-q)-260*v,-cap,cap))
+        damping_rate=v
+        if self.command['cabin_level'] and name in ('cabin_x','cabin_y'):
+            velocity=np.zeros(6)
+            mj.mj_objectVelocity(self.model,self.data,mj.mjtObj.mjOBJ_XBODY,self.bids['cabin'],velocity,0)
+            damping_rate=float(velocity[:3]@self.data.xaxis[self.jids[name]])
+        gain=CABIN_LEVEL_RATE_GAIN if self.command['cabin_level'] and name in ('cabin_x','cabin_y') else 260.
+        requested=float(4200*(target-q)-gain*damping_rate)
+        torque=float(np.clip(requested,-cap,cap))
+        self.actuator_telemetry['cabin'][name]=dict(request_nm=requested,applied_nm=torque,limit_nm=float(cap),saturated=bool(abs(requested)>cap),damping_rate_rad_s=float(damping_rate))
         self.data.qfrc_applied[self.vadr[name]]+=torque
         return abs(torque*v)
 
     def refresh_aero(self):
         for i in range(4):
             bid=self.bids[f'rotor{i+1}'];axis=self.data.xmat[bid].reshape(3,3)[:,2]
+            self.aero.rho=self.air_density(self.data.xpos[bid,2])
             velocity=np.zeros(6);mj.mj_objectVelocity(self.model,self.data,mj.mjtObj.mjOBJ_BODY,bid,velocity,0)
             relative=velocity[3:]-self.wind
             axial=float(relative@axis)
@@ -423,7 +458,9 @@ class Aircraft:
         speed=self.data.ten_velocity[tid]
         supply=self.engine_spool if self.fuel.sum()>1e-12 else 0.
         cap=min(4622*supply,500*supply/max(abs(speed),.01))
-        force=float(np.clip(67200*(wanted-self.data.ten_length[tid])-4160*speed,-cap,cap))
+        requested=float(67200*(wanted-self.data.ten_length[tid])-4160*speed)
+        force=float(np.clip(requested,-cap,cap))
+        self.actuator_telemetry['nacelle'][i-1][index]=dict(request_n=requested,applied_n=force,limit_n=float(cap),saturated=bool(abs(requested)>cap))
         # MuJoCo 3.17 stores tendon Jacobians in CSR even when the constraint
         # solver uses dense Jacobians; structure belongs to the model.
         start=int(self.model.ten_J_rowadr[tid]);count=int(self.model.ten_J_rownnz[tid])
@@ -458,7 +495,8 @@ class Aircraft:
         if self.command['cabin_level']:
             air_rotation=Rotation.from_matrix(d.xmat[self.bids['airframe']].reshape(3,3))
             cabin_requested=cabin_level_target(air_rotation,cabin_requested[2])
-        self.cabin_target+=np.clip(cabin_requested-self.cabin_target,-math.radians(12)*DT,math.radians(12)*DT)
+        self.cabin_level_limited=bool(self.command['cabin_level'] and np.any(np.abs(cabin_requested[:2])>=math.radians(14.99)))
+        self.cabin_target+=np.clip(cabin_requested-self.cabin_target,-math.radians(CABIN_TARGET_RATE_DEG_S)*DT,math.radians(CABIN_TARGET_RATE_DEG_S)*DT)
         servo_power=0.
         for i in range(4):
             for index in range(2):servo_power+=self.linear_actuator(i+1,index,self.target_angles[i])
@@ -476,7 +514,8 @@ class Aircraft:
         # Airframe drag is external atmospheric force, no synthetic rate damping.
         vel=np.zeros(6);mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,self.bids['airframe'],vel,0)
         v=vel[3:]-self.wind
-        d.xfrc_applied[self.bids['airframe'],:3]+=-.5*1.225*1.65*np.linalg.norm(v)*v
+        density=self.air_density(d.xpos[self.bids['airframe'],2])
+        d.xfrc_applied[self.bids['airframe'],:3]+=-.5*density*1.65*np.linalg.norm(v)*v
         omega=self.joint('rotor1_spin')[1]
         target=self.engine_spool*self.reference_rpm*2*math.pi/60
         # A mechanical speed governor is disclosed; it cannot command aircraft pose.
@@ -494,6 +533,9 @@ class Aircraft:
             fraction=available/burn
             d.qfrc_applied[:]*=fraction
             torque*=fraction;servo_power*=fraction;engine_power*=fraction;burn=available
+            for axes in self.actuator_telemetry['nacelle']:
+                for info in axes:info['applied_n']*=fraction;info['fuel_limited']=True
+            for info in self.actuator_telemetry['cabin'].values():info['applied_nm']*=fraction;info['fuel_limited']=True
         d.qfrc_applied[self.vadr['rotor1_spin']]+=torque
         remaining=burn
         while remaining>1e-15 and np.any(self.fuel>0):
@@ -564,6 +606,9 @@ class Aircraft:
                     pitch_deg=self.pitch.tolist(),
                     command=copy.deepcopy(self.command),target_angles_rad=self.target_angles.tolist(),
                     cabin_target_rad=self.cabin_target.tolist(),
+                    actuators=copy.deepcopy(self.actuator_telemetry),
+                    environment=dict(atmosphere_model=self.atmosphere_model,wind_world_mps=self.wind.tolist(),
+                                     density_kg_m3=self.air_density(self.data.xpos[self.bids['airframe'],2])),
                     max_gear_load_n=self.max_gear_load_n,max_nongear_impact_n=self.max_nongear_impact_n,
                     # Rendering-only angular speed. The rotor pose remains MuJoCo-authoritative;
                     # this enables visual sub-frame motion without changing the physical plant.

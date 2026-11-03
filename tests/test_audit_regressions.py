@@ -75,6 +75,20 @@ def test_body_rate_observation_is_independent_of_heading(tmp_path, monkeypatch, 
     assert obs['attitude_xyz_deg'][:2] == pytest.approx([0, 0], abs=.001)
 
 
+def test_cabin_heading_tracks_relative_gimbal_not_world_yaw(tmp_path, monkeypatch):
+    monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
+    lab=Laboratory()
+    p=lab.aircraft
+    p.spawn(0,0,20)
+    p.data.qpos[3:7]=[math.cos(math.pi/4),0,0,math.sin(math.pi/4)]
+    p.data.qpos[p.qadr['cabin_z']]=math.pi/2
+    mj.mj_forward(p.model,p.data)
+    lab.sensor_rng=ZeroNoise()
+    obs=lab.sensor_observation()
+    assert obs['cabin_heading_body_deg'] == pytest.approx(90,abs=.01)
+    assert abs(obs['cabin_attitude_xyz_deg'][2]) == pytest.approx(180,abs=.01)
+
+
 def test_gear_clearance_detects_ground_and_tree(tmp_path, monkeypatch):
     monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
     lab = Laboratory()
@@ -133,5 +147,5 @@ def test_server_startup_exposes_corrected_observation(tmp_path, monkeypatch):
             assert len(obs['gyro_body_deg_s']) == len(obs['velocity_body_mps']) == 3
             assert obs['radar_clearance_m'] == pytest.approx(.01, abs=.04)
             view = await server.view()
-            assert view['rendering_truth']['provenance']['physics_revision'] == 'audit-fixes-20261103-r1'
+            assert view['rendering_truth']['provenance']['physics_revision'] == 'audit-fixes-20261103-r3'
     asyncio.run(check())

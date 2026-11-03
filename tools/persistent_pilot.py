@@ -3,7 +3,7 @@
 Pilot commands come exclusively from tools/pilot_controls.json, bound to a run
 and serial. Retries start DISARMED and preserve the simulator's flight evidence.
 The /api/view endpoint is used only for session/crash status; flight controls
-depend on /api/observe. cabin_level is forced OFF throughout this experiment.
+depend on /api/observe. Cabin level control defaults on and remains configurable.
 """
 from __future__ import annotations
 
@@ -19,7 +19,10 @@ import time
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from argon_calibration import from_instrument_observation
+if __package__:
+    from .argon_calibration import from_instrument_observation
+else:
+    from argon_calibration import from_instrument_observation
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROLS = ROOT / "tools" / "pilot_controls.json"
@@ -28,7 +31,7 @@ EVENTS = ROOT / "pilot" / "pilot_events.jsonl"
 BASE = "http://192.168.55.121:8765"
 SAFE = dict(engine=0.0, collective_deg=[0.0]*4,
             tilt_deg=[[0.0,0.0] for _ in range(4)],
-            cabin_deg=[0.0,0.0,0.0], cabin_level=False)
+            cabin_deg=[0.0,0.0,0.0], cabin_level=True)
 DEFAULT = dict(enabled=True, auto_retry=True, max_auto_retries=5,
                retry_cooldown_s=3.0, time_scale=0.05,
                stability_assist=1.0, experimental_assist_wire=True,
@@ -79,8 +82,8 @@ def load_config(path=CONTROLS):
         raise ValueError("Retry limit must be integer 0..100")
     if not isinstance(cfg["reason"],str) or not 3<=len(cfg["reason"])<=2000:
         raise ValueError("Reason must contain 3..2000 characters")
-    if cfg.get("cabin_level") is not False:
-        raise ValueError("Cabin leveling must remain disabled for this experiment")
+    if type(cfg.get("cabin_level")) is not bool:
+        raise ValueError("Cabin leveling must be boolean")
     return cfg
 
 
@@ -228,7 +231,6 @@ class Pilot:
                        attitude=attitude,rates=rates)
         armed=matched and self.blocked_serial!=cfg["serial"] and not guard
         setpoints={k:cfg[k] for k in SAFE} if armed else dict(SAFE)
-        setpoints["cabin_level"]=False
         if now-self.last_sent>=0.55:
             action={**setpoints,"authority":"colin","observation_id":obs["observation_id"],
                     "reason":cfg["reason"] if armed else "Persistent pilot safe idle / disarmed heartbeat"}

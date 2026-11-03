@@ -38,7 +38,7 @@ class Action(BaseModel):
     collective_deg:list[float]
     tilt_deg:list[list[float]]
     cabin_deg:list[float]=[0.,0.,0.]
-    cabin_level:bool=False
+    cabin_level:bool=True
     @field_validator('collective_deg')
     @classmethod
     def pitch(cls,v):
@@ -67,11 +67,23 @@ class Mission(BaseModel):
     airframe_variant:str='r6'
     fuel_kg:float=Field(default=10.,ge=1.,le=110.)
     engine_power_limit_kw:float=Field(default=300.,ge=10.,le=469.8)
+    atmosphere_model:str='constant'
+    wind_world_mps:list[float]=Field(default_factory=lambda:[0.,0.,0.])
     label:str='user selected mission'
     @field_validator('departure','destination')
     @classmethod
     def xy(cls,v):
         if len(v)!=2:raise ValueError('Expected map X/Y')
+        return v
+    @field_validator('wind_world_mps')
+    @classmethod
+    def wind_vector(cls,v):
+        if len(v)!=3 or not all(math.isfinite(x) for x in v):raise ValueError('Expected three finite wind components in world axes (m/s)')
+        return v
+    @field_validator('atmosphere_model')
+    @classmethod
+    def atmosphere(cls,v):
+        if v not in ('constant','isa'):raise ValueError('Atmosphere must be constant or isa')
         return v
     @field_validator('authority')
     @classmethod
@@ -159,6 +171,7 @@ class Laboratory:
                                 qacc_warmstart=d.qacc_warmstart.tolist()),
                    plant=dict(command=p.command,pitch=p.pitch.tolist(),
                               target_angles=p.target_angles.tolist(),
+                              actuator_telemetry=p.actuator_telemetry,
                               cabin_target=p.cabin_target.tolist(),
                               engine_spool=p.engine_spool,fuel=p.fuel.tolist(),
                               wind=p.wind.tolist(),rotors=p.rotors,
@@ -214,7 +227,8 @@ class Laboratory:
             request=Mission(**saved_request)
             candidate=Aircraft(self.world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
-                               engine_power_limit_kw=request.engine_power_limit_kw)
+                               engine_power_limit_kw=request.engine_power_limit_kw,
+                               atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
             if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:
                 raise ValueError('Checkpoint model differs from current physics model')
             d=candidate.data
@@ -232,10 +246,11 @@ class Laboratory:
             candidate.command=plant['command']
             candidate.pitch[:]=plant['pitch']
             candidate.target_angles[:]=plant['target_angles']
+            candidate.actuator_telemetry=plant.get('actuator_telemetry',candidate.actuator_telemetry)
             candidate.cabin_target[:]=plant['cabin_target']
             candidate.engine_spool=float(plant['engine_spool'])
             candidate.fuel[:]=plant['fuel']
-            candidate.wind[:]=plant['wind']
+            candidate.set_wind(plant['wind'])
             candidate.rotors=plant['rotors']
             candidate.integrity[:]=plant['integrity']
             candidate.power=plant['power']
@@ -327,12 +342,15 @@ class Laboratory:
             stability_assist=p.stability_assist,assistance_applied=bool(p.stability_assist and p._bench_apply_experimental_assist),assisted_collective_deg=p.assisted_collective_deg,
             tilt_feedback_deg=[[round(math.degrees(p.joint(f'nacelle{i}_{a}')[0]),3) for a in 'xy'] for i in range(1,5)],
             cabin_feedback_deg=[round(math.degrees(p.joint(f'cabin_{a}')[0]),3) for a in 'xyz'],
+            cabin_level_enabled=bool(p.command['cabin_level']),
+            cabin_level_powered=bool(p.command['cabin_level'] and p.engine_spool>0 and p.fuel.sum()>1e-12),
+            cabin_level_limited=bool(p.cabin_level_limited),
             gear_compression_m=[round(float(p.joint(f'gear{i}_stroke')[0]),4) for i in range(1,7)],
             fuel_kg=np.round(p.fuel,4).tolist(),engine_shaft_kw=round(p.power['engine_w']/1000,2),
-            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=1e-12 else [])+(['CLEARANCE_UNAVAILABLE'] if clearance is None else []),
+            warning_lamps=(['IMPACT'] if p.crashed else [])+(['COMMAND_LEASE_EXPIRED'] if self.lease_expired else [])+(['FUEL_EXHAUSTED'] if p.fuel.sum()<=1e-12 else [])+(['CLEARANCE_UNAVAILABLE'] if clearance is None else [])+(['CABIN_LEVEL_TRAVEL_LIMIT'] if p.cabin_level_limited else []),
             configuration=dict(airframe_revision=p.provenance['revision'],airframe_variant=p.airframe_variant,
                                engine_power_limit_kw=p.engine_power_limit_w/1000.,reference_rpm=p.reference_rpm,gear_variant=p.gear_variant,
-                               initial_fuel_kg=float(p.fuel_initial.sum())),
+                               initial_fuel_kg=float(p.fuel_initial.sum()),atmosphere_model=p.atmosphere_model,wind_world_mps=p.wind.tolist()),
             scheduler_backlog_s=round(self.clock_lag_s,3),
             mission=self.mission,authority=self.authority,active=self.active,paused=self.paused,
             time_scale=self.time_scale,
@@ -340,6 +358,12 @@ class Laboratory:
         body_from_world=d.xmat[bid].reshape(3,3).T
         obs['gyro_body_deg_s']=np.round(body_from_world@np.asarray(obs['gyro_world_deg_s']),3).tolist()
         obs['velocity_body_mps']=np.round(body_from_world@np.asarray(obs['gnss_velocity_mps']),3).tolist()
+        cabin_rotation=d.xmat[p.bids['cabin']].reshape(3,3)
+        cabin_forward=body_from_world@(-cabin_rotation[:,1])
+        obs['cabin_heading_body_deg']=round(math.degrees(math.atan2(cabin_forward[0],-cabin_forward[1])),3)
+        cabin_euler=Rotation.from_matrix(cabin_rotation).as_euler('xyz',degrees=True)
+        # Reuse the existing attitude sensor error; no extra RNG samples.
+        obs['cabin_attitude_xyz_deg']=np.round(cabin_euler+(np.asarray(obs['attitude_xyz_deg'])-euler),3).tolist()
         self.last_obs=obs;self.observations[self.obs_id]=obs
         if len(self.observations)>3000:del self.observations[min(self.observations)]
         self.log('observation',obs)
@@ -351,7 +375,8 @@ class Laboratory:
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
         self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
-                               engine_power_limit_kw=request.engine_power_limit_kw)
+                               engine_power_limit_kw=request.engine_power_limit_kw,
+                               atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
         self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
         self.aircraft.stability_assist=request.stability_assist
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
@@ -457,12 +482,14 @@ class Laboratory:
         if not hint:raise HTTPException(409,'No retained mission to retry')
         old=hint['request']
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
-                  authority=request.get('authority','manual'),time_scale=request.get('time_scale',.1),
+                  authority=request.get('authority','manual'),time_scale=request.get('time_scale',old.get('time_scale',Mission.model_fields['time_scale'].default)),
                   stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
                   reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
                   airframe_variant=request.get('airframe_variant',old.get('airframe_variant','light')),
                   fuel_kg=request.get('fuel_kg',old.get('fuel_kg',60.)),
                   engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
+                  atmosphere_model=request.get('atmosphere_model',old.get('atmosphere_model','constant')),
+                  wind_world_mps=request.get('wind_world_mps',old.get('wind_world_mps',[0.,0.,0.])),
                   label='Explicit retry of '+hint['run_id'])
         result=self.start(m)
         self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
