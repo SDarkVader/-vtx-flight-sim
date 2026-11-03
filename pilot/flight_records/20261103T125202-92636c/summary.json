@@ -1,0 +1,705 @@
+{
+  "run_id": "20261103T125202-92636c",
+  "outcome": "airborne attempt ended",
+  "reason": "Argon-controlled landing at B",
+  "simulated_seconds": 200.21499999985417,
+  "wall_seconds": 467.8763607000001,
+  "decisions": 12338,
+  "left_ground": true,
+  "max_airframe_origin_altitude_m": 10.405075192679488,
+  "max_contact_force_n": 2587.7101438420973,
+  "fuel_used_kg": 4.391322172642743,
+  "max_gear_load_n": 2613.0209674377297,
+  "max_nongear_impact_n": 0.0,
+  "final": {
+    "t_s": 200.21499999985417,
+    "qpos": [
+      -47.66996039145279,
+      21.10644861831118,
+      0.18970479552739314,
+      0.9999999541969579,
+      5.517116108263235e-07,
+      1.025953394910915e-06,
+      -0.0003026627248902721,
+      0.004029043421922717,
+      -0.0017213061293998204,
+      1.175663367614236e-06,
+      -0.0006747564051032981,
+      0.0001545584716647578,
+      25008.904966497128,
+      -7.192327752045672e-05,
+      -0.0004634115978749388,
+      -25008.904557981834,
+      0.00045175486508597666,
+      4.560428604258191e-05,
+      25008.904584412834,
+      -0.0001427791875223629,
+      0.0006633478475145482,
+      -25008.904611118418,
+      0.009756123170647836,
+      0.009755605694008483,
+      0.009505924428083764,
+      0.009753050157192437,
+      0.009753568459545876,
+      0.009755105230775567,
+      125377.97689805298,
+      -125377.97689828317,
+      125377.9768982981,
+      -125377.97689806792
+    ],
+    "qvel": [
+      5.342820439602062e-05,
+      -8.291704222938236e-06,
+      -0.003180150833932865,
+      -0.0003553967641987934,
+      -1.673116566396906e-05,
+      3.0723387455239933e-06,
+      1.0165905721426683e-05,
+      1.4154507290543055e-05,
+      1.3295731866115619e-05,
+      0.0016162498270877422,
+      0.0001413572968369457,
+      126.78498307990836,
+      0.0009747978185759208,
+      0.0008230615394402929,
+      -126.78501081771411,
+      0.00023052456509760756,
+      -6.212020690631731e-05,
+      126.785012631953,
+      0.000696103193235818,
+      -0.0005573444909300903,
+      -126.78500991481566,
+      0.004011122094808293,
+      0.003699092965969743,
+      0.017293132949324972,
+      0.0034637113714218663,
+      0.0037757667271593656,
+      0.004049512865937774,
+      635.6153502289322,
+      -635.615279789115,
+      635.6152906684433,
+      -635.6153611066235
+    ],
+    "body_poses": {
+      "airframe": {
+        "position": [
+          -47.6699605250233,
+          21.10644863904044,
+          0.18971274590447798
+        ],
+        "quaternion_wxyz": [
+          0.9999999541954301,
+          9.959638716620725e-07,
+          1.0467328964603207e-06,
+          -0.0003026665657577353
+        ]
+      },
+      "cabin": {
+        "position": [
+          -47.66995726015732,
+          21.10644553064485,
+          1.7497127458979647
+        ],
+        "quaternion_wxyz": [
+          0.9999975532401193,
+          0.002015241775206202,
+          -0.0008602330086500147,
+          -0.0003038314222586987
+        ]
+      },
+      "nacelle1": {
+        "position": [
+          -45.06995695288749,
+          21.104870827762618,
+          2.1697072011780842
+        ],
+        "quaternion_wxyz": [
+          0.9999998938767595,
+          -0.0003383791916213813,
+          7.825198860227388e-05,
+          -0.00030269228386045356
+        ]
+      },
+      "rotor1": {
+        "position": [
+          -45.06990523897342,
+          21.105094142401487,
+          2.499707164481332
+        ],
+        "quaternion_wxyz": [
+          0.7283139583234252,
+          -0.0001927371875636628,
+          0.0002889225286691907,
+          0.685243502331407
+        ]
+      },
+      "nacelle2": {
+        "position": [
+          -47.66838251513761,
+          23.706444122037517,
+          2.1697178231204988
+        ],
+        "quaternion_wxyz": [
+          0.9999999267048072,
+          -3.625461045112364e-05,
+          -0.00023167662689702043,
+          -0.0003026580971245427
+        ]
+      },
+      "rotor2": {
+        "position": [
+          -47.66853541447802,
+          23.70646809636019,
+          2.499717829743113
+        ],
+        "quaternion_wxyz": [
+          0.7280391011951268,
+          0.00013236921965133875,
+          -0.00019356354491029446,
+          -0.6855355659209342
+        ]
+      },
+      "nacelle3": {
+        "position": [
+          -50.26995580942281,
+          21.108018559776017,
+          2.169718090334337
+        ],
+        "quaternion_wxyz": [
+          0.9999999282413623,
+          0.00022659215333089956,
+          2.385824618106271e-05,
+          -0.0003026616098856135
+        ]
+      },
+      "rotor3": {
+        "position": [
+          -50.269940108242714,
+          21.10786900418026,
+          2.4997180989866075
+        ],
+        "quaternion_wxyz": [
+          0.7284448847335799,
+          0.0001813635552487927,
+          -0.00013791475878051704,
+          0.6851043701453532
+        ]
+      },
+      "nacelle4": {
+        "position": [
+          -47.67153024717269,
+          18.506445265501117,
+          2.169707468391923
+        ],
+        "quaternion_wxyz": [
+          0.9999998960663861,
+          -7.116315413256432e-05,
+          0.00033343918562033685,
+          -0.00030269015859016096
+        ]
+      },
+      "rotor4": {
+        "position": [
+          -47.671310163087774,
+          18.506492166571082,
+          2.4997074345846286
+        ],
+        "quaternion_wxyz": [
+          0.7280208423700802,
+          -0.000280340423164027,
+          0.0001940493034088575,
+          -0.6855549116072861
+        ]
+      },
+      "gear1": {
+        "position": [
+          -45.76996121143505,
+          21.10529880555174,
+          0.03945486611625084
+        ],
+        "quaternion_wxyz": [
+          0.9999999541954301,
+          9.959638716620725e-07,
+          1.0467328964603207e-06,
+          -0.0003026665657577353
+        ]
+      },
+      "gear2": {
+        "position": [
+          -46.718964981185806,
+          22.751321778378042,
+          0.03946039464875918
+        ],
+        "quaternion_wxyz": [
+          0.9999999541954301,
+          9.959638716620725e-07,
+          1.0467328964603207e-06,
+          -0.0003026665657577353
+        ]
+      },
+      "gear3": {
+        "position": [
+          -48.618964609826534,
+          22.752471911822067,
+          0.03918070701314257
+        ],
+        "quaternion_wxyz": [
+          0.9999999541954301,
+          9.959638716620725e-07,
+          1.0467328964603207e-06,
+          -0.0003026665657577353
+        ]
+      },
+      "gear4": {
+        "position": [
+          -49.569960467536724,
+          21.107599071312748,
+          0.03946111909013453
+        ],
+        "quaternion_wxyz": [
+          0.9999999541954301,
+          9.959638716620725e-07,
+          1.0467328964603207e-06,
+          -0.0003026665657577353
+        ]
+      },
+      "gear5": {
+        "position": [
+          -48.620956697785964,
+          19.46157609848644,
+          0.03945559131777302
+        ],
+        "quaternion_wxyz": [
+          0.9999999541954301,
+          9.959638716620725e-07,
+          1.0467328964603207e-06,
+          -0.0003026665657577353
+        ]
+      },
+      "gear6": {
+        "position": [
+          -46.720957069737125,
+          19.46042596560594,
+          0.03945246499339045
+        ],
+        "quaternion_wxyz": [
+          0.9999999541954301,
+          9.959638716620725e-07,
+          1.0467328964603207e-06,
+          -0.0003026665657577353
+        ]
+      },
+      "shaft1": {
+        "position": [
+          -46.31005370751724,
+          20.950624576344246,
+          0.6097095762058391
+        ],
+        "quaternion_wxyz": [
+          0.6568814155274424,
+          0.7539938423664466,
+          -0.0002275209591059982,
+          -0.00019960550805180413
+        ]
+      },
+      "shaft2": {
+        "position": [
+          -47.87913634795588,
+          22.466574687248244,
+          0.6097158807040232
+        ],
+        "quaternion_wxyz": [
+          0.6568828025318539,
+          -0.00022755434891725597,
+          -0.7539926340023855,
+          -0.00019956718232306474
+        ]
+      },
+      "shaft3": {
+        "position": [
+          -49.02986558452466,
+          21.262271027985218,
+          0.6097158893736097
+        ],
+        "quaternion_wxyz": [
+          0.6568827688770604,
+          -0.7539926633225689,
+          0.00022889615852935043,
+          -0.00019802700393530006
+        ]
+      },
+      "shaft4": {
+        "position": [
+          -47.46081926410989,
+          19.686320866094196,
+          0.6097094653976604
+        ],
+        "quaternion_wxyz": [
+          0.6568813818671769,
+          0.0002288627690304108,
+          0.7539938716914256,
+          -0.00019806532993476103
+        ]
+      }
+    },
+    "pitch_deg": [
+      14.282718949031024,
+      14.98133848559229,
+      14.28120481805176,
+      13.585476613052322
+    ],
+    "command": {
+      "engine": 1.0,
+      "collective_deg": [
+        14.11,
+        14.81,
+        14.11,
+        13.41
+      ],
+      "tilt_deg": [
+        [
+          -0.03,
+          0.0
+        ],
+        [
+          0.0,
+          -0.03
+        ],
+        [
+          0.03,
+          0.0
+        ],
+        [
+          0.0,
+          0.03
+        ]
+      ],
+      "cabin_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "cabin_level": true
+    },
+    "target_angles_rad": [
+      [
+        -0.0005235987755982988,
+        0.0
+      ],
+      [
+        0.0,
+        -0.0005235987755982988
+      ],
+      [
+        0.0005235987755982988,
+        0.0
+      ],
+      [
+        0.0,
+        0.0005235987755982988
+      ]
+    ],
+    "cabin_target_rad": [
+      -2.2328986612157676e-06,
+      -1.4371199943408186e-06,
+      1.0820845901173687e-19
+    ],
+    "actuators": {
+      "nacelle": [
+        [
+          {
+            "request_n": 3.317963554895879,
+            "applied_n": 3.317963554895879,
+            "limit_n": 4622.0,
+            "saturated": false
+          },
+          {
+            "request_n": 2.1427126921868695,
+            "applied_n": 2.1427126921868695,
+            "limit_n": 4622.0,
+            "saturated": false
+          }
+        ],
+        [
+          {
+            "request_n": 2.1908137483519674,
+            "applied_n": 2.1908137483519674,
+            "limit_n": 4622.0,
+            "saturated": false
+          },
+          {
+            "request_n": 0.8388115073500814,
+            "applied_n": 0.8388115073500814,
+            "limit_n": 4622.0,
+            "saturated": false
+          }
+        ],
+        [
+          {
+            "request_n": 3.409404106249352,
+            "applied_n": 3.409404106249352,
+            "limit_n": 4622.0,
+            "saturated": false
+          },
+          {
+            "request_n": -1.0439491866744208,
+            "applied_n": -1.0439491866744208,
+            "limit_n": 4622.0,
+            "saturated": false
+          }
+        ],
+        [
+          {
+            "request_n": 4.532093955376208,
+            "applied_n": 4.532093955376208,
+            "limit_n": 4622.0,
+            "saturated": false
+          },
+          {
+            "request_n": 0.7687106982574727,
+            "applied_n": 0.7687106982574727,
+            "limit_n": 4622.0,
+            "saturated": false
+          }
+        ]
+      ],
+      "cabin": {
+        "cabin_x": {
+          "request_nm": -17.181460065575845,
+          "applied_nm": -17.181460065575845,
+          "limit_nm": 600.0,
+          "saturated": false,
+          "damping_rate_rad_s": 0.00015637891320837777
+        },
+        "cabin_y": {
+          "request_nm": 6.628316250097104,
+          "applied_nm": 6.628316250097104,
+          "limit_nm": 600.0,
+          "saturated": false,
+          "damping_rate_rad_s": 0.00037205138233278786
+        },
+        "cabin_z": {
+          "request_nm": -0.00632800614105975,
+          "applied_nm": -0.00632800614105975,
+          "limit_nm": 600.0,
+          "saturated": false,
+          "damping_rate_rad_s": 5.88394300644088e-06
+        }
+      }
+    },
+    "environment": {
+      "atmosphere_model": "constant",
+      "wind_world_mps": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "density_kg_m3": 1.225
+    },
+    "max_gear_load_n": 2613.0209674377297,
+    "max_nongear_impact_n": 0.0,
+    "rotor_spin_rad_s": [
+      126.78498307990836,
+      -126.78501081771411,
+      126.785012631953,
+      -126.78500991481566
+    ],
+    "assisted_collective_deg": [
+      14.11,
+      14.81,
+      14.11,
+      13.41
+    ],
+    "stability_assist": 0.0,
+    "assistance_applied": false,
+    "fuel_kg": [
+      1.4021694568393142,
+      1.4021694568393142,
+      1.4021694568393142,
+      1.4021694568393142
+    ],
+    "rotors": [
+      {
+        "thrust_n": 1933.5817586356413,
+        "torque_nm": 275.6795938670834,
+        "induced_mps": 14.049126134726315,
+        "max_alpha_deg": 13.483636130652956
+      },
+      {
+        "thrust_n": 2075.3491140770543,
+        "torque_nm": 303.4990968188717,
+        "induced_mps": 14.553388130395586,
+        "max_alpha_deg": 13.62972537601578
+      },
+      {
+        "thrust_n": 1933.1978068030967,
+        "torque_nm": 275.6155806582988,
+        "induced_mps": 14.04694612616396,
+        "max_alpha_deg": 13.483830529776132
+      },
+      {
+        "thrust_n": 1794.7592238876773,
+        "torque_nm": 249.47264078636206,
+        "induced_mps": 13.535046793284355,
+        "max_alpha_deg": 13.308408104251452
+      }
+    ],
+    "integrity": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "power": {
+      "engine_w": 147493.0128509424,
+      "rotor_aero_w": 140004.30679015678,
+      "servo_w": 0.0057036909154580765,
+      "gear_loss_w": 7374.650357362566,
+      "fuel_chemical_w": 704688.8391767249
+    },
+    "energy": {
+      "engine_j": 39521899.553785816,
+      "rotor_aero_j": 37434213.44788803,
+      "gear_loss_j": 1976094.2174688298,
+      "servo_j": 15.204409810670253,
+      "fuel_chemical_j": 188826853.4236426
+    },
+    "events": [],
+    "flags": [],
+    "mass": {
+      "mass_kg": 992.2781587933783,
+      "cg_world_m": [
+        -47.67010726457269,
+        21.185471677380207,
+        1.3937658481674828
+      ],
+      "inertia_world_kg_m2": [
+        [
+          1811.4276172400137,
+          12.143388064772163,
+          -0.8600178984529128
+        ],
+        [
+          12.14338806477217,
+          1777.9793194372714,
+          74.86767371771037
+        ],
+        [
+          -0.8600178984529128,
+          74.86767371771037,
+          2531.866386234151
+        ]
+      ]
+    },
+    "governor": {
+      "mode": "pi",
+      "target_rad_s": 125.66370614359172,
+      "speed_error_rad_s": -1.1211153954497632,
+      "integral_nm": 1306.9674235372217,
+      "torque_request_nm": 1105.1666523562644,
+      "torque_applied_nm": 1105.1666523562644,
+      "torque_cap_nm": 2247.9031095511077,
+      "saturated": false,
+      "overspeed_fuel_cut": false
+    },
+    "ncon": 6,
+    "crashed": false,
+    "provenance": {
+      "revision": "P0-V4A-assembly-r6",
+      "ledger_sha256": "787b032b82c724984a88df596e81708687a5ae5f4d23396113e88fc1a162ab3e",
+      "airframe_variant": "r6",
+      "render_asset": "/assets/airframe-r6.glb",
+      "variator_package": false,
+      "initial_fuel_kg": 10.0,
+      "initial_tank_fuel_kg": [
+        2.5,
+        2.5,
+        2.5,
+        2.5
+      ],
+      "cabin_gimbal": "Proposed yaw \u00b1180\u00b0, roll/pitch \u00b115\u00b0, passive joint dampers and powered level assistance using cabin inertial-rate feedback; travel, torque, target-rate and power limits prevent guaranteed leveling",
+      "engine_power_limit_kw": 300.0,
+      "propulsion_revision": "P0-V4A-power-r1",
+      "exhaust_lift": {
+        "status": "CALIBRATION_BLOCKED",
+        "applied_force_n": 0.0,
+        "reason": "Installed exhaust airflow/state, duct mass and shaft backpressure penalty unknown"
+      },
+      "shaft_governor": {
+        "mode": "pi",
+        "kp_nm_per_rad_s": 180.0,
+        "integral_time_s": 2.0,
+        "status": "Proposed local RPM regulation; no attitude/height/navigation feedback"
+      },
+      "physics": "MuJoCo 3.17.0",
+      "dt_s": 0.0025,
+      "aero_rate_hz": 100,
+      "physics_revision": "audit-fixes-20261103-r3",
+      "physics_revision_changes": [
+        "body-axis assist rates",
+        "conserving multi-tank fuel draw",
+        "fuel-limited final step",
+        "implicit integrator",
+        "overspeed integral hold",
+        "optional ISA density and steady wind",
+        "gimbal passive damping and powered inertial-rate leveling"
+      ],
+      "atmosphere_model": "constant",
+      "wind_world_mps": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "gear_variant": "critical-damping-proposal",
+      "reference_rpm": 1200.0,
+      "model_xml_sha256": "d5b83de425ad8da24e128faafaff399dd3e457474a2dabb7bbf4165c56220d16",
+      "status": "CALIBRATION_BLOCKED \u2014 conditional engineering experiment",
+      "hypotheses": {
+        "mass_distribution": "R4 per-part allocated masses preserved; 32 legacy P06 box-spar parts removed; exact retained surface triangle moments. NOT measured mass.",
+        "polar": "2pi slope; CLmax1.2; stall16deg; CD0.012+0.02CL^2",
+        "nacelle_torque_limit_nm": 1100.0,
+        "pitch_rate_deg_s": 4.0,
+        "pitch_lag_s": 0.15,
+        "nacelle_target_rate_deg_s": 5.0,
+        "engine_spool_s": 2.0,
+        "cabin_passive_damping_nm_s_rad": 80.0,
+        "cabin_level_rate_gain_nm_s_rad": 1600.0,
+        "cabin_target_rate_deg_s": 45.0,
+        "engine_continuous_w": 469800.0,
+        "transmission_efficiency": 0.95,
+        "overall_ratio": 5.013333333333334,
+        "rotor_spin_senses": [
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "highspeed_shaft_topology": "ideal equivalent ratio; CV/tooth compliance unmodeled",
+        "installed_torque_limit_nm": 769.3723495675698,
+        "sfc_kg_kwh": 0.4,
+        "fuel_density_kg_l": 0.8,
+        "body_CdA_m2": 1.65,
+        "gear": "linear spring: static compression quarter stroke; damping ratio 1.0",
+        "self_contact": "CAD clearance audit; no all-part multibody self-contact",
+        "structural_failure": "rigid load paths; no laminate failure allowables or FEA",
+        "rotor_map": "axial BEMT; duct gain=1; no CFD/interference/edgewise qualification"
+      }
+    }
+  },
+  "mission": {
+    "departure": [
+      0.0,
+      0.0
+    ],
+    "destination": [
+      -50.0,
+      20.0
+    ],
+    "departure_z_m": 0.0,
+    "destination_z_m": 0.0,
+    "environment": "stage1-valley",
+    "environment_version": "2",
+    "label": "Argon controller with revised gimbal: recorded 10 m hover test"
+  },
+  "claim": "Conditional experimental model; not validated VTX performance"
+}
