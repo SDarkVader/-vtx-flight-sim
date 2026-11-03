@@ -1,0 +1,14 @@
+{
+  "armed": false,
+  "arm_run_id": null,
+  "serial": 0,
+  "keepalive_s": 1.0,
+  "reason": "Operator hold before flight command",
+  "command": {
+    "engine": 1.0,
+    "collective": 0.0,
+    "stability_mode": "rate_damping",
+    "brake": [1, 1, 1, 1]
+  },
+  "pti": null
+}
