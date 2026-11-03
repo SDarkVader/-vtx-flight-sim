@@ -59,8 +59,7 @@ def test_link_requires_session_binding_with_cabin_level():
         fake=FakeServer()
         with patch("tools.persistent_pilot.request",side_effect=fake):
             pilot.tick(now=100)
-            assert fake.actions[-1]["engine"]==0
-            assert fake.actions[-1]["cabin_level"] is True
+            assert fake.actions==[]  # Wrong-run controls must not be issued.
             cfg["arm_run_id"]="run-a"
             controls.write_text(json.dumps(cfg))
             pilot.tick(now=101)
@@ -100,9 +99,8 @@ def test_crash_retries_disarmed_and_keeps_lineage():
             assert fake.retry_calls[0]["authority"]=="colin"
             assert fake.retry_calls[0]["stability_assist"]==1
             pilot.tick(now=106)
-            assert fake.actions[-1]["engine"]==0
-            assert fake.actions[-1]["cabin_level"] is True
-            assert len(fake.operators)==2
+            assert len(fake.actions)==1  # Retry disarms; no stale neutral/control commands.
+            assert len(fake.operators)==1
 
 
 def test_manual_pause_and_guard_disallow_control():
@@ -126,10 +124,10 @@ def test_manual_pause_and_guard_disallow_control():
             fake.paused=False
             fake.obs["gyro_world_deg_s"]=[20,0,0]
             pilot.tick(now=102)
-            assert fake.actions[-1]["engine"]==0
+            assert fake.actions==[]
             fake.obs["gyro_world_deg_s"]=[0,0,0]
             pilot.tick(now=103)
-            assert fake.actions[-1]["engine"]==0  # latched until new serial
+            assert fake.actions==[]  # Guard remains latched until new serial.
             cfg["serial"]=5
             controls.write_text(json.dumps(cfg))
             pilot.tick(now=104)
@@ -173,8 +171,7 @@ def test_interrupted_colin_sortie_restarts_from_metadata_not_airborne_state():
             assert len(fake.retry_calls)==1
             assert fake.retry_calls[0]["authority"]=="colin"
             pilot.tick(now=101)
-            assert fake.actions[-1]["engine"]==0
-            assert fake.actions[-1]["cabin_level"] is True
+            assert fake.actions==[]  # Recovered sortie is deliberately disarmed.
 
 
 def test_does_not_recover_interrupted_manual_sortie():

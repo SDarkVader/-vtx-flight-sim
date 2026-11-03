@@ -1,6 +1,6 @@
 {
     "enabled":  true,
-    "auto_retry":  false,
+    "auto_retry":  true,
     "max_auto_retries":  5,
     "retry_cooldown_s":  3,
     "time_scale":  0.05,
@@ -12,7 +12,7 @@
     "reason":  "Disarmed: monitoring only",
     "max_attitude_deg":  12,
     "max_rate_deg_s":  15,
-    "engine":  0,
+    "engine":  1,
     "collective_deg":  [
                            0,
                            0,

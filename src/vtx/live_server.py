@@ -43,7 +43,7 @@ class Action(BaseModel):
     @field_validator('collective_deg')
     @classmethod
     def pitch(cls,v):
-        if len(v)!=4 or any(not 0<=x<=30 for x in v):raise ValueError('Four collective controls, each 0–30 degrees')
+        if len(v)!=4 or any(not 0<=x<=30 for x in v):raise ValueError('Four collective controls, each 0â€“30 degrees')
         return v
     @field_validator('tilt_deg')
     @classmethod
@@ -53,7 +53,7 @@ class Action(BaseModel):
     @field_validator('cabin_deg')
     @classmethod
     def cabin(cls,v):
-        if len(v) not in (2,3) or any(abs(x)>15 for x in v[:2]) or (len(v)==3 and abs(v[2])>180):raise ValueError('Cabin X/Y ±15 degrees and yaw ±180 degrees')
+        if len(v) not in (2,3) or any(abs(x)>15 for x in v[:2]) or (len(v)==3 and abs(v[2])>180):raise ValueError('Cabin X/Y Â±15 degrees and yaw Â±180 degrees')
         return v if len(v)==3 else [*v,0.]
 
 class Mission(BaseModel):
@@ -71,6 +71,7 @@ class Mission(BaseModel):
     atmosphere_model:str='constant'
     wind_world_mps:list[float]=Field(default_factory=lambda:[0.,0.,0.])
     label:str='user selected mission'
+    landing_requested:bool=False
     @field_validator('departure','destination')
     @classmethod
     def xy(cls,v):
@@ -375,17 +376,27 @@ class Laboratory:
             raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
-        mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
+        departure_check=self.world.validate(MapPoint(*request.departure),'departure')
+        if not departure_check.valid:raise ValueError('INVALID_DEPARTURE: '+departure_check.reason)
+        target=MapPoint(*request.destination)
+        if max(abs(target.x_m),abs(target.y_m))>self.world.half-8:
+            raise ValueError('Destination outside surveyed map boundary')
+        arrival_check=self.world.validate(target,'destination')
+        target_z=self.world.surface_z(*request.destination)
         self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
-        self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
+        self.aircraft.spawn(*request.departure,departure_check.terrain_z_m)
+        # Bench engine is ready after launch; collective remains zero until commanded.
+        self.aircraft.set_command(dict(engine=1.0))
         self.aircraft.stability_assist=request.stability_assist
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
         self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
         self.mission=dict(departure=request.departure,destination=request.destination,
-                          departure_z_m=mission.departure_surface_z_m,destination_z_m=mission.destination_surface_z_m,
+                          departure_z_m=departure_check.terrain_z_m,destination_z_m=target_z,
+                          destination_landing_valid=arrival_check.valid,destination_advisory=arrival_check.reason,
+                          landing_requested=request.landing_requested,
                           environment=self.world.id,environment_version=self.world.version,label=request.label)
         self.log_path=self.data_root/'evidence/flights'/self.run_id;self.log_path.mkdir(parents=True)
         self.audit_file=(self.log_path/'events.jsonl').open('w')
@@ -402,7 +413,7 @@ class Laboratory:
                   runtime_source_sha256=hashlib.sha256(b''.join(p.read_bytes() for p in sorted((ROOT/'src/vtx').glob('*.py')))).hexdigest(),
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
-                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/idle; experimental rate damping is shadow-only and does not control aircraft')
+                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather collective while engine remains available; experimental rate damping is shadow-only')
         (self.log_path/'metadata.json').write_text(json.dumps(meta,indent=2))
         (self.log_path/'model.xml').write_text(self.aircraft.xml)
         (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
@@ -420,17 +431,23 @@ class Laboratory:
         ):
             raise HTTPException(422, 'Destination must be two finite map coordinates')
         point = MapPoint(*destination)
-        mission = select_mission(self.world.id, self.world.version,
-                                 MapPoint(*self.mission['departure']), point, self.world)
+        if max(abs(point.x_m), abs(point.y_m)) > self.world.half - 8:
+            raise HTTPException(422, 'Destination outside surveyed map boundary')
+        arrival_check = self.world.validate(point, 'destination')
         previous = list(self.mission['destination'])
         self.mission['destination'] = list(destination)
-        self.mission['destination_z_m'] = mission.destination_surface_z_m
+        self.mission['destination_z_m'] = self.world.surface_z(*destination)
+        self.mission['destination_landing_valid'] = arrival_check.valid
+        self.mission['destination_advisory'] = arrival_check.reason
+        self.mission['landing_requested'] = False
         self.settled_s = 0.
         self.log('destination_changed', dict(previous=previous, destination=destination,
-                 destination_z_m=mission.destination_surface_z_m, t_s=float(self.aircraft.data.time)))
+                 destination_z_m=self.mission['destination_z_m'],landing_valid=arrival_check.valid,
+                 advisory=arrival_check.reason,t_s=float(self.aircraft.data.time)))
         self.checkpoint(force=True)
         return dict(run_id=self.run_id, destination=self.mission['destination'],
-                    destination_z_m=self.mission['destination_z_m'])
+                    destination_z_m=self.mission['destination_z_m'],
+                    landing_valid=arrival_check.valid, advisory=arrival_check.reason)
     def accept_action(self,a:Action):
         if not self.active:raise HTTPException(409,'No active sortie')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
@@ -460,8 +477,8 @@ class Laboratory:
             p.set_command(cmd);row['applied']=True
             self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
         if p.data.time-self.last_command_time>5 and not self.lease_expired:
-            p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
-            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine shutdown; no flight rescue'))
+            p.set_command(dict(engine=p.command['engine'],collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
+            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective; keep bench engine and servos powered; no flight rescue'))
         p.step()
         if p.data.time-self.last_audit_t>=.05:
             self.last_audit_t=float(p.data.time)
@@ -474,7 +491,7 @@ class Laboratory:
             speed=float(np.linalg.norm(p.data.qvel[:3]))
             level=float(p.data.xmat[p.bids['airframe']].reshape(3,3)[2,2])>.98
             near=float(np.linalg.norm(p.data.qpos[:2]-dest))<2.
-            if self.left_ground and support>=3 and near and level and speed<.15 and not p.crashed:self.settled_s+=.05
+            if self.left_ground and self.mission.get('landing_requested',False) and self.mission.get('destination_landing_valid',True) and support>=3 and near and level and speed<.15 and not p.crashed:self.settled_s+=.05
             else:self.settled_s=0.
             if self.settled_s>=2:self.stop('supported stationary landing at destination')
 
@@ -655,7 +672,7 @@ async def operator(request:dict):
         lab.last_obs=None
     if 'stability_assist' in request:
         value=float(request['stability_assist'])
-        if not math.isfinite(value) or not 0<=value<=1:raise HTTPException(422,'Stability assistance must be 0–1')
+        if not math.isfinite(value) or not 0<=value<=1:raise HTTPException(422,'Stability assistance must be 0â€“1')
         lab.log('stability_assist_change',dict(before=lab.aircraft.stability_assist,after=value))
         lab.aircraft.stability_assist=value
     if 'authority' in request:
@@ -671,7 +688,7 @@ async def operator(request:dict):
         if lab.active:lab.checkpoint(force=True)
     if 'time_scale' in request:
         value=float(request['time_scale'])
-        if not .01<=value<=1 or not math.isfinite(value):raise HTTPException(422,'Time scale must be .01–1')
+        if not .01<=value<=1 or not math.isfinite(value):raise HTTPException(422,'Time scale must be .01â€“1')
         lab.time_scale=value;lab.clock_epoch+=1;lab.log('clock_scale',dict(time_scale=value))
     if lab.active:lab.checkpoint(force=True)
     lab.last_obs=None  # Operator status must update even when the physical clock is paused.

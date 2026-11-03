@@ -17,7 +17,7 @@ from urllib.request import urlopen
 
 ROOT=Path(__file__).resolve().parents[1]
 LOGS=ROOT/"pilot"
-HOST="192.168.55.121"
+HOST="127.0.0.1"
 PORT=8765
 
 
@@ -55,8 +55,7 @@ def supervise(host=HOST,port=PORT,interval=2):
             now=time.monotonic()
             online=server_alive(base)
             if not online and now-last_server_launch>=8 and (server is None or server.poll() is not None):
-                server=subprocess.Popen([sys.executable,"-u","-m","uvicorn","vtx.live_server:app",
-                    "--host",host,"--port",str(port),"--no-access-log"],
+                server=subprocess.Popen([sys.executable,"-u",str(ROOT/"scripts"/"launch_pc.py")],
                     cwd=ROOT,env=env,stdout=server_log,stderr=subprocess.STDOUT)
                 last_server_launch=now
                 stamp("Server launched PID "+str(server.pid))

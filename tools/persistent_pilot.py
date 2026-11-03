@@ -8,6 +8,7 @@ depend on /api/observe. Cabin level control defaults on and remains configurable
 from __future__ import annotations
 
 import argparse
+import socket
 from datetime import datetime, timezone
 import json
 import math
@@ -28,7 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTROLS = ROOT / "tools" / "pilot_controls.json"
 STATUS = Path(os.environ.get("LOCALAPPDATA", str(ROOT / "pilot"))) / "VTX" / "r6-live" / "pilot_status.json"
 EVENTS = STATUS.with_name("pilot_events.jsonl")
-BASE = "http://192.168.55.121:8765"
+BASE = "http://127.0.0.1:8765"
 SAFE = dict(engine=0.0, collective_deg=[0.0]*4,
             tilt_deg=[[0.0,0.0] for _ in range(4)],
             cabin_deg=[0.0,0.0,0.0], cabin_level=True)
@@ -255,6 +256,14 @@ def main():
     parser.add_argument("--base",default=BASE)
     parser.add_argument("--once",action="store_true",help="Single monitoring step")
     args=parser.parse_args()
+    # One local controller per PC, even if multiple launchers are running.
+    guard=socket.socket()
+    try:
+        guard.bind(("127.0.0.1",18766))
+        guard.listen(1)
+    except OSError:
+        print("VTX pilot already running; duplicate monitor exits",flush=True)
+        return
     pilot=Pilot(base=args.base)
     print("VTX PERSISTENT PILOT",args.base,"disarmed unless explicitly authorized",flush=True)
     while True:
