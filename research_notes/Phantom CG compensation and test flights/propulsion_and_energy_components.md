@@ -574,3 +574,253 @@ Use a **physics-honest baseline**: D2 fans, one TG600-class source, a 200 kg hig
 - No manufacturer operating maps for any selected component, so every pod, generator and buffer value is still SYNTHETIC, DERIVED or a MANUFACTURER value for a different machine.
 - Ground effect and suckdown, inlet-distortion losses and crossflow lift-fan behaviour need CFD or a rig test before P1 results mean anything for real hardware.
 - The mass ledger is the biggest single uncertainty, and it controls whether VTOL is even physically possible.
+
+## 9. Feasible design points (phantom-fx): what has to change for VTOL hover with margin and minutes of endurance
+
+Added 2026-11-03 at the owner's direction ("move towards feasibility ... it has to work"). The task here is to find design points that *do* close, not to repeat §6's "the baseline doesn't".
+
+Closure model (DERIVED; read-only scripts `fx4.py` / `fx5.py` kept in the session scratchpad):
+- Hover electrical power uses momentum theory with FM_open and η_motor·η_inverter = 0.931, plus 25 kW of accessories. Unequal fore/aft pod shares come from the CG.
+- Margins:
+  - **Collective reserve**: +20% thrust over weight, i.e. 1.315 × hover power.
+  - **Per-pod control margin**: each pod is sized for 1.30 × its own hover share (power ×1.482), so a reserve remains on the most heavily loaded pod while differential thrust is applied.
+- Buffer mass = max(peak deficit / pack kW/kg; 180 s of continuous hover deficit at 80% DoD; 60 kg minimum for generator-lag bridging).
+- Lift motors and inverters: 12 kW/kg on per-pod peak power.
+- Fuel: two 3-minute hovers plus 25 min wingborne at 550 kW_e, at 0.36 kg/kWh_e.
+- Packaging follows the owner-approved layout:
+  - buffer battery and avionics in the **nose bay**;
+  - fuel in the **tub centre bay near the CG** (x −0.06);
+  - battery x solved to put the CG on the pod centroid (x −0.025), capped at the forward limit of the nose bay (x 1.80).
+- The gross mass is iterated to the lowest fixed point (built-up mass ≤ assumed mass).
+- Mass-reduction set **R** (used in every FX point unless stated): structure 300 → 240 kg, legs 50 → 40, HV 50 → 40, interior 60 → 45, avionics 30 → 25.
+
+### Takeaway
+**VTOL hover with margin closes once the wheel fans get much bigger and the gross mass is allowed to rise to about 1.8–2.1 t. It does not close with fans that fit inside the A8's Ø0.72 m wheels, at any mass.**
+- **Disk area is the decisive lever.** With the D2 (0.60 m²) or Ø0.90 m-wheel (1.30 m²) fan-wheels, the built-up mass exceeds the assumed mass at every point up to 3.2 t, whatever the generator, cell or occupant count. Each extra kilogram costs more power than it can carry.
+- **Recommended point FX-A**: Ø1.10 m fan-wheels with a Ø0.90 m fan (2.36 m² total), a clean duct with a deployable 10° diffuser skirt (FM_open 0.90), an Arrano-class turbogenerator at take-off rating (900 kW_e for ≤5 min, 600 kW_e continuous; a proposed variant, not a product), and 311 kg of Amprius-class high-power cells in the nose.
+  - Closes at **≈1,915 kg**.
+  - Hover: **1.30 MW_e**. T/W 1.20 collective with 1.30 per pod. Generator-only T/W 0.78.
+  - **About 3 min of usable hover (2–5)**, limited by the 5-minute take-off rating and battery temperature; the energy limit is 9.6 min.
+- **Alternatives**:
+  - FX-A0, same as FX-A but with the existing 600 kW TG600: ≈2,090 kg, more buffer.
+  - FX-B, Ø1.20 m fan-wheels with a Ø1.0 m fan: ≈1,830 kg, the larger appearance cost.
+  - FX-C, a calibration loading of the FX-A hardware with one occupant and 60 kg of fuel: ≈1,760 kg, T/W 1.31, which is the recommended P1 hover-test case.
+- **Getting back to the 1,300 kg target with FX hardware needs about 300 kg more fixed-mass cuts** (≈180 kg for 1,500 kg). The levers that could provide it are listed below.
+- **New issue at FX masses**: wingborne flight. At 1.9 t the A9 wing (4.06 m²) gives a minimum wingborne speed of ≈76 m/s. Level flight at 80 m/s needs ≈615–765 kW of rear shaft power, more than the 600 kW continuous rating. Fix it with more continuous power, a larger rear exit area, or more wing area.
+
+### Cited Findings
+- **14 CFR 1.1** (REGULATORY_REFERENCE): rated take-off power for turboshaft engines is "limited in use to periods of not over 5 minutes for takeoff operation". OEI ratings of 30 s and 2 min exist for multi-engine rotorcraft — [14 CFR 1.1](https://www.law.cornell.edu/cfr/text/14/1.1). Basis for the TG take-off-rating window used for hover.
+- **Arrano**: 175.1 kg, up to 1,280 shp (≈955 kW shaft) (MANUFACTURER via secondary) — §3 above. **GENeUS 300**: 300 kW, 8–10 kW/kg, ≈96% (MANUFACTURER) — §3. **TG600**: two GENeUS on an Arrano, 600 kW (MANUFACTURER) — §3.
+- **Amprius SiCore high-power cell**: 370 Wh/kg, 10C uncooled, 15C cooled, 910 Wh/L (MANUFACTURER claim) — §4.
+- **Carbon tub benchmark**: the McLaren MP4-12C MonoCell is widely reported at ≈75–80 kg, and McLaren's later Monocage II is reported lighter (MANUFACTURER via press). No official per-model figure was found, so treat it as an order of magnitude — [The Drive](https://www.thedrive.com/news/36814/how-mclaren-builds-the-lightest-supercars-in-its-class); [Autocar India](https://www.autocarindia.com/car-news-amp/mclaren-unveils-next-gen-monocell-carbon-fibre-architecture-418444); [completecar.ie](https://completecar.ie/car-news/article/6775/McLaren-unveils-Monocage-II-carbon-tub)
+- **Aurora XV-24A**: turboelectric, variable-pitch ducted fans, ≈5.7 kN/m² disk loading (§3; MANUFACTURER/press). This is the nearest flown precedent for the FX disk loadings of 6–8 kN/m².
+- **Pereira (UMD)**: best shroud with a 10° diffuser, 0.5–0.72 D long and the smallest tip gap (DERIVED-LIT) — §1.
+- **A8 nose bay** (MEASURED-K; read-only Blender ray casts through `PHANTOM_A8_INTEGRATED_DUCTED_FACETED_CFRP_HULL` on a 40 mm grid, top-to-bottom skin):
+  - Gross hull envelope forward of the front bulkhead (`TUB_FRONT_BAY_CFRP_FULL_WIDTH_BULKHEAD`, x 0.84–0.96): 0.93 m³ (full width) or **0.81 m³ for |y| ≤ 0.70 m** (between the wheel wells), centroid x 1.48, z 0.43.
+  - Aft of the radiator core (`THERMAL_FRONT_CENTRAL_DUAL_RADIATOR_CORE`, x 1.04–1.32), x ≥ 1.34 and |y| ≤ 0.70: **0.49 m³, centroid x 1.72, z 0.41**.
+  - Envelope cross-sections for |y| ≤ 0.70:
+
+    | x (m) | Section (m²) |
+    |---|---|
+    | 1.34 | 0.69 |
+    | 1.66 | 0.62 |
+    | 1.98 | 0.42 |
+    | 2.30 | 0.11 |
+
+  - These are gross skin-to-skin envelopes. They include the bonnet ridges, dorsal air channels, splitters, brake-cooling ducts and the canard hinges, so the usable volume is smaller.
+- **Other A8 stations** (MEASURED-K, from `evidence/phantom/a8_inventory.json` object locations):
+  - battery/thermal bay x −0.06, z 0.26, volume 0.101 m³ (§5);
+  - seat bases x −0.20 and seat backs −0.49;
+  - rear motor bulkhead x −1.45;
+  - engine induction interfaces x −1.83 (y ±0.39, z 0.64);
+  - rear nozzles x −2.29;
+  - front bulkhead x 0.90;
+  - cockpit displays x 0.63.
+
+### Inferences
+**Design-point summary** (DERIVED; ISA sea level, out of ground effect; per-pod margin 1.30 and collective 1.20 included in sizing):
+
+| Point | What changes vs A8/A9 | Gross mass (kg) | CG x (m); front / rear pod share | Hover electrical (kW) | Peak +20% (kW) | T/W gen-only / gen+buffer | Buffer (kg), x | Fuel (kg) | Usable hover | Disk loading (kN/m²) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| D2 as drawn (any generator, R, 1–2 occupants) | none | **does not close** (built-up 1.87–2.37 t at an assumed 1.3 t; diverges) | — | — | — | — | — | — | none | 21+ |
+| Ø0.90 m fan-wheel (1.30 m², FM 0.8–0.9, any generator) | wheels Ø0.72 → 0.90 | **does not close** | — | — | — | — | — | — | none | — |
+| **FX-A (recommended)** | Ø1.10 m fan-wheels, Ø0.90 fan (2.36 m²), diffuser skirt, FM 0.90; TG900-TO; Amprius-class 10C; R | **1,915** [1,715–2,305] | −0.14; 0.231 / 0.269 | **1,304** | **1,706** | **0.78 / 1.20** | 311 at x 1.80 | 129 | **3 min** [2–5]; 9.6 min energy | 7.9 |
+| FX-A0 (existing generator) | as FX-A but TG600 (600 kW) | 2,091 | −0.025; 0.250 / 0.250 | 1,482 | 1,941 | 0.54 / 1.20 | 518 at x 1.37 | 136 | 3 min [2–5]; 7.3 min energy | 8.7 |
+| FX-B (max area) | Ø1.20 m fan-wheels, Ø1.0 fan (2.96 m²), FM 0.90; TG900-TO; 10C; R | 1,829 [1,656–2,041] | −0.25; 0.214 / 0.286 | 1,098 | 1,436 | 0.88 / 1.21 | 207 at x 1.80 | 122 | 3–5 min; 13 min energy | 6.1 |
+| FX-B0 | as FX-B but TG600 | 1,943 | −0.05; 0.246 / 0.254 | 1,190 | 1,557 | 0.62 / 1.20 | 370 at x 1.80 | 125 | 3 min; 7.8 min energy | 6.4 |
+| **FX-C (calibration loading of FX-A)** | FX-A hardware, 1 occupant, 60 kg fuel | **1,760** | −0.14 | 1,150 | — | 0.85 / **1.31** | 311 (as FX-A) | 60 | 3–5 min; 15.5 min energy | 7.3 |
+
+**FX-A mass and CG build-up** (DERIVED; labels per line):
+
+| Item | Mass (kg) [range] | x (m) | Label |
+|---|---|---|---|
+| Primary structure (lightened: tub at McLaren MonoCell class ≈80 + skin 24.9 m² × ≈3 kg/m² ≈75 + bulkheads/frames ≈60 + canopy ≈25) | 240 [200–300] | −0.15 | DERIVED/SYNTHETIC |
+| A9 wing cassette | 140.5 | −0.74 | DERIVED (repo; fixed part −0.792) |
+| Legs ×4 | 40 [35–55] | −0.025 | SYNTHETIC |
+| Fan-wheel pods ×4 without motors (thin-section tyre on a large-bore rim/slewing-bearing ring, fixed duct, Ø0.90 fan rotor, deployable diffuser skirt, tilt actuator) | 190 [150–230] | −0.025 | SYNTHETIC |
+| Lift motors + inverters ×4 (490 kW peak shaft each) | 163 [140–220] | −0.025 | DERIVED (12 kW/kg) |
+| Rear propulsors ×2 | 70 [50–90] | −2.29 | SYNTHETIC; position MEASURED-K |
+| HV distribution | 40 [30–60] | −0.30 | SYNTHETIC |
+| Thermal (radiator core and fans) | 40 [25–60] | +1.18 | SYNTHETIC; position MEASURED-K |
+| **Avionics, in nose bay** | 25 [20–35] | +1.70 | SYNTHETIC; owner-approved placement |
+| Interior | 45 [35–60] | −0.15 | SYNTHETIC |
+| Occupants ×2 | 170 | −0.25 | SYNTHETIC |
+| Turbogenerator (Arrano + 3 × GENeUS-class + mounts) | 310 [280–360] | −1.75 [−1.90…−1.45] | DERIVED (175 + 90–110 + 30–60) |
+| **Fuel, tub centre bay** | 129 [80–160] | −0.06 | DERIVED |
+| **Buffer, nose bay** | 311 [210–450] | +1.80 [1.40–1.90] | DERIVED |
+| **Total** | **≈1,915** | **CG −0.14** | |
+
+**Costs of each FX change:**
+
+- **Bigger fan-wheels** (Ø0.72 → Ø1.10 m wheel, Ø0.90 fan):
+  - **Mass**: +90 kg of pod against the A8 nominal 100 kg.
+  - **Appearance**: the largest change on the car. The wheels are 53% bigger in diameter, comparable to 43-inch off-road tyres; the fenders and wheel arches have to be redrawn; frontal area rises, perhaps to ≈2.3 m² (SYNTHETIC).
+  - **Packaging**:
+    - In the VTOL pose a horizontal Ø1.1 m pod centred at y ±1.04 spans y ≈0.49–1.59. It overlaps the body sill (|y| 0.55) unless the pods drop clear below the floor or the pivots move outboard to y ≈ ±1.25.
+    - The inlet needs ≥ about 0.5 D of clear air above it. The A8 fenders already block 161–166 of 168 inlet rays (§1).
+    - The road tyre becomes a thin-section tread on a large-bore rotating ring around a fixed duct, so the fan is decoupled from the tyre (needed for τ, §1). This is the main structural credibility risk.
+  - **Power**: at equal mass, −50% hover power against D2 (√(0.60/2.36)).
+- **Deployable 10° diffuser skirt** (σ_d ≈ 1.2, length ≈0.5 D ≈ 0.45 m, telescoping like the wing cassette):
+  - Mass: inside the pod allowance.
+  - Effect: FM_open from 0.80 to 0.90 is a 12% power saving (SYNTHETIC; Pereira-based).
+  - Appearance: hidden in road pose.
+- **TG900-TO** (an Arrano-based turbogenerator with three 300 kW generators, used at take-off rating for ≤5 min of hover):
+  - **Status**: a proposal; Safran sells the TG600 with two generators.
+  - **Cost**: +40 kg against a TG600.
+  - **Induction**: needs ≈3.2–3.8 kg/s of air, ≈0.026–0.032 m² at 100 m/s, **about 2× the A9 induction area of 0.0168 m²**.
+  - **Fuel**: ≈0.33 t/h at take-off power.
+  - **If it isn't available**: FX-A0 uses the existing TG600 at +176 kg gross.
+- **Nose-bay buffer and avionics** (owner approved):
+  - Moves 336 kg to x 1.70–1.80, which pulls the CG from about −0.6 m (generator aft, nothing forward) to −0.14 m.
+  - Pack volume: ≈80 kWh of Amprius-class cells (910 Wh/L) is ≈90 L of cells, ≈0.15 m³ packed, about 30% of the 0.49 m³ gross bay aft of the radiator.
+  - Cost: the frontal crash structure must protect the pack (a risk to record), and the HV runs to the aft generator are about 3.5 m long.
+- **Fuel in the tub centre bay** (x −0.06, 0.101 m³ = 81 kg of Jet-A at 0.80 kg/L):
+  - Burn-off moves the CG by less than 0.01 m.
+  - The nominal 129 kg needs a further ≈0.06 m³ near the CG (sills or tunnel); otherwise cut fuel to 80 kg, which is enough for the calibration and short-hop mission.
+- **Residual CG offset**: with the buffer at the nose limit, the CG stays at −0.14 m, so the rear pods carry 0.269 W against 0.231 W for the front pods. That is already in the motor sizing. Moving the generator forward to x −1.45 recovers only 0.04 m and saves 19 kg of gross mass.
+
+**FX-A sensitivities** (DERIVED; closure mass):
+
+| Change | Closure mass (kg) |
+|---|---|
+| FM 0.80 | 2,305 |
+| FM 0.85 | 2,033 |
+| FM 1.00 | 1,757 |
+| P50B-class cells instead of Amprius-class | **does not close** |
+| No R reductions | 2,171 |
+| One occupant | 1,715 |
+| Pods 150 kg | 1,821 |
+| Pods 230 kg | 2,012 |
+| Honeywell-class 1 MW generator (SYNTHETIC 380 kg) | 2,033 |
+
+FX-B: FM 0.80 → 2,023 kg; P50B cells → 1,984; one occupant → 1,656.
+
+**Usable hover, with margins** (DERIVED; FX-A):
+- **Energy**: the 404 kW continuous deficit drains 64 kWh usable in 9.6 min.
+- **Generator**: the take-off rating allows ≤5 min.
+- **Battery thermal**: the pack runs at ≈1.3 kW/kg (≈50% of its 10C rating), about +6 K/min adiabatic, so ≈5 min from 25 °C to the 60 °C limit.
+- **Recommend 3 min of usable hover (range 2–5)**. That covers a calibration hover, or a short hop of take-off, transition and landing on each end.
+- **Thermal load in hover** is about 160 kW: lift motors ≈64 kW and inverters ≈25 kW (into the fan streams), battery ≈32 kW, generator ≈36 kW.
+- **Generator trip in hover**: the buffer alone (≈800 kW cont, 1.2 MW for 30 s cooled) gives a T/W of about 0.6–0.75, enough for a cushioned descent but not for continued hover. Keep calibration hovers low, in a height-velocity "avoid" region defined per test.
+
+**Control margins** (DERIVED; FX-A; inertias scaled with mass from repo U10, SYNTHETIC: I_xx ≈ 970, I_yy ≈ 3,390 kg·m²):
+- Differential ±15% of the mean pod thrust gives roll ≈2.9 kN·m (≈3.0 rad/s²) and pitch ≈4.4 kN·m (≈1.3 rad/s²).
+- That still leaves the rear pods ≥ about 0.13 × share below their 1.30 rating at full collective reserve.
+- **Fan response**: a Ø0.90 m fixed-pitch fan at about 4,460 rpm has τ ≈ Iω/(2Q) ≈ 0.26 s for I ≈ 0.8 kg·m², slower than §1's 0.10 s. Variable-pitch blades, as on the XV-24A, recover a response of about 0.1 s.
+
+**Wingborne at FX masses** (DERIVED; same drag model as §7; rear-fan shaft power quoted at the A8 exit area of 0.089 m² and at a proposed 0.20 m²):
+
+| Mass (kg) | Stall, flapped / clean (m/s) | Shaft at 1.1 × V_s | Shaft at 80 m/s | Shaft at 90 m/s |
+|---|---|---|---|---|
+| 1,829 | 67.1 / 77.5 | 801 / 636 kW (74 m/s) | 735 / 592 kW | 884 / 717 kW |
+| 1,915 | 68.7 / 79.3 | 858 / 681 kW (76 m/s) | 765 / 615 kW | 910 / 737 kW |
+| 2,091 | 71.8 / 82.9 | 979 / 777 kW (79 m/s) | 995 / 790 kW | 966 / 780 kW |
+
+- The canard-only trim limit (≈70 m/s, repo) is no longer binding, because the wingborne minimum is above it.
+- The TG's 600 kW_e continuous rating (≈545 kW shaft after accessories) cannot hold level flight at 1.9 t.
+- **The FX points need at least one of these**:
+  - ≥750 kW_e continuous;
+  - rear exit area ≥0.20 m² **plus** ≥650 kW_e continuous;
+  - wing area +35% (4.06 → ≈5.5 m²);
+  - lift fans that tilt about Y so they can give cruise thrust (low-disk-loading fans are efficient propulsors at 60–90 m/s).
+
+**Fixed-mass cuts needed to close at the owner's lower targets** (DERIVED; FX-A / FX-B hardware, on top of R):
+
+| Target | FX-A | FX-B |
+|---|---|---|
+| 1,300 kg | −297 kg | −322 kg |
+| 1,500 kg | −182 kg | −163 kg |
+| 1,700 kg | −92 kg | −63 kg |
+
+Candidate cuts, all proposals:
+- one seat (−85 kg);
+- lift fans tilting about Y, replacing the rear propulsors (−70 kg, +≈20 kg for actuators);
+- a lighter wing cassette (140.5 → ≈100 kg, −40);
+- pods at the 150 kg low end (−40);
+- fuel 129 → 80 kg (−49).
+
+Together these are about −250 kg, which would reach ≈1.6 t. The 1,300 kg target is not credible with a turbogenerator on board.
+
+**Recommended `phantom-fx` parameter set** (FX-A nominal; the [range] is the sweep range; FX-B / FX-A0 / FX-C values in the last column so the sweep tool can switch points):
+
+| Parameter | FX-A recommended [sweep range] | Label | Other points |
+|---|---|---|---|
+| `fx_point` | "FX-A" | — | "FX-A0", "FX-B", "FX-B0", "FX-C" |
+| `mass_kg` | **1,915** [1,700–2,350] | DERIVED | A0 2,091; B 1,829; B0 1,943; C 1,760 |
+| `cg_x_m` (CAD frame) | **−0.14** [−0.30…−0.025] | DERIVED | A0 −0.025; B −0.25; B0 −0.05; C −0.14 |
+| `inertia_kg_m2` (Ixx, Iyy) | **970, 3,390** [±30%] | SYNTHETIC (repo U10 × m/1,300) | scale with mass |
+| Pod positions | FL/FR (1.54, ∓1.04, 0.42), RL/RR (−1.59, ∓1.04, 0.42); VTOL pose needs a lower pod or pivot y ±1.25 | MEASURED-K + proposal | same |
+| `wheel_outer_diameter_m` | **1.10** [1.00–1.20] | SYNTHETIC (proposal) | B 1.20 |
+| `fan_tip_radius_m` / `fan_hub_radius_m` | **0.45 / 0.12** [0.40–0.50 / 0.10–0.15] | SYNTHETIC | B 0.50 / 0.12 |
+| `fan_area_per_pod_m2` (total) | **0.591 (2.364)** [0.47–0.74] | DERIVED | B 0.740 (2.96) |
+| `duct_sigma_d` | **1.2** [1.0–1.3] (deployable 10° skirt, 0.45 m) | SYNTHETIC | same |
+| `fm_open` | **0.90** [0.80–1.00] | SYNTHETIC (Pereira-informed) | same |
+| `pod_hover_thrust_n` front / rear | **4,340 / 5,050** | DERIVED | B 3,840 / 5,130 |
+| `pod_thrust_max_n` (all pods identical, 1.30 × rear share) | **6,600** [5,600–7,400] | DERIVED | B 6,670; A0 6,660 |
+| `pod_shaft_power_hover_w` front / rear | **264,000 / 332,000** | DERIVED | B ≈225,000 / 303,000 |
+| `pod_shaft_power_max_w` (≤5 min) | **490,000** [440,000–650,000] | DERIVED | A0 503,000; B 450,000 |
+| `fan_tip_speed_m_s` / hover rpm | **210 / 4,460** [190–230 / 4,030–4,880] | DERIVED | B 210 / 4,010 |
+| `k_T` / `k_Q` (rear pod at 467 rad/s) | **2.32e-2 N/(rad/s)² / 3.26e-3 N·m/(rad/s)²** | DERIVED | — |
+| Torque hover / max | **710 / 1,050 N·m** [650–1,200] | DERIVED | — |
+| `fan_rotor_inertia_kg_m2` | **0.8** [0.4–1.2] | SYNTHETIC | B 1.1 |
+| `spool_time_s` | **0.26** fixed pitch [0.15–0.40]; **0.10** if variable pitch | DERIVED | — |
+| `tilt_rate_rad_s` | **1.26** [0.6–2.0] | MEASURED-K timing | — |
+| Motor + inverter mass per pod | **41 kg** [35–55] | DERIVED | B 37.5 |
+| Pod mass without motor (each) | **47.5 kg** [37.5–57.5] | SYNTHETIC | B 57.5 |
+| `generator_power_takeoff_w` (≤300 s) | **900,000** [600,000–950,000] | SYNTHETIC (proposed TG; 14 CFR 1.1 window) | A0/B0 600,000 |
+| `generator_power_cont_w` | **600,000** [600,000–750,000]; **≥750,000 needed for level flight at 1.9 t** | MANUFACTURER-anchored / DERIVED | same |
+| `generator_takeoff_rating_max_s` | **300** | REGULATORY_REFERENCE (definition) | same |
+| Generator mass / x | **310 kg / −1.75 m** [280–360 / −1.90…−1.45] | DERIVED | A0/B0 270 kg |
+| Generator efficiency, SFC, τ | **0.96, 0.36 kg/kWh_e, 1.0 s** (as §8) | as §8 | same |
+| Buffer chemistry | **Amprius-class Si-anode high-power** (P50B-class does not close FX-A) | MANUFACTURER claim | same |
+| `buffer_mass_kg` | **311** [210–450] | DERIVED | A0 518; B 207; B0 370 |
+| `buffer_position_body_m` | **(1.80, 0, 0.40)**, nose bay [x 1.40–1.90] | DERIVED from MEASURED-K envelope; owner approved | A0 x 1.37 |
+| `buffer_energy_j` total / usable | **2.90e8 / 2.32e8** (80.5 / 64.4 kWh) | DERIVED (259 Wh/kg pack, 80% DoD) | scale with mass |
+| `buffer_power_discharge_cont_w` | **806,000** (2.59 kW/kg) | DERIVED | scale |
+| `buffer_power_discharge_peak_w` (≤30 s, cooled) | **1,207,000** (3.88 kW/kg) | DERIVED | scale |
+| `buffer_temperature_max_k` | **333.15** | MANUFACTURER (P50B family; Amprius limit not retrieved) | same |
+| Avionics mass / x | **25 kg / (1.70, 0, 0.55)** nose bay | SYNTHETIC; owner approved | same |
+| `fuel_mass_kg` / position | **129 / (−0.06, 0, 0.26)** tub centre bay; bay holds 81 kg, rest in sills or tunnel near CG | DERIVED / MEASURED-K volume | C 60 |
+| `hover_usable_s` | **180** [120–300] | DERIVED | B 180–300; C 180–300 |
+| Collective reserve / per-pod margin | **1.20 / 1.30** | per owner direction (≥15–20%) | same |
+| Rear exit area | **0.089 m²** (A8) [0.089–0.25]; recommend sweep to 0.20 | MEASURED-K / proposal | same |
+| Min wingborne speed | **76 m/s** [72–80] | DERIVED | B 74; A0 79; C ≈73 |
+
+**Proposals, all needing owner approval:**
+1. Adopt FX-A, with Ø1.10 m fan-wheels and a Ø0.90 m fan, as the VTOL design reference. Fall back to FX-A0 if no take-off-rated turbogenerator variant can be sourced.
+2. Accept a gross mass of about 1.9 t (U1 range raised from 1,100–1,500 to ≈1,700–2,300 kg) or fund the ≈300 kg of cuts needed to get back to 1.3 t.
+3. Use a fan decoupled from the tyre: a fixed duct inside a large-bore rotating tyre ring, with variable-pitch blades for ≈0.1 s thrust response.
+4. Add a deployable diffuser skirt and keep the inlets clear of the fenders (≥0.5 D) in VTOL pose. Lower the pods or move their pivots outboard (y ±1.25).
+5. Use Si-anode high-power cells (Amprius-class) for the nose-bay buffer, with a frontal crash structure. P50B-class cells do not close.
+6. Enlarge the engine induction ≈2× (to 0.026–0.032 m²) for a 950 kW-shaft-class core.
+7. Fix wingborne flight at 1.9 t with one of: ≥750 kW_e continuous, rear exit area ≥0.20 m², wing area ≈5.5 m², or lift fans that also tilt about Y so they can give cruise thrust and replace the rear propulsors.
+8. Run P1 hover calibration at the FX-C loading (1 occupant, 60 kg fuel, ≈1,760 kg, T/W 1.31), at low height, with a generator-trip descent case scripted.
+
+### Gaps
+- TG900-TO does not exist as a product. The Arrano's take-off-rated electrical output, a three-generator integration and its maximum continuous rating are all unsourced.
+- Amprius high-power pack data are company claims. Its temperature limit, internal resistance and pack factor were not retrieved.
+- No structural design exists for a Ø1.1 m large-bore tyre ring with a fixed duct, so the pod masses of 150–230 kg are SYNTHETIC.
+- FM_open 0.90 with a deployable diffuser at full scale is unverified. The sensitivity is large: FM 0.80 gives +390 kg of gross mass.
+- The nose-bay envelope is gross: no internal clearance check was made against the bonnet ridges, dorsal channels, brake ducts or canard hinges. Crash-energy management with a nose battery is unassessed.
+- Inertias were scaled with mass; the bigger pods change the inertia distribution, so this needs the CAD mass ledger.
+- Ground effect and suckdown at disk loadings of 6–8 kN/m² near the ground are not modelled.
