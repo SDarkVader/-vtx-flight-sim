@@ -36,9 +36,33 @@ We have also experimented with conversational operation from a phone through an 
 
 For the active pilot requirements, see the [live fly-by-wire pilot contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md). Scripted paths, replay masquerading as live flight and unearned successful landings are not acceptable substitutes for genuine control.
 
+## Second vehicle: VTX Phantom
+
+The **Phantom** is VTX's second vehicle: an angular two-seat road car with four tilting wheel-fan pods, retractable wings, flaps, ailerons, nose canards, telescopic landing legs and two rear boosters. It is an opt-in, physically modelled variant (`src/vtx/phantom/`) and does **not** change the four-fan aircraft.
+
+**Models.** Every Phantom number in `inputs/phantom_parameters_v1.json` carries a provenance label, mostly `SYNTHETIC_UNVALIDATED`; none is validated aircraft performance.
+
+| Airframe option in the sim | Variant id | Wing cassette | Status |
+|---|---|---|---|
+| Phantom FX-A A10 · CURRENT PROTOTYPE | `phantom-fx` | A10 | Current prototype. FX-A propulsion and packaging design point (1.10 m fan-wheels, TG900 turbogenerator, nose battery), about 1,897 kg. |
+| Phantom A10 · as drawn reference | `phantom` | A10 | The CAD as drawn, about 1,906 kg. Cannot lift off (thrust ceiling about 0.53 of weight); kept as the reference. |
+| Phantom A9 · EARLIER VERSION | `phantom-a9` | A9 | Earlier wing cassette, kept for comparison with earlier flights. |
+| Phantom FX-A A9 · EARLIER VERSION | `phantom-fx-a9` | A9 | FX-A with the earlier cassette. All 2026-11-03 campaign flights used this configuration. |
+
+The **A10 split-level wing cassette** is the corrected wing configuration: both wings deploy at one height (A9 stacked them 118 mm apart), slide stroke 1.205 m, span 4.86 m, +9 kg. It passed a full clearance sweep with zero collisions and a MuJoCo check of all 28 joints. Source model: `assets/derived/phantom-a10-cassette.blend`; browser model: `public/assets/phantom-a10.glb`; Blendstra project *VTX Phantom A10 — Cassette model*.
+
+**How it is flown in the simulation.**
+
+1. Pick a Phantom option under **LOWER FRAME**, set departure A and destination B on the map, then start the sortie. The mission validator uses the Phantom's own footprint and wing span.
+2. Fly it through the **Phantom FBW** panel (click **Take control** first; the panel is inert until engaged) or through the API with schema `phantom-fbw-1`. Humans and AI pilots use the same commands: collective, vertical-speed hold, pitch/roll/yaw, pod tilt (VTOL/road), legs, brakes, wing deploy/stow and canards.
+3. The FBW has no position hold. A pilot must keep sending commands: if none arrives within 5 s of sim time, the command lease aborts and the fans brake.
+4. Every run writes evidence to its run folder: the exact parameters and mass ledger, a 100 Hz step log, events with each pilot decision and its reason, and crash rings.
+
+**Flight status (simulation only).** The FX-A has hovered and flown a 200 m hop to a 0.40 m/s touchdown 1.4 m from the target, but it has not passed the "controllable" gate (attitude overshoot, a pitch oscillation and weak yaw). Wings-deployed flight and speeds above 5 m/s have not been flown, and the A10 cassette has so far only been tested on the ground (deploy, lock and stow). See the [Phantom sim integration guide](docs/phantom/PHANTOM_SIM_INTEGRATION.md), the [A10 wing revision](docs/phantom/A10_WING_SYMMETRY_REVISION.md) and the [2026-11-03 flight test](docs/phantom/PHANTOM_FLIGHT_TEST_20261103.md).
+
 ## Development status and engineering basis
 
-The current prototype includes a browser-based interactive flight laboratory, instrumented aircraft dynamics, four independently controllable ducted fans, manual controls, AI control interfaces, contact/collision handling and retained flight evidence. Alternate aircraft configurations and improved world presentation are experimental.
+The current prototype includes the Phantom second vehicle described above, a browser-based interactive flight laboratory, instrumented aircraft dynamics, four independently controllable ducted fans, manual controls, AI control interfaces, contact/collision handling and retained flight evidence. Alternate aircraft configurations and improved world presentation are experimental.
 
 The underlying model is a conditional simulation. Its real-world aircraft parameters have **not** all been measured or validated. Recorded launches, airborne flights and collisions must not be confused with reliable autonomous navigation, successful end-to-end missions or real aircraft flightworthiness.
 

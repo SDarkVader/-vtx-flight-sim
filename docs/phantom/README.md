@@ -1,6 +1,6 @@
 # VTX Phantom — minimum functional flight rig
 
-**Status:** design/implementation documents only. The Phantom has not yet flown. This package is not an airworthiness, CFD or structural approval.
+**Status:** the Phantom is VTX's second vehicle and runs in the simulator ([integration guide](PHANTOM_SIM_INTEGRATION.md)). The current prototype is **Phantom FX-A A10** (`phantom-fx`); the A9 cassette stays selectable as the earlier version. The FX-A has hovered and flown a 200 m hop in simulation but has not passed the controllability gate. This package is not an airworthiness, CFD or structural approval.
 
 **Design lock:** VTX Phantom angular two-seat vehicle, driver and passenger only; retractable wings hidden behind the body, two inboard flaps, two outboard ailerons, two nose canards, four road/wheel thrusters, two rear boosters, telescopic landing legs, actual engine/radiator/brake cooling and side pressure-relief vents. Rolling or VTOL take-off/landing; minimum 200 mph road *top speed* and 400 mph flight *maximum target*, **neither a mandatory take-off nor cruise speed**.
 
@@ -27,7 +27,9 @@ Existing code is already split into **`src/vtx/aircraft.py` (MuJoCo), `src/vtx/a
 3. [Synthetic component specification](SYNTHETIC_COMPONENTS.md) — substitute missing hardware with accountable code, not magic forces.
 4. [Phased testing and acceptance](TEST_PLAN.md) — independent flight progression and measurable failure tests.
 5. [Wing cassette Stage 1 study](WING_CASSETTE_STUDY.md) — measured A8 defects, load envelope, root-joint comparison and the configuration decision for the retractable wing.
-6. [A9 wing cassette revision](A9_WING_CASSETTE_REVISION.md) and [A9 MuJoCo handover](A9_MUJOCO_HANDOVER.md) — built telescopic cassette, flaps, ailerons and canards, verified clearances, component sizing and integration data.
+6. [A9 wing cassette revision](A9_WING_CASSETTE_REVISION.md) and [A9 MuJoCo handover](A9_MUJOCO_HANDOVER.md) — earlier version: built telescopic cassette, flaps, ailerons and canards, verified clearances, component sizing and integration data.
+7. [A10 wing symmetry revision](A10_WING_SYMMETRY_REVISION.md) — the corrected, current wing configuration: split-level cassette with both wings at one height.
+8. [Phantom sim integration](PHANTOM_SIM_INTEGRATION.md), [2026-11-03 flight test](PHANTOM_FLIGHT_TEST_20261103.md) and [cockpit log](PHANTOM_COCKPIT_LOG_2026-11-03.md) — how it is flown in the simulation and what has been flown.
 
 **Version boundary:** documentation on a separate `docs/phantom-flight-systems-20261102` branch; preserve the currently flown four-fan aircraft, any live pilot checkpoints and the working-tree changes on `fix/mobile-flight-view-performance`.
 
