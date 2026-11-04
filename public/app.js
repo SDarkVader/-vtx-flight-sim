@@ -18,6 +18,8 @@ import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
 import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=2';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=4';
+import {createVisualAirTraffic} from './vtx-env/visual-air-traffic.js?v=1';
+import {runwayCircuit} from './vtx-env/visual-air-routes.js?v=1';
 import {attachPhantom,updatePhantom} from './vtx-env/phantom-look.js?v=2';import {createPhantomPanel} from './phantom-controls.js?v=2';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
@@ -60,6 +62,8 @@ const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
 const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
 const sky=buildSky(scene,renderer,{quality}),environment={};
+let visualTraffic=null;
+const trafficPreviewEnabled=new URLSearchParams(location.search).has('trafficPreview');
 const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 function plane(w,h,color,x,y,z){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({color,roughness:.95}));m.position.set(x,y,z);m.receiveShadow=true;scene.add(m);return m;}
@@ -72,6 +76,18 @@ function updateMarkers(){markerA.position.set(departure[0]-5,departure[1]+4,surf
 function buildWorld(w){
  console.log('VTX: terrain building');
  world=w;
+ if(trafficPreviewEnabled&&!visualTraffic){
+  // Deliberately opt-in until the CAD local-CG reference and manoeuvre envelopes are verified.
+  // A local zero pivot is a temporary display reference, NOT a validated centre of gravity.
+  const circuit=runwayCircuit({runwayId:'08/26',height:65,extension:70,lateral:90});
+  const pts=circuit.points;
+  const waypoints=pts.map((p,i)=>({position:p,speed:i===0||i===pts.length-1?0:18,
+    duration:i===0?0:Math.max(2,Math.hypot(...p.map((v,j)=>v-pts[i-1][j]))/14)}));
+  visualTraffic=createVisualAirTraffic({THREE,GLTFLoader,scene,aircraft:[{
+    id:'phantom-circuit-preview',asset:'/assets/phantom-a10.glb',
+    cgLocal:[0,0,0],waypoints,phaseSeconds:0
+  }]});
+ }
  // Ground uses the same heightfield samples as the physics terrain; the distant landscape lies outside the +/-500 m test area.
  scene.add(buildTerrain(w));
  const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,quality.forest));const ground=createGround(w,hills.mesh);
@@ -372,6 +388,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
   else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);
  }
+ visualTraffic?.update(now/1000);
  sky.update(camera,now/1000);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);environment.serviceRoads?.update(now/1000,last?.observation?.gnss_xy_m);
   aircraftFx?.update(last?.observation?.rotor_rpm,now/1000);
  if(model&&modelReady&&!window.__vtxNoRender)renderer.render(scene,camera);
