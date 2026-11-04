@@ -57,7 +57,7 @@ class AsyncFlightRecorder:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 with path.open("a", encoding="utf-8") as handle:
                     handle.write(json.dumps(event, ensure_ascii=False, allow_nan=False,
-                                            separators=(",", ":")) + "\\n")
+                                            separators=(",", ":")) + "\n")
             except (OSError, ValueError, TypeError, KeyError):
                 self.write_errors += 1
             finally:
