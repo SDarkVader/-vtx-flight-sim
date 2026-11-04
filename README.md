@@ -4,7 +4,7 @@
 
 VTX puts the player in control of experimental VTOL aircraft in an interactive 3D world: the original four-fan aircraft and the **VTX Phantom A10**, a two-seat road, VTOL and wing-borne vehicle design. Take off, hover, manoeuvre around terrain and structures, navigate to a chosen destination and attempt a controlled landing. Aircraft movement is produced by the live physics simulation—not by a scripted flight path or a decorative animation.
 
-**Status:** playable experimental prototype / flight-test game, **not a finished commercial release**. The repository is private. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
+**Status:** playable experimental prototype / flight-test game, **not a finished commercial release**. This GitHub repository is currently public. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
 
 ## Play the game
 
@@ -13,6 +13,8 @@ VTX puts the player in control of experimental VTOL aircraft in an interactive 3
 - **Missions and exploration:** choose valid departure and destination positions, fly through the test environment, avoid obstacles and attempt takeoff, navigation and landing.
 - **Real consequences:** mass, gravity, inertia, actuator limits, contact dynamics and collisions affect each flight. Failures and crashes are recorded rather than concealed.
 - **Flight evidence:** inspect telemetry, mission traces, controller actions and post-flight reports to understand what happened.
+
+The [flight index](docs/FLIGHT_INDEX.md) lists each retained sortie by run ID and model, with a compact summary and a pointer to its PC data. The [single cockpit guide](docs/UNIFIED_RUNTIME.md) explains the vehicle selector and local archive.
 
 The 3D environment, visuals, controls and AI-pilot integration are under ongoing development. Some aircraft behaviours and flight scenarios remain uncalibrated or unproven.
 

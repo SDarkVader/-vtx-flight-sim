@@ -6,6 +6,18 @@
 
 #viewport>canvas{touch-action:none}#view-tools{position:absolute;right:16px;top:112px;z-index:3;display:flex;gap:4px}#view-tools button{background:#142d36e8;color:#e5f5f2;border-color:#81adad80;font-size:12px;min-width:38px;padding:8px;touch-action:manipulation}
 
+#model-selector-dialog{max-width:520px;width:calc(100vw - 32px);padding:28px;border-color:#6aa99b;box-shadow:0 18px 70px #0009}
+#model-selector-dialog h2{font-size:26px;margin:0 0 10px}
+#model-choice-label{margin:22px 0 8px;color:#a8d7cd;font-size:12px}
+.model-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.model-choice-card{min-height:54px;text-align:left;padding:10px 12px;background:#0d1820;border:1px solid #476169;line-height:1.35;font-size:12px}
+.model-choice-card[aria-pressed="true"]{border-color:#7cdfcb;background:#194238;color:#e9fffa;box-shadow:inset 0 0 0 1px #7cdfcb}
+#model-selector-dialog .model-selector-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px}
+#model-selector-dialog .primary{width:auto;min-width:160px;margin-top:20px;display:block}
+#model-choice-cancel{margin-top:20px}
+@media(max-width:600px){.model-choice-grid{grid-template-columns:1fr}.model-choice-card{min-height:42px}}
+#model-choice-status{min-height:1em;color:#f1c49d}
+
 
 /* Phone visual-review layout: full-width scene, then independently readable controls.
    No changes to simulation logic, flight authority or physical collision. */
@@ -17,7 +29,7 @@
   .status { margin: 0; gap: 7px; font-size: 9px; letter-spacing: .5px; min-width: 0; }
   .status #clock { white-space: nowrap; }
   .header-actions { width: 100%; margin-left: 0; display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; }
+    grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; }
   .header-actions button { white-space: normal; overflow-wrap: anywhere; min-height: 34px;
     padding: 5px 2px; font-size: 10px; line-height: 1.15; }
   main { width: 100%; height: auto; min-height: 0; display: flex; flex-direction: column;

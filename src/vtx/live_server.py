@@ -737,7 +737,9 @@ async def pilot_openai_decision(prompt:PilotPrompt):
 async def release_identity():
     loaded=actual_release(lab.aircraft.provenance)
     return dict(expected=EXPECTED_RELEASE,loaded=loaded,matches=(loaded==EXPECTED_RELEASE),
-                enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1')
+                enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1',
+                selection_allowed=os.environ.get('VTX_ENFORCE_RELEASE')!='1',
+                supported_variants=['r6','r6_variator','light','baseline','phantom-fx','phantom','phantom-a9','phantom-fx-a9'])
 @app.get('/api/view')
 async def view():return lab.view()
 @app.get('/api/validate')
