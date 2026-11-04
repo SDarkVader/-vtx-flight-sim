@@ -30,17 +30,19 @@ export function scheduleVisualRoute(points,{cruiseSpeed,difficulty='normal'}={})
   });
   return buildTrafficRoute(waypoints);
 }
-export function runwayCircuit({runwayId='08/26',height=90,extension=220,lateral=180}={}){
+export function runwayCircuit({runwayId='08/26',height=35,extension=55,lateral=110,usableHalfLength=350}={}){
   const r=runway(runwayId);
-  if(!(height>0&&extension>0&&lateral>0))throw Error('Invalid circuit geometry');
+  if(!(height>0&&extension>0&&lateral>0&&usableHalfLength>0))throw Error('Invalid circuit geometry');
   const [ax,ay]=r.axis, [cx,cy]=r.center;
   const x=(along,side,z)=>[cx+ax*along-ay*side,cy+ay*along+ax*side,z];
-  const half=r.length/2;
+  // Only the central runway portion belongs to the +/-500 m physics region.
+  // The visual runway is longer. Clipping the preview does not alter its physical model.
+  const half=Math.min(r.length/2,usableHalfLength);
   return {kind:'visual-circuit',runwayId,points:[
-    x(-half,0,0),x(-half*.4,0,0),x(half*.35,0,height*.45),
+    x(-half,0,0),x(-half*.55,0,0),x(0,0,0),x(half*.4,0,height*.5),
     x(half+extension,0,height),x(half+extension,lateral,height),
     x(-half-extension,lateral,height),x(-half-extension,0,height),
-    x(-half*.65,0,height*.45),x(-half*.45,0,0)
+    x(-half*.65,0,height*.5),x(-half*.45,0,0)
   ]};
 }
 export function holdingPattern({fix=[0,0,120],headingDeg=90,legLength=250,width=100}={}){

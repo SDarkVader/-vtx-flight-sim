@@ -19,6 +19,7 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
       // Translation places the aircraft's declared local CG at the rotation origin.
       gltf.scene.position.set(-spec.cgLocal[0],-spec.cgLocal[1],-spec.cgLocal[2]);
       pivot.add(gltf.scene);
+      actor.rig = spec.onLoad?.(gltf.scene);
       actor.ready = true;
     }, undefined, error => console.warn('Traffic model unavailable', spec.id, error));
   }
@@ -36,9 +37,12 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
         const next = sampleTrafficRoute(route, Math.min(route.duration,t+.25));
         const delta = Math.atan2(Math.sin(next.heading-prev.heading),Math.cos(next.heading-prev.heading));
         const turnRate = delta / Math.max(.001,Math.min(route.duration,t+.25)-Math.max(0,t-.25));
-        const bank = Math.max(-.45,Math.min(.45,Math.atan2(pose.speed*turnRate,9.80665)));
+        // Positive heading rate is a left turn. In X-forward/Y-left/Z-up,
+        // bank the LEFT wing down by applying negative body-X rotation.
+        const bank = Math.max(-.45,Math.min(.45,-Math.atan2(pose.speed*turnRate,9.80665)));
         const roll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),bank);
         pivot.quaternion.copy(yaw).multiply(pitch).multiply(roll);
+        if(actor.ready)spec.onUpdate?.(actor.rig, pose, {time:t,bank});
       }
     },
     dispose() { for (const a of actors) { scene.remove(a.root); a.root.clear(); } }

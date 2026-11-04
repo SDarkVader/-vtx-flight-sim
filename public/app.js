@@ -18,8 +18,9 @@ import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
 import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=2';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=4';
-import {createVisualAirTraffic} from './vtx-env/visual-air-traffic.js?v=1';
-import {runwayCircuit} from './vtx-env/visual-air-routes.js?v=1';
+import {createVisualAirTraffic} from './vtx-env/visual-air-traffic.js?v=2';
+import {runwayCircuit} from './vtx-env/visual-air-routes.js?v=2';
+import {attachVisualPhantom,animateVisualPhantom} from './vtx-env/visual-phantom-animation.js?v=1';
 import {attachPhantom,updatePhantom} from './vtx-env/phantom-look.js?v=2';import {createPhantomPanel} from './phantom-controls.js?v=2';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
@@ -77,16 +78,26 @@ function buildWorld(w){
  console.log('VTX: terrain building');
  world=w;
  if(trafficPreviewEnabled&&!visualTraffic){
-  // Deliberately opt-in until the CAD local-CG reference and manoeuvre envelopes are verified.
-  // A local zero pivot is a temporary display reference, NOT a validated centre of gravity.
-  const circuit=runwayCircuit({runwayId:'08/26',height:65,extension:70,lateral:90});
-  const pts=circuit.points;
-  const waypoints=pts.map((p,i)=>({position:p,speed:i===0||i===pts.length-1?0:18,
-    duration:i===0?0:Math.max(2,Math.hypot(...p.map((v,j)=>v-pts[i-1][j]))/14)}));
-  visualTraffic=createVisualAirTraffic({THREE,GLTFLoader,scene,aircraft:[{
-    id:'phantom-circuit-preview',asset:'/assets/phantom-a10.glb',
-    cgLocal:[0,0,0],waypoints,phaseSeconds:0
-  }]});
+  // Phantom FX-A A10 full-fuel/two-occupant ground CG, calculated from
+  // src/vtx/phantom/ledger.py (mass_properties), in GLB X-forward/Y-left/Z-up.
+  const cgLocal=[-0.15156246846624952,0.00004531509472356366,0.5529781802070567];
+  const circuit=runwayCircuit({runwayId:'08/26',height:35,extension:55,lateral:110});
+  const pts=circuit.points.map(p=>[p[0],p[1],p[2]+cgLocal[2]]);
+  // 80 m/s rotation marker is above the A10's documented 66.4 m/s stall
+  // estimate. This is a visual trajectory, not a takeoff performance prediction.
+  const speeds=[0,42,80,80,70,60,60,50,40,0];
+  const waypoints=pts.map((p,i)=>({
+    position:p,speed:speeds[i],
+    duration:i===0?0:Math.max(.25,2*Math.hypot(...p.map((v,j)=>v-pts[i-1][j]))/(speeds[i-1]+speeds[i]))
+  }));
+  if(pts.every(p=>Math.abs(p[0])<w.half_m&&Math.abs(p[1])<w.half_m)){
+    visualTraffic=createVisualAirTraffic({THREE,GLTFLoader,scene,aircraft:[{
+      id:'phantom-circuit-preview',asset:'/assets/phantom-a10.glb',
+      cgLocal,waypoints,phaseSeconds:0,
+      onLoad:attachVisualPhantom,
+      onUpdate:(rig,pose,att)=>animateVisualPhantom(rig,pose,{...att,cgHeight:cgLocal[2]})
+    }]});
+  }else console.warn('Visual circuit outside physics terrain; preview not loaded');
  }
  // Ground uses the same heightfield samples as the physics terrain; the distant landscape lies outside the +/-500 m test area.
  scene.add(buildTerrain(w));
