@@ -24,7 +24,7 @@ A two-seat, angular, black-and-gold flying car in Vader's Taxis colours. It driv
 
 The current prototype is the **Phantom FX-A A10** (bigger fan-wheels, a 900 kW take-off turbogenerator, a nose battery). The as-drawn A10 and the earlier A9s are in the garage too.
 
-**Where it's at: first lift-offs.** In the sim the Phantom has left the ground on its wings, wheels off at 60 to 106 m/s depending on the build, with a best climb of about 32 m. Then it fumbles the pitch. Getting it to fly level is the boss fight right now. A rolling start with the boosters lit does 0 to 100 km/h in 5.3 s. As drawn, the lift fans can't hover it yet (thrust-to-weight 0.52), which is what the FX-A redesign is going after.
+**Where it's at: first lift-offs.** The Phantom has left the ground on its wings in the sim: wheels off at 60 to 106 m/s depending on the build, best climb about 32 m. Holding the nose steady through the climb is the next boss fight. A rolling start with the boosters lit does 0 to 100 km/h in 5.3 s. Hovering on the fans takes more lift than the as-drawn wheel fans give (thrust-to-weight 0.52); the FX-A prototype changes the fans and the power plant, and its test record is in the [flight-test report](docs/phantom/PHANTOM_FLIGHT_TEST_20261103.md).
 
 You can swap in new parts: a tailplane that works as a stabilator, turbine boosters built from real engine figures (four PBS TJ150s or one Williams FJ33-5A), and a wing mounted at an angle. They're switches in `inputs/phantom_parameters_v1.json` under `proposals.*`, all off by default.
 
