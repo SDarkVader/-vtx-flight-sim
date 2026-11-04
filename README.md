@@ -1,10 +1,12 @@
 # VTX — Vader's Taxis
 
+**A proprietary, physics-driven 3D VTOL flight game in active development.**
+
 **An experimental flying-car game where the physics is the boss.** Build it, fly it, break it, fix it, then hand the controls to an AI test pilot and watch what happens.
 
-VTX is a physics-driven 3D flight game in active development. You, or an AI pilot, fly experimental VTOL machines through a live simulation: no scripted paths, no animation tricks. Every lift, stall and crash comes from mass, forces and actuator limits, and every flight is recorded so you can see exactly what went right (or spectacularly wrong).
+You, or an AI pilot, fly experimental VTOL machines through a live simulation: no scripted paths, no animation tricks. Every lift, stall and crash comes from mass, forces and actuator limits, and every flight is recorded so you can see exactly what went right (or spectacularly wrong).
 
-**Status:** playable experimental prototype / flight-test game, not a finished release. The repository is private. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
+**Status:** playable experimental prototype / flight-test game, **not a finished commercial release**. The repository is private. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
 
 ## The idea
 
@@ -40,11 +42,15 @@ The original: four independently articulated ducted fans. Hover, manoeuvre aroun
 ## Fly it
 
 - **Manual:** the browser interface, keyboard and live cockpit instruments.
-- **AI pilot:** an AI gets live observations and sends the same fly-by-wire commands you do. It has to respond to the simulation, not follow a precomputed route.
-- **Voice:** the Phantom panel has a push-to-talk **🎙 Voice** button (Chrome or Edge). Say "boost fifty percent", "take-off configuration", "downforce", "nose up eight" or "status" and it does it, then talks back. Risky moves like stowing the wings need a spoken "confirm". It's a fixed command set; talking to an AI pilot like a crew chief currently runs through an external phone integration. See [voice pilot](docs/VOICE_PILOT.md).
+- **AI-piloted flight:** connect an AI pilot that receives live observations and issues actual fly-by-wire commands. The pilot must respond to the evolving simulation rather than follow a precomputed route. For the active pilot requirements, see the [live fly-by-wire pilot contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md). Scripted paths, replay masquerading as live flight and unearned successful landings are not acceptable substitutes for genuine control.
+- **Voice:** the Phantom panel has a push-to-talk **🎙 Voice** button (Chrome or Edge). Say "boost fifty percent", "take-off configuration", "downforce", "nose up eight" or "status" and it does it, then talks back. Risky moves like stowing the wings need a spoken "confirm". It's a fixed command set. See [voice pilot](docs/VOICE_PILOT.md).
 - **Missions and exploration:** choose a departure and destination, fly the test environment, dodge obstacles, try to take off, navigate and land.
 - **Real consequences:** mass, gravity, inertia, actuator limits and contact all matter, and crashes are recorded, not hidden.
 - **Flight evidence:** telemetry, mission traces, controller actions and post-flight reports. An external AI pilot's model calls can be logged too, with [`pilot_exchange`](docs/PILOT_EXCHANGE_AUDIT.md) and the opt-in [OpenAI pilot recorder](docs/OPENAI_PILOT_RECORDER.md).
+
+The 3D environment, visuals, controls and AI-pilot integration are under ongoing development. Some aircraft behaviours and flight scenarios remain uncalibrated or unproven.
+
+We have also experimented with conversational operation from a phone through an **external remote-command integration**, including live actuator demonstrations, flight observations and engineering changes. That workflow is experimental; it is **not a claim that a standalone in-game voice-chat feature has shipped**.
 
 ## Getting started: Windows development build
 
@@ -56,15 +62,19 @@ This is a private developer/tester build, not a public download.
 4. Allow the first launch to install the packages listed in `requirements.txt`.
 5. Open `http://127.0.0.1:8765/` if it does not open automatically; keep the launcher running.
 
-See [live access and manual controls](docs/LIVE_ACCESS.md) for keyboard mappings and flight modes. Any hosted Vercel Sandbox URL you've been sent is temporary and not a permanent game service.
+See [live access and manual controls](docs/LIVE_ACCESS.md) for the current keyboard mappings, flight modes and operational limits. Any previously shared hosted Vercel Sandbox URL is temporary and **not** a permanent game service.
 
 ## Under the hood
 
-A Python server runs a 6-DOF rigid-body physics model (MuJoCo) and a browser front end draws what the physics says. Forces, torques, mass properties and actuators drive the motion you see. The vehicle numbers are design values we keep tuning as we learn, so expect them to move.
+The current prototype includes a browser-based interactive flight laboratory, instrumented aircraft dynamics, four independently controllable ducted fans, manual controls, AI control interfaces, contact/collision handling and retained flight evidence. Alternate aircraft configurations and improved world presentation are experimental.
+
+The underlying model is a conditional simulation. Its real-world aircraft parameters have **not** all been measured or validated. Recorded launches, airborne flights and collisions must not be confused with reliable autonomous navigation, successful end-to-end missions or real aircraft flightworthiness.
+
+The simulation is built around a 6-DOF Newton–Euler / MuJoCo physics model, with a Python server and browser-based game interface. Modelled forces, torques, mass properties and actuators are intended to drive the rendered motion.
 
 Engineering tools for the Phantom: `tools/phantom/phantom_campaign.py` runs the performance campaign (acceleration, take-off, boosters), and `tools/phantom/a10_cg_placement.py` checks how adding or moving hardware shifts the centre of gravity. CI runs the full test suite (`PYTHONPATH=src python -m pytest -q`) on every push and pull request.
 
-**Documents:**
+**Primary project documents:**
 
 - [VTX Phantom overview](docs/phantom/README.md) and [Phantom in the simulator](docs/phantom/PHANTOM_SIM_INTEGRATION.md)
 - [A10 first take-offs and flights](docs/phantom/A10_FIRST_FLIGHTS_20261104.md), [A10 visual pass](docs/phantom/A10_VISUAL_PASS.md) and [A10 airflow and CG, stage 1](docs/phantom/A10_AIRFLOW_CG_STAGE1.md)
@@ -73,7 +83,8 @@ Engineering tools for the Phantom: `tools/phantom/phantom_campaign.py` runs the 
 - [AI pilot operating contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md)
 - [Game and pilot development mission](COLIN_MISSION.md)
 - [Development roadmap and checklist](docs/VADERS_TAXIS_ROADMAP_TODO.md)
-- [Experiment findings](evidence/EXPERIMENT_REPORT.md) and [flight evidence](evidence/)
+- [Experiment findings](evidence/EXPERIMENT_REPORT.md)
+- [Flight evidence and recorded tests](evidence/)
 
 The original aircraft concept and source provenance are documented in the engineering baseline; externally sourced models and reference materials do not automatically become VTX-owned assets. VTX is separate from *The Node* project.
 
