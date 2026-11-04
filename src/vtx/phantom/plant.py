@@ -625,7 +625,11 @@ class PhantomAircraft:
         poses['cabin'] = dict(position=np.round(d.xpos[self.bids['airframe']] + Rb @ seat, 5).tolist(), quaternion_wxyz=poses['airframe']['quaternion_wxyz'])
         return dict(t_s=float(d.time), variant=self.variant, config_sha256=self.P.config_sha256, body_poses=poses, provenance=self.provenance, events=self.events[-20:],
                     phantom=dict(joints=joints, fan_rpm=[abs(self.joint(f'pod_{k}_fan')[1]) * 60 / (2 * math.pi) for k in PODS],
-                                 wheel_rad_s=[self.joint(f'pod_{k}_wheel')[1] for k in PODS], wing_state=dict(self.wing_state)),
+                                 wheel_rad_s=[self.joint(f'pod_{k}_wheel')[1] for k in PODS], wing_state=dict(self.wing_state),
+                                 # render-only context for the booster glow / vectoring cowl (no effect on physics)
+                                 booster_thrust_max_n=float(self.booster.thrust_max),
+                                 booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg']),
+                                 fan_rpm_max=float(self.fan.omega_max * 60 / (2 * math.pi))),
                     mass=mp, propulsors=[dict(pod=k, cmd_n=(self.alloc.get('thrust') or [0] * 4)[i], **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.fan_state[i].items()},
                                               motor_torque_nm=float(self.motor_torque[i])) for i, k in enumerate(PODS)],
                     boosters=[dict(side=s, **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.booster_state[j].items()}) for j, s in enumerate(WING_SIDES)],

@@ -38,26 +38,23 @@ def _font(px):
 
 
 def v_emblem(size=512):
-    """Original angular V: faceted gold chevron with a dark inner cut and a bevel highlight."""
+    """Original solid faceted V badge: light-gold left arm, deeper-gold right arm, fine dark centre seam."""
     S = size * 2
     im = Image.new('RGBA', (S, S), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     s = S / 100.0
-    outer = [(4, 14), (36, 14), (50, 58), (64, 14), (96, 14), (58, 90), (42, 90)]
-    inner = [(20, 22), (32, 22), (50, 72), (68, 22), (80, 22), (55, 82), (45, 82)]
-    wing_l = [(4, 14), (14, 6), (40, 6), (36, 14)]
-    wing_r = [(96, 14), (86, 6), (60, 6), (64, 14)]
     P = lambda pts: [(x * s, y * s) for x, y in pts]
-    d.polygon(P(outer), fill=GOLD + (255,))
-    d.polygon(P(wing_l), fill=(255, 205, 90, 255))
-    d.polygon(P(wing_r), fill=(255, 205, 90, 255))
-    d.polygon(P(inner), fill=(18, 18, 22, 255))
-    d.polygon(P([(45, 82), (55, 82), (50, 72)]), fill=GOLD + (255,))
-    d.line(P([(4, 14), (42, 90)]), fill=(255, 226, 150, 255), width=int(1.2 * s))
+    left = [(6, 12), (34, 12), (50, 60), (50, 92), (44, 92)]
+    right = [(94, 12), (66, 12), (50, 60), (50, 92), (56, 92)]
+    d.polygon(P(left), fill=(255, 202, 74, 255))
+    d.polygon(P(right), fill=(214, 140, 14, 255))
+    d.line(P([(50, 60), (50, 92)]), fill=(70, 40, 4, 255), width=max(2, int(0.8 * s)))
+    d.line(P([(6, 12), (34, 12)]), fill=(255, 232, 170, 255), width=max(2, int(1.0 * s)))      # top bevel highlight
+    d.line(P([(66, 12), (94, 12)]), fill=(255, 214, 120, 255), width=max(2, int(1.0 * s)))
     im = im.resize((size, size), Image.LANCZOS)
-    glow = im.split()[3].filter(ImageFilter.GaussianBlur(size / 60))
+    glow = im.split()[3].filter(ImageFilter.GaussianBlur(size / 70))
     base = Image.new('RGBA', im.size, (0, 0, 0, 0))
-    base.putalpha(glow.point(lambda a: a * 0.35))
+    base.putalpha(glow.point(lambda a: a * 0.30))
     return Image.alpha_composite(base, im)
 
 
@@ -131,10 +128,22 @@ def tail_chevron(w=1024, h=256):
         cx = w / 2 + side * w * 0.04
         pts = [(cx, h * 0.62), (cx + side * w * 0.40, h * 0.22), (cx + side * w * 0.46, h * 0.22),
                (cx + side * w * 0.43, h * 0.34), (cx + side * w * 0.03, h * 0.78)]
-        d.polygon(pts, fill=(255, 30, 20, 255))
+        d.polygon(pts, fill=(255, 8, 4, 255))
     glow = im.split()[3].filter(ImageFilter.GaussianBlur(6))
     base = Image.new('RGBA', im.size, (255, 20, 10, 0)); base.putalpha(glow.point(lambda a: a * 0.6))
     return Image.alpha_composite(base, im)
+
+
+def led_lens(w=1024, h=128):
+    """tail-lamp lens: fine LED segments behind a light-guide outline, deep red between them."""
+    im = Image.new('RGB', (w, h), (46, 2, 2))
+    d = ImageDraw.Draw(im)
+    seg, gap = 18, 7
+    for x in range(10, w - 10, seg + gap):
+        d.rectangle([x, int(h * 0.30), x + seg, int(h * 0.70)], fill=(255, 24, 12))
+        d.rectangle([x + 3, int(h * 0.38), x + seg - 3, int(h * 0.62)], fill=(255, 120, 90))
+    d.rectangle([4, 4, w - 5, h - 5], outline=(255, 40, 20), width=5)          # light-guide outline
+    return im.filter(ImageFilter.GaussianBlur(1.2))
 
 
 def head_blade(w=512, h=128):
@@ -147,6 +156,20 @@ def head_blade(w=512, h=128):
     glow = im.split()[3].filter(ImageFilter.GaussianBlur(4))
     base = Image.new('RGBA', im.size, (200, 225, 255, 0)); base.putalpha(glow.point(lambda a: a * 0.5))
     return Image.alpha_composite(base, im)
+
+
+def carbon_twill(size=512, tows=12):
+    """2x2 twill carbon weave: alternating tow blocks with fibre sheen, tileable."""
+    t = size // tows
+    y, x = np.mgrid[0:size, 0:size]
+    i, j = x // t, y // t
+    warp = ((i + j) // 2) % 2 == 0                    # 2x2 twill diagonal
+    u, v = (x % t) / t, (y % t) / t
+    fib = np.where(warp, np.sin(v * np.pi), np.sin(u * np.pi))          # tow crown
+    streak = np.where(warp, np.sin(x * 2.1) * 0.5 + 0.5, np.sin(y * 2.1) * 0.5 + 0.5)
+    lum = 10 + 78 * fib ** 1.3 + 22 * streak * fib
+    col = np.stack([lum * 0.92, lum * 0.96, lum * 1.05], -1)
+    return Image.fromarray(col.clip(0, 255).astype(np.uint8), 'RGB')
 
 
 def ember_gradient(size=256):
@@ -243,11 +266,24 @@ def fin_emblem(m, size=0.16, lift=0.0025):
     c = (ctr[sel] * ar[sel, None]).sum(0) / ar[sel].sum()
     up = np.array([0, 0, 1.0]) - n[2] * n; up /= np.linalg.norm(up)
     right = np.cross(up, n)
-    # keep the emblem inside the face: shrink toward the face's centroid, then sit it a little low on the fin
+    # centre on the point of the outboard face farthest from its outline (largest inscribed circle), so it can't clip
+    from scipy.spatial import ConvexHull
     pts = m.vertices[np.unique(m.faces[sel])] - c
-    span_u, span_v = np.ptp(pts @ right), np.ptp(pts @ up)
-    sz = min(size, 0.42 * span_u, 0.42 * span_v)
-    c = c - up * 0.10 * span_v + n * lift
+    q = np.stack([pts @ right, pts @ up], 1)
+    hull = q[ConvexHull(q).vertices]
+    lo, hi = q.min(0), q.max(0)
+    gx, gy = np.meshgrid(np.linspace(lo[0], hi[0], 80), np.linspace(lo[1], hi[1], 80))
+    G = np.stack([gx.ravel(), gy.ravel()], 1)
+    d = np.full(len(G), np.inf); inside = np.ones(len(G), bool)
+    for a, b in zip(hull, np.roll(hull, -1, 0)):
+        t = b - a; nrm = np.array([t[1], -t[0]]) / np.linalg.norm(t)
+        sd = (G - a) @ nrm                       # CCW hull: outward normal -> inside is sd < 0
+        inside &= sd < 0
+        d = np.minimum(d, -sd)
+    d[~inside] = -1
+    k = int(np.argmax(d)); r_in = d[k]
+    sz = min(size, 1.30 * r_in)
+    c = c + right * G[k, 0] + up * G[k, 1] + n * lift
     P = np.array([c - right * sz / 2 - up * sz / 2, c + right * sz / 2 - up * sz / 2, c + right * sz / 2 + up * sz / 2, c - right * sz / 2 + up * sz / 2])
     UV = np.array([[0, 1], [1, 1], [1, 0], [0, 0.0]])
     if side < 0:            # read the same way from both sides
@@ -418,7 +454,154 @@ def add_node(glb, airframe_idx, world, name, parts, material, note):
     g.nodes[airframe_idx].children = list(g.nodes[airframe_idx].children or []) + [len(g.nodes) - 1]
 
 
+def closest_on_triangles(Pts, T):
+    """closest point on a triangle soup for each point (Ericson, Real-Time Collision Detection 5.1.5), vectorised.
+    Returns (points, face index)."""
+    out = np.zeros_like(Pts); idx = np.zeros(len(Pts), int)
+    A, B, C = T[:, 0], T[:, 1], T[:, 2]
+    AB, AC = B - A, C - A
+    for i, p in enumerate(Pts):
+        AP = p - A
+        d1, d2 = (AB * AP).sum(1), (AC * AP).sum(1)
+        BP = p - B; d3, d4 = (AB * BP).sum(1), (AC * BP).sum(1)
+        CP = p - C; d5, d6 = (AB * CP).sum(1), (AC * CP).sum(1)
+        va = d3 * d6 - d5 * d4; vb = d5 * d2 - d1 * d6; vc = d1 * d4 - d3 * d2
+        res = np.zeros_like(A); done = np.zeros(len(A), bool)
+        m = (d1 <= 0) & (d2 <= 0); res[m] = A[m]; done |= m
+        m = ~done & (d3 >= 0) & (d4 <= d3); res[m] = B[m]; done |= m
+        m = ~done & (vc <= 0) & (d1 >= 0) & (d3 <= 0)
+        v = d1 / np.where(d1 - d3 == 0, 1, d1 - d3); res[m] = A[m] + v[m, None] * AB[m]; done |= m
+        m = ~done & (d6 >= 0) & (d5 <= d6); res[m] = C[m]; done |= m
+        m = ~done & (vb <= 0) & (d2 >= 0) & (d6 <= 0)
+        w = d2 / np.where(d2 - d6 == 0, 1, d2 - d6); res[m] = A[m] + w[m, None] * AC[m]; done |= m
+        m = ~done & (va <= 0) & ((d4 - d3) >= 0) & ((d5 - d6) >= 0)
+        den = (d4 - d3) + (d5 - d6); w = (d4 - d3) / np.where(den == 0, 1, den); res[m] = B[m] + w[m, None] * (C[m] - B[m]); done |= m
+        den = va + vb + vc; den = np.where(den == 0, 1, den); v = vb / den; w = vc / den
+        m = ~done; res[m] = A[m] + v[m, None] * AB[m] + w[m, None] * AC[m]
+        k = int(np.argmin(((res - p) ** 2).sum(1))); out[i] = res[k]; idx[i] = k
+    return out, idx
+
+
+SNAP_STRIPS = ('SIDEBLADE_AMBER', 'NARROW_AMBER_BROW', 'FRONT_FENDER_AMBER_SLIT', 'FIN_AMBER_RAKE', 'AMBER_CHEVRON_LAMP')
+HIDE_STRIPS = ('HAUNCH_L_AMBER_CREASE', 'HAUNCH_R_AMBER_CREASE')     # replaced by the cowl shoulder line
+
+
+def snap_strips(glb, surface_path, world, yup, stats):
+    """lay the original CAD amber strips flush on the (smoothed) body: each vertex is ray-snapped along the strip's
+    own normal (its thinnest axis) to the nearest body surface and lifted 2.5 mm. Planform is kept."""
+    from refine_phantom_visual import tris_of
+    body = Surface(surface_path, exclude=('VTX_VISUAL', 'PROBE', 'AMBER', 'CHEVRON_LAMP', 'LIVERY', 'RIVET'), yup=yup)
+    g = glb.g; moved = []
+    for ni, n in enumerate(g.nodes):
+        if n.mesh is None:
+            continue
+        if any(h in n.name for h in HIDE_STRIPS):
+            n.extras = dict(n.extras or {}, visual_hidden='replaced by the wing-cassette cowl shoulder line'); n.mesh = None; continue
+        if not any(k in n.name for k in SNAP_STRIPS):
+            continue
+        W = world(ni); Wi = np.linalg.inv(W)
+        for p in g.meshes[n.mesh].primitives:
+            P, N, I = tris_of(glb, p)
+            Pw = P @ W[:3, :3].T + W[:3, 3]
+            c = Pw.mean(0); _, _, Vt = np.linalg.svd(Pw - c, full_matrices=False); a = Vt[2]
+            best = np.full(len(Pw), np.inf); hit = Pw.copy(); nh = np.zeros_like(Pw)
+            for sgn in (1, -1):
+                h, nn = body.cast(Pw + sgn * a * 0.12, np.repeat((-sgn * a)[None], len(Pw), 0))
+                dist = np.linalg.norm(h - Pw, axis=1)
+                ok = np.isfinite(dist) & (dist < best) & (dist < 0.11)
+                best[ok] = dist[ok]; hit[ok] = h[ok]; nh[ok] = nn[ok]
+            # fallback for strips standing edge-on to the body: true closest point on nearby body triangles
+            lo, hi = Pw.min(0) - 0.15, Pw.max(0) + 0.15
+            tri = body.tri; near = ((tri.max(1) >= lo) & (tri.min(1) <= hi)).all(1)
+            if near.any():
+                cp, fi = closest_on_triangles(Pw, tri[near])
+                dcp = np.linalg.norm(cp - Pw, axis=1)
+                use = ~np.isfinite(best) | (dcp < best - 1e-4)
+                fnn = body.fn[near][fi]
+                # orient the normal toward where the strip was (outside)
+                flip = ((Pw - cp) * fnn).sum(1) < 0
+                fnn[flip] *= -1
+                best[use] = dcp[use]; hit[use] = cp[use]; nh[use] = fnn[use]
+            ok = np.isfinite(best) & (best < 0.12)
+            new = Pw.copy(); new[ok] = hit[ok] + nh[ok] * 0.0025
+            Nw = np.where(ok[:, None], nh, (N @ W[:3, :3].T))
+            Pl = new @ Wi[:3, :3].T + Wi[:3, 3]; Nl = Nw @ W[:3, :3]; Nl /= np.linalg.norm(Nl, axis=1, keepdims=True) + 1e-12
+            p.attributes.POSITION = glb.add(Pl, 'pos'); p.attributes.NORMAL = glb.add(Nl, 'vec3')
+            moved.append((n.name, float(np.median(best[ok])) if ok.any() else None, int(ok.sum()), len(Pw)))
+    stats['amber_strips_snapped'] = len(moved)
+    return moved
+
+
+TAIL_LAMP = dict(inner=(0.075, 0.734), outer=(0.375, 0.812), t_in=0.030, t_out=0.016)
+
+
+def _offset_poly(P2, d):
+    """miter offset of a convex CCW polygon (outward for d > 0)."""
+    n = len(P2); out = []
+    for i in range(n):
+        a, b, c = P2[i - 1], P2[i], P2[(i + 1) % n]
+        e1 = (b - a) / np.linalg.norm(b - a); e2 = (c - b) / np.linalg.norm(c - b)
+        n1 = np.array([e1[1], -e1[0]]); n2 = np.array([e2[1], -e2[0]])
+        m = n1 + n2; m /= np.linalg.norm(m)
+        out.append(b + m * d / max(0.3, np.dot(m, n1)))
+    return np.array(out)
+
+
+def tail_lamps(S):
+    """two swept LED tail lamps on the flat rear panel: bevelled dark bezel (outline) + recessed textured lens."""
+    T = TAIL_LAMP
+    (y0, z0), (y1, z1), t0, t1 = T['inner'], T['outer'], T['t_in'], T['t_out']
+    dirv = np.array([y1 - y0, z1 - z0]); L = np.linalg.norm(dirv); dirv /= L; nrm = np.array([-dirv[1], dirv[0]])
+    # blade outline (y, z): angled inboard cut, tapered, pointed outboard tip; CCW seen from behind
+    base = np.array([y0, z0])
+    poly = np.array([base - nrm * t0 / 2 + dirv * 0.012, base + dirv * (L - 0.010) - nrm * t1 / 2, base + dirv * L + nrm * t1 * 0.1,
+                     base + dirv * (L - 0.016) + nrm * t1 / 2, base + nrm * t0 / 2 - dirv * 0.004])
+    if np.cross(np.append(poly[1] - poly[0], 0), np.append(poly[2] - poly[1], 0))[2] < 0:
+        poly = poly[::-1]
+    C0, C1, C2 = poly, _offset_poly(poly, 0.004), _offset_poly(poly, 0.007)
+    bez, lens = [], []
+    for side in (-1, 1):
+        def lift(C, h):
+            Y = C[:, 0] * side; Z = C[:, 1]
+            org = np.stack([np.full(len(C), -4.0), Y, Z], 1)
+            hit, nn = S.cast(org, np.repeat(np.array([[1.0, 0, 0]]), len(C), 0))
+            return hit + nn * h, nn
+        rings = [lift(C2, 0.0005), lift(C2, 0.003), lift(C1, 0.009), lift(C0, 0.009), lift(C0, 0.004)]
+        Ps, Ns, Is = [], [], []
+        for (A, _), (B, _) in zip(rings[:-1], rings[1:]):
+            n = len(A)
+            for k in range(n):
+                q = np.array([A[k], A[(k + 1) % n], B[(k + 1) % n], B[k]])
+                fn = np.cross(q[1] - q[0], q[3] - q[0]); fn /= np.linalg.norm(fn) + 1e-12
+                b0 = sum(len(p) for p in Ps)
+                Ps.append(q); Ns.append(np.repeat(fn[None], 4, 0)); Is.append(np.array([[b0, b0 + 1, b0 + 2], [b0, b0 + 2, b0 + 3]]))
+        P = np.concatenate(Ps); N = np.concatenate(Ns); I = np.concatenate(Is)
+        outward = rings[0][1].mean(0)
+        # all bezel faces should face away from the panel (or sideways); flip any facing into it
+        fl = (N @ outward) < -0.2
+        N[fl] *= -1
+        I = np.concatenate([_tri_fix(P, N, I)])
+        bez.append((P, N, None, I))
+        # lens: fan over the recessed inner contour, UV along the blade
+        LP, LN = rings[-1]
+        ctr = LP.mean(0); P2 = np.vstack([LP, ctr]); N2 = np.vstack([LN, LN.mean(0)])
+        n = len(LP); I2 = np.array([[n, k, (k + 1) % n] for k in range(n)])
+        I2 = _tri_fix(P2, N2, I2)
+        rel = np.vstack([C0, C0.mean(0)]) - base
+        UV = np.stack([(rel @ dirv) / L, 0.5 + (rel @ nrm) / (t0 * 1.15)], 1)
+        lens.append((P2, N2, UV, I2))
+    return bez, lens
+
+
+def _tri_fix(P, N, I):
+    fn = np.cross(P[I[:, 1]] - P[I[:, 0]], P[I[:, 2]] - P[I[:, 0]])
+    flip = (fn * N[I[:, 0]]).sum(1) < 0
+    I = I.copy(); I[flip] = I[flip][:, [0, 2, 1]]
+    return I
+
+
 def apply_livery(glb, surface_path, airframe_idx, world, stats, yup=False):
+    snap_strips(glb, surface_path, world, yup, stats)
     S = Surface(surface_path, yup=yup)
     ex, ey, ez = np.eye(3)
     # ---- flank wordmark on both doors (reads front-to-back on each side)
@@ -452,11 +635,16 @@ def apply_livery(glb, surface_path, airframe_idx, world, stats, yup=False):
         parts.append(fin_emblem(m))
     parts.append(decal(S, [1.86, 0.0, 1.2], -ey, ex, 0.20, 0.20, [0, 0, -1], nu=16, nv=16, max_jump=0.08))
     add_node(glb, airframe_idx, world, 'VTX_VISUAL_LIVERY_V_EMBLEMS', parts, mat_em, 'V emblem on fins and bonnet (render-only artwork)')
-    # ---- red LED tail chevrons
-    tl = tail_chevron()
-    mat_tail = decal_material(glb, 'VTX visual · red LED tail chevron', tl, tl.convert('RGB'), strength=3.0, metal=0.0, rough=0.2, clearcoat=False)
-    add_node(glb, airframe_idx, world, 'VTX_VISUAL_LED_TAIL_CHEVRON',
-             [decal(S, [-2.3, 0.0, 0.80], -ey, ez, 1.5, 0.30, [1, 0, 0], nu=60, nv=12, max_jump=0.12)], mat_tail, 'LED tail lamp graphic (render-only)')
+    # ---- red LED tail lamps: bevelled bezel + recessed textured lens, on the flat rear panel only
+    bez, lens = tail_lamps(S)
+    glb.g.materials.append(Material(name='VTX visual · gloss black tail-lamp bezel', doubleSided=False,
+                                    pbrMetallicRoughness=PbrMetallicRoughness(baseColorFactor=[0.035, 0.035, 0.04, 1], metallicFactor=1.0, roughnessFactor=0.14)))
+    glb.g.materials[-1].extensions = {'KHR_materials_clearcoat': {'clearcoatFactor': 1.0, 'clearcoatRoughnessFactor': 0.02}}
+    add_node(glb, airframe_idx, world, 'VTX_VISUAL_LED_TAIL_LAMP_BEZELS', bez, len(glb.g.materials) - 1, 'tail-lamp bezels (render-only)')
+    lt = led_lens()
+    mat_lens = decal_material(glb, 'VTX visual · red LED tail-lamp lens', lt.convert('RGBA'), lt, strength=1.2, metal=0.0, rough=0.08)
+    glb.g.materials[mat_lens].alphaMode = 'OPAQUE'
+    add_node(glb, airframe_idx, world, 'VTX_VISUAL_LED_TAIL_LAMP_LENSES', lens, mat_lens, 'LED tail-lamp lenses (render-only)')
     # ---- white LED headlight blades
     hb = head_blade()
     mat_head = decal_material(glb, 'VTX visual · white LED headlight blade', hb, hb.convert('RGB'), strength=3.0, metal=0.0, rough=0.15, clearcoat=False)

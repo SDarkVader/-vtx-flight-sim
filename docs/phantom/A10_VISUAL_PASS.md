@@ -9,7 +9,9 @@ the raw export; `?cad=1` loads the raw CAD GLB.
 | File | Role |
 |---|---|
 | `tools/phantom/refine_phantom_visual.py` | shell smoothing, finishes, wing-bay window, wing-cassette cowls, alloy wheels |
-| `tools/phantom/phantom_livery.py` | Vader's Taxis artwork, door swoops, LED lamps, rivets (called by the script above) |
+| `tools/phantom/phantom_livery.py` | Vader's Taxis artwork, door swoops, LED lamps, rivets, amber-strip snapping (called by the script above) |
+| `engineering/phantom/drs_flap.py` | DRS/airbrake geometry (single source) + road pitch-balance analysis -> `evidence/phantom/drs_balance.json` |
+| `public/vtx-env/phantom-look.js` | runtime: drives joints and the visual-pass systems from the plant state |
 | `public/assets/phantom-a10-visual.glb` | live sim asset (from `public/assets/phantom-a10.glb`) |
 | `assets/derived/phantom-a10-cassette-visual.glb` | animated preview (from the cassette GLB; all 28 animations kept) |
 
@@ -47,11 +49,54 @@ Needs `numpy pygltflib trimesh scipy pillow`. No Blender required.
 Every added node carries the extras `visual_only: true` and `mass_kg: 0`. The original node order, names, poses
 and extras are preserved, so `phantom-look.js` drives the same joints.
 
+- **DRS / airbrake flap (render-only articulation).** A split inverted NACA 4412 blade in 2×2 twill carbon, spanning
+  between the fins with 0.24 m chord and 0.219 m² of blade. Its rest incidence is 6° trailing edge up. Both halves sit
+  on one hinge axis, joined and driven by a central coaxial Ti rotary EMA on a carbon aerofoil pylon. It has Ti root
+  and tip ribs, flanged Ti fin bearings, a Gurney lip and a red LED brake strip. Airbrake travel is +55°.
+- **Rear boosters: conical vectoring cowl (render-only articulation).** Twelve overlapping Ti petals with ceramic inner
+  faces, each hinged at its root on a tangential axis, plus a Ti sync ring and four actuators. All petals inward gives
+  partial closing; deflection as cos(θ − θᵥ) tilts the cone (directional).
+- **Tail lamps.** Compact swept units on the flat rear panel only: gloss-black bevelled bezel, recessed lens with
+  LED-segment texture.
+
+## Runtime (all finite-rate, driven by the plant state)
+
+| System | Driven by |
+|---|---|
+| booster liner colour, blue plume and light | `boosters[j].thrust_n / phantom.booster_thrust_max_n`: a shallow indigo glow at low boost, rising to a radiant cyan-blue jet |
+| cone petals | closed (10°) at idle, open (−4°) at full boost, 60°/s; tilted by `phantom.booster_vector_deg` (plant p3 angle) |
+| DRS airbrake | brake command > 0.3 above 12 m/s ground speed, 140°/s |
+| brake lamps (tail lenses, DRS strip) | brake command |
+| wheel-hub ember glow | `phantom.fan_rpm / phantom.fan_rpm_max` per pod (CAD L/R mirroring resolved through the pod joints) |
+
+`plant.physical_snapshot()` gained three render-only keys (`booster_thrust_max_n`, `booster_vector_deg`,
+`fan_rpm_max`). Physics is unchanged.
+
+An end-to-end check against the live server confirmed every system. Parked: plume off, petals closed, brake lamps
+bright. Full boost: 1,289 of 2,418 N, plume on, petals opening. Braking at 19.6 m/s: DRS at 55°, lamps bright.
+
+## Road pitch balance (drs_flap.py, plant aero + hull Munk moment)
+
+All forces scale with q, so the canard trim angle does not depend on speed. These are values at 200 mph:
+
+| Case | ΔN front | ΔN rear |
+|---|---|---|
+| level, no devices (drag couple only; the plant has no body lift) | −674 N | +674 N |
+| + DRS flap at rest (830 N downforce) | −823 N | +1,655 N |
+| + canards −5.4° (front unloading cancelled) | 0 | +1,598 N |
+| + canards −9.6° (aero split = static split; constant attitude) | +593 N | +1,568 N |
+| as-drawn 2.9° nose-up stance (Munk ×0.85), no devices | −1,757 N | +1,202 N |
+
+The rear flap alone *raises* the nose. Front downforce from the canards is what stops it. With the as-drawn stance, the
+static-share trim is unreachable before the canards stall. The airbrake adds 1.29 kN of drag at 200 mph (0.069 g) and
+offsets about 15% of 1 g brake dive. Its hinge moment is 56 N·m.
+
 ## Known limits
 
 - Below the front of each cowl, the original CAD haunch nose still shows as a small sharp edge. Removing it needs
   a hull edit in the CAD source (`build_a10_cassette.py`), not a render pass.
 - With the wings stowed, the window mostly shows the stowed wing panels, which fill the panel level. The screws and
   rails show fully once the wings deploy.
-- The size of `phantom-a10-visual.glb` is about 9.7 MB, against 2.8 MB for the raw export. The rivets and
-  tessellation account for most of the increase.
+- The size of `phantom-a10-visual.glb` is about 11 MB, against 2.8 MB for the raw export.
+- The DRS and the booster cowls are articulated in the render only. Their forces are not in the MuJoCo plant.
+- The live map has no boundary: a sustained road run leaves the 1 km world and falls off it.

@@ -385,7 +385,7 @@ FINISH = {   # existing material name prefix -> new finish (style kept: dark gun
     'A9 electromechanical actuator housing': dict(base=(0.20, 0.22, 0.26), metal=0.75, rough=0.3, clearcoat=(0.6, 0.1)),
     'A9 CFRP structural laminate (IM7/8552 class)': dict(base=(0.05, 0.055, 0.065), metal=0.3, rough=0.32, clearcoat=(0.8, 0.06)),
     'Road/VTOL wheel tyre dark elastomer': dict(base=(0.018, 0.02, 0.022), metal=0.0, rough=0.82),
-    'Directional nozzle ceramic heat shield': dict(base=(0.05, 0.25, 0.42), metal=0.4, rough=0.3, emissive=(0.25, 0.65, 1.0), strength=1.6),
+    'Directional nozzle ceramic heat shield': dict(base=(0.04, 0.10, 0.20), metal=0.3, rough=0.45, emissive=(0.15, 0.40, 1.0), strength=0.8),
     'A7 restraint belt webbing amber': dict(base=(0.9, 0.5, 0.06), metal=0.0, rough=0.6),
 }
 GLASS_BAY = ('VTX visual · smoked inspection glazing', dict(base=(0.05, 0.075, 0.10), metal=0.0, rough=0.02, clearcoat=(1.0, 0.0), alpha=0.12))
@@ -590,6 +590,14 @@ def refine(src, dst):
                 p.material = alloy_mat
     paint = next(i for i, m in enumerate(g.materials) if m.name == 'A6 VTX Phantom satin gunmetal armour')
     add_wing_cowls(glb, airframe_idx, world, paint, led_mat)
+    from phantom_livery import carbon_twill
+    carbon = add_material(glb, 'VTX visual · 2x2 twill carbon fibre', dict(base=(1.0, 1.0, 1.0), metal=0.10, rough=0.42, clearcoat=(1.0, 0.04)))
+    g.materials[carbon].pbrMetallicRoughness.baseColorTexture = TextureInfo(index=add_texture(glb, carbon_twill()))
+    ti = add_material(glb, 'VTX visual · machined Ti-6Al-4V', dict(base=(0.60, 0.62, 0.66), metal=0.95, rough=0.22, clearcoat=(0.3, 0.1)))
+    red = add_material(glb, 'VTX visual · red LED brake strip', dict(base=(1.0, 0.05, 0.03), metal=0.0, rough=0.2, emissive=(1.0, 0.02, 0.01), strength=1.1))
+    add_drs(glb, airframe_idx, world, dict(carbon=carbon, ti=ti, red=red, amber=led_mat))
+    ceramic = add_material(glb, 'VTX visual · ceramic matrix nozzle face', dict(base=(0.09, 0.09, 0.10), metal=0.0, rough=0.62))
+    add_booster_cowls(glb, airframe_idx, world, dict(ti=ti, ceramic=ceramic))
     if airframe_idx is not None:
         add_bay_frame(glb, airframe_idx, rib_mat, led_mat, world)
     apply_finishes(glb)
@@ -783,6 +791,287 @@ def add_wing_cowls(glb, root_idx, world, paint_mat, led_mat):
         g.nodes.append(Node(name=name, mesh=len(g.meshes) - 1, extras=dict(
             visual_only=True, mass_kg=0.0, note='aerodynamic fairing over the wing-cassette ends (render-only; slot kept open)')))
         g.nodes[root_idx].children = list(g.nodes[root_idx].children or []) + [len(g.nodes) - 1]
+
+
+def cyl(a, b, r, seg=20, caps=True):
+    """closed cylinder from a to b (smooth sides, flat caps)."""
+    a, b = np.asarray(a, float), np.asarray(b, float)
+    ax = b - a; L = np.linalg.norm(ax); ax /= L
+    u = np.cross(ax, [0, 0, 1.0] if abs(ax[2]) < 0.9 else [1.0, 0, 0]); u /= np.linalg.norm(u); v = np.cross(ax, u)
+    ang = np.linspace(0, 2 * np.pi, seg, endpoint=False)
+    ring = np.cos(ang)[:, None] * u + np.sin(ang)[:, None] * v
+    P = np.concatenate([a + r * ring, b + r * ring]); N = np.concatenate([ring, ring]); I = []
+    for k in range(seg):
+        k2 = (k + 1) % seg
+        I += [[k, k2, seg + k2], [k, seg + k2, seg + k]]
+    I = np.array(I)
+    if caps:
+        Pc = np.concatenate([a + r * ring, b + r * ring, [a, b]]); base = len(P)
+        P = np.concatenate([P, Pc]); N = np.concatenate([N, np.repeat(-ax[None], seg, 0), np.repeat(ax[None], seg, 0), [-ax, ax]])
+        ca, cb = base + 2 * seg, base + 2 * seg + 1
+        I = np.concatenate([I, [[ca, base + (k + 1) % seg, base + k] for k in range(seg)], [[cb, base + seg + k, base + seg + (k + 1) % seg] for k in range(seg)]])
+    return P, N, I
+
+
+def _orient(P, N, I):
+    """make winding agree with the supplied normals."""
+    fn = np.cross(P[I[:, 1]] - P[I[:, 0]], P[I[:, 2]] - P[I[:, 0]])
+    flip = (fn * N[I[:, 0]]).sum(1) < 0
+    I = I.copy(); I[flip] = I[flip][:, [0, 2, 1]]
+    return I
+
+
+def loft_section(sec_xz, y0, y1, uv_scale=0.12):
+    """extrude a closed x-z section along y with end caps; returns P, N, UV, I (normals outward)."""
+    n = len(sec_xz)
+    ctr = sec_xz.mean(0)
+    P, N, UV, I = [], [], [], []
+    # perimeter arc length for UVs
+    arc = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(sec_xz, axis=0), axis=1))])
+    for y in (y0, y1):
+        for k in range(n):
+            P.append([sec_xz[k, 0], y, sec_xz[k, 1]]); UV.append([y / uv_scale, arc[k] / uv_scale])
+    # side normals from the section outline
+    for y in (y0, y1):
+        for k in range(n):
+            a, b = sec_xz[max(k - 1, 0)], sec_xz[min(k + 1, n - 1)]
+            t = b - a; nn = np.array([t[1], 0.0, -t[0]]); nn /= np.linalg.norm(nn) + 1e-12
+            if np.dot(nn[[0, 2]], sec_xz[k] - ctr) < 0:
+                nn = -nn
+            N.append(nn)
+    for k in range(n - 1):
+        I += [[k, k + 1, n + k + 1], [k, n + k + 1, n + k]]
+    base = len(P)
+    for y, sgn in ((y0, -1.0), (y1, 1.0)):
+        b0 = len(P)
+        for k in range(n):
+            P.append([sec_xz[k, 0], y, sec_xz[k, 1]]); N.append([0, sgn, 0]); UV.append([sec_xz[k, 0] / uv_scale, sec_xz[k, 1] / uv_scale])
+        P.append([ctr[0], y, ctr[1]]); N.append([0, sgn, 0]); UV.append([ctr[0] / uv_scale, ctr[1] / uv_scale])
+        c = len(P) - 1
+        for k in range(n - 1):
+            I.append([c, b0 + k, b0 + k + 1])
+    P, N, UV, I = np.array(P, float), np.array(N, float), np.array(UV, float), np.array(I)
+    return P, N, UV, _orient(P, N, I)
+
+
+def add_drs(glb, root_idx, world, mats):
+    """Split carbon DRS/airbrake flap between the fins on one hinge axis, joined and driven by a central
+    titanium rotary EMA on a carbon pylon. Geometry and aero from engineering/phantom/drs_flap.py."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('drs_flap', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'engineering', 'phantom', 'drs_flap.py'))
+    D = importlib.util.module_from_spec(spec); spec.loader.exec_module(D)
+    g = glb.g
+    px, pz = D.PIVOT
+    pivot = np.array([px, 0.0, pz])
+    sec = D.section_world(D.REST_DEG, 40) - np.array([px, pz])          # hinge-local x-z
+    moving = dict(carbon=[], ti=[], red=[])
+    fixed = dict(carbon=[], ti=[], amber=[])
+    for s_ in (1, -1):
+        y0, y1 = sorted((s_ * D.Y_ROOT, s_ * D.Y_TIP))
+        moving['carbon'].append(loft_section(sec, y0, y1))
+        # titanium root and tip ribs (section outline grown 3 mm)
+        ctr = sec.mean(0); grown = ctr + (sec - ctr) * 1.0 + (sec - ctr) / (np.linalg.norm(sec - ctr, axis=1, keepdims=True) + 1e-9) * 0.003
+        for yr, th in ((s_ * D.Y_ROOT, 0.004), (s_ * (D.Y_TIP - 0.002), 0.003)):
+            a, b = sorted((yr - th / 2, yr + th / 2))
+            P, N, UV, I = loft_section(grown, a, b)
+            moving['ti'].append((P, N, None, I))
+        # splined output hub and tip shaft on the hinge axis
+        P, N, I = cyl([0, s_ * 0.036, 0], [0, s_ * (D.Y_ROOT + 0.012), 0], 0.016)
+        moving['ti'].append((P, N, None, I))
+        P, N, I = cyl([0, s_ * (D.Y_TIP - 0.012), 0], [0, s_ * 0.560, 0], 0.010)
+        moving['ti'].append((P, N, None, I))
+    # Gurney lip and red LED brake strip along the trailing edge (TE = aft-most point of the section)
+    te = sec[np.argmin(sec[:, 0])]
+    a = np.radians(D.REST_DEG)
+    up = np.array([np.sin(a), 0, np.cos(a)])            # section normal, pressure (upper) side of the inverted blade
+    aft = np.array([-np.cos(a), 0, np.sin(a)])
+    for s_ in (1, -1):
+        y0, y1 = sorted((s_ * D.Y_ROOT, s_ * (D.Y_TIP - 0.004)))
+        tep = np.array([te[0], 0, te[1]])
+        gur = rail_n(tep + up * D.GURNEY_H / 2 + [0, y0, 0], tep + up * D.GURNEY_H / 2 + [0, y1, 0], 0.0025, D.GURNEY_H, aft)
+        moving['carbon'].append((gur[0], gur[1], None, gur[2]))
+        led = rail_n(tep + aft * 0.0015 + up * 0.002 + [0, y0 + s_ * 0.004 if s_ > 0 else y0, 0], tep + aft * 0.0015 + up * 0.002 + [0, y1, 0], 0.0035, 0.004, aft)
+        moving['red'].append((led[0], led[1], None, led[2]))
+    # ---- fixed titanium mechanism (world positions)
+    fx = lambda v: (np.asarray(v, float))
+    # central coaxial rotary EMA drum with flanges and cooling rings
+    P, N, I = cyl(pivot + [0, -0.034, 0], pivot + [0, 0.034, 0], 0.033, 28); fixed['ti'].append((P, N, None, I))
+    for yy in (-0.030, -0.012, 0.012, 0.030):
+        P, N, I = cyl(pivot + [0, yy - 0.0015, 0], pivot + [0, yy + 0.0015, 0], 0.037, 28); fixed['ti'].append((P, N, None, I))
+    P, N, I = cyl(pivot + [0, -0.0035, 0], pivot + [0, 0.0035, 0], 0.0345, 28); fixed['amber'].append((P, N, None, I))   # status ring
+    # BLDC motor can + gear cover below/forward of the drum
+    mpos = pivot + [0.030, 0, -0.058]
+    P, N, I = cyl(mpos + [0, -0.032, 0], mpos + [0, 0.032, 0], 0.021, 24); fixed['ti'].append((P, N, None, I))
+    gc = rail_n(pivot + [0.016, -0.026, -0.030], pivot + [0.016, 0.026, -0.030], 0.040, 0.050, [1.0, 0, 0])
+    fixed['ti'].append((gc[0], gc[1], None, gc[2]))
+    # carbon aerofoil pylon from the deck to the actuator, Ti foot plate and top clevis
+    deck_z = 0.900
+    pyl = []
+    from math import pi
+    ss = 0.5 * (1 - np.cos(np.linspace(0, pi, 18)))
+    yt = 5 * 0.14 * (0.2969 * np.sqrt(ss) - 0.1260 * ss - 0.3516 * ss ** 2 + 0.2843 * ss ** 3 - 0.1036 * ss ** 4)
+    cpy = 0.095
+    sec_xy = np.concatenate([np.stack([px + 0.035 - ss * cpy, yt * cpy], 1), np.stack([px + 0.035 - ss[::-1][1:] * cpy, -yt[::-1][1:] * cpy], 1)])
+    z0, z1 = deck_z - 0.02, pz - 0.050
+    nn = len(sec_xy); Pp, Np_, Ip = [], [], []
+    for zz in (z0, z1):
+        for k in range(nn):
+            Pp.append([sec_xy[k, 0], sec_xy[k, 1], zz])
+    ctr2 = sec_xy.mean(0)
+    for zz in (z0, z1):
+        for k in range(nn):
+            a2, b2 = sec_xy[max(k - 1, 0)], sec_xy[min(k + 1, nn - 1)]; t2 = b2 - a2
+            nv = np.array([t2[1], -t2[0], 0.0]); nv /= np.linalg.norm(nv) + 1e-12
+            if np.dot(nv[:2], sec_xy[k] - ctr2) < 0:
+                nv = -nv
+            Np_.append(nv)
+    for k in range(nn - 1):
+        Ip += [[k, k + 1, nn + k + 1], [k, nn + k + 1, nn + k]]
+    Pp, Np_ = np.array(Pp), np.array(Np_); Ip = _orient(Pp, Np_, np.array(Ip))
+    UVp = np.stack([Pp[:, 0] / 0.08, Pp[:, 2] / 0.08], 1)
+    fixed['carbon'].append((Pp, Np_, UVp, Ip))
+    foot = rail_n([px + 0.05, 0, deck_z - 0.012], [px - 0.075, 0, deck_z - 0.012], 0.050, 0.012, [0, 0, 1.0]); fixed['ti'].append((foot[0], foot[1], None, foot[2]))
+    for yy in (-0.018, 0.018):
+        cl = rail_n([px + 0.02, yy, pz - 0.056], [px + 0.02, yy, pz - 0.030], 0.020, 0.006, [0, 1.0, 0]); fixed['ti'].append((cl[0], cl[1], None, cl[2]))
+    # flanged titanium bearing housings on each fin's inner face, with four bolt heads
+    for s_ in (1, -1):
+        y_in = 0.487 + (pz - 1.05) * 0.373
+        P, N, I = cyl(pivot + [0, s_ * (y_in - 0.020), 0], pivot + [0, s_ * (y_in + 0.004), 0], 0.019, 24); fixed['ti'].append((P, N, None, I))
+        P, N, I = cyl(pivot + [0, s_ * (y_in - 0.004), 0], pivot + [0, s_ * (y_in + 0.002), 0], 0.031, 28); fixed['ti'].append((P, N, None, I))
+        for k in range(4):
+            an = np.pi / 4 + k * np.pi / 2
+            c = pivot + [0.024 * np.cos(an), s_ * (y_in - 0.006), 0.024 * np.sin(an)]
+            P, N, I = cyl(c + [0, s_ * 0.003, 0], c - [0, s_ * 0.002, 0], 0.0042, 10); fixed['ti'].append((P, N, None, I))
+
+    def emit(name, parts, mat, parent, offset, extras):
+        Ps, Ns, UVs, Is, base, has_uv = [], [], [], [], 0, any(p[2] is not None for p in parts)
+        for P, N, UV, I in parts:
+            Ps.append(P - offset); Ns.append(N); Is.append(I + base); base += len(P)
+            if has_uv:
+                UVs.append(UV if UV is not None else np.zeros((len(P), 2)))
+        att = Attributes(POSITION=glb.add(np.concatenate(Ps), 'pos'), NORMAL=glb.add(np.concatenate(Ns), 'vec3'))
+        if has_uv:
+            att.TEXCOORD_0 = glb.add(np.concatenate(UVs), 'vec2')
+        g.meshes.append(Mesh(name=name, primitives=[Primitive(attributes=att, indices=glb.add(np.concatenate(Is), 'idx'), material=mat, mode=4)]))
+        g.nodes.append(Node(name=name, mesh=len(g.meshes) - 1, extras=extras))
+        g.nodes[parent].children = list(g.nodes[parent].children or []) + [len(g.nodes) - 1]
+    Wi = np.linalg.inv(world(root_idx))
+    to_root = lambda parts: [((P @ Wi[:3, :3].T + Wi[:3, 3]), N @ np.linalg.inv(Wi[:3, :3]), UV, I) for P, N, UV, I in parts]
+    pivot_root = pivot @ Wi[:3, :3].T + Wi[:3, 3]
+    axis_root = (Wi[:3, :3] @ np.array([0, 1.0, 0])); axis_root /= np.linalg.norm(axis_root)
+    g.nodes.append(Node(name='VTX_VISUAL_DRS_HINGE', translation=pivot_root.tolist(), children=[], extras=dict(
+        visual_only=True, mass_kg=0.0, joint_type='hinge', axis_parent=axis_root.tolist(), q_rest=0.0, range_deg=[0.0, D.AIRBRAKE_DEG],
+        positive='trailing edge up (airbrake)', rest_te_up_deg=D.REST_DEG,
+        note='split carbon DRS/airbrake flap; both halves on one axis, driven by the central Ti rotary EMA. Not in the MuJoCo plant; '
+             'aero screening in engineering/phantom/drs_flap.py -> evidence/phantom/drs_balance.json')))
+    hinge = len(g.nodes) - 1
+    g.nodes[root_idx].children = list(g.nodes[root_idx].children or []) + [hinge]
+    ex = dict(visual_only=True, mass_kg=0.0)
+    # moving parts are authored hinge-local (rotation in root frame is identity for the Z-up live file; for Y-up
+    # files the root itself carries the frame rotation, so hinge-local = root-local minus the pivot)
+    rot_parts = lambda parts: [((np.asarray(P) + pivot) @ Wi[:3, :3].T + Wi[:3, 3] - pivot_root, N @ np.linalg.inv(Wi[:3, :3]), UV, I) for P, N, UV, I in parts]
+    emit('VTX_VISUAL_DRS_CARBON_BLADES', rot_parts(moving['carbon']), mats['carbon'], hinge, 0, ex)
+    emit('VTX_VISUAL_DRS_TI_RIBS_AND_SHAFTS', rot_parts(moving['ti']), mats['ti'], hinge, 0, ex)
+    emit('VTX_VISUAL_DRS_RED_LED_BRAKE_STRIP', rot_parts(moving['red']), mats['red'], hinge, 0, ex)
+    emit('VTX_VISUAL_DRS_CARBON_PYLON', to_root(fixed['carbon']), mats['carbon'], root_idx, 0, ex)
+    emit('VTX_VISUAL_DRS_TI_ACTUATOR_AND_BEARINGS', to_root(fixed['ti']), mats['ti'], root_idx, 0, ex)
+    emit('VTX_VISUAL_DRS_ACTUATOR_STATUS_RING', to_root(fixed['amber']), mats['amber'], root_idx, 0, ex)
+
+
+BOOSTER = dict(y=0.40, z=0.51, x_hinge=-2.405, r_hinge=0.183, length=0.200, converge=0.032, theta_half_deg=74.0,
+               cheek_aft_frac=0.62, thick=0.006, range_deg=(-15.0, 20.0))
+
+
+def _shell_patch(axis_pt, th0, th1, x0, L, r_of_s, thick, nu=26, ns=14):
+    """thick curved shell over angle th0..th1 (from +z toward +y) and length L aft of x0; returns outer, inner, P, N, I."""
+    yb, zb = axis_pt
+    th = np.radians(np.linspace(th0, th1, nu)); ss = np.linspace(0, 1, ns)
+    def surf(dr):
+        return np.array([[[x0 - L * s_, yb + (r_of_s(s_) + dr) * np.sin(t), zb + (r_of_s(s_) + dr) * np.cos(t)] for t in th] for s_ in ss])
+    O, In = surf(0.0), surf(-thick)
+    Ps, Ns, Is = [], [], []
+    def grid(G, flip):
+        n0, n1 = G.shape[:2]; V = G.reshape(-1, 3); I = []
+        for i in range(n0 - 1):
+            for j in range(n1 - 1):
+                a, b, c, d = i * n1 + j, (i + 1) * n1 + j, (i + 1) * n1 + j + 1, i * n1 + j + 1
+                I += [[a, b, c], [a, c, d]]
+        I = np.array(I)
+        if flip:
+            I = I[:, [0, 2, 1]]
+        fn = np.cross(V[I[:, 1]] - V[I[:, 0]], V[I[:, 2]] - V[I[:, 0]]); N = np.zeros_like(V)
+        for k in range(3):
+            np.add.at(N, I[:, k], fn)
+        N /= np.linalg.norm(N, axis=1, keepdims=True) + 1e-12
+        return V, N, I
+    def strip(A, B):               # cap between two matching edge polylines
+        V = np.concatenate([A, B]); n = len(A); I = []
+        for k in range(n - 1):
+            I += [[k, k + 1, n + k + 1], [k, n + k + 1, n + k]]
+        I = np.array(I); fn = np.cross(V[I[:, 1]] - V[I[:, 0]], V[I[:, 2]] - V[I[:, 0]]); N = np.zeros_like(V)
+        for k in range(3):
+            np.add.at(N, I[:, k], fn)
+        N /= np.linalg.norm(N, axis=1, keepdims=True) + 1e-12
+        return V, N, I
+    outer = grid(O, False); inner = grid(In, True)
+    caps = [strip(O[-1], In[-1]), strip(In[0], O[0]), strip(O[:, 0], In[:, 0]), strip(In[:, -1], O[:, -1])]
+    return outer, inner, caps
+
+
+def add_booster_cowls(glb, root_idx, world, mats):
+    """Conical split cowling on each rear booster (axisymmetric vectoring nozzle): 12 overlapping Ti petals with ceramic
+    inner faces, each hinged at its root on a tangential axis, a Ti sync ring and four actuators. All petals rotating
+    inward = partial closing (exit-area modulation); deflection varying as cos(theta - theta_v) tilts the cone =
+    directional (vectoring). phantom-look.js drives the petals from the plant's booster state. Not a force model."""
+    B = BOOSTER; g = glb.g
+    Wi = np.linalg.inv(world(root_idx)); R = Wi[:3, :3]; t = Wi[:3, 3]
+    NPET, L = 12, 0.215
+    rS = lambda s_: B['r_hinge'] - 0.040 * s_ ** 1.15           # convergent cone, 0.183 -> 0.143 m
+    def node(name, parts, mat, parent, origin_w, extras):
+        Ps, Ns, Is, base = [], [], [], 0
+        o_root = R @ origin_w + t if origin_w is not None else np.zeros(3)
+        for P, N, I in parts:
+            Ps.append(P @ R.T + t - o_root); Ns.append(N @ R.T); Is.append(I + base); base += len(P)
+        g.meshes.append(Mesh(name=name, primitives=[Primitive(attributes=Attributes(POSITION=glb.add(np.concatenate(Ps), 'pos'), NORMAL=glb.add(np.concatenate(Ns), 'vec3')),
+                                                              indices=glb.add(np.concatenate(Is), 'idx'), material=mat, mode=4)]))
+        g.nodes.append(Node(name=name, mesh=len(g.meshes) - 1, extras=extras))
+        g.nodes[parent].children = list(g.nodes[parent].children or []) + [len(g.nodes) - 1]
+    ex = dict(visual_only=True, mass_kg=0.0)
+    for side, tag in ((-1, 'L'), (1, 'R')):
+        yb, zb = side * B['y'], B['z']
+        fixed = []
+        # Ti sync ring and four actuators (body on the nozzle, rod to the ring)
+        xr = B['x_hinge'] + 0.030
+        for k in range(36):
+            a0, a1 = np.radians(k * 10), np.radians((k + 1) * 10)
+            p0 = np.array([xr, yb + 0.197 * np.sin(a0), zb + 0.197 * np.cos(a0)]); p1 = np.array([xr, yb + 0.197 * np.sin(a1), zb + 0.197 * np.cos(a1)])
+            fixed.append(cyl(p0, p1, 0.009, 10, caps=False))
+        for k in range(4):
+            th = np.radians(45 + 90 * k)
+            rad = np.array([0, np.sin(th), np.cos(th)])
+            c0 = np.array([B['x_hinge'] + 0.200, yb, zb]) + rad * 0.192
+            c1 = np.array([B['x_hinge'] + 0.075, yb, zb]) + rad * 0.197
+            fixed.append(cyl(c0, c1, 0.013, 14))                             # actuator body
+            fixed.append(cyl(c1, np.array([xr + 0.008, yb, zb]) + rad * 0.197, 0.006, 10))   # rod to the sync ring
+            fixed.append(cyl(c0 + [0.010, 0, 0], c0 - [0.008, 0, 0], 0.017, 12))           # trunnion
+        node(f'VTX_VISUAL_BOOSTER_{tag}_SYNC_RING_AND_ACTUATORS', fixed, mats['ti'], root_idx, None, ex)
+        for k in range(NPET):
+            thc = 360.0 * k / NPET
+            half = 360.0 / NPET / 2 + (2.2 if k % 2 else 0.0)                  # seals (odd) overlap the primary petals
+            dr = 0.0025 if k % 2 else 0.0
+            outer, inner, caps = _shell_patch((yb, zb), thc - half, thc + half, B['x_hinge'], L, lambda s_: rS(s_) + dr, 0.005, nu=8, ns=12)
+            th = np.radians(thc)
+            root = np.array([B['x_hinge'], yb + (B['r_hinge'] + dr) * np.sin(th), zb + (B['r_hinge'] + dr) * np.cos(th)])
+            axis_w = np.array([0.0, -np.cos(th), np.sin(th)])                   # +rotation = tip toward the jet axis (closing)
+            axis_r = R @ axis_w; axis_r /= np.linalg.norm(axis_r)
+            g.nodes.append(Node(name=f'VTX_VISUAL_BOOSTER_{tag}_PETAL_{k:02d}_HINGE', translation=(R @ root + t).tolist(), children=[], extras=dict(
+                visual_only=True, mass_kg=0.0, joint_type='hinge', axis_parent=axis_r.tolist(), q_rest=0.0, range_deg=[-12.0, 18.0],
+                positive='closing (tip toward the jet axis)', theta_deg=thc, booster=('right' if side < 0 else 'left'),   # plant: physical left = +Y
+                note='conical vectoring cowl petal: closing = all petals +; vectoring adds delta*cos(theta - theta_v). Not in the MuJoCo plant.')))
+            h = len(g.nodes) - 1
+            g.nodes[root_idx].children = list(g.nodes[root_idx].children or []) + [h]
+            node(f'VTX_VISUAL_BOOSTER_{tag}_PETAL_{k:02d}_TI', [outer] + caps, mats['ti'], h, root, ex)
+            node(f'VTX_VISUAL_BOOSTER_{tag}_PETAL_{k:02d}_CERAMIC', [inner], mats['ceramic'], h, root, ex)
 
 
 def add_bay_frame(glb, airframe_idx, rib_mat, led_mat, world):
