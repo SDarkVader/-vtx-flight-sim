@@ -23,3 +23,6 @@ evidence/source/native_inventory.json
 evidence/r6_clearance_audit.json
 evidence/argon_task01_transmission_tanks.json
 public/assets/airframe-r6.glb
+
+# Recorded mobile flight archives are GitHub evidence, not Vercel runtime files.
+evidence/phantom/mobile_flights_20261104/
