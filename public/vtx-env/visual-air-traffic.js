@@ -23,7 +23,10 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
       pivot.add(gltf.scene);
       actor.rig = spec.onLoad?.(gltf.scene);
       actor.ready = true;
-    }, undefined, error => console.warn('Traffic model unavailable', spec.id, error));
+    }, progress => spec.onProgress?.(progress), error => {
+      console.warn('Traffic model unavailable', spec.id, error);
+      spec.onError?.(error);
+    });
   }
   return {
     update(timeSeconds) {
@@ -47,7 +50,7 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
         const bank = Math.max(-.45,Math.min(.45,-Math.atan2(pose.speed*turnRate,9.80665)));
         const roll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),bank);
         pivot.quaternion.copy(yaw).multiply(pitch).multiply(roll);
-        if(actor.ready)spec.onUpdate?.(actor.rig, pose, {time:t,bank});
+        if(actor.ready)spec.onUpdate?.(actor.rig, pose, {time:t,duration:route.duration,bank});
       }
     },
     setRoute(id,route) {

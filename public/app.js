@@ -21,7 +21,7 @@ import {createFreeCamera} from './free-camera.js?v=4';
 import {createVisualAirTraffic} from './vtx-env/visual-air-traffic.js?v=2';
 import {RIDE_JOURNEYS,buildRideJourney} from './vtx-env/visual-ride-journeys.js?v=3';
 import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from './vtx-env/ride-trajectory.js?v=1';
-import {attachVisualPhantom,animateVisualPhantom} from './vtx-env/visual-phantom-animation.js?v=1';
+import {attachVisualPhantom,animateVisualPhantom} from './vtx-env/visual-phantom-animation.js?v=2';
 import {attachPhantom,updatePhantom} from './vtx-env/phantom-look.js?v=2';import {createPhantomPanel} from './phantom-controls.js?v=2';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
@@ -66,6 +66,7 @@ const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
 const sky=buildSky(scene,renderer,{quality}),environment={};
 const rideCgLocal=[-0.15156246846624952,0.00004531509472356366,0.5529781802070567];
 let visualTraffic=null,rideRoute=null,rideTime=0,rideLastFrame=0,ridePaused=false,ridePose=null,rideActor=null,ridePlan=null;
+let pendingRideExteriorMode=null;
 const rideEnabled=new URLSearchParams(location.search).has('trafficRide');
 const trafficPreviewEnabled=rideEnabled||new URLSearchParams(location.search).has('trafficPreview');
 if(rideEnabled){
@@ -73,6 +74,16 @@ if(rideEnabled){
  panel.style.cssText='position:absolute;bottom:12px;left:12px;z-index:40;background:#09151de8;color:white;padding:12px;border-radius:10px;font:14px system-ui;display:flex;gap:9px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 45px)';
  panel.innerHTML='<strong>A10 COCKPIT RIDE</strong><label>Journey <select id="ride-route">'+RIDE_JOURNEYS.map(r=>'<option value="'+r.id+'">'+r.label+'</option>').join('')+'</select></label><label>Direction <select id="ride-direction"><option value="left">Left-hand</option><option value="right">Right-hand</option></select></label><button id="ride-pause" type="button">Pause</button><button id="ride-restart" type="button">Restart</button><span id="ride-progress" aria-live="polite">Loading route...</span><small>Changing route or direction starts a new circuit</small>';
  viewport.append(panel);
+  const cameraTools=$('view-tools');
+  const exterior=document.createElement('button');
+  exterior.id='ride-exterior';exterior.type='button';exterior.textContent='Show A10';
+  exterior.title='Follow the visible A10 in an exterior camera';
+  const locate=document.createElement('button');
+  locate.id='ride-locate';locate.type='button';locate.textContent='Find A10';
+  locate.title='Reposition the independent free camera to look at the A10';locate.hidden=true;
+  cameraTools.prepend(exterior,locate);
+  exterior.onclick=()=>showRideAircraft('chase');
+  locate.onclick=()=>showRideAircraft(cameraMode==='free'?'free':'chase');
  document.getElementById('ride-pause').onclick=()=>{ridePaused=!ridePaused;document.getElementById('ride-pause').textContent=ridePaused?'Resume':'Pause';};
  document.getElementById('ride-restart').onclick=()=>{rideTime=0;ridePaused=false;rideLastFrame=performance.now();document.getElementById('ride-pause').textContent='Pause';};
   const changeJourney=()=>{
@@ -126,10 +137,31 @@ function buildWorld(w){
       cgLocal,waypoints,phaseSeconds:0,loop:!rideEnabled,
       onLoad:(root)=>{
         const rig=attachVisualPhantom(root);
-        if(rideEnabled){$('loading').hidden=true;$('view-sync').textContent='A10 SCRIPTED RIDE · READY';}
+        if(rideEnabled){
+          $('loading').hidden=true;$('view-sync').textContent='A10 SCRIPTED RIDE · READY';
+          if(pendingRideExteriorMode||cameraMode==='chase'||cameraMode==='free'){
+            const mode=pendingRideExteriorMode||cameraMode;
+            pendingRideExteriorMode=null;
+            requestAnimationFrame(()=>showRideAircraft(mode));
+          }
+        }
         return rig;
       },
-      onUpdate:(rig,pose,att)=>animateVisualPhantom(rig,pose,{...att,cgHeight:cgLocal[2]})
+      onProgress:event=>{
+        if(!rideEnabled)return;
+        const loaded=Math.round(event.loaded/1024);
+        $('loading').textContent=event.total
+          ? 'Loading A10 aircraft: '+Math.round(100*event.loaded/event.total)+'%'
+          : 'Loading A10 aircraft: '+loaded+' KB';
+      },
+      onError:error=>{
+        if(!rideEnabled)return;
+        $('loading').hidden=false;
+        $('loading').textContent='A10 aircraft failed to load. Reload the simulator. ('+(error?.message||'asset unavailable')+')';
+        $('view-sync').textContent='A10 MODEL LOAD ERROR';
+        $('ride-progress').textContent='Aircraft unavailable — flight not started';
+      },
+      onUpdate:(rig,pose,att)=>animateVisualPhantom(rig,pose,{...att,duration:rideEnabled?rideRoute?.duration:83})
     }]});
     if(rideEnabled)visualTraffic.setRoute('phantom-circuit-preview',rideRoute);
   }else console.warn('Visual circuit outside physics terrain; preview not loaded');
@@ -277,8 +309,42 @@ $('feather').onclick=()=>{command.engine=0;command.collective_deg.fill(0);$('eng
 let cockpitYaw=0,cockpitPitch=0,cockpitPointer=null,savedChaseOffset=null;
 // Ride cameras have independent transforms. The free camera never follows the
 // aircraft and the chase camera preserves its own orbit offset.
-const rideChaseOffset=new THREE.Vector3(-22,-14,12);
+const rideChaseOffset=new THREE.Vector3(-13,7,6);
 let rideChaseInitialised=false;
+// A predictable one-click way to see the actual A10 model from outside.
+function showRideAircraft(mode='chase'){
+  if(!rideEnabled)return;
+  const actor=scene.getObjectByName('visual-traffic-phantom-circuit-preview');
+  const a10=actor?.children?.[0]?.children?.[0];
+  if(!a10){
+    pendingRideExteriorMode=mode;
+    toast('A10 model still loading; exterior view will open when ready.');
+    return;
+  }
+  pendingRideExteriorMode=null;
+  actor.visible=true;
+  setCockpitVisibility(a10,false);
+  const h=ridePose?.heading||0;
+  const direction=new THREE.Vector3(Math.cos(h),Math.sin(h),0);
+  const left=new THREE.Vector3(-direction.y,direction.x,0);
+  const aim=actor.position.clone().add(new THREE.Vector3(0,0,1.2));
+  // The exterior position is set explicitly, never inherited from a cockpit
+  // camera inside the hull. Framing is re-established at any circuit point.
+  if(mode==='free'){
+    setCameraMode('free');
+    const here=aim.clone().addScaledVector(direction,-16).addScaledVector(left,8).add(new THREE.Vector3(0,0,6));
+    freeCam.teleport(here.toArray(),aim.toArray());
+  }else{
+    rideChaseOffset.copy(direction).multiplyScalar(-13).addScaledVector(left,7).add(new THREE.Vector3(0,0,6));
+    rideChaseInitialised=false;
+    setCameraMode('chase');
+    orbit.target.copy(aim);
+    camera.up.set(0,0,1);
+    camera.position.copy(aim).add(rideChaseOffset);
+    orbit.update();
+    rideChaseInitialised=true;
+  }
+}
 function setCameraMode(mode){
   const previous=cameraMode;
   const actor=rideEnabled?scene.getObjectByName('visual-traffic-phantom-circuit-preview'):null;
@@ -321,10 +387,18 @@ function setCameraMode(mode){
   renderer.domElement.style.touchAction='none';
  $('cockpit-look').hidden=mode!=='cockpit';$('cockpit-instruments').hidden=mode!=='cockpit';$('cockpit-frame').hidden=mode!=='cockpit';
  $('cockpit').textContent=mode==='cockpit'?'Exit cockpit · C':'Cockpit · C';
- $('camera').textContent=mode==='free'?'Chase camera':'Free roam camera';
+ $('camera').textContent=mode==='free'?'Exit free roam':'Free roam camera';
+  if(rideEnabled){
+    $('ride-locate').hidden=mode!=='free';
+    $('ride-exterior').textContent=mode==='chase'?'Recenter A10':'Show A10';
+  }
 }
-$('camera').onclick=()=>setCameraMode(cameraMode==='free'?'chase':'free');
-$('cockpit').onclick=()=>setCameraMode(cameraMode==='cockpit'?'chase':'cockpit');
+$('camera').onclick=()=>rideEnabled
+  ?showRideAircraft(cameraMode==='free'?'chase':'free')
+  :setCameraMode(cameraMode==='free'?'chase':'free');
+$('cockpit').onclick=()=>rideEnabled&&cameraMode==='cockpit'
+  ?showRideAircraft('chase')
+  :setCameraMode(cameraMode==='cockpit'?'chase':'cockpit');
 function zoomCamera(factor){
  if(cameraMode==='cockpit'){toast('Zoom is available in the external camera.');return;}
  if(cameraMode==='free'){freeCam.zoom(factor);return;}
@@ -463,7 +537,7 @@ if(rideEnabled){
 }
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
-if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;}};
+if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
 function animate(){requestAnimationFrame(animate);if(document.hidden)return;const now=performance.now();if(now-lastFrameMs<(lightweightView?67:50))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
  if(truth)loadAirframe(truth.provenance.render_asset||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb'));
  if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);
