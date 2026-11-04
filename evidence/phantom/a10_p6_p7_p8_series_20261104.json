@@ -1,0 +1,291 @@
+[
+ {
+  "run": "p6_edf",
+  "config": "P6 + EDF boosters",
+  "mass_kg": 1906.0292795347725,
+  "static_thrust_n": 4709.390355922929,
+  "crashed": false,
+  "first_wheels_off_t_s": 77.5,
+  "first_wheels_off_u_m_s": 118.713,
+  "ground_roll_m": 7549.030000000001,
+  "max_height_m": 4.571,
+  "airborne_samples": 23,
+  "pitch_range_deg": [
+   -86.513,
+   87.387
+  ],
+  "max_speed_m_s": 119.883
+ },
+ {
+  "run": "p6_fj33",
+  "config": "P6 + FJ33-5A",
+  "mass_kg": 1986.5292793771494,
+  "static_thrust_n": 7962.568580388982,
+  "crashed": false,
+  "first_wheels_off_t_s": 16.101,
+  "first_wheels_off_u_m_s": 89.43,
+  "ground_roll_m": 743.9499999999998,
+  "max_height_m": 0.013999999999999999,
+  "airborne_samples": 1,
+  "pitch_range_deg": [
+   -0.062,
+   0.288
+  ],
+  "max_speed_m_s": 108.304
+ },
+ {
+  "run": "p6_fj33_kp3",
+  "config": "P6 + FJ33-5A, Kp3/Kd0.8",
+  "mass_kg": 1986.5292794908257,
+  "static_thrust_n": 7962.569350778786,
+  "crashed": true,
+  "first_wheels_off_t_s": 40.0,
+  "first_wheels_off_u_m_s": 125.119,
+  "ground_roll_m": 3474.22,
+  "max_height_m": 11.536999999999999,
+  "airborne_samples": 18,
+  "pitch_range_deg": [
+   -77.323,
+   82.324
+  ],
+  "max_speed_m_s": 126.148
+ },
+ {
+  "run": "p6_tj150",
+  "config": "P6 + 4x TJ150",
+  "mass_kg": 1923.9692793625543,
+  "static_thrust_n": 5828.833141491292,
+  "crashed": false,
+  "first_wheels_off_t_s": 24.800999999999995,
+  "first_wheels_off_u_m_s": 111.481,
+  "ground_roll_m": 1552.82,
+  "max_height_m": 0.005999999999999998,
+  "airborne_samples": 1,
+  "pitch_range_deg": [
+   -0.052,
+   0.17
+  ],
+  "max_speed_m_s": 114.084
+ },
+ {
+  "run": "p6_tj150_kp3",
+  "config": "P6 + 4x TJ150, Kp3/Kd0.8",
+  "mass_kg": 1923.9692797085818,
+  "static_thrust_n": 5828.832611093436,
+  "crashed": false,
+  "first_wheels_off_t_s": 31.0,
+  "first_wheels_off_u_m_s": 116.794,
+  "ground_roll_m": 2231.16,
+  "max_height_m": 0.039999999999999994,
+  "airborne_samples": 4,
+  "pitch_range_deg": [
+   -0.038,
+   1.39
+  ],
+  "max_speed_m_s": 118.601
+ },
+ {
+  "run": "p8_7_fj33",
+  "config": "P6+P7 FJ33+P8 7 deg",
+  "mass_kg": 1986.5292794798277,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 15.501,
+  "first_wheels_off_u_m_s": 67.569,
+  "ground_roll_m": 662.6599999999999,
+  "max_height_m": 19.521,
+  "airborne_samples": 4,
+  "pitch_range_deg": [
+   -79.848,
+   67.316
+  ],
+  "max_speed_m_s": 76.187
+ },
+ {
+  "run": "p8_7_tj150",
+  "config": "P6+P7 TJ150+P8 7 deg",
+  "mass_kg": 1923.969279279854,
+  "static_thrust_n": null,
+  "crashed": false,
+  "first_wheels_off_t_s": 18.201,
+  "first_wheels_off_u_m_s": 83.606,
+  "ground_roll_m": 839.7600000000002,
+  "max_height_m": 0.015,
+  "airborne_samples": 1,
+  "pitch_range_deg": [
+   0.001,
+   0.684
+  ],
+  "max_speed_m_s": 97.182
+ },
+ {
+  "run": "p8_9_fj33",
+  "config": "P6+P7 FJ33+P8 9 deg",
+  "mass_kg": 1986.5292794510951,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 15.501,
+  "first_wheels_off_u_m_s": 59.84,
+  "ground_roll_m": 651.8600000000001,
+  "max_height_m": 19.311,
+  "airborne_samples": 6,
+  "pitch_range_deg": [
+   -66.391,
+   66.209
+  ],
+  "max_speed_m_s": 74.896
+ },
+ {
+  "run": "p8_9_tj150",
+  "config": "P6+P7 TJ150+P8 9 deg",
+  "mass_kg": 1923.9692795702556,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 20.000999999999998,
+  "first_wheels_off_u_m_s": 64.841,
+  "ground_roll_m": 967.6500000000001,
+  "max_height_m": 0.869,
+  "airborne_samples": 2,
+  "pitch_range_deg": [
+   -8.958,
+   8.961
+  ],
+  "max_speed_m_s": 80.215
+ },
+ {
+  "run": "sw_e1_kp0.6_kd0.5",
+  "config": "sweep P6+P8 7 deg + 4x TJ150, Kp 0.6 / Kd 0.5",
+  "mass_kg": 1923.9692794955856,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 25.500999999999998,
+  "first_wheels_off_u_m_s": 94.892,
+  "ground_roll_m": 1495.44,
+  "max_height_m": 5.808,
+  "airborne_samples": 23,
+  "pitch_range_deg": [
+   -77.794,
+   82.205
+  ],
+  "max_speed_m_s": 94.979
+ },
+ {
+  "run": "sw_e1_kp0.6_kd1.0",
+  "config": "sweep P6+P8 7 deg + 4x TJ150, Kp 0.6 / Kd 1.0",
+  "mass_kg": 1923.9692793352076,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 19.000999999999998,
+  "first_wheels_off_u_m_s": 70.754,
+  "ground_roll_m": 900.6700000000001,
+  "max_height_m": 21.106,
+  "airborne_samples": 11,
+  "pitch_range_deg": [
+   -74.537,
+   89.304
+  ],
+  "max_speed_m_s": 82.789
+ },
+ {
+  "run": "sw_e1_kp1.2_kd1.0",
+  "config": "sweep P6+P8 7 deg + 4x TJ150, Kp 1.2 / Kd 1.0",
+  "mass_kg": 1923.9692793352076,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 25.000999999999998,
+  "first_wheels_off_u_m_s": 94.392,
+  "ground_roll_m": 1452.17,
+  "max_height_m": 11.700999999999999,
+  "airborne_samples": 24,
+  "pitch_range_deg": [
+   -77.242,
+   80.314
+  ],
+  "max_speed_m_s": 94.512
+ },
+ {
+  "run": "sw_e1_kp2.0_kd1.2",
+  "config": "sweep P6+P8 7 deg + 4x TJ150, Kp 2.0 / Kd 1.2",
+  "mass_kg": 1923.9692793198346,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 20.500999999999998,
+  "first_wheels_off_u_m_s": 85.533,
+  "ground_roll_m": 1033.7199999999998,
+  "max_height_m": 23.36,
+  "airborne_samples": 16,
+  "pitch_range_deg": [
+   -69.788,
+   76.177
+  ],
+  "max_speed_m_s": 86.362
+ },
+ {
+  "run": "sw_e2_kp0.6_kd0.5",
+  "config": "sweep P6+P8 7 deg + FJ33-5A, Kp 0.6 / Kd 0.5",
+  "mass_kg": 1986.5292793065346,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 16.000999999999998,
+  "first_wheels_off_u_m_s": 69.397,
+  "ground_roll_m": 703.4499999999998,
+  "max_height_m": 20.437,
+  "airborne_samples": 5,
+  "pitch_range_deg": [
+   -67.782,
+   79.604
+  ],
+  "max_speed_m_s": 92.156
+ },
+ {
+  "run": "sw_e2_kp0.6_kd1.0",
+  "config": "sweep P6+P8 7 deg + FJ33-5A, Kp 0.6 / Kd 1.0",
+  "mass_kg": 1986.5292792065188,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 21.500999999999998,
+  "first_wheels_off_u_m_s": 93.823,
+  "ground_roll_m": 1195.5300000000002,
+  "max_height_m": 10.732999999999999,
+  "airborne_samples": 17,
+  "pitch_range_deg": [
+   -86.503,
+   82.81
+  ],
+  "max_speed_m_s": 93.916
+ },
+ {
+  "run": "sw_e2_kp1.2_kd1.0",
+  "config": "sweep P6+P8 7 deg + FJ33-5A, Kp 1.2 / Kd 1.0",
+  "mass_kg": 1986.5292792065188,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 18.601,
+  "first_wheels_off_u_m_s": 86.265,
+  "ground_roll_m": 926.4200000000001,
+  "max_height_m": 0.332,
+  "airborne_samples": 1,
+  "pitch_range_deg": [
+   0.002,
+   11.629
+  ],
+  "max_speed_m_s": 86.406
+ },
+ {
+  "run": "sw_e2_kp2.0_kd1.2",
+  "config": "sweep P6+P8 7 deg + FJ33-5A, Kp 2.0 / Kd 1.2",
+  "mass_kg": 1986.529279410336,
+  "static_thrust_n": null,
+  "crashed": true,
+  "first_wheels_off_t_s": 18.500999999999998,
+  "first_wheels_off_u_m_s": 86.174,
+  "ground_roll_m": 920.6599999999999,
+  "max_height_m": 2.339,
+  "airborne_samples": 4,
+  "pitch_range_deg": [
+   -0.779,
+   11.302
+  ],
+  "max_speed_m_s": 86.526
+ }
+]

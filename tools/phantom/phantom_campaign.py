@@ -201,7 +201,7 @@ def takeoff_climb(variant, overrides, flap=30.0, rotate_speed=70.0, rotate_pitch
         s = snapshot(a); log.append(s); t = s['t'] - t0
         if st['rot'] is None and s['u'] >= rotate_speed:
             st['rot'] = t; a.set_command(dict(pitch=rotate_pitch))
-        if st['off'] is None and s['supports'] == 0 and st['rot'] is not None:
+        if st['off'] is None and s['supports'] == 0 and (st['rot'] is not None or s['u'] > 30.0):   # incidence wings can lift before rotation
             st['off'] = t; st['off_u'] = s['u']; st['off_x'] = s['x'] - log[0]['x']
         if st['off'] is not None:
             if not st['climb_set'] and t - st['off'] > 0.5:
@@ -220,6 +220,19 @@ def takeoff_climb(variant, overrides, flap=30.0, rotate_speed=70.0, rotate_pitch
                 end_u_m_s=air[-1]['u'] if air else None, pitch_range_deg=[min(r['pitch_deg'] for r in air), max(r['pitch_deg'] for r in air)] if air else None,
                 ground_contacts_after_liftoff=st['contacts_after'], crashed=a.crashed, flags=sorted(a.flags),
                 trace=[r for r in log[::5]] + ([] if not air else air[::2]))
+
+
+def flight_metrics(trace, t0=None):
+    """trace-derived metrics (independent of the pilot schedule's own bookkeeping)."""
+    if not trace:
+        return {}
+    t0 = trace[0]['t'] if t0 is None else t0; z0 = trace[0]['z']
+    air = [r for r in trace if r['supports'] == 0 and r['u'] > 20.0]
+    first = air[0] if air else None
+    return dict(first_wheels_off_t_s=(first['t'] - t0) if first else None, first_wheels_off_u_m_s=first['u'] if first else None,
+                ground_roll_m=(first['x'] - trace[0]['x']) if first else None, max_height_m=max(r['z'] for r in trace) - z0,
+                airborne_samples=len(air), pitch_range_deg=[min(r['pitch_deg'] for r in trace), max(r['pitch_deg'] for r in trace)],
+                max_speed_m_s=max(r['u'] for r in trace))
 
 
 def vtol_ceiling(variant, overrides, seconds=6.0):
@@ -243,6 +256,7 @@ def main():
                  aero=lambda: aero_sweep(a.variant, ov), takeoff=lambda: takeoff(a.variant, ov),
                  takeoff_r50=lambda: takeoff(a.variant, ov, rotate_speed=50.0), takeoff_r70=lambda: takeoff(a.variant, ov, rotate_speed=70.0),
                  climb=lambda: takeoff_climb(a.variant, ov),
+                 climb_inc=lambda: takeoff_climb(a.variant, ov, rotate_speed=80.0, rotate_pitch=0.3, climb_pitch=0.3),
                  to_att55=lambda: takeoff(a.variant, ov, rotate_speed=55.0, rotate_pitch=0.9, mode='attitude'),
                  to_att60=lambda: takeoff(a.variant, ov, rotate_speed=60.0, rotate_pitch=0.9, mode='attitude'),
                  to_att65=lambda: takeoff(a.variant, ov, rotate_speed=65.0, rotate_pitch=0.9, mode='attitude'), vtol=lambda: vtol_ceiling(a.variant, ov))

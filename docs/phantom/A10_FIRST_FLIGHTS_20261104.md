@@ -108,3 +108,77 @@ cannot lift this vehicle. The A10 is a rolling take-off flying car unless its li
    no electrical draw). Fly the 4 × TJ150 and 1 × FJ33-5A options.
 3. **Mass.** Model the single 1 MW-class turbogenerator (−260 kg) and re-run the series.
 4. **Actuators.** A faster pitch actuator (≥ 100°/s) as a second line of defence against rate saturation.
+
+## 7. Proposals P6, P7 and P8, flown in the plant
+
+All three are **off by default**: baseline behaviour and the existing tests are unchanged. The parameters are in
+`inputs/phantom_parameters_v1.json` under `proposals.p6_*`, `p7_*` and `p8_*`, each with a unit, a source and a
+label. Tests: `tests/test_phantom_p6_p7.py`.
+
+**P6: the DRS flap as an all-moving stabilator.** It becomes a real surface in `SurfaceAero` (geometry and section
+from `engineering/phantom/drs_flap.py`). It is driven by the FBW pitch demand through a 100°/s actuator, and it
+deploys as an airbrake on the brake command while rolling, so the drag is now real. Canard area is scaled × 0.5.
+
+| Cm_α about the ledger CG (plant, 60 m/s, flaps 0) | /rad |
+|---|---|
+| as drawn | **+0.837** (unstable) |
+| canards × 0.5 only | +0.226 |
+| stabilator only | +0.532 |
+| **P6 (both)** | **−0.079** (stable, margin about 2% MAC) |
+
+The plant omits the hull Munk moment. `wing_loads.py` estimates up to +2.2/rad with its SYNTHETIC factor. If that is
+real, P6 alone is not enough for the real vehicle. This is register item U3, and it needs CFD.
+
+**P7: turbine boosters from datasheets.** The model has datasheet static thrust, SFC fuel burn, first-order spool
+and a momentum thrust lapse T = T₀(1 − V/V_j). It draws no electrical power. Engine mass enters the ledger as dry
+mass × 1.15.
+
+| Option | Static thrust (plant) | t90 | Fuel at full | Vehicle mass | CG x |
+|---|---|---|---|---|---|
+| EDF boosters (as drawn) | 4.7 kN | 1.2 s | (577 kW electrical) | 1,906 kg | −0.732 m |
+| **4 × PBS TJ150** | **5.8 kN** (T/W 0.31) | 5 s (TJ80 anchor) | about 710 kg/h | 1,924 kg | −0.744 m |
+| **1 × Williams FJ33-5A** | **8.0 kN** (T/W 0.41) | 5 s (14 CFR 33.73) | about 410 kg/h | 1,987 kg | −0.788 m |
+
+**P8: wing incidence.** The wing cassette is mounted at +7° or +9°, so the wing lifts without the body rotating.
+This is a CAD change to the cassette mount, modelled as geometric incidence of the wing surfaces.
+
+### Flights (flat 8 km strip, attitude-hold pilot schedule)
+
+| Run | Configuration | Static thrust | Wheels off | Ground roll | Max height | Pitch range | Outcome |
+|---|---|---|---|---|---|---|---|
+| p6_edf | P6 + EDF boosters | 4.7 kN | 119 m/s | 7.55 km | **4.6 m** | -87 / +87° | ran off the 8 km strip (invalid) |
+| p6_tj150 | P6 + 4x TJ150 | 5.8 kN | 111 m/s | 1.55 km | **0.0 m** | -0 / +0° | bounce only, no rotation |
+| p6_fj33 | P6 + FJ33-5A | 8.0 kN | 89 m/s | 0.74 km | **0.0 m** | -0 / +0° | bounce only, no rotation |
+| p6_tj150_kp3 | P6 + 4x TJ150, Kp3/Kd0.8 | 5.8 kN | 117 m/s | 2.23 km | **0.0 m** | -0 / +1° | bounce only, no rotation |
+| p6_fj33_kp3 | P6 + FJ33-5A, Kp3/Kd0.8 | 8.0 kN | 125 m/s | 3.47 km | **11.5 m** | -77 / +82° | lift-off, then pitch loss of control |
+| p8_7_tj150 | P6+P7 TJ150+P8 7 deg | 5.8 kN | 84 m/s | 0.84 km | **0.0 m** | 0 / +1° | bounce only, no rotation |
+| p8_7_fj33 | P6+P7 FJ33+P8 7 deg | 8.0 kN | 68 m/s | 0.66 km | **19.5 m** | -80 / +67° | lift-off, then pitch loss of control |
+| p8_9_tj150 | P6+P7 TJ150+P8 9 deg | 5.8 kN | 65 m/s | 0.97 km | **0.9 m** | -9 / +9° | lift-off, then pitch loss of control |
+| p8_9_fj33 | P6+P7 FJ33+P8 9 deg | 8.0 kN | 60 m/s | 0.65 km | **19.3 m** | -66 / +66° | lift-off, then pitch loss of control |
+| sw_e1_kp0.6_kd0.5 | sweep P6+P8 7 deg + 4x TJ150, Kp 0.6 / Kd 0.5 | 5.8 kN | 95 m/s | 1.50 km | **5.8 m** | -78 / +82° | lift-off, then pitch loss of control |
+| sw_e1_kp0.6_kd1.0 | sweep P6+P8 7 deg + 4x TJ150, Kp 0.6 / Kd 1.0 | 5.8 kN | 71 m/s | 0.90 km | **21.1 m** | -75 / +89° | lift-off, then pitch loss of control |
+| sw_e1_kp1.2_kd1.0 | sweep P6+P8 7 deg + 4x TJ150, Kp 1.2 / Kd 1.0 | 5.8 kN | 94 m/s | 1.45 km | **11.7 m** | -77 / +80° | lift-off, then pitch loss of control |
+| sw_e1_kp2.0_kd1.2 | sweep P6+P8 7 deg + 4x TJ150, Kp 2.0 / Kd 1.2 | 5.8 kN | 86 m/s | 1.03 km | **23.4 m** | -70 / +76° | lift-off, then pitch loss of control |
+| sw_e2_kp0.6_kd0.5 | sweep P6+P8 7 deg + FJ33-5A, Kp 0.6 / Kd 0.5 | 8.0 kN | 69 m/s | 0.70 km | **20.4 m** | -68 / +80° | lift-off, then pitch loss of control |
+| sw_e2_kp0.6_kd1.0 | sweep P6+P8 7 deg + FJ33-5A, Kp 0.6 / Kd 1.0 | 8.0 kN | 94 m/s | 1.20 km | **10.7 m** | -87 / +83° | lift-off, then pitch loss of control |
+| sw_e2_kp1.2_kd1.0 | sweep P6+P8 7 deg + FJ33-5A, Kp 1.2 / Kd 1.0 | 8.0 kN | 86 m/s | 0.93 km | **0.3 m** | 0 / +12° | crash on the roll |
+| sw_e2_kp2.0_kd1.2 | sweep P6+P8 7 deg + FJ33-5A, Kp 2.0 / Kd 1.2 | 8.0 kN | 86 m/s | 0.92 km | **2.3 m** | -1 / +11° | lift-off, then pitch loss of control |
+
+### What this shows
+
+1. **P6 works but removes rotation authority.** A statically stable 1.9 t car cannot rotate about its rear wheels
+   on half-size canards. It rolls to 108–117 m/s at 0° pitch and does not lift off. The earlier lift-offs
+   (section 1) happened *because* the airframe was unstable.
+2. **P7 closes the thrust gap with real engines.** Both options accelerate the car well past lift-off speed.
+3. **P6 + P7 + P8 takes off.** With the wing at +7–9°, the A10 leaves the ground at **60–95 m/s after 0.65–1.5 km**
+   and reaches **19–23 m**. The FJ33 at 9° lifts off at 60 m/s (134 mph).
+4. **Every flight still ends in pitch loss of control.** An 8-run Kp/Kd sweep does not fix it. The FBW pitch loop
+   was built for fan-borne hover: PD on attitude, with no gain scheduling, no stall protection and no trim
+   integrator. With 7° incidence the wing stalls at only about 10° body pitch.
+
+**Next:** a wing-borne pitch control law. That means pitch-rate command with attitude hold, gains scheduled on q,
+an α limiter, a trim integrator, and the stabilator as the primary pitch effector with the canards for trim. Design
+it on a plant linearisation about the trimmed lift-off state.
+
+Data: `evidence/phantom/a10_p6_p7_p8_series_20261104.json` and `evidence/phantom/campaign_p6_*`, `campaign_p8_*`
+and `campaign_sw_*`.

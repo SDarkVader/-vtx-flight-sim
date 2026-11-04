@@ -157,7 +157,9 @@ export function updatePhantom(rig, truth) {
 
   // DRS / airbrake: brake command above 12 m/s, finite actuator rate
   if (rig.drs) {
-    const target = braking && rig.speed > 12 ? rig.drs.max : 0;
+    // P6 on: the plant flies the flap (truth.phantom.drs_deg, trailing edge up); the GLB rest pose sits at 6 deg
+    const plantDeg = truth.phantom?.drs_deg;
+    const target = plantDeg != null ? plantDeg - 6 : (braking && rig.speed > 12 ? rig.drs.max : 0);
     rig.drsDeg = dt > 0 ? approach(rig.drsDeg, target, 140 * dt) : target;
     tmp.setFromAxisAngle(rig.drs.axis, THREE.MathUtils.degToRad(rig.drsDeg)); rig.drs.node.quaternion.copy(tmp).multiply(rig.drs.quat);
   }
