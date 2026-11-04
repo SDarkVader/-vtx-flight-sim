@@ -4,6 +4,7 @@ import {runwayCircuit,scheduleVisualRoute} from '../public/vtx-env/visual-air-ro
 import {buildTrafficRoute,sampleTrafficRoute} from '../public/vtx-env/traffic-path.js';
 import {createVisualAirTraffic} from '../public/vtx-env/visual-air-traffic.js';
 import {RIDE_JOURNEYS,buildRideJourney} from '../public/vtx-env/visual-ride-journeys.js';
+import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from '../public/vtx-env/ride-trajectory.js';
 // Offline Vercel previews must have a versioned, parseable world snapshot.
 const snapshot=JSON.parse(readFileSync(new URL('../public/vtx-env/ride-world.json',import.meta.url),'utf8'));
 assert.equal(snapshot.half_m,500);
@@ -43,6 +44,39 @@ for(const choice of RIDE_JOURNEYS){
 }
 assert.throws(()=>buildRideJourney('unknown'));
 assert.throws(()=>buildRideJourney('standard','up'));
+// Every journey and both directions must remain within the modelled world,
+// clearing raised terrain and every collider with inflated A10 body margins.
+// A C1 spline cannot instantaneously rotate at a waypoint; continuous tangents
+// and terminal zero speed are exercised at dense samples.
+for (const spec of RIDE_JOURNEYS) for(const direction of ['left','right']){
+ const plan=buildRideJourney(spec.id,direction,cg[2]);
+ const smooth=buildRideTrajectory(plan.points,{cruiseSpeed:plan.speed});
+ const audit=inspectRideClearance(smooth,snapshot);
+ assert.equal(audit.totalFailures,0,JSON.stringify({route:spec.id,direction,fail:audit.failures}));
+ assert.ok(audit.minAirClearance>20,'unsafe airborne terrain clearance');
+ assert.ok(audit.maxHeadingStep<.09,'abrupt heading increment along smooth route');
+ const start=sampleRideTrajectory(smooth,0),end=sampleRideTrajectory(smooth,smooth.duration);
+ assert.ok(start.speed<1e-5&&end.speed<1e-5,'takeoff/landing must start and stop from rest');
+ assert.ok(Math.abs(start.position[2]-cg[2])<1e-9,'departure should be on runway');
+ assert.ok(Math.abs(end.position[2]-cg[2])<1e-9,'landing should be on runway');
+ const early=sampleRideTrajectory(smooth,1);
+ assert.ok(early.position[0]>start.position[0]&&early.speed>0,'no smooth takeoff ground acceleration');
+ assert.ok(Math.abs(early.position[2]-start.position[2])<.1,'takeoff must roll before climbing');
+ // Sample continuously across every segment join; no teleport in position.
+ for(let i=0;i<smooth.segments.length-1;i++){
+  const join=smooth.segments[i].start+smooth.segments[i].duration;
+  const before=sampleRideTrajectory(smooth,join-.001),after=sampleRideTrajectory(smooth,join+.001);
+  assert.ok(Math.hypot(...before.position.map((v,k)=>v-after.position[k]))<.3,'position jumps at waypoint');
+  const angle=Math.atan2(Math.sin(after.heading-before.heading),Math.cos(after.heading-before.heading));
+  assert.ok(Math.abs(angle)<.015,'heading jumps at waypoint');
+ }
+}
+// Test failure detection on intentional incursions into the tower and raised terrain.
+const tower=buildRideTrajectory([[100,115,1],[110,115,1],[120,115,1],[130,115,1]]);
+assert.ok(inspectRideClearance(tower,snapshot).failures.some(x=>x.reason==='obstacle'&&x.id==='tower'));
+const hillside=buildRideTrajectory([[330,330,1],[360,330,1],[390,330,1],[420,330,1]]);
+assert.ok(inspectRideClearance(hillside,snapshot).failures.some(x=>x.reason==='terrain'));
+
 const transforms=[];
 class FakeVector{constructor(...v){this.v=v;}set(...v){this.v=v;return this;}}
 class FakeQuat{setFromAxisAngle(){return this;}copy(){return this;}multiply(){return this;}}
@@ -67,5 +101,18 @@ traffic.update(10);
 assert.ok(transforms[0].position.v[0]!==positionAtT[0],'changing journey did not update aircraft');
 assert.throws(()=>traffic.setWaypoints('nonexistent',waypoints));
 assert.deepEqual(transforms[0].children[0].children[0].position.v,cg.map(v=>-v),'CG not at rotation pivot');
+// A passenger flight must stop at the last point, not wrap to the first.
+const actor2=[];
+const stage2={add:o=>actor2.push(o),remove:()=>{}};
+const oneShot=createVisualAirTraffic({THREE,GLTFLoader:Loader,scene:stage2,aircraft:[{
+ id:'one-shot',asset:'/assets/phantom-a10.glb',cgLocal:cg,waypoints,loop:false
+}]});
+const smooth2=buildRideTrajectory(buildRideJourney('standard','left',cg[2]).points,{cruiseSpeed:35});
+oneShot.setRoute('one-shot',smooth2);
+oneShot.update(smooth2.duration);
+const landed=actor2[0].position.v;
+oneShot.update(smooth2.duration+2);
+assert.deepEqual(actor2[0].position.v,landed,'end of passenger ride loops/teleports');
+oneShot.dispose();
 traffic.dispose();
 console.log('Visual aircraft route bounds, CG pivot, timing, deterministic sampling and render wiring passed');
