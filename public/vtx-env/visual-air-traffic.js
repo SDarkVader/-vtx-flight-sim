@@ -23,7 +23,10 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
       pivot.add(gltf.scene);
       actor.rig = spec.onLoad?.(gltf.scene);
       actor.ready = true;
-    }, undefined, error => console.warn('Traffic model unavailable', spec.id, error));
+    }, progress => spec.onProgress?.(progress), error => {
+      console.warn('Traffic model unavailable', spec.id, error);
+      spec.onError?.(error);
+    });
   }
   return {
     update(timeSeconds) {

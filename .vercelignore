@@ -2,7 +2,9 @@
 # the Vercel Serverless Function bundle (250 MB unzipped limit).
 # All files remain tracked in Git for local engineering and pytest.
 
-assets/
+# Only exclude the ROOT offline CAD source directory.
+# Unanchored assets/ also excluded public/assets/phantom-a10.glb on Vercel.
+/assets/
 archive/
 refs/
 scratch/

@@ -1,3 +1,5 @@
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import './visual-phantom-animation.test.mjs';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
@@ -7,6 +9,15 @@ import {createVisualAirTraffic} from '../public/vtx-env/visual-air-traffic.js';
 import {RIDE_JOURNEYS,buildRideJourney} from '../public/vtx-env/visual-ride-journeys.js';
 import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from '../public/vtx-env/ride-trajectory.js';
 // Offline Vercel previews must have a versioned, parseable world snapshot.
+// The GLB must be INCLUDED in a Vercel Git deployment. An unanchored
+// assets/ rule once excluded public/assets/** and silently stalled mobile.
+const rootDir=fileURLToPath(new URL('../',import.meta.url));
+const glb=readFileSync(new URL('../public/assets/phantom-a10.glb',import.meta.url));
+assert.ok(glb.length>100000 && glb.readUInt32LE(0)===0x46546c67,'A10 GLB absent/invalid');
+const ignoreModel=spawnSync('git',['-c','core.excludesFile=.vercelignore','check-ignore','-q','--no-index','public/assets/phantom-a10.glb'],{cwd:rootDir});
+assert.equal(ignoreModel.status,1,'Vercel excludes the actual A10 GLB from the deployment');
+const ignoreSource=spawnSync('git',['-c','core.excludesFile=.vercelignore','check-ignore','-q','--no-index','assets/offline-cad.blend'],{cwd:rootDir});
+assert.equal(ignoreSource.status,0,'Vercel must still exclude the bulky root CAD assets');
 const snapshot=JSON.parse(readFileSync(new URL('../public/vtx-env/ride-world.json',import.meta.url),'utf8'));
 assert.equal(snapshot.half_m,500);
 assert.equal(snapshot.heights_m.length,101);

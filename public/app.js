@@ -147,6 +147,20 @@ function buildWorld(w){
         }
         return rig;
       },
+      onProgress:event=>{
+        if(!rideEnabled)return;
+        const loaded=Math.round(event.loaded/1024);
+        $('loading').textContent=event.total
+          ? 'Loading A10 aircraft: '+Math.round(100*event.loaded/event.total)+'%'
+          : 'Loading A10 aircraft: '+loaded+' KB';
+      },
+      onError:error=>{
+        if(!rideEnabled)return;
+        $('loading').hidden=false;
+        $('loading').textContent='A10 aircraft failed to load. Reload the simulator. ('+(error?.message||'asset unavailable')+')';
+        $('view-sync').textContent='A10 MODEL LOAD ERROR';
+        $('ride-progress').textContent='Aircraft unavailable — flight not started';
+      },
       onUpdate:(rig,pose,att)=>animateVisualPhantom(rig,pose,{...att,duration:rideEnabled?rideRoute?.duration:83})
     }]});
     if(rideEnabled)visualTraffic.setRoute('phantom-circuit-preview',rideRoute);
