@@ -516,12 +516,19 @@ def refine(src, dst):
                                            indices=glb.add(Ig, 'idx'), material=glass_bay, mode=4))
         g.meshes[mi].primitives = new_prims
     # sleeve top plate (panel-level ceiling of the carry-through box) -> glazing as a visual cutaway
-    for n in g.nodes:
+    plate_hits = 0
+    for ni_, n in enumerate(g.nodes):
         if n.mesh is not None and (n.name or '').startswith('A10_SLEEVE_CARRY_THROUGH_BOX'):
+            Wn_ = world(ni_)
             for p in g.meshes[n.mesh].primitives:
-                P = glb.data[p.attributes.POSITION]
-                if len(P) <= 24 and np.ptp(P[:, 2]) < 0.03 and P[:, 2].min() > 1.0:
+                # height is judged in the Z-up engineering frame: Blender's glTF export is Y-up, so the file's own Z
+                # axis is not "up" there (that mismatch left this plate opaque, hiding the mechanism, in the animated GLB)
+                Pw_ = glb.data[p.attributes.POSITION].astype(float) @ Wn_[:3, :3].T + Wn_[:3, 3]
+                if len(Pw_) <= 24 and np.ptp(Pw_[:, 2]) < 0.03 and Pw_[:, 2].min() > 1.0:
                     p.material = glass_bay
+                    plate_hits += 1
+    if plate_hits != 1:
+        raise RuntimeError(f'expected to glaze exactly one sleeve top plate, matched {plate_hits}: axis or geometry changed')
     thrust_mat = add_material(glb, *THRUST)
     hub_mat = add_material(glb, *HUB)
     from phantom_livery import add_texture, ember_gradient
