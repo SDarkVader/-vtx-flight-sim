@@ -9,7 +9,7 @@ import * as THREE from 'three';
 
 const TIERS = {
   low: {
-    name: 'low', antialias: false, pixelRatio: 0.8, shadows: false, shadowSize: 0,
+    name: 'low', antialias: false, pixelRatio: 1.2, shadows: false, shadowSize: 0,
     forest: 350, facadePpm: 14, airfieldPpm: 7, detailMaps: false, localLights: 0,
     heightFog: false, glow: false, clouds: 16, anisotropy: 4, drape: 'flat', sunDisc: true,
   },
