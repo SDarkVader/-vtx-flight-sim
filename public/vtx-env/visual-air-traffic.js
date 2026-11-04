@@ -1,5 +1,7 @@
 // Opt-in, render-only airport traffic preview. Never enters the pilot observation or physics API.
 import {buildTrafficRoute, sampleTrafficRoute} from './traffic-path.js';
+import {sampleRideTrajectory} from './ride-trajectory.js';
+const sampleRoute=(route,time)=>route.kind==='smooth-ride'?sampleRideTrajectory(route,time):sampleTrafficRoute(route,time);
 
 export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
   const actors = [];
@@ -27,14 +29,17 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
     update(timeSeconds) {
       for (const actor of actors) {
         const {route, root, pivot, spec} = actor;
-        const t = ((timeSeconds + (spec.phaseSeconds || 0)) % route.duration + route.duration) % route.duration;
-        const pose = sampleTrafficRoute(route, t);
+        // Passenger-demo paths finish on the runway; ordinary visual traffic may loop.
+        const t = spec.loop===false
+          ? Math.max(0,Math.min(route.duration,timeSeconds + (spec.phaseSeconds || 0)))
+          : ((timeSeconds + (spec.phaseSeconds || 0)) % route.duration + route.duration) % route.duration;
+        const pose = sampleRoute(route, t);
         root.position.set(...pose.position);
         // X forward, Y left, Z up; yaw then pitch then bank in local axes.
         const yaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),pose.heading);
         const pitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),-pose.pitch);
-        const prev = sampleTrafficRoute(route, Math.max(0,t-.25));
-        const next = sampleTrafficRoute(route, Math.min(route.duration,t+.25));
+        const prev = sampleRoute(route, Math.max(0,t-.25));
+        const next = sampleRoute(route, Math.min(route.duration,t+.25));
         const delta = Math.atan2(Math.sin(next.heading-prev.heading),Math.cos(next.heading-prev.heading));
         const turnRate = delta / Math.max(.001,Math.min(route.duration,t+.25)-Math.max(0,t-.25));
         // Positive heading rate is a left turn. In X-forward/Y-left/Z-up,
@@ -44,6 +49,12 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
         pivot.quaternion.copy(yaw).multiply(pitch).multiply(roll);
         if(actor.ready)spec.onUpdate?.(actor.rig, pose, {time:t,bank});
       }
+    },
+    setRoute(id,route) {
+      const actor=actors.find(a=>a.spec.id===id);
+      if(!actor)throw Error('Unknown visual aircraft: '+id);
+      if(!(route?.duration>0))throw Error('Invalid visual ride route');
+      actor.route=route;
     },
     setWaypoints(id,waypoints) {
       const actor=actors.find(a=>a.spec.id===id);
