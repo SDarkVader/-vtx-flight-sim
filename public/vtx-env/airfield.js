@@ -4,6 +4,7 @@
 // zero solid physics collisions. Surfaces are drawn with deterministic renderOrder.
 import * as THREE from 'three';
 import { LAYOUT } from './layout.js';
+import {sampleTerrainHeight} from './ride-trajectory.js';
 import { asphaltTextures, concreteTextures, makeCanvas, toTexture, rng, windsockTexture } from './textures.js';
 import * as F from './facade.js';
 
@@ -222,7 +223,7 @@ function makeHoldPositionMarking(group, px, py, width, heading) {
   }, { cutout: true }), { rot: ang, z: Z + 0.003 });
 }
 
-export function buildAirfield(scene, { ppm = 11 } = {}) {
+export function buildAirfield(scene, { ppm = 11, world } = {}) {
   const group = new THREE.Group(); group.name = 'vtx-airfield';
   const asph = asphaltTextures(), conc = concreteTextures();
   const { apron, runways, roads, pads, stands, undergroundPortal: U, taxiways_network, aprons_expanded, stands_expanded } = LAYOUT;
@@ -290,7 +291,7 @@ export function buildAirfield(scene, { ppm = 11 } = {}) {
   // ---- 2. Secondary Crossing Runway 03/21: 980m length x 23m width (heading 055°, crossing at [235, 0])
   const rwy0321_len = 980, rwy0321_w = 23 + 7;
   const rwy0321_rot = Math.atan2(0.81915204, 0.57357644);
-  decal(group, rwy0321_len, rwy0321_w, 235, 0, surface(rwy0321_len, rwy0321_w, 3.2, (g, w, h) => {
+  const secondaryRunway=decal(group, rwy0321_len, rwy0321_w, 235, 0, surface(rwy0321_len, rwy0321_w, 3.2, (g, w, h) => {
     patternFill(g, asph.map, w, h, 8);
     g.fillStyle = 'rgba(60,62,65,.4)'; g.fillRect(0, 0, w, 3.5); g.fillRect(0, h - 3.5, w, 3.5);
     const cy = h / 2; g.fillStyle = '#f0eee2';
@@ -315,6 +316,18 @@ export function buildAirfield(scene, { ppm = 11 } = {}) {
       }
     }
   }, { roughness: .42, env: 1.4 }), { rot: rwy0321_rot, z: Z + .002 });
+  if(world){
+    // Keep the rendered crossing strip on the same physical heightfield used
+    // by 03/21 arrival and ground-contact clearance checks.
+    secondaryRunway.geometry.dispose();
+    secondaryRunway.geometry=new THREE.PlaneGeometry(rwy0321_len,rwy0321_w,128,4);
+    const p=secondaryRunway.geometry.attributes.position,c=Math.cos(rwy0321_rot),s=Math.sin(rwy0321_rot);
+    for(let i=0;i<p.count;i++){
+      const x=p.getX(i),y=p.getY(i),wx=235+x*c-y*s,wy=x*s+y*c;
+      p.setZ(i,sampleTerrainHeight(world,Math.max(-world.half_m,Math.min(world.half_m,wx)),Math.max(-world.half_m,Math.min(world.half_m,wy))));
+    }
+    p.needsUpdate=true;secondaryRunway.geometry.computeVertexNormals();
+  }
 
   // ---- 3. Closed Former Runway 18/36: 800m length x 18m width (north-south at x = -180m)
   const rwy1836_len = 800, rwy1836_w = 18 + 4;

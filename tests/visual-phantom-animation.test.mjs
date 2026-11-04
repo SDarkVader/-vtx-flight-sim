@@ -54,10 +54,25 @@ for(const j of joints.filter(j=>j.name.startsWith('flap_'))){
 for(const j of joints.filter(j=>j.name.startsWith('wing_'))){
  assert.ok(Math.abs(landed.joints[j.name])<1e-8,'wing unexpectedly retracts at landing');
 }
+for(const j of joints.filter(j=>j.name.startsWith('pod_'))){
+ assert.ok(Math.abs(cruise.joints[j.name]-j.q0)>1.5,'wheel pod does not turn down after takeoff');
+ assert.ok(Math.abs(landed.joints[j.name]-j.q0)<1e-8,'wheel pod does not return for landing');
+}
+for(const j of joints.filter(j=>j.name.startsWith('leg_'))){
+ assert.ok(cruise.joints[j.name]>j.q0+.09,'wheel leg does not articulate');
+ assert.ok(Math.abs(landed.joints[j.name]-j.q0)<1e-8,'wheel leg does not return for landing');
+}
+const parked=visualPhantomTargets(rig,{time:105},{duration:105,flightEnd:83,retractStart:86});
+for(const j of joints.filter(j=>j.name.startsWith('wing_')||j.name.startsWith('hatch_')||j.name.startsWith('pin_')||j.name.endsWith('_fold'))){
+ assert.ok(Math.abs(parked.joints[j.name]-j.q0)<1e-8,j.name+' fails to retract at stand');
+}
 assert.ok(Math.abs(sample(35,.45).joints.aileron_left)<.16,'aileron travel exceeded bounds');
 assert.ok(sample(35,.45).joints.aileron_left<0&&sample(35,.45).joints.aileron_right>0,
  'left/right ailerons must move oppositely during an aircraft bank');
 assert.ok(Math.abs(sample(35,.45).joints.aileron_left+sample(35,.45).joints.aileron_right)<1e-8,
  'aileron commands must remain symmetric');
+assert.ok(Math.abs(sample(14).joints.canard_left)>.04,'front canard remains static on takeoff');
+assert.ok(sample(35,.45).joints.canard_left<sample(35,.45).joints.canard_right,
+ 'front canards do not respond differentially to bank');
 assert.deepEqual(sample(35).joints,sample(35).joints,'joint animation is not deterministic');
-console.log('A10 28-joint staged hatch/wing/canard/pin/flap/aileron animation passed');
+console.log('A10 28-joint deployment, wheel articulation, control surfaces and retraction passed');

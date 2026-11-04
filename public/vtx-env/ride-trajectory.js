@@ -53,11 +53,18 @@ function evaluate(route,t){
 export function sampleRideTrajectory(route,t){
  if(route.kind!=='smooth-ride'||!Number.isFinite(t))throw Error('Invalid smooth ride sample');
  const p=evaluate(route,t),v=p.velocity;
+ if(route.terrainFollowWorld){
+  const [x,y]=p.position,w=route.terrainFollowWorld,e=.25;
+  p.position[2]+=sampleTerrainHeight(w,x,y);
+  const sx=(sampleTerrainHeight(w,x+e,y)-sampleTerrainHeight(w,x-e,y))/(2*e);
+  const sy=(sampleTerrainHeight(w,x,y+e)-sampleTerrainHeight(w,x,y-e))/(2*e);
+  v[2]+=sx*v[0]+sy*v[1];
+ }
  // On stationary endpoints, look down the nearby segment rather than resetting yaw.
  const headingVector=norm(v.slice(0,2))>.001?v:evaluate(route,clamp(p.time+(p.time===0?.3:-.3),0,route.duration)).velocity;
  const heading=Math.atan2(headingVector[1],headingVector[0]);
  const pitch=Math.atan2(v[2],Math.hypot(v[0],v[1]));
- return {time:p.time,position:p.position,speed:norm(v),heading,pitch,bank:0,segment:p.segment};
+ return {time:p.time,position:p.position,velocity:v,speed:norm(v),heading,pitch,bank:0,segment:p.segment};
 }
 export function sampleTerrainHeight(world,x,y){
  const n=world.heights_m.length,half=world.half_m;
@@ -69,7 +76,7 @@ export function sampleTerrainHeight(world,x,y){
 }
 // Swept-envelope approximation, sampled at <= 0.12 seconds along the full path.
 // Physical colliders used only as obstacles; runway ground contact is permitted.
-export function inspectRideClearance(route,world,{horizontalMargin=14,verticalMargin=8}={}){
+export function inspectRideClearance(route,world,{horizontalMargin=14,verticalMargin=8,runwayId='08/26'}={}){
  if(!world||!Array.isArray(world.obstacles)||!Array.isArray(world.heights_m))throw Error('Missing physical terrain');
  const failures=[];let minAirClearance=Infinity,maxHeadingStep=0,lastHeading=null;
  const samples=Math.ceil(route.duration/.12);
@@ -78,7 +85,12 @@ export function inspectRideClearance(route,world,{horizontalMargin=14,verticalMa
   const [x,y,z]=pose.position;
   if(Math.abs(x)>=world.half_m-10||Math.abs(y)>=world.half_m-10){failures.push({t,reason:'bounds'});continue;}
   const surface=sampleTerrainHeight(world,x,y),clearance=z-surface;
-  const onRunway=Math.abs(y)<10&&x>=-145&&x<=160;
+  const dxRunway=x-235,dyRunway=y;
+  const along=dxRunway*.57357644+dyRunway*.81915204;
+  const across=-dxRunway*.81915204+dyRunway*.57357644;
+  const onRunway=runwayId==='03/21'
+   ? Math.abs(across)<10&&along>=-90&&along<=105
+   : Math.abs(y)<10&&x>=-145&&x<=160;
   if(clearance<verticalMargin&&(clearance<.2||!onRunway))failures.push({t,reason:'terrain',x,y,z,clearance});
   if(!onRunway)minAirClearance=Math.min(minAirClearance,clearance);
   for(const o of world.obstacles){

@@ -53,10 +53,10 @@ export function holdingPattern({fix=[0,0,120],headingDeg=90,legLength=250,width=
     [x+dx*legLength-dy*width,y+dy*legLength+dx*width,z],
     [x-dy*width,y+dx*width,z],[x,y,z]]};
 }
-export function missedApproach({runwayId='08/26',height=150,extension=350}={}){
+export function missedApproach({runwayId='08/26',height=150,extension=350,usableHalfLength}={}){
   const r=runway(runwayId);
   if(!(height>0&&extension>0))throw Error('Invalid missed approach');
-  const [ax,ay]=r.axis,[cx,cy]=r.center,half=r.length/2;
+  const [ax,ay]=r.axis,[cx,cy]=r.center,half=Math.min(r.length/2,usableHalfLength??r.length/2);
   const p=(d,z)=>[cx+ax*d,cy+ay*d,z];
   return {kind:'visual-missed-approach',runwayId,points:[
     p(-half*.4,25),p(0,45),p(half*.5,height*.65),p(half+extension,height)]};
