@@ -16,12 +16,12 @@ export function createPhantomPanel({api,toast}){
   const cmd={schema:'phantom-fbw-1',engine:1,collective:0,vertical_speed_m_s:0,pitch:0,roll:0,yaw:0,stability_mode:'rate_damping'};
   let el=document.getElementById('phantom-panel');
   if(!el){el=document.createElement('section');el.id='phantom-panel';el.className='phantom-panel';
-    el.style.cssText='position:fixed;right:16px;bottom:16px;z-index:20;max-width:340px;background:rgba(10,24,32,.92);color:#e8f2f2;padding:12px;border-radius:8px;font:13px system-ui;display:none';
+    el.style.cssText='position:relative;max-width:100%;background:rgba(10,24,32,.92);color:#e8f2f2;padding:12px;border-radius:8px;font:13px system-ui;display:none';
     el.innerHTML='<b>PHANTOM FBW · phantom-fbw-1</b><div id="ph-sliders"></div>'+
       '<label>Mode <select id="ph-mode"><option>rate_damping</option><option>attitude</option><option>attitude_vs</option><option>off</option></select></label> '+
       '<button id="ph-take">Take control</button> <button id="ph-gear">Legs/pods: VTOL</button> <button id="ph-brake">Brakes on</button> <button id="ph-wing">Wing deploy</button> <button id="ph-canard">Canards deploy</button>'+
       '<div id="ph-state" style="margin-top:6px;white-space:pre-wrap;font-family:monospace;font-size:11px"></div>';
-    document.body.appendChild(el);
+    (document.querySelector('.controls-panel') || document.body).prepend(el);
     const s=el.querySelector('#ph-sliders');
     for(const [k,lo,hi,st,v] of FIELDS){const l=document.createElement('label');l.style.display='block';l.innerHTML=`${k} <output>${v}</output><input type=range min=${lo} max=${hi} step=${st} value=${v} style="width:100%">`;
       const i=l.querySelector('input'),o=l.querySelector('output');i.oninput=()=>{cmd[k]=+i.value;o.value=i.value;engage();dirty=true;};s.appendChild(l);}

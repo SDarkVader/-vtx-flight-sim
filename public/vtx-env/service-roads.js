@@ -17,6 +17,7 @@
 import * as THREE from 'three';
 import { asphaltTextures, concreteTextures, brushedMetalTexture } from './textures.js';
 import { LAYOUT } from './layout.js';
+import { circularPath, stepGroundVehicle } from './traffic-path.js';
 
 function evalCubicBezier(p0, p1, p2, p3, t) {
   const mt = 1 - t, mt2 = mt * mt, mt3 = mt2 * mt, t2 = t * t, t3 = t2 * t;
@@ -828,6 +829,31 @@ export function buildServiceRoads(scene, world, surfaceZ) {
       const wheelRot = (v.currentSpeed * dt) / v.wheelRadius;
       for (const w of v.wheels) w.rotation.x += wheelRot;
     }
+  });
+
+  // A compact electric apron shuttle demonstrates constrained ground motion.
+  // This display-only entity has no collision or authority over the aircraft.
+  const shuttle = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.3, 1.0), new THREE.MeshStandardMaterial({color:'#e9b92f', roughness:.55}));
+  body.position.z = .75; shuttle.add(body);
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.15, .55), new THREE.MeshStandardMaterial({color:'#17313a', roughness:.35}));
+  roof.position.set(-.15, 0, 1.48); shuttle.add(roof);
+  for (const x of [-.85,.85]) for (const y of [-.69,.69]) {
+    const wheel = new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.18,10), new THREE.MeshStandardMaterial({color:'#171c1e'}));
+    wheel.rotation.x=Math.PI/2; wheel.position.set(x,y,.25); shuttle.add(wheel);
+  }
+  group.add(shuttle);
+  const shuttlePath=circularPath({center:[35,45], radius:12, speedLimit:3});
+  const shuttleSpec={acceleration:1, braking:1.5, minTurnRadius:8, maxLateralAcceleration:1.2, length:2.6, width:1.3, cgOffset:0};
+  let shuttleState={distance:0, speed:0};
+  updaters.push((time, dt) => {
+    // Stop briefly on each circuit, then accelerate again. Stop commands and
+    // motion integration are separate from the path geometry.
+    const target=(time % 35 < 6) ? 0 : 3;
+    shuttleState=stepGroundVehicle(shuttleState, shuttlePath, shuttleSpec, dt, target);
+    const [x,y]=shuttleState.pose.position;
+    shuttle.position.set(x,y,surfaceZ ? surfaceZ(x,y) : 0);
+    shuttle.rotation.z=shuttleState.pose.heading;
   });
 
   scene.add(group);

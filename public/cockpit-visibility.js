@@ -16,7 +16,11 @@ const obstructionIds = new Set([
 ]);
 
 export function isCockpitObstruction(node) {
-  return Boolean(node.isMesh && (legacyPanelIds.has(node.userData?.blendstra_id) || node.userData?.legacyCockpitPanel || obstructionIds.has(node.userData?.blendstra_id) || node.userData?.cockpitObstruction));
+  // The Phantom's integrated hull has an opaque exterior armour primitive
+  // across the interior sight line. Hide that render primitive only in the
+  // cockpit; the source model and MuJoCo colliders stay untouched.
+  const phantomShell=node.name?.startsWith('PHANTOM_A8_CAVITIED_DUCT_REFERENCE_SURFACE') && ['A6 VTX Phantom satin gunmetal armour','A6 sharp black polygon windscreen'].includes(node.material?.name);
+  return Boolean(node.isMesh && (phantomShell || legacyPanelIds.has(node.userData?.blendstra_id) || node.userData?.legacyCockpitPanel || obstructionIds.has(node.userData?.blendstra_id) || node.userData?.cockpitObstruction));
 }
 
 export function setCockpitVisibility(root, inCockpit) {

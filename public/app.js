@@ -6,7 +6,7 @@ import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-6';
 import {zoomDistance} from './camera-zoom.js?v=1';
 import {rotorVisualOffset} from './rotor-visual.js?v=1';
 import {cockpitAxes,cockpitHorizon} from './cockpit-axes.js?v=1';
-import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=3';
+import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=4';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
 import {buildSky} from './vtx-env/sky.js?v=1';
 import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
@@ -16,9 +16,9 @@ import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=6';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
 import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=2';
-import {buildServiceRoads} from './vtx-env/service-roads.js?v=1';
+import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=4';
-import {attachPhantom,updatePhantom} from './vtx-env/phantom-look.js?v=1';import {createPhantomPanel} from './phantom-controls.js?v=1';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
+import {attachPhantom,updatePhantom} from './vtx-env/phantom-look.js?v=1';import {createPhantomPanel} from './phantom-controls.js?v=2';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
@@ -190,7 +190,7 @@ if(mapModeBtn){
     }
   };
 }
-$('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,stability_assist:+$('assist').value/100,reference_rpm:+$('drive').value,gear_variant:$('gear').value,airframe_variant:$('airframe').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value,atmosphere_model:$('atmosphere-model').value,wind_world_mps:selectedWind(),label:'Map-selected live ground-to-ground attempt'});manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
+$('start').onclick=guard(async()=>{replayFrames=null;const r=await api('/api/mission',{departure,destination,authority:$('pilot').value,time_scale:+$('scale').value,stability_assist:+$('assist').value/100,reference_rpm:+$('drive').value,gear_variant:$('gear').value,airframe_variant:$('airframe').value,...($('airframe').value.startsWith('phantom')?{phantom:{load_state:$('airframe').value.startsWith('phantom-fx')?'FX-A':'nominal'}}:{fuel_kg:selectedFuel()}),engine_power_limit_kw:+$('power-limit').value,atmosphere_model:$('atmosphere-model').value,wind_world_mps:selectedWind(),label:'Map-selected live ground-to-ground attempt'});manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];toast('Sortie '+r.run_id+' started on the landing gear.');});
 $('end').onclick=guard(async()=>{const r=await api('/api/stop',{reason:'Operator ended the live attempt'});toast(`Recorded: ${r.outcome}. Every failed attempt is retained.`);});
 for(const authority of ['manual','colin'])$('retry-'+authority).onclick=guard(async()=>{
  replayFrames=null;
@@ -228,7 +228,7 @@ function setCameraMode(mode){
   camera.up.set(0,0,1);camera.position.copy(orbit.target).add(savedChaseOffset||new THREE.Vector3(9,-11,8));orbit.update();
  }
  renderer.domElement.style.touchAction='none';
- $('cockpit-look').hidden=mode!=='cockpit';
+ $('cockpit-look').hidden=mode!=='cockpit';$('cockpit-instruments').hidden=mode!=='cockpit';$('cockpit-frame').hidden=mode!=='cockpit';
  $('cockpit').textContent=mode==='cockpit'?'Exit cockpit · C':'Cockpit · C';
  $('camera').textContent=mode==='free'?'Chase camera':'Free roam camera';
 }
@@ -323,7 +323,7 @@ let lastMapMs=0;
 function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return;lastMapMs=performance.now();drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
 function updateEngineering(){if(!last)return;const t=last.rendering_truth,o=last.observation;$('engineering-content').textContent=JSON.stringify({live:{simulation_time_s:o.t_s,observation_id:o.observation_id,clock_scale:last.time_scale,active:last.active,paused:last.paused,authority:last.authority,command_warnings:o.warning_lamps,rotor_rpm:o.rotor_rpm,shaft_torque_nm:o.shaft_torque_nm,shaft_power_kw:o.engine_shaft_kw,collective_deg:o.collective_feedback_deg,fan_tilt_deg:o.tilt_feedback_deg,cabin_gimbal_deg:o.cabin_feedback_deg,attitude_deg:o.attitude_xyz_deg,angular_rate_world_deg_s:o.gyro_world_deg_s,angular_rate_body_deg_s:o.gyro_body_deg_s,velocity_world_m_s:o.gnss_velocity_mps,velocity_body_m_s:o.velocity_body_mps,clearance_m:o.radar_clearance_m,fuel_kg:o.fuel_kg,scheduler_backlog_s:o.scheduler_backlog_s},engineering:{revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses}},null,2);}
 function updateView(v){last=v;latestTruthReceivedMs=performance.now();panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
- if(v.rendering_truth?.phantom){phantomPanel??=createPhantomPanel({api,toast});phantomPanel.show(true);phantomPanel.update(v);$('start').disabled=v.active;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';$('state').textContent=v.active?'LIVE EXPERIMENT · PHANTOM':'INSPECTION';return;}phantomPanel?.show(false);
+ if(v.rendering_truth?.phantom){const o=v.observation,vel=o.velocity_world_m_s||[0,0,0];$('cockpit-alt').textContent=o.radar_altimeter_m==null?'—':o.radar_altimeter_m.toFixed(1);$('cockpit-vs').textContent=vel[2].toFixed(1);$('cockpit-speed').textContent=Math.hypot(vel[0],vel[1]).toFixed(1);$('cockpit-fuel').textContent=(o.fuel_kg||[]).reduce((a,b)=>a+b,0).toFixed(1);phantomPanel??=createPhantomPanel({api,toast});phantomPanel.show(true);phantomPanel.update(v);$('start').disabled=v.active;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';$('state').textContent=v.active?(v.paused?'PHYSICS PAUSED · PHANTOM':'LIVE EXPERIMENT · PHANTOM'):'INSPECTION';$('pause').textContent=v.paused?'Resume existing mission':'Pause physics';$('revision').textContent=v.rendering_truth.provenance.revision.toUpperCase();return;}phantomPanel?.show(false);
  // Always ingest the latest physical pose; avoid repainting the entire HUD at
  // the websocket rate on low-powered phones. 3D rendering is independent.
  if(lightweightView&&latestTruthReceivedMs-lastHudUpdateMs<500&&v.run_id===lastRun)return;
@@ -367,7 +367,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
   }if(phantomRig)updatePhantom(phantomRig,truth);for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
   const base=truth.body_poses.airframe,posArray=base.position;pos.set(posArray[0],posArray[1],posArray[2]+1.5);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
-  else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position).add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);cameraTarget.copy(camera.position).add(new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch)).applyQuaternion(q));camera.lookAt(cameraTarget);}
+  else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position);if(truth.phantom)camera.position.add(new THREE.Vector3(0,.15,.30).applyQuaternion(q));if(!truth.phantom)camera.position.add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);const sight=truth.phantom?new THREE.Vector3(Math.cos(cockpitYaw)*cp,Math.sin(cockpitYaw)*cp,Math.sin(cockpitPitch)):new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch));cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));camera.lookAt(cameraTarget);}
   else if(cameraMode==='free'){freeCam.update(0.08);}
   else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);
