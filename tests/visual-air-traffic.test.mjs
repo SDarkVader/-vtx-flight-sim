@@ -1,3 +1,4 @@
+import './visual-phantom-animation.test.mjs';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {runwayCircuit,scheduleVisualRoute} from '../public/vtx-env/visual-air-routes.js';
