@@ -32,11 +32,23 @@ def test_forward_addition_matches_first_moment(fx):
     assert result['delta']['cg_m'][0] > 0
 
 
-def test_mirrored_duct_actuators_preserve_lateral_cg(fx):
+def test_mirrored_duct_actuators_preserve_lateral_first_moment(fx):
+    """Mirrored additions add zero lateral first moment: m*y_cg is conserved exactly.
+
+    The CG itself is NOT unchanged: the same lateral moment is shared over a larger mass, so
+    y_cg scales by m0/(m0 + added). The baseline y_cg is small but non-zero (asymmetric ledger),
+    which is why a plain equality on y_cg fails.
+    """
+    added = 2 * 2.0
     result = assess(fx, [dict(operation='add', id='shutter_'+side,
                                mass_kg=2, position_m=[-1, y, 0.6])
                          for side, y in [('left', 0.7), ('right', -0.7)]])
-    assert result['proposed']['cg_m'][1] == pytest.approx(result['baseline']['cg_m'][1])
+    m0, m1 = result['baseline']['mass_kg'], result['proposed']['mass_kg']
+    y0, y1 = result['baseline']['cg_m'][1], result['proposed']['cg_m'][1]
+    assert m1 == pytest.approx(m0 + added)
+    assert m1 * y1 == pytest.approx(m0 * y0, rel=1e-9, abs=1e-12)       # lateral first moment conserved
+    assert y1 == pytest.approx(y0 * m0 / m1, rel=1e-9, abs=1e-12)        # CG dilutes by the mass ratio
+    assert abs(y1) <= abs(y0)                                           # never moves away from the centreline
 
 
 def test_existing_hv_relocation_changes_cg_but_not_mass(fx):
@@ -64,3 +76,11 @@ def test_refuses_free_mass(fx):
     with pytest.raises(ValueError, match='positive'):
         assess(fx, [dict(operation='add', id='zero_kg_esc',
                           mass_kg=0, position_m=[0, 0, 0])])
+
+
+def test_fixture_is_the_a10_cassette_revision(fx):
+    """Guards the A10 label: the A9 ledger (phantom-fx-a9) is ~9 kg lighter and has different CG numbers."""
+    assert fx.p.cassette_revision == 'A10'
+    a9 = PhantomLedger(Params('phantom-fx-a9')).mass_properties(PhantomLedger(Params('phantom-fx-a9')).configuration())['mass_kg']
+    a10 = assess(fx, [])['baseline']['mass_kg']
+    assert a10 - a9 == pytest.approx(9.0127, abs=0.05)

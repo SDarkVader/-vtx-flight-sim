@@ -4,7 +4,9 @@
 
 ## Gate 1 — establish mass and inertia truth
 
-The current synthetic `phantom-fx` A10 configuration has an all-up mass of approximately **1888.47 kg**, CG **x=-0.15084 m** at full fuel, two occupants, wings stowed and VTOL pose. Axes: +X forward, +Y left, +Z up. These are simulation model values, not measured aircraft specifications.
+The current synthetic `phantom-fx` A10 configuration has an all-up mass of **1897.49 kg**, CG **x=-0.15156 m** at full fuel, two occupants, wings stowed and VTOL pose. Axes: +X forward, +Y left, +Z up. These are simulation model values, not measured aircraft specifications.
+
+**Revision check.** Those figures are the **A10** cassette ledger as executed by the zero-change CLI below (`phantom-fx`, cassette revision A10). The earlier draft of this document quoted 1888.47 kg and x=-0.15084 m: those are the **A9** cassette ledger (`phantom-fx-a9`), which is 9.01 kg lighter. For reference, the first-moment examples are: an 8 kg add at x=+1.0 m shifts the A10 CG by **+4.83473 mm** (A9: +4.85465 mm); moving the existing 40 kg `hv_junction` forward by 0.4 m shifts it by **+8.43221 mm** (A9: +8.47246 mm), with no change in gross mass.
 
 Use the existing `src/vtx/phantom/ledger.py` and `inputs/phantom_parameters_v1.json`. The new `tools/phantom/a10_cg_placement.py` independently calculates how proposed fixed hardware additions or relocations affect total mass, 3D CG and the complete 3x3 inertia tensor, without mutating the live plant.
 
