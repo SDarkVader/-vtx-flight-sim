@@ -4,6 +4,7 @@ const confirm = document.getElementById('model-choice-confirm');
 const airframe = document.getElementById('airframe');
 const status = document.getElementById('model-choice-status');
 let selectedVariant = airframe.value;
+let loadedVariant = airframe.value;
 
 // Build clickable choices from the mission form's authoritative model list.
 function renderChoices() {
@@ -38,6 +39,13 @@ async function openSelector(showWhenActive = true) {
       status.textContent = '';
       confirm.disabled = false;
       choices.hidden = false;
+      const actual = view.observation?.configuration?.airframe_variant;
+      if (actual && [...airframe.options].some(option => option.value === actual)) {
+        airframe.value = actual;
+        loadedVariant = actual;
+        const title = airframe.selectedOptions[0].textContent.split(' · ')[0];
+        document.getElementById('start').firstChild.textContent = `New ${title} mission `;
+      }
       selectedVariant = airframe.value;
       renderChoices();
     }
@@ -51,13 +59,42 @@ async function openSelector(showWhenActive = true) {
 
 document.getElementById('models').addEventListener('click', () => openSelector(true));
 document.getElementById('model-choice-cancel').addEventListener('click', () => dialog.close());
-confirm.addEventListener('click', () => {
-  if (confirm.disabled || airframe.disabled) return;
-  airframe.value = selectedVariant;
-  airframe.dispatchEvent(new Event('change', { bubbles: true }));
+async function applyPreview(variant) {
+  const response = await fetch('/api/model-preview', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ airframe_variant: variant }),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.detail || `HTTP ${response.status}`);
+  airframe.value = variant;
+  loadedVariant = variant;
   const title = airframe.selectedOptions[0].textContent.split(' · ')[0];
   document.getElementById('start').firstChild.textContent = `New ${title} mission `;
-  dialog.close();
-  document.querySelector('.mission-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  return result;
+}
+
+confirm.addEventListener('click', async () => {
+  if (confirm.disabled || airframe.disabled) return;
+  confirm.disabled = true;
+  status.textContent = 'Loading vehicle and controls…';
+  try {
+    await applyPreview(selectedVariant);
+    dialog.close();
+    document.querySelector('.mission-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    confirm.disabled = false;
+  }
+});
+airframe.addEventListener('change', async () => {
+  const variant = airframe.value;
+  try {
+    await applyPreview(variant);
+  } catch (error) {
+    airframe.value = loadedVariant;
+    status.textContent = error.message;
+    openSelector(true);
+  }
 });
 openSelector(false);

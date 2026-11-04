@@ -16,6 +16,12 @@
 #model-selector-dialog .primary{width:auto;min-width:160px;margin-top:20px;display:block}
 #model-choice-cancel{margin-top:20px}
 @media(max-width:600px){.model-choice-grid{grid-template-columns:1fr}.model-choice-card{min-height:42px}}
+.controls-panel.phantom-active > :not(#phantom-panel){display:none}
+#phantom-panel{color:#e8f2f2;font-size:12px;line-height:1.5}
+#phantom-panel b{display:block;margin-bottom:12px;color:#7cdfcb}
+#phantom-panel label{display:block;margin:12px 0}
+#phantom-panel input[type=range]{display:block;width:100%}
+#phantom-panel button{margin:3px 3px 3px 0;font-size:11px}
 #model-choice-status{min-height:1em;color:#f1c49d}
 
 
