@@ -1482,6 +1482,169 @@
     "u": "-",
     "l": "SYNTHETIC_UNVALIDATED",
     "s": "research_notes/.../cg_and_compensation.md P5 canard plain flap enabled (1) / off (0)"
+   },
+   "p6_drs_stabilator": {
+    "v": 0.0,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "P6 (proposal): DRS flap flown as an all-moving stabilator in the plant (pitch control and stability; airbrake on the brake command while rolling); 0 = off"
+   },
+   "p6_stab_area_m2": {
+    "v": 0.219,
+    "u": "m^2",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: AREA = 2 (Y_TIP - Y_ROOT) CHORD"
+   },
+   "p6_stab_position_m": {
+    "v": [
+     -2.055,
+     0.0,
+     1.13
+    ],
+    "u": "m",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: PIVOT (hinge at 25% chord = section AC)"
+   },
+   "p6_stab_cla_per_rad": {
+    "v": 4.69,
+    "u": "1/rad",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: Helmbold slope at AR_eff 6.75 (Hoerner end-plate correction, fins as end plates)"
+   },
+   "p6_stab_alpha0_deg": {
+    "v": 5.5,
+    "u": "deg",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: inverted NACA 4412 zero-lift +4.0 deg + 10 mm Gurney ~+1.5 deg"
+   },
+   "p6_stab_rest_te_up_deg": {
+    "v": 6.0,
+    "u": "deg",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: REST_DEG (trailing edge up, downforce incidence)"
+   },
+   "p6_stab_gain_deg_per_demand": {
+    "v": 15.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "stabilator travel per unit FBW pitch demand (same mapping as the canards)"
+   },
+   "p6_stab_travel_deg": {
+    "v": [
+     -10.0,
+     30.0
+    ],
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "control travel about zero, trailing edge up positive"
+   },
+   "p6_stab_rate_deg_s": {
+    "v": 100.0,
+    "u": "deg/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "rotary EMA rate; drs_flap.py hinge moment 56 N m at 200 mph sizes a 120 N m actuator"
+   },
+   "p6_airbrake_te_up_deg": {
+    "v": 55.0,
+    "u": "deg",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: AIRBRAKE_DEG (deployed on the brake command while rolling above 12 m/s)"
+   },
+   "p6_stab_eta_q": {
+    "v": 0.85,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "engineering/phantom/drs_flap.py: ETA_Q dynamic-pressure ratio at the flap (deck/cabin wake)"
+   },
+   "p7_booster_engine": {
+    "v": 0.0,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "P7 (proposal): boosters replaced by turbine engines (0 = EDF boosters, 1 = 4 x PBS TJ150, 2 = 1 x Williams FJ33-5A)"
+   },
+   "p7_tj150_thrust_n": {
+    "v": 1500.0,
+    "u": "N",
+    "l": "MANUFACTURER",
+    "s": "PBS TJ150 maximum thrust 1,500 N (pbs.cz/en/letectvi/letecke-motory/pbs-tj150)"
+   },
+   "p7_tj150_mass_kg": {
+    "v": 18.9,
+    "u": "kg",
+    "l": "MANUFACTURER",
+    "s": "PBS TJ150 weight 18.9 kg (pbs.cz TJ150 page)"
+   },
+   "p7_tj150_sfc_kg_per_n_h": {
+    "v": 0.118,
+    "u": "kg/(N h)",
+    "l": "MANUFACTURER",
+    "s": "PBS brochures 0.116-0.119 kg/N/h at max thrust (mid value)"
+   },
+   "p7_tj150_t90_s": {
+    "v": 5.0,
+    "u": "s",
+    "l": "DERIVED",
+    "s": "PBS brochure: sibling TJ80 idle to max rpm < 5 s; no TJ150 figure published"
+   },
+   "p7_tj150_jet_velocity_m_s": {
+    "v": 700.0,
+    "u": "m/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "momentum lapse T = T0 (1 - V/Vj); typical small-turbojet specific thrust ~700 N s/kg (ram compression neglected: conservative)"
+   },
+   "p7_tj150_count": {
+    "v": 4,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "P7 option 1: four engines, two per booster station"
+   },
+   "p7_fj33_thrust_n": {
+    "v": 8200.0,
+    "u": "N",
+    "l": "MANUFACTURER",
+    "s": "Williams FJ33-5A max thrust 1,846 lbf = 8.21 kN (Wikipedia, FJ33); Flaris release ~8.5 kN"
+   },
+   "p7_fj33_mass_kg": {
+    "v": 130.0,
+    "u": "kg",
+    "l": "MANUFACTURER",
+    "s": "Williams FJ33-5A dry weight ~130 kg (Flaris release; Wikipedia < 140 kg)"
+   },
+   "p7_fj33_sfc_kg_per_n_h": {
+    "v": 0.0497,
+    "u": "kg/(N h)",
+    "l": "MANUFACTURER",
+    "s": "FJ33 SFC 13.8 g/(kN s) = 0.0497 kg/(N h) (Wikipedia, at 1,200 lbf)"
+   },
+   "p7_fj33_t90_s": {
+    "v": 5.0,
+    "u": "s",
+    "l": "REGULATORY_REFERENCE",
+    "s": "14 CFR 33.73(b): flight idle to 95% rated take-off thrust in <= 5 s (used as t90)"
+   },
+   "p7_fj33_jet_velocity_m_s": {
+    "v": 380.0,
+    "u": "m/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "momentum lapse T = T0 (1 - V/Vj) for a small turbofan; ~25% lapse at M0.28"
+   },
+   "p7_installation_mass_factor": {
+    "v": 1.15,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "mounts, nozzle, fuel system and fire protection over dry engine mass"
+   },
+   "p7_idle_thrust_fraction": {
+    "v": 0.05,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "idle thrust when throttle > 0 (throttle 0 = engines off)"
+   },
+   "p8_wing_incidence_deg": {
+    "v": 0.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "P8 (proposal): wing cassette mounted at a positive geometric incidence so the wing lifts without rotating the body on its wheels (CAD change to the cassette mount); 0 = as drawn"
    }
   }
  },

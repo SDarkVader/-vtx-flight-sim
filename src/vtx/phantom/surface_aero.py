@@ -45,8 +45,10 @@ class SurfaceAero:
         a_st = w['CLmax_clean'] / w['CLalpha_per_rad_M0']
         self.cn_fp = P['aero.flat_plate_cn']; self.M = P['aero.stall_blend_rate']
         self.surfaces = []
+        inc = math.radians(P['proposals.p8_wing_incidence_deg'])      # P8: geometric incidence (chord and normal rotated, LE up)
+        cw, nw = [math.cos(inc), 0.0, math.sin(inc)], [-math.sin(inc), 0.0, math.cos(inc)]
         for side, s, z in (('left', 1, w['ac_height_R_m']), ('right', -1, w['ac_height_L_m'])):
-            self.surfaces.append(Surface(f'wing_{side}', [w['x_ac_mac_m'], s * w['y_mac_m'], z], [1, 0, 0], [0, 0, 1], S_side, w['CLalpha_per_rad_M0'],
+            self.surfaces.append(Surface(f'wing_{side}', [w['x_ac_mac_m'], s * w['y_mac_m'], z], cw, nw, S_side, w['CLalpha_per_rad_M0'],
                                          -w['cm0'] * 0.0 - math.radians(2.0), a_st, P['aero.wing_cd0'], k, 'wing', side, chord=w['mac_m']))
         ail = H['aileron']; flp = H['flap']
         y_ail = (np.mean(ail['eta'])); y_flp = np.mean(flp['eta'])
@@ -62,6 +64,15 @@ class SurfaceAero:
         for side, s in (('left', 1), ('right', -1)):
             self.surfaces.append(Surface(f'canard_{side}', [cn['x_pivot_m'], s * yc, cn['z_m']], [1, 0, 0], [0, 0, 1], cn['area_each_m2'] * scale, cn['CLalpha_per_rad'], 0.0,
                                          math.radians(P['aero.canard_stall_deg']), P['aero.canard_cd0'], 0.1, 'canard', side, (P['aero.canard_hinge_ch_alpha'], 0.0)))
+        if P['proposals.p6_drs_stabilator'] > 0.5:
+            # P6: split DRS flap between the fins flown as an all-moving stabilator (engineering/phantom/drs_flap.py).
+            # Inverted cambered section: CL = CLa (alpha - alpha0) with alpha0 > 0 (downforce at zero incidence).
+            # The trailing-edge-up deflection (state['stab_te_up'], rad) reduces the local angle of attack.
+            # eta_q scales the dynamic pressure through the area.
+            self.surfaces.append(Surface('drs_stab', P['proposals.p6_stab_position_m'], [1, 0, 0], [0, 0, 1],
+                                         P['proposals.p6_stab_area_m2'] * P['proposals.p6_stab_eta_q'], P['proposals.p6_stab_cla_per_rad'],
+                                         math.radians(P['proposals.p6_stab_alpha0_deg']), math.radians(12.0), 0.012, 0.052, 'stab', None,
+                                         (0.0, 0.0), 0.24))
         fp = np.array(P['aero.fin_position_m']); cant = math.radians(P['aero.fin_cant_deg'])
         for side, s in (('left', 1), ('right', -1)):
             self.surfaces.append(Surface(f'fin_{side}', fp * [1, s, 1], [1, 0, 0], [0, s * math.cos(cant), -math.sin(cant)], P['aero.fin_area_each_m2'],
@@ -84,6 +95,8 @@ class SurfaceAero:
                 if not state['canard_deployed'][s.side]:
                     frac = 0.0
                 extra_inc = state['canard_pitch'][s.side]
+            elif s.kind == 'stab':
+                extra_inc = -state.get('stab_te_up', 0.0)
             if frac <= 0:
                 out.append(dict(name=s.name, alpha_deg=0.0, q_pa=0.0, cl=0.0, cd=0.0, force_n=[0, 0, 0], active=False)); continue
             v = air(s.ac)

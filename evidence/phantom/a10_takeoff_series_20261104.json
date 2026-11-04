@@ -1,0 +1,157 @@
+[
+ {
+  "run": "takeoff:takeoff_r50",
+  "technique": "raw pitch 1.0, rate-damping, rotate 50 m/s",
+  "wheels_off": [
+   38.5,
+   74.374,
+   2513.87
+  ],
+  "max_height_m": null,
+  "pitch_range": [
+   -72.595,
+   78.259
+  ],
+  "crashed": true,
+  "max_lift_over_W": 2.8636144598822204
+ },
+ {
+  "run": "takeoff:takeoff",
+  "technique": "raw pitch 1.0, rate-damping, rotate 60 m/s",
+  "wheels_off": [
+   28.000999999999998,
+   69.277,
+   1590.14
+  ],
+  "max_height_m": null,
+  "pitch_range": [
+   -75.156,
+   62.98
+  ],
+  "crashed": true,
+  "max_lift_over_W": 2.5625139004968167
+ },
+ {
+  "run": "takeoff:takeoff_r70",
+  "technique": "raw pitch 1.0, rate-damping, rotate 70 m/s",
+  "wheels_off": [
+   27.500999999999998,
+   79.052,
+   1566.0
+  ],
+  "max_height_m": null,
+  "pitch_range": [
+   -49.154,
+   52.47
+  ],
+  "crashed": true,
+  "max_lift_over_W": 2.2400937887020596
+ },
+ {
+  "run": "takeoff_att:to_att55",
+  "technique": "attitude 9 deg, rotate 55, Kp1.2/Kd0.25, canard trim 10",
+  "wheels_off": [
+   33.5,
+   89.539,
+   2182.4700000000003
+  ],
+  "max_height_m": 17.562,
+  "pitch_range": [
+   -69.708,
+   73.766
+  ],
+  "crashed": true,
+  "max_lift_over_W": 4.060911963270857
+ },
+ {
+  "run": "takeoff_att:to_att60",
+  "technique": "attitude 9 deg, rotate 60, Kp1.2/Kd0.25, canard trim 10",
+  "wheels_off": null,
+  "max_height_m": null,
+  "pitch_range": null,
+  "crashed": false,
+  "max_lift_over_W": 0.49467246535158566
+ },
+ {
+  "run": "takeoff_att:to_att65",
+  "technique": "attitude 9 deg, rotate 65, Kp1.2/Kd0.25, canard trim 10",
+  "wheels_off": null,
+  "max_height_m": null,
+  "pitch_range": null,
+  "crashed": false,
+  "max_lift_over_W": 0.4504390753087912
+ },
+ {
+  "run": "gain_kp3_kd0.6:to_att60",
+  "technique": "attitude 9 deg, rotate 60, Kp3/Kd0.6, canard trim 10",
+  "wheels_off": [
+   35.0,
+   90.652,
+   2292.55
+  ],
+  "max_height_m": 32.440999999999995,
+  "pitch_range": [
+   -53.528,
+   74.427
+  ],
+  "crashed": false,
+  "max_lift_over_W": 1.7785910156863636
+ },
+ {
+  "run": "gain_kp5_kd1.0:to_att60",
+  "technique": "attitude 9 deg, rotate 60, Kp5/Kd1.0, canard trim 10",
+  "wheels_off": null,
+  "max_height_m": null,
+  "pitch_range": null,
+  "crashed": false,
+  "max_lift_over_W": 0.40678347988594504
+ },
+ {
+  "run": "gain_kp8_kd1.6:to_att60",
+  "technique": "attitude 9 deg, rotate 60, Kp8/Kd1.6, canard trim 10",
+  "wheels_off": [
+   50.0,
+   84.874,
+   3542.25
+  ],
+  "max_height_m": 20.785999999999998,
+  "pitch_range": [
+   -58.07,
+   39.399
+  ],
+  "crashed": true,
+  "max_lift_over_W": 1.1222269991750593
+ },
+ {
+  "run": "climb_fbw:climb",
+  "technique": "P-T1a: attitude 10 deg @70, Kp3/Kd0.8, trim 0",
+  "wheels_off": [
+   80.40200000000014,
+   103.019,
+   7178.01
+  ],
+  "max_height_m": 6.156000000000001,
+  "pitch_range": [
+   -77.426,
+   80.65
+  ],
+  "crashed": true,
+  "max_lift_over_W": null
+ },
+ {
+  "run": "climb_pt1:climb",
+  "technique": "P-T1: as P-T1a + larger EDF boosters (SYNTHETIC)",
+  "wheels_off": [
+   54.40200000000014,
+   106.366,
+   4906.77
+  ],
+  "max_height_m": 5.977,
+  "pitch_range": [
+   -70.414,
+   77.005
+  ],
+  "crashed": true,
+  "max_lift_over_W": null
+ }
+]
