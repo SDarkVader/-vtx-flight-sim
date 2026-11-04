@@ -45,6 +45,11 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
         if(actor.ready)spec.onUpdate?.(actor.rig, pose, {time:t,bank});
       }
     },
+    setWaypoints(id,waypoints) {
+      const actor=actors.find(a=>a.spec.id===id);
+      if(!actor)throw Error('Unknown visual aircraft: '+id);
+      actor.route=buildTrafficRoute(waypoints);
+    },
     dispose() { for (const a of actors) { scene.remove(a.root); a.root.clear(); } }
   };
 }

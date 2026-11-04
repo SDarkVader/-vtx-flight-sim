@@ -20,7 +20,7 @@ import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=4';
 import {createVisualAirTraffic} from './vtx-env/visual-air-traffic.js?v=2';
 import {buildTrafficRoute,sampleTrafficRoute} from './vtx-env/traffic-path.js';
-import {runwayCircuit} from './vtx-env/visual-air-routes.js?v=2';
+import {RIDE_JOURNEYS,buildRideJourney} from './vtx-env/visual-ride-journeys.js?v=1';
 import {attachVisualPhantom,animateVisualPhantom} from './vtx-env/visual-phantom-animation.js?v=1';
 import {attachPhantom,updatePhantom} from './vtx-env/phantom-look.js?v=2';import {createPhantomPanel} from './phantom-controls.js?v=2';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
@@ -64,16 +64,30 @@ const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
 const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
 const sky=buildSky(scene,renderer,{quality}),environment={};
-let visualTraffic=null,rideRoute=null,rideTime=0,rideLastFrame=0,ridePaused=false,ridePose=null,rideActor=null;
+const rideCgLocal=[-0.15156246846624952,0.00004531509472356366,0.5529781802070567];
+let visualTraffic=null,rideRoute=null,rideTime=0,rideLastFrame=0,ridePaused=false,ridePose=null,rideActor=null,ridePlan=null;
 const rideEnabled=new URLSearchParams(location.search).has('trafficRide');
 const trafficPreviewEnabled=rideEnabled||new URLSearchParams(location.search).has('trafficPreview');
 if(rideEnabled){
  const panel=document.createElement('div');panel.id='ride-controls';
  panel.style.cssText='position:absolute;bottom:12px;left:12px;z-index:40;background:#09151de8;color:white;padding:12px;border-radius:10px;font:14px system-ui;display:flex;gap:9px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 45px)';
- panel.innerHTML='<strong>A10 CIRCUIT RIDE</strong><button id="ride-pause" type="button">Pause</button><button id="ride-restart" type="button">Restart</button><span id="ride-progress">Loading route...</span>';
+ panel.innerHTML='<strong>A10 COCKPIT RIDE</strong><label>Journey <select id="ride-route">'+RIDE_JOURNEYS.map(r=>'<option value="'+r.id+'">'+r.label+'</option>').join('')+'</select></label><label>Direction <select id="ride-direction"><option value="left">Left-hand</option><option value="right">Right-hand</option></select></label><button id="ride-pause" type="button">Pause</button><button id="ride-restart" type="button">Restart</button><span id="ride-progress" aria-live="polite">Loading route...</span><small>Changing route or direction starts a new circuit</small>';
  viewport.append(panel);
  document.getElementById('ride-pause').onclick=()=>{ridePaused=!ridePaused;document.getElementById('ride-pause').textContent=ridePaused?'Resume':'Pause';};
  document.getElementById('ride-restart').onclick=()=>{rideTime=0;ridePaused=false;rideLastFrame=performance.now();document.getElementById('ride-pause').textContent='Pause';};
+  const changeJourney=()=>{
+    const plan=buildRideJourney($('ride-route').value,$('ride-direction').value,rideCgLocal[2]);
+    if(world&&!plan.waypoints.every(p=>Math.abs(p.position[0])<world.half_m&&Math.abs(p.position[1])<world.half_m)){
+      toast('Route exceeds this simulation terrain');return;
+    }
+    ridePlan=plan;rideRoute=buildTrafficRoute(plan.waypoints);
+    visualTraffic?.setWaypoints('phantom-circuit-preview',plan.waypoints);
+    rideTime=0;rideLastFrame=performance.now();ridePaused=false;
+    $('ride-pause').textContent='Pause';
+    $('ride-progress').textContent=plan.label+' · '+plan.direction+' circuit · starting at runway';
+  };
+  $('ride-route').onchange=changeJourney;
+  $('ride-direction').onchange=changeJourney;
  document.querySelectorAll('.controls-panel input,.controls-panel button').forEach(el=>el.disabled=true);
  document.getElementById('takeover').disabled=true;
  document.getElementById('view-mode').textContent='A10 SCRIPTED CIRCUIT · NO PHYSICS CONTROL';
@@ -93,18 +107,12 @@ function buildWorld(w){
  if(trafficPreviewEnabled&&!visualTraffic){
   // Phantom FX-A A10 full-fuel/two-occupant ground CG, calculated from
   // src/vtx/phantom/ledger.py (mass_properties), in GLB X-forward/Y-left/Z-up.
-  const cgLocal=[-0.15156246846624952,0.00004531509472356366,0.5529781802070567];
-  const circuit=runwayCircuit({runwayId:'08/26',height:35,extension:55,lateral:110});
-  const pts=circuit.points.map(p=>[p[0],p[1],p[2]+cgLocal[2]]);
-  // 80 m/s rotation marker is above the A10's documented 66.4 m/s stall
-  // estimate. This is a visual trajectory, not a takeoff performance prediction.
-  const speeds=[0,42,80,80,70,60,60,50,40,0];
-  const waypoints=pts.map((p,i)=>({
-    position:p,speed:speeds[i],
-    duration:i===0?0:Math.max(.25,2*Math.hypot(...p.map((v,j)=>v-pts[i-1][j]))/(speeds[i-1]+speeds[i]))
-  }));
-  if(pts.every(p=>Math.abs(p[0])<w.half_m&&Math.abs(p[1])<w.half_m)){
-    if(rideEnabled)rideRoute=buildTrafficRoute(waypoints);
+  const cgLocal=rideCgLocal;
+   // Deterministic demonstration trajectories: not aircraft performance predictions.
+   const plan=buildRideJourney('standard','left',cgLocal[2]);
+   const waypoints=plan.waypoints;
+   if(waypoints.every(p=>Math.abs(p.position[0])<w.half_m&&Math.abs(p.position[1])<w.half_m)){
+     if(rideEnabled){rideRoute=buildTrafficRoute(waypoints);ridePlan=plan;}
     visualTraffic=createVisualAirTraffic({THREE,GLTFLoader,scene,aircraft:[{
       id:'phantom-circuit-preview',asset:'/assets/phantom-a10.glb',
       cgLocal,waypoints,phaseSeconds:0,
@@ -425,7 +433,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
    const p=rideActor.position,rot=rideActor.children[0].quaternion;
    if(cameraMode==='cockpit'){
     const sight=new THREE.Vector3(Math.cos(cockpitYaw)*Math.cos(cockpitPitch),Math.sin(cockpitYaw)*Math.cos(cockpitPitch),Math.sin(cockpitPitch)).applyQuaternion(rot);
-    camera.position.copy(new THREE.Vector3(1.1,0,1.05).applyQuaternion(rot).add(p));
+    camera.position.copy(new THREE.Vector3(.9,0,1.48).applyQuaternion(rot).add(p));
     camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(rot));
     camera.lookAt(camera.position.clone().add(sight));
    }else if(cameraMode==='chase'){
