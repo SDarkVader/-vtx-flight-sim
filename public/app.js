@@ -116,7 +116,11 @@ function buildWorld(w){
     visualTraffic=createVisualAirTraffic({THREE,GLTFLoader,scene,aircraft:[{
       id:'phantom-circuit-preview',asset:'/assets/phantom-a10.glb',
       cgLocal,waypoints,phaseSeconds:0,
-      onLoad:attachVisualPhantom,
+      onLoad:(root)=>{
+        const rig=attachVisualPhantom(root);
+        if(rideEnabled){$('loading').hidden=true;$('view-sync').textContent='A10 SCRIPTED RIDE · READY';}
+        return rig;
+      },
       onUpdate:(rig,pose,att)=>animateVisualPhantom(rig,pose,{...att,cgHeight:cgLocal[2]})
     }]});
   }else console.warn('Visual circuit outside physics terrain; preview not loaded');
@@ -398,7 +402,24 @@ function updateView(v){last=v;latestTruthReceivedMs=performance.now();panelWasSt
 let manualRequestPending=false;
 setInterval(guard(async()=>{if(manualRequestPending||last?.rendering_truth?.phantom||!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames)return;manualBeat++;if(dirty||manualBeat%10===0){dirty=false;manualRequestPending=true;try{await api('/api/action',{...command,authority:'manual',observation_id:last.observation.observation_id,reason:'Manual operator controls and command heartbeat'});}catch(e){dirty=true;throw e;}finally{manualRequestPending=false;}}}),50);
 function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);ws.onmessage=e=>updateView(JSON.parse(e.data));ws.onclose=()=>{toast('Live connection lost; physical command lease still applies.');setTimeout(connect,2000);};}
-api('/api/world').then(buildWorld).catch(e=>toast(e.message));connect();
+if(rideEnabled){
+  // Serverless previews cannot supply a persistent physical-state WebSocket.
+  // The scripted ride uses a deterministic saved terrain snapshot, not /api/world or /ws.
+  $('loading').textContent='Preparing A10 scripted flight...';
+  $('state').textContent='SCRIPTED A10 RIDE';
+  $('view-sync').textContent='A10 SCRIPTED RIDE · LOADING WORLD';
+  fetch('/vtx-env/ride-world.json?v=1').then(response=>{
+    if(!response.ok)throw Error('Ride terrain unavailable: HTTP '+response.status);
+    return response.json();
+  }).then(w=>{buildWorld(w);setCameraMode('cockpit');}).catch(e=>{
+    $('loading').textContent='Unable to load A10 terrain: '+e.message;
+    $('view-sync').textContent='RIDE WORLD ERROR';
+    console.error('A10 scripted ride world',e);
+  });
+}else{
+  api('/api/world').then(buildWorld).catch(e=>toast(e.message));
+  connect();
+}
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
 if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;}};
@@ -454,7 +475,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
  }else visualTraffic?.update(now/1000);
  sky.update(camera,now/1000);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);environment.serviceRoads?.update(now/1000,last?.observation?.gnss_xy_m);
   aircraftFx?.update(last?.observation?.rotor_rpm,now/1000);
- if(model&&modelReady&&!window.__vtxNoRender)renderer.render(scene,camera);
+ if((rideEnabled?!!world:(model&&modelReady))&&!window.__vtxNoRender)renderer.render(scene,camera);
  const status=$('view-sync');if(status&&!rideEnabled&&now-(status._last||0)>400){status._last=now;
   const age=now-latestTruthReceivedMs;
   if(last&&age>2000&&!panelWasStale){aircraftFx?.updateAvionics?.(last.observation,true);panelWasStale=true;}

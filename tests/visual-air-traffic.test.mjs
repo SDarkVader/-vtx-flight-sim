@@ -1,8 +1,18 @@
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {runwayCircuit,scheduleVisualRoute} from '../public/vtx-env/visual-air-routes.js';
 import {buildTrafficRoute,sampleTrafficRoute} from '../public/vtx-env/traffic-path.js';
 import {createVisualAirTraffic} from '../public/vtx-env/visual-air-traffic.js';
 import {RIDE_JOURNEYS,buildRideJourney} from '../public/vtx-env/visual-ride-journeys.js';
+// Offline Vercel previews must have a versioned, parseable world snapshot.
+const snapshot=JSON.parse(readFileSync(new URL('../public/vtx-env/ride-world.json',import.meta.url),'utf8'));
+assert.equal(snapshot.half_m,500);
+assert.equal(snapshot.heights_m.length,101);
+assert.equal(snapshot.obstacles.length,38);
+assert.ok(snapshot.heights_m.every(row=>row.length===101&&row.every(Number.isFinite)));
+const frontend=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+assert.match(frontend,/fetch\('\/vtx-env\/ride-world\.json/);
+assert.match(frontend,/rideEnabled\?!!world:/);
 const circuit=runwayCircuit();
 const cg=[-.15156246846624952,.00004531509472356366,.5529781802070567];
 const pts=circuit.points.map(p=>[p[0],p[1],p[2]+cg[2]]);
