@@ -186,6 +186,10 @@ class Pilot:
                 self.event("manual_authority",run_id=run)
                 self.last_state="manual_authority"
             return
+        if view.get("pilot_owner") is not None or view.get("pilot_epoch",0)>0:
+            self.status_update(state="pilot_owned_elsewhere",authority="colin",
+                               pilot_owner=view.get("pilot_owner"),objective=view.get("objective"))
+            return
         if view.get("paused"):
             # Read-only instrument inspection is permitted while flight remains paused.
             self.refresh_calibration(request(self.base,"/api/observe"))

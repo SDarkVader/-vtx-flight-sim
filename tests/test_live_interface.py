@@ -60,6 +60,38 @@ def test_r6_stream_reconnect_resumes_existing_flight(tmp_path, monkeypatch):
     assert after['active'] and after['mission'] == before['mission']
     assert after['observation']['t_s'] > before['observation']['t_s']
 
+def test_pilot_handover_preserves_run_goal_and_rejects_old_pilot(tmp_path,monkeypatch):
+    import asyncio
+    import vtx.live_server as server
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path))
+    lab=Laboratory();monkeypatch.setattr(server,'lab',lab)
+    run=lab.start(Mission(authority='colin'))['run_id']
+    goal=asyncio.run(server.set_objective({'text':'Hold here'}))
+    first=asyncio.run(server.pilot_handover({'run_id':lab.run_id,'pilot_id':'pilot-a','expected_epoch':0}))
+    def action(pilot,epoch):
+        return Action(authority='colin',pilot_id=pilot,pilot_epoch=epoch,pilot_run_id=run,
+            observation_id=lab.sensor_observation()['observation_id'],engine=.4,
+            collective_deg=[3]*4,tilt_deg=[[0,0]]*4,reason='Hold')
+    lab.accept_action(action('pilot-a',first['pilot_epoch']))
+    second=asyncio.run(server.pilot_handover({'run_id':lab.run_id,'pilot_id':'pilot-b','expected_epoch':first['pilot_epoch']}))
+    assert second['run_id']==run and second['objective']==goal
+    assert lab.action_log[-1]['cancelled']
+    with pytest.raises(HTTPException):lab.accept_action(action('pilot-a',first['pilot_epoch']))
+    with pytest.raises(HTTPException):lab.accept_action(action('pilot-b',second['pilot_epoch']).model_copy(update={'pilot_run_id':'old-run'}))
+    assert lab.accept_action(action('pilot-b',second['pilot_epoch']))['accepted']
+    asyncio.run(server.operator({'authority':'manual'}))
+    asyncio.run(server.operator({'authority':'colin'}))
+    with pytest.raises(HTTPException):lab.accept_action(action('pilot-b',second['pilot_epoch']))
+    with pytest.raises(HTTPException):
+        lab.accept_action(Action(authority='colin',observation_id=lab.sensor_observation()['observation_id'],
+            engine=.4,collective_deg=[3]*4,tilt_deg=[[0,0]]*4,reason='Old client'))
+    third=asyncio.run(server.pilot_handover({'run_id':lab.run_id,'pilot_id':'pilot-b','expected_epoch':lab.pilot_epoch}))
+    lab.checkpoint(force=True);lab.audit_file.close();lab.audit_file=None
+    recovered=Laboratory()
+    assert recovered.pilot_owner=='pilot-b' and recovered.pilot_epoch==third['pilot_epoch']
+    assert recovered.objective==goal and recovered.run_id==run
+    recovered.stop('Handover test complete')
+
 @pytest.mark.parametrize('compressed',[False,True])
 def test_replay_is_bounded_and_preserves_endpoints(tmp_path,compressed):
     import gzip,json
