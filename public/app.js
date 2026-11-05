@@ -501,7 +501,43 @@ closeKeyboardGuide();addEventListener('pageshow',closeKeyboardGuide);
 $('keyboard-open').onclick=()=>{$('keyboard-help').showModal();keys.clear();};
 for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>b.closest('dialog').close();
 $('engineering').onclick=()=>{$('engineering-dialog').showModal();updateEngineering();};
-$('history').onclick=guard(async()=>{const records=await api('/api/runs');$('runs').replaceChildren();for(const r of records){const a=document.createElement('article'),button=document.createElement('button');button.textContent='Inspect recorded states';button.onclick=guard(async()=>{const replay=await api('/api/replay/'+r.run_id);replayFrames=replay.frames;replayFrame=0;$('replay-time').max=Math.max(0,replayFrames.length-1);$('replay-controls').hidden=false;$('view-mode').textContent='POST-FLIGHT AUDIT · NO CONTROL';toast(replay.downsampled?`Inspection uses ${replay.frames.length} of ${replay.total_frames} recorded states; full log is retained.`:'Inspection only. The live physical plant remains separate.');});a.append(button,document.createTextNode(`${r.run_id} · ${r.outcome} · ${r.simulated_seconds.toFixed(1)} s · ${r.decisions} decisions`));$('runs').appendChild(a);}$('history-dialog').showModal();});
+function describeFlightEvent(event){
+ const d=event.detail||{};
+ switch(event.kind){
+  case 'objective_changed': return `Objective: ${d.objective?.text||'—'}`;
+  case 'objective_completed': return `Objective completed: ${d.objective?.text||'—'}`;
+  case 'pilot_decision': return `${d.pilot_id||d.authority||'Pilot'}: ${d.decision||'Decision recorded'}`;
+  case 'pilot_handover': return `Pilot handover: ${d.previous||'unassigned'} → ${d.pilot_id||'unassigned'}`;
+  case 'pilot_takeover_pending': return `Pilot awaiting control: ${d.pilot_id||'unknown'}`;
+  case 'pilot_takeover_applied': return `Pilot took control: ${d.pilot_id||'unknown'}`;
+  case 'pilot_provider_failed': return `Pilot ${d.previous||'unknown'} failed; fallback ${d.fallback?.state||'unknown'}${d.fallback?.reason?`: ${d.fallback.reason}`:''}`;
+  case 'pending_pilot_failed': return `Replacement pilot ${d.pilot_id||'unknown'} failed: ${d.reason||'no reason given'}`;
+  case 'authority_change': return `Authority: ${d.before||'unknown'} → ${d.after||'unknown'}`;
+  case 'supported_landing_observed': return `Supported landing; ${Number.isFinite(d.destination_distance_m)?d.destination_distance_m.toFixed(2)+' m from destination':'distance unavailable'}; precision ${d.precision==='not_specified'?'not specified':d.precision||'unknown'}`;
+  case 'sortie_end': return `Flight ended: ${d.outcome||'unknown'}${d.reason?` · ${d.reason}`:''}`;
+  default: return 'Event recorded';
+ }
+}
+$('history').onclick=guard(async()=>{
+ const records=await api('/api/runs');$('runs').replaceChildren();$('timeline').hidden=true;
+ for(const r of records){
+  const article=document.createElement('article'),replayButton=document.createElement('button'),timelineButton=document.createElement('button');
+  replayButton.textContent='Inspect recorded states';
+  replayButton.onclick=guard(async()=>{const replay=await api('/api/replay/'+r.run_id);replayFrames=replay.frames;replayFrame=0;$('replay-time').max=Math.max(0,replayFrames.length-1);$('replay-controls').hidden=false;$('view-mode').textContent='POST-FLIGHT AUDIT · NO CONTROL';toast(replay.downsampled?`Inspection uses ${replay.frames.length} of ${replay.total_frames} recorded states; full log is retained.`:'Inspection only. The live physical plant remains separate.');});
+  timelineButton.textContent='Review decisions and events';
+  timelineButton.onclick=guard(async()=>{const result=await api('/api/timeline/'+r.run_id),container=$('timeline-events');container.replaceChildren();
+   for(const event of result.events){const line=document.createElement('p'),label=document.createElement('strong'),detail=document.createElement('span');
+    label.textContent=`${Number.isFinite(event.t_s)?event.t_s.toFixed(2)+' s':'—'} · `;
+    detail.textContent=describeFlightEvent(event);line.append(label,detail);container.appendChild(line);}
+   if(!result.events.length)container.textContent='No decisions or events recorded.';
+   if(result.truncated){const note=document.createElement('p');note.textContent=`Showing the most recent ${result.events.length} of ${result.total_events} events; the full log is retained.`;container.prepend(note);}
+   $('timeline').hidden=false;
+  });
+  article.append(replayButton,timelineButton,document.createTextNode(`${r.run_id} · ${r.outcome} · ${r.simulated_seconds.toFixed(1)} s · ${r.decisions} decisions`));$('runs').appendChild(article);
+ }
+ $('history-dialog').showModal();
+});
+$('open-records').onclick=()=>$('history').click();
 $('replay-time').oninput=()=>replayFrame=+$('replay-time').value;
 $('return-live').onclick=()=>{replayFrames=null;$('replay-controls').hidden=true;$('view-mode').textContent='PHYSICAL STATE · LIVE';};
 function drawMap(canvas){

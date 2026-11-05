@@ -74,3 +74,9 @@ destination separately from physical settling. An optional `landing_precision_m`
 mission setting evaluates the stated tolerance; when omitted, precision is
 `not_specified`. The landing indication is evidence of the modeled conditions,
 not a blanket assessment that the full mission objective was achieved.
+
+Flight records can be opened during an active flight or afterwards. They show
+recorded physical states and a timeline of objectives, decisions, handovers,
+provider failures and landings. The timeline displays up to 200 recent events;
+the complete event log remains in the run evidence. Reviewing recorded states
+does not pause or control the live aircraft.

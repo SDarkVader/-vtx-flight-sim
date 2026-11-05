@@ -980,13 +980,54 @@ async def runs():
     result=[]
     for path in sorted((lab.data_root/'evidence/flights').glob('*/summary.json'),reverse=True):
         s=json.loads(path.read_text());result.append({k:v for k,v in s.items() if k!='final'})
+    if lab.active and lab.run_id:
+        result.insert(0,dict(run_id=lab.run_id,outcome='in progress',simulated_seconds=float(lab.aircraft.data.time),
+                             decisions=lab.action_sequence,active=True))
     return result
+
+def read_decision_timeline(path, limit=200):
+    """Return recent significant events with bounded memory; the full log remains intact."""
+    from collections import deque
+    events=deque(maxlen=limit);count=0
+    kinds={'objective_changed','objective_completed','pilot_decision','pilot_handover',
+           'pilot_takeover_pending','pilot_takeover_applied','pilot_provider_failed',
+           'pending_pilot_failed','authority_change','supported_landing_observed','sortie_end'}
+    with (gzip.open(path,'rt',encoding='utf-8') if path.suffix=='.gz' else path.open(encoding='utf-8')) as stream:
+        for line in stream:
+            try: row=json.loads(line)
+            except json.JSONDecodeError:
+                if not line.endswith('\n'):continue  # live writer may be partway through its last line
+                raise
+            kind=row.get('kind')
+            if kind not in kinds:continue
+            payload=row.get('payload') or {}
+            if kind=='pilot_decision':
+                issued=payload.get('issued') or {}
+                detail=dict(decision=payload.get('decision'),sequence=payload.get('sequence'),
+                            pilot_id=issued.get('pilot_id'),authority=issued.get('authority'))
+            elif kind=='sortie_end':
+                detail={k:payload.get(k) for k in ('outcome','reason','landing_assessment')}
+            else: detail=payload
+            events.append(dict(kind=kind,t_s=row.get('t_s'),detail=detail));count+=1
+    return dict(events=list(events),total_events=count,truncated=count>len(events))
+
+@app.get('/api/timeline/{run_id}')
+async def timeline(run_id:str):
+    if not run_id.replace('-','').isalnum():raise HTTPException(422,'Invalid run ID')
+    path=lab.data_root/'evidence/flights'/run_id/'events.jsonl'
+    compressed=path.with_suffix('.jsonl.gz')
+    if not path.exists() and not compressed.exists():raise HTTPException(404,'Run not found')
+    return await asyncio.to_thread(read_decision_timeline,path if path.exists() else compressed)
+
 def read_replay_frames(path, limit=1200):
     """Bound replay memory while retaining the first and last physical states."""
     frames=[]; stride=1; count=0; last=None
     with (gzip.open(path,'rt') if path.suffix=='.gz' else path.open()) as stream:
         for line in stream:
-            row=json.loads(line)
+            try:row=json.loads(line)
+            except json.JSONDecodeError:
+                if not line.endswith('\n'):continue
+                raise
             if row['kind']!='physics_audit':continue
             last=row['payload']
             if count % stride == 0:frames.append((count,last))
