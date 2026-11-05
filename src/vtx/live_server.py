@@ -892,6 +892,8 @@ async def validate(x:float,y:float,variant:str|None=None,ignore_scenery_collisio
 @app.post('/api/destination')
 async def destination(request:dict):
     if not lab.active:raise HTTPException(409,'Start a flight test before changing its destination')
+    if request.get('run_id') is not None and request['run_id']!=lab.run_id:
+        raise HTTPException(409,'Flight changed; refresh before changing its destination')
     try:
         point=MapPoint(*request['destination'])
     except (KeyError,TypeError,ValueError) as e:

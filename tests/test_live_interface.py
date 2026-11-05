@@ -176,7 +176,10 @@ def test_destination_changes_without_sortie_reset(tmp_path,monkeypatch):
     monkeypatch.setattr(server,'lab',lab)
     lab.start(Mission())
     run=lab.run_id
-    result=asyncio.run(server.destination({'destination':[-40,25]}))
+    with pytest.raises(HTTPException):
+        asyncio.run(server.destination({'run_id':'stale','destination':[-40,25]}))
+    assert lab.run_id==run
+    result=asyncio.run(server.destination({'run_id':run,'destination':[-40,25]}))
     assert result['destination']==[-40,25]
     assert lab.run_id==run and lab.active
     assert lab.mission['destination']==[-40,25]
