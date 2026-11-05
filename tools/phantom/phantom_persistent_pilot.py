@@ -37,7 +37,7 @@ def main():
                     and view.get('pilot_owner') is None and not view.get('pilot_epoch', 0)
                     and action_key != last_action_key):
                 obs = call('/api/observe')
-                p = dict(schema='phantom-fbw-1', authority='colin', observation_id=obs['observation_id'],
+                p = dict(schema='phantom-fbw-1', authority='colin', expected_run_id=run, observation_id=obs['observation_id'],
                          reason=(c.get('reason') or 'Pilot command')[:2000], **c.get('command', {}))
                 if c.get('pti'):
                     p['pti'] = c['pti']

@@ -43,6 +43,7 @@ class Action(BaseModel):
     pilot_id:str|None=None
     pilot_epoch:int|None=None
     pilot_run_id:str|None=None
+    expected_run_id:str|None=None
     reason:str=Field(min_length=3,max_length=2000)
     engine:float=Field(ge=0,le=1)
     collective_deg:list[float]
@@ -540,6 +541,8 @@ class Laboratory:
 
     def accept_action(self,a):
         if not self.active:raise HTTPException(409,'No active sortie')
+        if a.expected_run_id is not None and a.expected_run_id!=self.run_id:
+            raise HTTPException(409,'Flight changed; refresh before sending controls')
         if isinstance(a,PhantomAction)!=bool(getattr(self.aircraft,'is_phantom',False)):
             raise HTTPException(409,'Action schema does not match the active airframe (Phantom requires schema phantom-fbw-1)')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')

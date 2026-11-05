@@ -219,7 +219,7 @@ class Pilot:
             self.settings_run=run
         action_key=json.dumps([run,cfg['serial'],setpoints,cfg['reason']],sort_keys=True) if armed else None
         if armed and action_key!=self.last_action_key:
-            action={**setpoints,"authority":"colin","observation_id":obs["observation_id"],
+            action={**setpoints,"authority":"colin","expected_run_id":run,"observation_id":obs["observation_id"],
                     "reason":cfg["reason"]}
             ack=request(self.base,"/api/action",action)
             self.last_sent=now

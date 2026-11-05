@@ -37,8 +37,8 @@ export function createPhantomPanel({api,toast}){
     el.querySelector('#ph-canard').onclick=e=>{engage();can=!can;cmd.canard_fold=can?'deployed':'folded';e.target.textContent='Canards '+(can?'fold':'deploy');dirty=true;};
   }
   setInterval(async()=>{const v=lastView;if(!heartbeatDue({engaged,pending,view:v,dirty,engagedRun}))return;
-    dirty=false;pending=true;try{await api('/api/action',{...cmd,authority:'manual',observation_id:v.observation.observation_id,reason:'Manual Phantom operator controls'});}
-    catch(e){dirty=true;toast(e.message);}finally{pending=false;}},100);
+    dirty=false;pending=true;try{await api('/api/action',{...cmd,authority:'manual',expected_run_id:v.run_id,observation_id:v.observation.observation_id,reason:'Manual Phantom operator controls'});}
+    catch(e){if(e.message.startsWith('Flight changed'))disengage();else dirty=true;toast(e.message);}finally{pending=false;}},100);
   return {
     show(on){el.style.display=on?'block':'none';},
     update(v){if(engaged&&engagedRun===undefined)engagedRun=v.run_id;if(engaged&&(!v.active||v.authority!=='manual'||v.run_id!==engagedRun))disengage();lastView=v;const o=v.observation||{},t=v.rendering_truth||{};

@@ -320,3 +320,18 @@ def test_cabin_level_target_stays_upright_with_combined_attitude_and_yaw():
             joints=cabin_level_target(air,np.radians(yaw))
             cabin=air*Rotation.from_euler('XYZ',joints)
             np.testing.assert_allclose(cabin.apply([0,0,1]),[0,0,1],atol=1e-10)
+
+@pytest.mark.parametrize('variant',['r6','phantom-fx'])
+def test_command_bound_to_previous_run_is_rejected(tmp_path,monkeypatch,variant):
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path));lab=Laboratory();run=lab.start(Mission(airframe_variant=variant))['run_id']
+    try:
+        if variant=='r6':
+            command=Action(authority='manual',expected_run_id='older-run',reason='Old command',engine=.2,collective_deg=[0]*4,tilt_deg=[[0,0]]*4)
+        else:
+            from vtx.phantom.controls import PhantomAction
+            command=PhantomAction(schema='phantom-fbw-1',authority='manual',expected_run_id='older-run',reason='Old command',collective=.2)
+        with pytest.raises(HTTPException) as error:lab.accept_action(command)
+        assert error.value.status_code==409 and lab.run_id==run and not lab.action_log
+        command.expected_run_id=run
+        assert lab.accept_action(command)['accepted']
+    finally:lab.stop('Run-bound control test complete')
