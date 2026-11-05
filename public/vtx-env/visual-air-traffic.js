@@ -6,6 +6,12 @@ const sampleRoute=(route,time)=>route.kind==='smooth-ride'?sampleRideTrajectory(
 export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
   const actors = [];
   const loader = new GLTFLoader();
+  const assets = new Map();
+  const loadAsset = (spec) => {
+    if (!assets.has(spec.asset)) assets.set(spec.asset, new Promise((resolve, reject) =>
+      loader.load(spec.asset, gltf => resolve(gltf.scene), progress => spec.onProgress?.(progress), reject)));
+    return assets.get(spec.asset);
+  };
   for (const spec of aircraft) {
     if (!Array.isArray(spec.cgLocal) || spec.cgLocal.length !== 3 ||
         !spec.cgLocal.every(Number.isFinite)) throw Error('Explicit CG reference required');
@@ -23,16 +29,18 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
       pivot.add(model);actor.rig=spec.onLoad?.(model);actor.ready=true;
       continue;
     }
-    loader.load(spec.asset, gltf => {
+    loadAsset(spec).then(source => {
+      const instance = source.clone ? source.clone(true) : source;
+      if (spec.validate && !spec.validate(instance)) throw Error('Model structure does not match '+spec.id);
       // Translation places the aircraft's declared local CG at the rotation origin.
-      // glTF exports Blender's Z-up aircraft as Y-up (x, z, -y). The airport
-      // and physics use X east/Y north/Z up, so rotate visual imports only.
-      if(spec.rotateToZUp&&gltf.scene.rotation)gltf.scene.rotation.x=Math.PI/2;
-      gltf.scene.position.set(-spec.cgLocal[0],-spec.cgLocal[1],-spec.cgLocal[2]);
-      pivot.add(gltf.scene);
-      actor.rig = spec.onLoad?.(gltf.scene);
+      // The A10 export needs a Y-up to Z-up visual correction. The supplied
+      // R6 GLB already uses the airport's Z-up frame and stays unrotated.
+      if(spec.rotateToZUp&&instance.rotation)instance.rotation.x=Math.PI/2;
+      instance.position.set(-spec.cgLocal[0],-spec.cgLocal[1],-spec.cgLocal[2]);
+      pivot.add(instance);
+      actor.rig = spec.onLoad?.(instance);
       actor.ready = true;
-    }, progress => spec.onProgress?.(progress), error => {
+    }).catch(error => {
       console.warn('Traffic model unavailable', spec.id, error);
       spec.onError?.(error);
     });

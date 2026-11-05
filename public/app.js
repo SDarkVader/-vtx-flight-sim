@@ -35,7 +35,7 @@ const bodyNodes={},pitchMeshes=[];
 const rotorSpinAxis=new THREE.Vector3(0,0,1),rotorSpinQ=new THREE.Quaternion();
 let latestTruthReceivedMs=0,lastHudUpdateMs=0,panelWasStale=false;
 const command={engine:0,collective_deg:[0,0,0,0],tilt_deg:[[0,0],[0,0],[0,0],[0,0]],cabin_deg:[0,0,0],cabin_level:true};
-let dirty=false,manualBeat=0,manualOwned=false;
+let dirty=false,manualOwned=false;
 const tiltSpin=[0,0,0,0],tiltSpinAngle=[0,0,0,0];
 const manualChannel=new BroadcastChannel('vtx-manual-authority');
 manualChannel.onmessage=()=>{manualOwned=false;tiltSpin.fill(0);keys.clear();};
@@ -70,13 +70,13 @@ const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
 const sky=buildSky(scene,renderer,{quality}),environment={};
 const rideCgLocal=[-0.15156246846624952,0.00004531509472356366,0.5529781802070567];
 let visualTraffic=null,airportOperations=null,rideRoute=null,rideTime=0,rideLastFrame=0,ridePaused=false,ridePose=null,rideActor=null,ridePlan=null;
-let sceneTime=26,sceneScale=1,selectedVehicleId='a10-primary',passengerRide=new URLSearchParams(location.search).has('trafficRide');
+let sceneTime=0,sceneScale=1,selectedVehicleId='a10-primary',passengerRide=new URLSearchParams(location.search).has('trafficRide');
 let pendingRideExteriorMode=null;
 let rideEnabled=true;
 const trafficPreviewEnabled=true;
 {
  const panel=document.createElement('div');panel.id='ride-controls';
- panel.innerHTML=`<label>Aircraft <select id="airport-aircraft"><option value="a10-primary">Phantom A10 · latest</option><option value="r6-flight">Argon R6 · Task 01</option><option value="a9-heritage">Phantom A9</option><option value="a10-legacy">Phantom A10 · earlier</option><option value="academy-twin-1">Academy twin</option><option value="trainer-2">Trainer</option><option value="service-vtol-1">Service VTOL</option><option value="academy-twin-2">Academy twin 2</option><option value="trainer-3">Trainer 3</option><option value="fuel-cart">Fuel cart</option><option value="baggage-cart">Baggage cart</option><option value="terminal-shuttle">Shuttle</option><option value="maintenance-truck">Maintenance</option><option value="physical-plant">Colin · physical</option></select></label><label>Camera <select id="airport-camera"><option value="chase">Chase</option><option value="cockpit">Cockpit</option><option value="free">Exterior / free</option><option value="orbit">Top</option></select></label><details id="airport-ops"><summary>Flight ops</summary><div class="airport-menu"><label>Journey <select id="ride-route">${RIDE_JOURNEYS.map(r=>`<option value="${r.id}">${r.label}</option>`).join('')}</select></label><label>Direction <select id="ride-direction"><option value="left">Left-hand</option><option value="right">Right-hand</option></select></label><button id="ride-start" type="button">Start passenger ride</button><label>Traffic <select id="traffic-density"><option value="13">Full · 13</option><option value="10">Standard · 10</option><option value="6">Mobile · 6</option><option value="3">Light · 3</option></select></label><label>Speed <select id="airport-speed"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select></label><div class="airport-menu-actions"><button id="ride-pause" type="button">Pause</button><button id="ride-restart" type="button">Restart</button></div><span id="ride-progress" aria-live="polite">Loading airport...</span><div class="airport-menu-actions" id="airport-extra"></div></div></details>`;
+ panel.innerHTML=`<label>Aircraft <select id="airport-aircraft"><option value="a10-primary">Phantom A10</option><option value="r6-flight">Argon R6 · holding</option><option value="r6-training">Argon R6 · training</option><option value="r6-teardrop">Argon R6 · teardrop</option><option value="r6-go-around">Argon R6 · go around</option><option value="physical-plant">Colin · physical</option></select></label><label>Camera <select id="airport-camera"><option value="chase">Chase</option><option value="cockpit">Cockpit</option><option value="free">Exterior / free</option><option value="orbit">Top</option></select></label><details id="airport-ops"><summary>Flight ops</summary><div class="airport-menu"><label>Journey <select id="ride-route">${RIDE_JOURNEYS.map(r=>`<option value="${r.id}">${r.label}</option>`).join('')}</select></label><label>Direction <select id="ride-direction"><option value="left">Left-hand</option><option value="right">Right-hand</option></select></label><button id="ride-start" type="button">Start passenger ride</button><label>Traffic <select id="traffic-density"><option value="5">Full · 5 aircraft</option><option value="4">Standard · 4</option><option value="3">Mobile · 3</option><option value="2">Light · 2</option></select></label><label>Speed <select id="airport-speed"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select></label><div class="airport-menu-actions"><button id="ride-pause" type="button">Pause</button><button id="ride-restart" type="button">Restart</button></div><span id="ride-progress" aria-live="polite">Loading airport...</span><div class="airport-menu-actions" id="airport-extra"></div></div></details>`;
  document.querySelector('header').append(panel);
  $('airport-extra').append($('engineering'),$('history'));
   const cameraTools=$('view-tools');
@@ -107,7 +107,7 @@ const trafficPreviewEnabled=true;
   $('ride-direction').onchange=changeJourney;
  $('ride-start').onclick=()=>{changeJourney();passengerRide=true;selectedVehicleId='a10-primary';rideEnabled=true;$('airport-aircraft').value=selectedVehicleId;$('airport-ops').open=false;showRideAircraft('chase');};
  $('airport-aircraft').onchange=()=>{selectedVehicleId=$('airport-aircraft').value;rideEnabled=selectedVehicleId!=='physical-plant';if(rideEnabled)showRideAircraft('chase');else {if(model)model.visible=true;setCameraMode('chase');} $('view-mode').textContent=rideEnabled?'SCRIPTED VISUAL TRAFFIC · NO COLLISION PHYSICS':'PHYSICAL STATE · LIVE';};
- $('traffic-density').value=mobile?'6':'10';
+ $('traffic-density').value=mobile?'3':'5';
  $('traffic-density').onchange=()=>airportOperations?.setDensity($('traffic-density').value);
  $('airport-speed').onchange=()=>{sceneScale=Number($('airport-speed').value);};
  $('airport-camera').onchange=()=>{const mode=$('airport-camera').value;if(mode==='orbit')$('view-top').click();else if(rideEnabled&&mode==='chase')showRideAircraft('chase');else setCameraMode(mode);};
@@ -133,6 +133,10 @@ function buildWorld(w){
   const specs=airportOperations.actors.map(actor=>{
    const modelSpec=VEHICLE_MODELS[actor.modelId],isA10=actor.id==='a10-primary',isRotor=modelSpec.animation==='rotor';
    return {id:actor.id,asset:modelSpec.asset,cgLocal:modelSpec.cgLocal,rotateToZUp:modelSpec.rotateToZUp,
+    validate:actor.modelId==='r6'?root=>{
+     let meshes=0;root.traverse(node=>{if(node.isMesh)meshes++;});
+     return meshes>=700&&[1,2,3,4].every(i=>root.getObjectByName('rotor'+i))&&[1,2,3,4,5,6].every(i=>root.getObjectByName('gear'+i));
+    }:undefined,
     makeModel:modelSpec.asset?undefined:THREE=>makeAirportModel(THREE,modelSpec.kind==='ground'?'ground':modelSpec.kind==='rotorcraft'?'rotorcraft':'fixed-wing',actor.color),
     visible:()=>airportOperations.isVisible(actor.id)||selectedVehicleId===actor.id,
     poseAt:t=>isA10&&passengerRide&&rideRoute?{...sampleRideTrajectory(rideRoute,rideTime),operation:'passenger ride',mode:'scripted'}:airportOperations.sample(actor.id,t),
@@ -156,7 +160,7 @@ function buildWorld(w){
      return null;
     },
     onProgress:event=>{if(isA10)$('loading').textContent=event.total?'Loading latest A10: '+Math.round(100*event.loaded/event.total)+'%':'Loading latest A10: '+Math.round(event.loaded/1024)+' KB';},
-    onError:error=>{if(isA10){$('loading').hidden=false;$('loading').textContent='A10 model failed: '+(error?.message||'asset unavailable');$('view-sync').textContent='A10 MODEL LOAD ERROR';}},
+    onError:error=>{if(isA10){$('loading').hidden=false;$('loading').textContent='A10 model failed: '+(error?.message||'asset unavailable');$('view-sync').textContent='A10 MODEL LOAD ERROR';}else if(actor.modelId==='r6')toast('R6 model failed to load: '+(error?.message||'asset unavailable'));},
     onUpdate:(control,pose,att)=>{if(isRotor&&control?.rotors){
       const active=!['stand','hold short'].includes(pose.operation);
       for(let i=0;i<control.rotors.length;i++)control.rotors[i].rotation.z=active?sceneTime*(i%2?-87:87):0;
@@ -260,7 +264,6 @@ function getMinimap(canvas){
   return null;
 }
 const onMap=async(event,canvas)=>{
-  if(last?.active){toast('End the current sortie before selecting the next mission.');return;}
   const rect=canvas.getBoundingClientRect();
   const mm=getMinimap(canvas);
   let x,y;
@@ -276,7 +279,7 @@ const onMap=async(event,canvas)=>{
   }
   await choosePoint([Math.round(x*10)/10,Math.round(y*10)/10]);
 };
-async function choosePoint(p){const verdict=await api(`/api/validate?x=${p[0]}&y=${p[1]}`);$('validation').textContent=`${pick.toUpperCase()} (${p.join(', ')}): ${verdict.reason}`;$('large-validation').textContent=$('validation').textContent;if(!verdict.valid){toast(verdict.reason);return;}if(pick==='a'){departure=p;$('dep').value=p.join(', ');}else{destination=p;$('dest').value=p.join(', ');}updateMarkers();drawMaps();}
+async function choosePoint(p){const verdict=await api(`/api/validate?x=${p[0]}&y=${p[1]}&variant=${$('airframe').value}`);$('validation').textContent=`${pick.toUpperCase()} (${p.join(', ')}): ${verdict.reason}`;$('large-validation').textContent=$('validation').textContent;if(!verdict.valid){toast(verdict.reason);return;}if(pick==='a'){departure=p;$('dep').value=p.join(', ');if(last?.active)toast('Departure set for the next flight test.');}else{if(last?.active)await api('/api/destination',{destination:p});destination=p;$('dest').value=p.join(', ');}updateMarkers();drawMaps();}
 $('map').onclick=guard(e=>onMap(e,$('map')));$('large-map').onclick=guard(e=>onMap(e,$('large-map')));
 function setPick(p){pick=p;$('pick-a').classList.toggle('selected',p==='a');$('pick-b').classList.toggle('selected',p==='b');$('large-pick').textContent=p.toUpperCase();}
 $('pick-a').onclick=()=>setPick('a');$('pick-b').onclick=()=>setPick('b');
@@ -502,14 +505,14 @@ let lastMapMs=0;
 function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return;lastMapMs=performance.now();drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
 function updateEngineering(){if(!last)return;const t=last.rendering_truth,o=last.observation;$('engineering-content').textContent=JSON.stringify({live:{simulation_time_s:o.t_s,observation_id:o.observation_id,clock_scale:last.time_scale,active:last.active,paused:last.paused,authority:last.authority,command_warnings:o.warning_lamps,rotor_rpm:o.rotor_rpm,shaft_torque_nm:o.shaft_torque_nm,shaft_power_kw:o.engine_shaft_kw,collective_deg:o.collective_feedback_deg,fan_tilt_deg:o.tilt_feedback_deg,cabin_gimbal_deg:o.cabin_feedback_deg,attitude_deg:o.attitude_xyz_deg,angular_rate_world_deg_s:o.gyro_world_deg_s,angular_rate_body_deg_s:o.gyro_body_deg_s,velocity_world_m_s:o.gnss_velocity_mps,velocity_body_m_s:o.velocity_body_mps,clearance_m:o.radar_clearance_m,fuel_kg:o.fuel_kg,scheduler_backlog_s:o.scheduler_backlog_s},engineering:{revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses}},null,2);}
 function updateView(v){last=v;latestTruthReceivedMs=performance.now();panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
- if(v.rendering_truth?.phantom){const o=v.observation,vel=o.velocity_world_m_s||[0,0,0];$('cockpit-alt').textContent=o.radar_altimeter_m==null?'—':o.radar_altimeter_m.toFixed(1);$('cockpit-vs').textContent=vel[2].toFixed(1);$('cockpit-speed').textContent=Math.hypot(vel[0],vel[1]).toFixed(1);$('cockpit-fuel').textContent=(o.fuel_kg||[]).reduce((a,b)=>a+b,0).toFixed(1);$('alt').innerHTML=o.radar_altimeter_m==null?'—':Math.max(0,o.radar_altimeter_m-(o.radar_altimeter_ground_reference_m||0)).toFixed(2)+'<small>m</small>';$('vs').innerHTML=vel[2].toFixed(2)+'<small>m/s</small>';$('speed').innerHTML=Math.hypot(vel[0],vel[1]).toFixed(2)+'<small>m/s</small>';$('power-label').textContent='GENERATOR POWER';$('power').innerHTML=(o.generator_kw??0).toFixed(1)+'<small>kW</small>';$('fuel').innerHTML=(o.fuel_kg||[]).reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';phantomPanel??=createPhantomPanel({api,toast});phantomPanel.show(true);phantomPanel.update(v);$('start').disabled=v.active;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';$('state').textContent=v.active?(v.paused?'PHYSICS PAUSED · PHANTOM':'LIVE EXPERIMENT · PHANTOM'):'INSPECTION';$('pause').textContent=v.paused?'Resume existing mission':'Pause physics';$('revision').textContent=v.rendering_truth.provenance.revision.toUpperCase();return;}phantomPanel?.show(false);
+ if(v.rendering_truth?.phantom){const o=v.observation,vel=o.velocity_world_m_s||[0,0,0];$('cockpit-alt').textContent=o.radar_altimeter_m==null?'—':o.radar_altimeter_m.toFixed(1);$('cockpit-vs').textContent=vel[2].toFixed(1);$('cockpit-speed').textContent=Math.hypot(vel[0],vel[1]).toFixed(1);$('cockpit-fuel').textContent=(o.fuel_kg||[]).reduce((a,b)=>a+b,0).toFixed(1);$('alt').innerHTML=o.radar_altimeter_m==null?'—':Math.max(0,o.radar_altimeter_m-(o.radar_altimeter_ground_reference_m||0)).toFixed(2)+'<small>m</small>';$('vs').innerHTML=vel[2].toFixed(2)+'<small>m/s</small>';$('speed').innerHTML=Math.hypot(vel[0],vel[1]).toFixed(2)+'<small>m/s</small>';$('power-label').textContent='GENERATOR POWER';$('power').innerHTML=(o.generator_kw??0).toFixed(1)+'<small>kW</small>';$('fuel').innerHTML=(o.fuel_kg||[]).reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';phantomPanel??=createPhantomPanel({api,toast});phantomPanel.show(true);phantomPanel.update(v);$('start').disabled=false;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';$('state').textContent=v.active?(v.paused?'PHYSICS PAUSED · PHANTOM':'LIVE EXPERIMENT · PHANTOM'):'INSPECTION';$('pause').textContent=v.paused?'Resume existing mission':'Pause physics';$('revision').textContent=v.rendering_truth.provenance.revision.toUpperCase();return;}phantomPanel?.show(false);
  // Always ingest the latest physical pose; avoid repainting the entire HUD at
  // the websocket rate on low-powered phones. 3D rendering is independent.
  if(lightweightView&&latestTruthReceivedMs-lastHudUpdateMs<500&&v.run_id===lastRun)return;
  lastHudUpdateMs=latestTruthReceivedMs;const o=v.observation,t=v.rendering_truth;if(v.run_id!==lastRun){lastRun=v.run_id;track=[];if(v.mission){departure=[...v.mission.departure];destination=[...v.mission.destination];$('dep').value=departure.join(', ');$('dest').value=destination.join(', ');updateMarkers();}}
  $('state').textContent=v.active?(v.paused?'PHYSICS PAUSED':'LIVE EXPERIMENT'):'INSPECTION';$('lamp').style.background=v.active?'#7cdfcb':'#8a9a9d';$('clock').textContent=`${Math.floor(o.t_s/60).toString().padStart(2,'0')}:${(o.t_s%60).toFixed(2).padStart(5,'0')} / ${v.time_scale}×`;
  const latestPilot=v.recent_decisions.at(-1),pilotWaiting=v.active&&v.authority==='colin'&&(!latestPilot||o.warning_lamps.includes('COMMAND_LEASE_EXPIRED')||o.t_s-latestPilot.issued_t_s>1);$('colin-wait').hidden=!pilotWaiting;$('colin-wait').textContent=pilotWaiting?'Waiting for live Colin commands. The retry button does not start an automatic pilot.':'';
- $('authority').textContent=v.authority.toUpperCase();$('start').disabled=v.active;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('pause').textContent=v.paused?'Resume existing mission':'Pause physics';$('revision').textContent=t.provenance.revision.toUpperCase();$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';
+ $('authority').textContent=v.authority.toUpperCase();$('start').disabled=false;$('end').disabled=!v.active;$('pause').disabled=!v.active;$('pause').textContent=v.paused?'Resume existing mission':'Pause physics';$('revision').textContent=t.provenance.revision.toUpperCase();$('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';
  $('retry-bar').hidden=!(v.retry_available&&(!v.active||t.crashed));
  $('retry-status').textContent=t.crashed?'Crash recorded · retry starts a new aircraft at A.':'Retained mission · retry preserves the pilot checkpoint.';
  $('power-label').textContent='SHAFT POWER';$('alt').innerHTML=o.radar_clearance_m==null?'—':o.radar_clearance_m.toFixed(2)+'<small>m</small>';$('vs').innerHTML=o.gnss_velocity_mps[2].toFixed(2)+'<small>m/s</small>';$('speed').innerHTML=Math.hypot(...o.gnss_velocity_mps.slice(0,2)).toFixed(2)+'<small>m/s</small>';$('power').innerHTML=o.engine_shaft_kw.toFixed(1)+'<small>kW</small>';$('fuel').innerHTML=o.fuel_kg.reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';
@@ -526,8 +529,8 @@ function updateView(v){last=v;latestTruthReceivedMs=performance.now();panelWasSt
  if(v.active&&(!track.length||Math.hypot(o.gnss_xy_m[0]-track.at(-1)[0],o.gnss_xy_m[1]-track.at(-1)[1])>.2)){track.push(o.gnss_xy_m);if(track.length>3000)track.shift();}drawMaps();if($('engineering-dialog').open)updateEngineering();
 }
 let manualRequestPending=false;
-setInterval(guard(async()=>{if(manualRequestPending||last?.rendering_truth?.phantom||!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames)return;manualBeat++;if(dirty||manualBeat%10===0){dirty=false;manualRequestPending=true;try{await api('/api/action',{...command,authority:'manual',observation_id:last.observation.observation_id,reason:'Manual operator controls and command heartbeat'});}catch(e){dirty=true;throw e;}finally{manualRequestPending=false;}}}),50);
-function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);ws.onmessage=e=>updateView(JSON.parse(e.data));ws.onclose=()=>{toast('Live connection lost; physical command lease still applies.');setTimeout(connect,2000);};}
+setInterval(guard(async()=>{if(manualRequestPending||last?.rendering_truth?.phantom||!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames||!dirty)return;dirty=false;manualRequestPending=true;try{await api('/api/action',{...command,authority:'manual',observation_id:last.observation.observation_id,reason:'Manual operator controls'});}catch(e){dirty=true;throw e;}finally{manualRequestPending=false;}}),50);
+function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);ws.onmessage=e=>updateView(JSON.parse(e.data));ws.onclose=()=>{toast('Live connection lost; reconnecting. Last accepted controls remain held.');setTimeout(connect,2000);};}
 // The live backend is authoritative when present. Static previews use the
 // same saved physical heightfield and keep the physical controls visible.
 $('loading').textContent='Preparing unified airport...';

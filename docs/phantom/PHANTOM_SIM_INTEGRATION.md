@@ -113,10 +113,8 @@ Pilot test inputs (PTI):
 - types: step, doublet, 3-2-1-1, sweep, on any axis;
 - armed by the pilot, executed by the FBW, logged.
 
-Lease failsafe after 5 s of sim time without an accepted action:
-- collective, boosters and wheel drive go to 0, brakes go on;
-- logged as an `ABORT` event plus `lease_abort_ring.npz`;
-- no rescue.
+Accepted control targets remain held until a new action, authority handoff,
+or explicit end of the flight test. There is no command expiry timer.
 
 ### `live.py` and `live_server.py` (additive)
 - `Mission.airframe_variant` accepts `phantom` and `phantom-fx`, with an optional `phantom` options block. Legacy metadata stays byte-identical when that block is unset.
@@ -201,13 +199,14 @@ POST /api/action {"schema":"phantom-fbw-1","authority":"manual","observation_id"
 POST /api/action {..., "pti":{"axis":"pitch","type":"doublet","amplitude":0.1,"pulse_s":1.0}}
 ```
 
-`GET /api/observe` returns the `observation_id`, `lease_remaining_s` and the sensors; it never returns simulator truth.
+`GET /api/observe` returns the `observation_id`, `command_mode` and the sensors; it never returns simulator truth.
 
-Timing: at `time_scale` 0.2, one action per second of wall time gives a decision at least every 0.2 s of sim time. If no action arrives within 5 s of sim time, the lease ABORT fires.
+Timing: the physical clock runs at the selected scale. The last accepted
+command persists during pilot reasoning or a temporary connection loss.
 
 CLI helpers (default host 127.0.0.1:8766):
 - `tools/phantom/phantom_pilot_client.py` with `start`, `observe` or `action`.
-- `tools/phantom/phantom_persistent_pilot.py`, a keep-alive. It only re-sends the command in `tools/phantom/phantom_pilot_controls.json`, and only while that file is armed and bound to the active run.
+- `tools/phantom/phantom_persistent_pilot.py` remains an optional live pilot client. The server no longer requires keep-alive actions to preserve a command.
 
 ## Known gaps
 

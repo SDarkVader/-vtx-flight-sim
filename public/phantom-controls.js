@@ -1,16 +1,16 @@
 // Phantom (phantom-fbw-1) operator panel. Builds the same JSON the AI pilot sends to /api/action.
-// No setpoints are invented: the heartbeat re-sends the operator's own current command (< 5 s lease).
+// Send only operator changes; the server holds the last accepted command.
 // The panel sends NOTHING until the operator engages it (touches a control or presses "Take control").
 // An open browser tab must never silently override another pilot holding the same authority
 // (flight campaign D-1). It disengages when the sortie, run or authority changes.
-export function heartbeatDue({engaged,pending,view,dirty,beat,engagedRun}){
+export function heartbeatDue({engaged,pending,view,dirty,engagedRun}){
   if(!engaged||pending||!view?.active||view.paused||view.authority!=='manual')return false;
   if(engagedRun!==undefined&&view.run_id!==engagedRun)return false;
-  return dirty||beat%10===0;
+  return dirty;
 }
 const FIELDS=[['collective',0,1,0.01,0],['vertical_speed_m_s',-3,3,0.1,0],['pitch',-1,1,0.02,0],['roll',-1,1,0.02,0],['yaw',-1,1,0.02,0],['engine',0,1,0.05,1]];
 export function createPhantomPanel({api,toast}){
-  let dirty=false,beat=0,pending=false,lastView=null,engaged=false,engagedRun;
+  let dirty=false,pending=false,lastView=null,engaged=false,engagedRun;
   function engage(){if(!engaged){engaged=true;engagedRun=lastView?.run_id;toast?.('Phantom panel has taken manual control');}}
   function disengage(){engaged=false;engagedRun=undefined;dirty=false;}
   const cmd={schema:'phantom-fbw-1',engine:1,collective:0,vertical_speed_m_s:0,pitch:0,roll:0,yaw:0,stability_mode:'rate_damping'};
@@ -33,14 +33,14 @@ export function createPhantomPanel({api,toast}){
     el.querySelector('#ph-wing').onclick=e=>{engage();wing=!wing;cmd.wing=wing?'deploy':'stow';e.target.textContent='Wing '+(wing?'stow':'deploy');dirty=true;};
     el.querySelector('#ph-canard').onclick=e=>{engage();can=!can;cmd.canard_fold=can?'deployed':'folded';e.target.textContent='Canards '+(can?'fold':'deploy');dirty=true;};
   }
-  setInterval(async()=>{const v=lastView;beat++;if(!heartbeatDue({engaged,pending,view:v,dirty,beat,engagedRun}))return;
-    dirty=false;pending=true;try{await api('/api/action',{...cmd,authority:'manual',observation_id:v.observation.observation_id,reason:'Manual Phantom operator controls and command heartbeat'});}
+  setInterval(async()=>{const v=lastView;if(!heartbeatDue({engaged,pending,view:v,dirty,engagedRun}))return;
+    dirty=false;pending=true;try{await api('/api/action',{...cmd,authority:'manual',observation_id:v.observation.observation_id,reason:'Manual Phantom operator controls'});}
     catch(e){dirty=true;toast(e.message);}finally{pending=false;}},100);
   return {
     show(on){el.style.display=on?'block':'none';},
     update(v){if(engaged&&engagedRun===undefined)engagedRun=v.run_id;if(engaged&&(!v.active||v.authority!=='manual'||v.run_id!==engagedRun))disengage();lastView=v;const o=v.observation||{},t=v.rendering_truth||{};
       const tb=el.querySelector('#ph-take');if(tb)tb.textContent=engaged?'Release control':'Take control';
-      el.querySelector('#ph-state').textContent=[engaged?'PANEL ENGAGED: sending manual commands':'panel idle: sends nothing',`t ${o.t_s?.toFixed?.(2)} s · ${v.time_scale}× · lease ${o.lease_remaining_s} s`,
+      el.querySelector('#ph-state').textContent=[engaged?'PANEL ENGAGED: manual controls':'panel idle: sends nothing',`t ${o.t_s?.toFixed?.(2)} s · ${v.time_scale}× · commands held`,
         `variant ${o.configuration?.airframe_variant} ${o.configuration?.load_state||''}`,`radar ${JSON.stringify(o.radar_altitude_m??o.radar_clearance_m)}`,
         `wing ${JSON.stringify(t.phantom?.wing_state)}`,`lamps ${(o.warning_lamps||[]).join(' ')}`].join('\n');},
   };

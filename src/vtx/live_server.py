@@ -467,16 +467,17 @@ class Laboratory:
             raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
         self.phantom_landing_site=None;self.phantom_cg_gate=None
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
-        if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
         mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
         if phantom_live.is_phantom_variant(request.airframe_variant):
-            self.aircraft=phantom_live.make_aircraft(self.world,request)
+            next_aircraft=phantom_live.make_aircraft(self.world,request)
         else:
-            self.aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
+            next_aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
-        self.aircraft.spawn(*request.departure,mission.departure_surface_z_m)
+        next_aircraft.spawn(*request.departure,mission.departure_surface_z_m)
+        if self.active:self.stop('Operator started a new flight test; previous attempt retained')
+        self.aircraft=next_aircraft
         self.aircraft.stability_assist=request.stability_assist
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
         self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
@@ -498,7 +499,7 @@ class Laboratory:
                   runtime_source_sha256=hashlib.sha256(b''.join(p.read_bytes() for p in sorted((ROOT/'src/vtx').glob('*.py')))).hexdigest(),
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
-                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather/engine shutdown; experimental rate damping is shadow-only and does not control aircraft')
+                  controls='20 ms simulated transport; accepted targets remain held until changed, authority transfers, or the flight test ends')
         (self.log_path/'metadata.json').write_text(json.dumps(meta,indent=2))
         (self.log_path/'model.xml').write_text(self.aircraft.xml)
         (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
@@ -514,7 +515,6 @@ class Laboratory:
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
         if self.authority=='colin' and a.observation_id not in self.observations:raise HTTPException(409,'Colin action requires an actual permitted observation ID')
         obs=self.observations.get(a.observation_id)
-        if obs and self.aircraft.data.time-obs['t_s']>1.:raise HTTPException(409,'Observation is more than one simulated second old; observe again')
         row=dict(sequence=len(self.action_log)+1,issued_t_s=float(self.aircraft.data.time),
                  apply_t_s=float(self.aircraft.data.time)+.02,observation=obs,decision=a.reason,
                  issued=a.model_dump(by_alias=True,exclude_none=True) if isinstance(a,PhantomAction) else a.model_dump())
@@ -540,9 +540,6 @@ class Laboratory:
             cmd={k:row['issued'][k] for k in p.command}
             p.set_command(cmd);row['applied']=True
             self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
-        if p.data.time-self.last_command_time>5 and not self.lease_expired:
-            p.set_command(dict(engine=0.,collective_deg=[0.]*4,tilt_deg=p.command['tilt_deg'],cabin_deg=p.command['cabin_deg']))
-            self.lease_expired=True;self.log('command_lease_expired',dict(behavior='feather collective, engine shutdown (spool to 0); no flight rescue'))
         p.step()
         if p.data.time-self.last_audit_t>=.05:
             self.last_audit_t=float(p.data.time)
@@ -581,9 +578,7 @@ class Laboratory:
     def retry(self,request):
         """Explicit new sortie. Preserve the failed run and the learned state."""
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before retrying a mission')
-        if self.active:
-            if not self.aircraft.crashed:raise HTTPException(409,'Current sortie has no recorded crash; end it before starting another')
-            self.stop('User requested retry after crash; failed sortie archived')
+        if self.active:self.stop('Operator restarted flight test; previous attempt retained')
         hint=self.retry_hint
         if not hint:raise HTTPException(409,'No retained mission to retry')
         old=hint['request']
@@ -720,6 +715,23 @@ async def validate(x:float,y:float,variant:str|None=None):
         from .phantom.mission import validate_phantom
         return validate_phantom(lab.world,MapPoint(x,y),variant)
     return asdict(lab.world.validate(MapPoint(x,y),'mission'))
+@app.post('/api/destination')
+async def destination(request:dict):
+    if not lab.active:raise HTTPException(409,'Start a flight test before changing its destination')
+    try:
+        point=MapPoint(*request['destination'])
+    except (KeyError,TypeError,ValueError) as e:
+        raise HTTPException(422,'Destination requires two finite coordinates') from e
+    decision=lab.world.validate(point,'destination')
+    if not decision.valid:raise HTTPException(422,decision.reason)
+    before=lab.mission['destination']
+    lab.mission['destination']=[point.x_m,point.y_m]
+    lab.mission['destination_z_m']=decision.terrain_z_m
+    lab.settled_s=0.
+    lab.last_obs=None
+    lab.log('destination_change',dict(before=before,after=lab.mission['destination']))
+    lab.checkpoint(force=True)
+    return dict(destination=lab.mission['destination'],landing_valid=True)
 @app.post('/api/mission')
 async def mission(request:Mission):
     try:return lab.start(request)
@@ -750,7 +762,7 @@ async def operator(request:dict):
     if 'experimental_assist_wire' in request:
         enabled=request['experimental_assist_wire']
         if not isinstance(enabled,bool):raise HTTPException(422,'Experimental assist wire requires boolean')
-        lab.aircraft._bench_apply_experimental_assist=enabled
+        if not getattr(lab.aircraft,'is_phantom',False):lab.aircraft._bench_apply_experimental_assist=enabled
         lab.log('experimental_assist_wire_change',dict(enabled=enabled))
         lab.last_obs=None
     if 'stability_assist' in request:
@@ -775,7 +787,7 @@ async def operator(request:dict):
         lab.time_scale=value;lab.clock_epoch+=1;lab.log('clock_scale',dict(time_scale=value))
     if lab.active:lab.checkpoint(force=True)
     lab.last_obs=None  # Operator status must update even when the physical clock is paused.
-    return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale,stability_assist=lab.aircraft.stability_assist,experimental_assist_wire=lab.aircraft._bench_apply_experimental_assist)
+    return dict(authority=lab.authority,paused=lab.paused,time_scale=lab.time_scale,stability_assist=lab.aircraft.stability_assist,experimental_assist_wire=getattr(lab.aircraft,'_bench_apply_experimental_assist',False))
 @app.get('/api/memory')
 async def memory():return json.loads(lab.memory_path.read_text())
 @app.post('/api/lesson')

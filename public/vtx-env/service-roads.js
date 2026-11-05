@@ -27,7 +27,7 @@ function evalCubicBezier(p0, p1, p2, p3, t) {
   ];
 }
 
-export function buildServiceRoads(scene, world, surfaceZ) {
+export function buildServiceRoads(scene, world, surfaceZ, {showVehicles=false} = {}) {
   const group = new THREE.Group();
   group.name = 'vtx-service-roads';
 
@@ -295,6 +295,11 @@ export function buildServiceRoads(scene, world, surfaceZ) {
       }
     }
   });
+
+  if(!showVehicles){
+    scene.add(group);
+    return {group,update:(time,aircraftPos)=>{for(const fn of updaters)fn(time,0,aircraftPos);}};
+  }
 
   // =========================================================================
   // 3. Animated Ground Support Vehicles (GSVs) with Separation & Yield Logic

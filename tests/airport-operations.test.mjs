@@ -1,20 +1,30 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {createAirportOperations,inspectFleetSafety} from '../public/vtx-env/airport-operations.js';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from '../public/vtx-env/vehicle-registry.js';
 
 const world=JSON.parse(readFileSync(new URL('../public/vtx-env/ride-world.json',import.meta.url)));
 const airport=createAirportOperations(world);
-assert.equal(airport.actors.length,13);
-assert.equal(airport.aircraft.length,9);
-assert.ok(airport.aircraft.some(a=>a.modelId==='r6'));
+assert.equal(airport.actors.length,5);
+assert.equal(airport.aircraft.length,5);
+assert.equal(airport.ground.length,0);
+assert.equal(airport.aircraft.filter(a=>a.modelId==='r6').length,4);
 assert.equal(VEHICLE_MODELS.r6.sourceRevision,'P0-V4A-assembly-r6');
 assert.equal(VEHICLE_MODELS.r6.calibrationId,'ARGON-R6-LIVE-STABILITY-CALIBRATION-20261101');
 assert.deepEqual(VEHICLE_MODELS.r6.cgLocal,[-0.0003,0.0792,1.4097]);
+const r6=readFileSync(new URL('../public/assets/airframe-r6.glb',import.meta.url));
+assert.equal(createHash('sha256').update(r6).digest('hex'),VEHICLE_MODELS.r6.sha256);
+const r6Manifest=JSON.parse(r6.subarray(20,20+r6.readUInt32LE(12)).toString());
+assert.equal(r6Manifest.meshes.length,731);
+for(const name of ['airframe','cabin',...Array.from({length:4},(_,i)=>`rotor${i+1}`),...Array.from({length:6},(_,i)=>`gear${i+1}`)])
+ assert.ok(r6Manifest.nodes.some(n=>n.name===name),`R6 ${name} missing`);
 assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='holding'));
 assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='teardrop'));
 assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='go-around'));
 assert.ok(airport.aircraft.some(a=>!a.runwayId),'main runway lacks scheduled arrivals');
+assert.deepEqual(airport.sample('a10-primary',0).position.slice(0,2),[-45,-50]);
+assert.deepEqual(airport.sample('r6-flight',0).position.slice(0,2),[190,-90]);
 assert.equal(DEFAULT_VISUAL_MODEL,'phantom-a10-81c823e2');
 const current=VEHICLE_MODELS[DEFAULT_VISUAL_MODEL];
 const glb=readFileSync(new URL('../public'+current.asset,import.meta.url));
@@ -39,11 +49,10 @@ for(let t=0;t<airport.cycle;t+=.5){
  const airborne=airport.aircraft.filter(a=>['takeoff','circuit','approach','landing'].includes(airport.sample(a.id,t).operation)).length;
  peakAirborne=Math.max(peakAirborne,airborne);
 }
-assert.ok(peakAirborne>=4,'added aircraft never fly together');
-airport.setDensity(6);
-assert.equal(airport.actors.filter(a=>airport.isVisible(a.id)).length,6);
+assert.ok(peakAirborne>=2,'R6 traffic never flies alongside A10');
+airport.setDensity(3);
+assert.equal(airport.actors.filter(a=>airport.isVisible(a.id)).length,3);
 assert.equal(airport.sample('a10-primary',70).mode,'scripted');
-assert.equal(airport.sample('fuel-cart',20).operation,'ground service');
 const safety=inspectFleetSafety(airport,world);
 assert.ok(safety.ok,JSON.stringify(safety.failures));
 console.log('Unified airport fleet, versioned A10, terrain containment and runway scheduling passed');

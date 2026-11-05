@@ -42,6 +42,38 @@ def test_control_authority_and_observation_boundary():
     assert accepted['accepted'] and accepted['apply_t_s']==pytest.approx(.02)
     assert not {'qpos','qvel','forces','cg','inertia','contact_manifold'}&obs.keys()
 
+def test_accepted_command_survives_pilot_delay(tmp_path,monkeypatch):
+    import vtx.live_server as server
+    monkeypatch.setattr(server,'ROOT',tmp_path)
+    lab=Laboratory()
+    lab.start(Mission())
+    obs=lab.sensor_observation()
+    lab.aircraft.data.time=1.2
+    lab.accept_action(Action(authority='manual',observation_id=obs['observation_id'],
+                             engine=.4,collective_deg=[3]*4,tilt_deg=[[0,0]]*4,reason='Hold test'))
+    lab.aircraft.data.time=1.25
+    lab.integrate()
+    assert lab.aircraft.command['collective_deg']==[3]*4
+    lab.aircraft.data.time=6.3
+    lab.integrate()
+    assert lab.aircraft.command['collective_deg']==[3]*4
+    assert not lab.lease_expired
+    lab.stop('End command hold check')
+
+def test_destination_changes_without_sortie_reset(tmp_path,monkeypatch):
+    import asyncio
+    import vtx.live_server as server
+    monkeypatch.setattr(server,'ROOT',tmp_path)
+    lab=Laboratory()
+    monkeypatch.setattr(server,'lab',lab)
+    lab.start(Mission())
+    run=lab.run_id
+    result=asyncio.run(server.destination({'destination':[-40,25]}))
+    assert result['destination']==[-40,25]
+    assert lab.run_id==run and lab.active
+    assert lab.mission['destination']==[-40,25]
+    lab.stop('End retarget check')
+
 def test_queued_actions_are_not_lost_and_old_authority_cannot_apply():
     lab=Laboratory();lab.active=True;lab.authority='manual';lab.mission={'destination':[100,100]}
     def command(value,authority='manual'):
@@ -140,7 +172,8 @@ def test_retry_archives_crash_and_preserves_learning(tmp_path,monkeypatch):
     assert hashlib.sha256(lab.memory_path.read_bytes()).hexdigest()==memory_hash
     rows=[json.loads(l) for l in (lab.log_path/'events.jsonl').read_text().splitlines()]
     assert next(r for r in rows if r['kind']=='retry_lineage')['payload']['previous_run_id']==first
-    with pytest.raises(HTTPException):lab.retry({'authority':'manual'})
+    second=lab.retry({'authority':'manual'})
+    assert second['run_id']!=new['run_id']
     lab.stop('End isolated retry integration check')
     assert lab.sensor_observation()['active'] is False
 

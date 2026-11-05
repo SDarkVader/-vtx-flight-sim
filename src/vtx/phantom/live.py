@@ -4,7 +4,7 @@ Evidence per run folder (in addition to the legacy metadata.json / model.xml / e
 summary.json / pilot memory copies): phantom_parameters.json (resolved parameter snapshot),
 phantom_ledger.json, phantom_steps.csv.gz (100 Hz FBW internals, effectors, rigid body, power,
 aero; the per-step channel list of flight_test_methods.md s3 where feasible) and, on a crash or
-lease abort, crash_ring.npz (20 s pre-event ring buffer of truth channels at 400 Hz).
+crash_ring.npz (20 s pre-event ring buffer of truth channels at 400 Hz).
 """
 from __future__ import annotations
 import gzip, json, math, time
@@ -16,7 +16,6 @@ from .params import VARIANTS
 from .plant import PhantomAircraft
 from .ledger import config_table
 
-LEASE_S = 5.0
 CG_GATE_SETTLE_S = 1.0          # the aircraft spawns ~0.06 m above its compressed gear (D-3, D-10)
 CG_GATE_MAX_SPEED_M_S = 0.05
 LANDED_GEAR_LOAD_FRACTION = 0.8  # weight on the gear required to call a landing (D-8)
@@ -126,15 +125,12 @@ def gear_weight_fraction(p):
 def sensor_observation(lab):
     p = lab.aircraft; d = p.data
     obs = p.sensor_observation(lab.sensor_rng)
-    lease_rem = max(0.0, LEASE_S - (float(d.time) - lab.last_command_time))
     obs.update(observation_id=lab.obs_id, t_s=round(float(d.time), 3), wall_utc=datetime.now(timezone.utc).isoformat(),
-               lease_remaining_s=round(lease_rem, 3), scheduler_backlog_s=round(lab.clock_lag_s, 3), time_scale=lab.time_scale,
+               command_mode='hold_until_changed', scheduler_backlog_s=round(lab.clock_lag_s, 3), time_scale=lab.time_scale,
                action_schema='phantom-fbw-1', mission=lab.mission, authority=lab.authority, active=lab.active, paused=lab.paused,
                configuration=dict(airframe_variant=p.variant, airframe_revision=p.provenance['revision'], config_sha256=p.P.config_sha256,
                                   load_state=p.load_state, occupants=p.L.occupants, initial_fuel_kg=float(p.fuel_initial.sum())),
                sensor_status='Provisional modelled sensors: GNSS, baro, radar altimeter (ray along gravity), AHRS, body-axis gyro, fan rpm, pod/leg/surface position, power, fuel; no truth forces')
-    if lab.lease_expired:
-        obs['warning_lamps'] = obs['warning_lamps'] + ['COMMAND_LEASE_EXPIRED']
     return obs
 
 
@@ -142,7 +138,7 @@ def accept_timing(lab, row):
     d = lab.aircraft.data; obs = row.get('observation') or {}
     row['timing'] = dict(observation_sim_t_s=obs.get('t_s'), observation_wall_utc=obs.get('wall_utc'), accept_wall_utc=datetime.now(timezone.utc).isoformat(),
                          accept_sim_t_s=float(d.time), apply_sim_t_s=row['apply_t_s'], observation_age_s=(float(d.time) - obs['t_s']) if obs else None,
-                         lease_remaining_s=max(0.0, LEASE_S - (float(d.time) - lab.last_command_time)), scheduler_backlog_s=lab.clock_lag_s,
+                         command_mode='hold_until_changed', scheduler_backlog_s=lab.clock_lag_s,
                          time_scale=lab.time_scale)
 
 
@@ -164,10 +160,6 @@ def integrate(lab):
         for e in p.fcc.pti.log:
             if not e.get('_logged'):
                 e['_logged'] = True; lab.log('pti_event', {k: v for k, v in e.items() if k != '_logged'})
-    if p.data.time - lab.last_command_time > LEASE_S and not lab.lease_expired:
-        p.lease_failsafe(); lab.lease_expired = True
-        lab.log('command_lease_expired', dict(event='ABORT', behavior='collective 0, boosters 0, wheel drive 0, brakes on; all other targets held; no flight rescue'))
-        p.dump_ring(lab.log_path / 'lease_abort_ring.npz')
     was_crashed = p.crashed; nev = len(p.events)
     p.step()
     for e in p.events[nev:]:

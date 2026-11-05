@@ -92,15 +92,17 @@ assert.ok(inspectRideClearance(hillside,snapshot).failures.some(x=>x.reason==='t
 const transforms=[];
 class FakeVector{constructor(...v){this.v=v;}set(...v){this.v=v;return this;}}
 class FakeQuat{setFromAxisAngle(){return this;}copy(){return this;}multiply(){return this;}}
-class FakeGroup{constructor(){this.position=new FakeVector();this.quaternion=new FakeQuat();this.children=[];}add(x){this.children.push(x);}clear(){this.children=[];}}
+class FakeGroup{constructor(){this.position=new FakeVector();this.quaternion=new FakeQuat();this.children=[];}add(x){this.children.push(x);}clear(){this.children=[];}clone(){return new FakeGroup();}}
 const THREE={Group:FakeGroup,Vector3:FakeVector,Quaternion:FakeQuat};
-class Loader{load(url,onLoad){assert.equal(url,'/assets/phantom-a10.glb');onLoad({scene:new FakeGroup()});}}
+let loads=0;
+class Loader{load(url,onLoad){assert.equal(url,'/assets/phantom-a10.glb');loads++;onLoad({scene:new FakeGroup()});}}
 const scene={add:o=>transforms.push(o),remove:()=>{}};
 let updates=0,attached=0;
 const traffic=createVisualAirTraffic({THREE,GLTFLoader:Loader,scene,aircraft:[{
  id:'test',asset:'/assets/phantom-a10.glb',cgLocal:cg,waypoints,
  onLoad:()=>{attached++;return {test:true};},onUpdate:(rig,p)=>{assert.equal(rig.test,true);assert.ok(p.speed>=0);updates++;}
 }]});
+await new Promise(setImmediate);
 assert.equal(attached,1);
 const t=10;
 traffic.update(t);
@@ -121,10 +123,20 @@ const oneShot=createVisualAirTraffic({THREE,GLTFLoader:Loader,scene:stage2,aircr
 }]});
 const smooth2=buildRideTrajectory(buildRideJourney('standard','left',cg[2]).points,{cruiseSpeed:35});
 oneShot.setRoute('one-shot',smooth2);
+await new Promise(setImmediate);
 oneShot.update(smooth2.duration);
 const landed=actor2[0].position.v;
 oneShot.update(smooth2.duration+2);
 assert.deepEqual(actor2[0].position.v,landed,'end of passenger ride loops/teleports');
 oneShot.dispose();
 traffic.dispose();
+const beforeLoads=loads;
+const shared=createVisualAirTraffic({THREE,GLTFLoader:Loader,scene,aircraft:[
+ {id:'r6-a',asset:'/assets/phantom-a10.glb',cgLocal:cg,waypoints},
+ {id:'r6-b',asset:'/assets/phantom-a10.glb',cgLocal:cg,waypoints}
+]});
+await new Promise(setImmediate);
+assert.equal(loads,beforeLoads+1,'shared GLB should load once');
+assert.notEqual(shared.getActor('r6-a').pivot.children[0],shared.getActor('r6-b').pivot.children[0],'aircraft must have separate transforms');
+shared.dispose();
 console.log('Visual aircraft route bounds, CG pivot, timing, deterministic sampling and render wiring passed');

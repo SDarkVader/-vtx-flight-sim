@@ -9,19 +9,9 @@ import {DEFAULT_VISUAL_MODEL,vehicleModel} from './vehicle-registry.js';
 const AIRCRAFT=[
  {id:'a10-primary',modelId:DEFAULT_VISUAL_MODEL,route:'standard',direction:'left',stand:[-45,-50]},
  {id:'r6-flight',modelId:'r6',route:'holding',direction:'left',runwayId:'03/21',alternateIndex:0,stand:[190,-90]},
- {id:'a9-heritage',modelId:'phantom-a9',route:'training',direction:'right',stand:[-15,-50]},
- {id:'a10-legacy',modelId:'phantom-a10-legacy',route:'extended',direction:'left',stand:[15,-50]},
- {id:'academy-twin-1',modelId:'academy-twin',route:'scenic',direction:'right',stand:[45,-50]},
- {id:'trainer-2',modelId:'trainer',route:'training',direction:'left',stand:[75,-50]},
- {id:'service-vtol-1',modelId:'service-rotorcraft',route:'standard',direction:'right',stand:[105,-50]},
- {id:'academy-twin-2',modelId:'academy-twin',route:'teardrop',direction:'left',runwayId:'03/21',alternateIndex:1,stand:[220,-90]},
- {id:'trainer-3',modelId:'trainer',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:[250,-90]}
-];
-const GROUND=[
- {id:'fuel-cart',modelId:'ground-service',road:'workshop',color:0xe8a53a},
- {id:'baggage-cart',modelId:'ground-service',road:'west',color:0x73b5d4},
- {id:'terminal-shuttle',modelId:'ground-service',road:'north',color:0xd9e4e6},
- {id:'maintenance-truck',modelId:'ground-service',road:'east',color:0xc5794b}
+ {id:'r6-training',modelId:'r6',route:'training',direction:'right',stand:[-15,-50]},
+ {id:'r6-teardrop',modelId:'r6',route:'teardrop',direction:'left',runwayId:'03/21',alternateIndex:1,stand:[220,-90]},
+ {id:'r6-go-around',modelId:'r6',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:[250,-90]}
 ];
 const ease=u=>u*u*(3-2*u), clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const collide=(a,b,pad=6)=>a[0]<b[1]+pad&&b[0]<a[1]+pad;
@@ -122,15 +112,9 @@ export function createAirportOperations(world){
   return {...spec,index,route,routeId:spec.route,cgHeight:model.cgLocal[2],ground:sampleTerrainHeight(world,...spec.stand),clearance};
  });
  const schedule=runwaySchedule(aircraft);aircraft.forEach((actor,i)=>actor.schedule=schedule.items[i]);
- const roadTrim={
-  workshop:[[0,-65],[150,-65],[150,-68]],
-  west:[[-72,35],[-72,100]],
-  north:[[20,28],[20,88],[115,88],[115,98]],
-  east:[[185,18],[185,29]]
- };
- const ground=GROUND.map((spec,i)=>({...spec,points:roadTrim[spec.road]||LAYOUT.roads.find(r=>r.id===spec.road).pts,offset:i===0?2:i*11}));
+ const ground=[];
  const all=[...aircraft,...ground];
- let density=13;
+ let density=all.length;
  return {
   actors:all,aircraft,ground,cycle:schedule.cycle,runwaySlots:schedule.occupied,
   setDensity(value){density=clamp(Math.round(Number(value)||0),2,all.length);},
