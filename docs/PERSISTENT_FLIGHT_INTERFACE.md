@@ -41,10 +41,13 @@ near the handover location for 18 simulated seconds after an injected provider
 failure. This does not establish general recovery across all attitudes, fuel
 loads or wind conditions. Phantom fallback is reported unavailable.
 
-There is not yet an integrated natural-language model or provider-failure
-monitor. A provider must report its failure; there is no elapsed-time command
-lease that silently terminates control. Stored goals and the handover interface
-do not claim that a conversational pilot is connected.
+`tools/pilot_supervisor.py` can monitor explicitly configured pilot adapter
+processes for one existing run. An actual process exit causes a failure report;
+a lost server connection does not. It can hand over to the next configured
+provider, preserving the current objective. It does not detect its own process
+termination, and no conversational provider adapter is bundled yet. There is no
+elapsed-time command lease that silently terminates control. See
+`docs/PILOT_SUPERVISOR.md` for the adapter protocol and limitations.
 
 An active flight is checkpointed locally. After an actual server-process
 restart, the saved aircraft state and objective are restored paused; this is
