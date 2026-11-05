@@ -65,8 +65,11 @@ def test_objective_survives_reconnect_and_checkpoint(tmp_path, monkeypatch):
     lab=Laboratory()
     monkeypatch.setattr(server,'lab',lab)
     run=lab.start(Mission(authority='colin'))['run_id']
-    goal=asyncio.run(server.set_objective({'text':'Take us to the airport'}))
+    goal=asyncio.run(server.set_objective({'text':'Take us to the airport','run_id':run}))
     assert goal['status']=='pending' and lab.view()['objective']==goal
+    with pytest.raises(server.HTTPException):
+        asyncio.run(server.set_objective({'text':'Wrong flight','run_id':'stale'}))
+    assert lab.objective==goal
     lab.audit_file.close();lab.audit_file=None
     recovered=Laboratory()
     assert recovered.run_id==run and recovered.objective==goal

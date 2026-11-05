@@ -801,6 +801,8 @@ async def view():return lab.view()
 @app.post('/api/objective')
 async def set_objective(request:dict):
     if not lab.active:raise HTTPException(409,'No active flight')
+    if request.get('run_id') is not None and request['run_id']!=lab.run_id:
+        raise HTTPException(409,'Flight changed; refresh before setting an objective')
     text=request.get('text')
     if not isinstance(text,str) or not 1<=len(text.strip())<=1000:
         raise HTTPException(422,'Objective must contain 1 to 1000 characters')
