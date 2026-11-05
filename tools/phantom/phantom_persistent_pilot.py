@@ -37,7 +37,7 @@ def main():
     last_action_key = None
     while True:
         try:
-            c = json.loads(Path(a.controls).read_text())
+            c = json.loads(Path(a.controls).read_text(encoding='utf-8-sig'))
             view = call('/api/view')
             run = view.get('run_id')
             action_key = (run, c.get('serial'))

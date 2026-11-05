@@ -52,3 +52,20 @@ def test_unified_health_read_only(monkeypatch, capsys):
     result = json.loads(capsys.readouterr().out)
     assert result["phantom_bridge_compatible"] is True
     assert seen == ["/api/view"]
+
+
+def test_windows_bom_controls(tmp_path, monkeypatch):
+    """Windows PowerShell may emit UTF-8 BOM; it must not break a persistent link."""
+    controls = tmp_path / "controls.json"
+    controls.write_bytes(bytes.fromhex("efbbbf") + json.dumps({"armed": False}).encode("utf-8"))
+    seen = []
+    def fake_call(path, payload=None):
+        seen.append(path)
+        assert payload is None
+        return {"run_id": "r1", "active": True, "authority": "manual",
+                "observation": {"configuration": {"airframe_variant": "phantom-fx"}}}
+    monkeypatch.setattr(bridge, "URL", "http://127.0.0.1:8765")
+    monkeypatch.setattr(bridge, "call", fake_call)
+    monkeypatch.setattr(sys, "argv", ["phantom_persistent_pilot", "--controls", str(controls), "--once"])
+    bridge.main()
+    assert seen == ["/api/view"]
