@@ -21,10 +21,19 @@ def call(path, payload=None):
 
 
 def main():
-    if URL.endswith(':8765'):
-        raise SystemExit('Port 8765 is reserved; use 8766 for Phantom work')
+    # The unified cockpit can also run Phantom on 8765. Never infer aircraft
+    # type from the port; verify the observed aircraft before each action.
     ap = argparse.ArgumentParser(description=__doc__); ap.add_argument('--controls', default=str(ROOT / 'tools/phantom/phantom_pilot_controls.json'))
-    ap.add_argument('--once', action='store_true'); a = ap.parse_args()
+    ap.add_argument('--once', action='store_true')
+    ap.add_argument('--health', action='store_true', help='Read-only connection and aircraft check')
+    a = ap.parse_args()
+    if a.health:
+        view = call('/api/view')
+        variant = ((view.get('observation') or {}).get('configuration') or {}).get('airframe_variant')
+        print(json.dumps({'connected': True, 'variant': variant, 'active': view.get('active'),
+                          'authority': view.get('authority'), 'phantom_bridge_compatible':
+                          isinstance(variant, str) and variant.startswith('phantom')}), flush=True)
+        return
     last_action_key = None
     while True:
         try:
@@ -32,7 +41,12 @@ def main():
             view = call('/api/view')
             run = view.get('run_id')
             action_key = (run, c.get('serial'))
-            if (c.get('armed') and c.get('arm_run_id') == run and view.get('active')
+            variant = ((view.get('observation') or {}).get('configuration') or {}).get('airframe_variant')
+            # For the unified endpoint, refuse any control if R6 (or an unknown
+            # airframe) is selected. Preserve historical 8766 bridge semantics.
+            aircraft_ok = (not URL.endswith(':8765') or
+                           (isinstance(variant, str) and variant.startswith('phantom')))
+            if (c.get('armed') and aircraft_ok and c.get('arm_run_id') == run and view.get('active')
                     and not view.get('paused') and view.get('authority') == 'colin'
                     and view.get('pilot_owner') is None and not view.get('pilot_epoch', 0)
                     and action_key != last_action_key):
