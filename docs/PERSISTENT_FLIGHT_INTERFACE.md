@@ -22,11 +22,29 @@ changes also invalidate the previous owner. Older unowned Colin clients work
 until the first explicit handover in a run.
 
 The R6 pilot bridge does not create replacement flights on a connection failure
-or send zero controls when unarmed. Its status reports when no fallback pilot is
-available. There is no integrated natural-language model, provider-failure
-detector or autonomous R6 stabilisation fallback yet. Stored goals and the
-handover interface provide continuity for a pilot implementation; they do not
-claim the aircraft is being flown or stabilised.
+or send zero controls when unarmed. A provider supervisor can report an actual
+failure with `POST /api/pilot/failure`, supplying its `run_id`, `pilot_id`,
+`pilot_epoch` and a reason. The server rejects reports from a previous owner,
+cancels its pending commands and attempts a deterministic R6 position and
+altitude hold. The hold retains the original objective for the next pilot and
+uses instrument observations; it runs in the simulation process at the sensor
+rate. A handover reserves the replacement pilot while the hold continues; the
+first valid action from that pilot takes control without resetting the aircraft.
+The hold state and pending pilot are checkpointed with the flight.
+
+The R6 hold is based on the recorded 1,200 rpm / 300 kW R6 flight. It accepts
+that configuration when airborne and the shaft is running near reference
+speed. If its required observations or conditions are unavailable, the view
+reports `fallback.state: unavailable` and the last applied controls remain
+held. An isolated simulation reached approximately 9.7 m clearance and held
+near the handover location for 18 simulated seconds after an injected provider
+failure. This does not establish general recovery across all attitudes, fuel
+loads or wind conditions. Phantom fallback is reported unavailable.
+
+There is not yet an integrated natural-language model or provider-failure
+monitor. A provider must report its failure; there is no elapsed-time command
+lease that silently terminates control. Stored goals and the handover interface
+do not claim that a conversational pilot is connected.
 
 An active flight is checkpointed locally. After an actual server-process
 restart, the saved aircraft state and objective are restored paused; this is

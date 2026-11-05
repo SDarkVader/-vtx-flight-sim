@@ -130,6 +130,26 @@ def test_control_authority_and_observation_boundary():
     assert accepted['accepted'] and accepted['apply_t_s']==pytest.approx(.02)
     assert not {'qpos','qvel','forces','cg','inertia','contact_manifold'}&obs.keys()
 
+def test_long_running_action_history_keeps_sequence_and_full_audit(tmp_path,monkeypatch):
+    import json
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path))
+    lab=Laboratory();run=lab.start(Mission())['run_id']
+    for index in range(80):
+        ack=lab.accept_action(Action(authority='manual',engine=0,collective_deg=[0]*4,
+            tilt_deg=[[0,0]]*4,reason='Persistent test'))
+        assert ack['sequence']==index+1
+        for _ in range(10):lab.integrate()
+    assert lab.action_sequence==80 and len(lab.action_log)<65
+    assert all(row['applied'] for row in lab.action_log)
+    lab.checkpoint(force=True)
+    checkpoint=json.loads(lab.checkpoint_path.read_text())
+    assert checkpoint['session']['action_sequence']==80
+    assert len(checkpoint['session']['action_log'])<65
+    summary=lab.stop('Persistent history test complete')
+    assert summary['decisions']==80
+    events=(tmp_path/'evidence'/'flights'/run/'events.jsonl').read_text().splitlines()
+    assert sum(json.loads(line)['kind']=='pilot_decision' for line in events)==80
+
 def test_accepted_command_survives_pilot_delay(tmp_path,monkeypatch):
     import vtx.live_server as server
     monkeypatch.setattr(server,'ROOT',tmp_path)

@@ -29,6 +29,7 @@ from ._rotation import Rotation
 from .aircraft import Aircraft,DT,ROOT
 from .mission_selection import MapPoint,select_mission
 from .world import TestWorld
+from .r6_hold import R6HoldController
 from .phantom import live as phantom_live
 from .phantom.controls import PhantomAction
 from fastapi.exceptions import RequestValidationError
@@ -155,7 +156,7 @@ class Laboratory:
     def __init__(self):
         self.world=TestWorld();self.flight_world=self.world;self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
-        self.mission=None;self.objective=None;self.pilot_owner=None;self.pilot_epoch=0;self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
+        self.mission=None;self.objective=None;self.pilot_owner=None;self.pending_pilot=None;self.pilot_epoch=0;self.fallback_controller=None;self.fallback_status=None;self.action_log=[];self.action_sequence=0;self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
         self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
@@ -206,16 +207,17 @@ class Laboratory:
             return
         d=p.data
         if getattr(p,'is_phantom',False):
-            state=dict(schema='phantom-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pilot_epoch=self.pilot_epoch,authority=self.authority,
+            state=dict(schema='phantom-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback_status=self.fallback_status,authority=self.authority,
                        time_scale=self.time_scale,paused=self.paused,plant=p.checkpoint_state(),
-                       session=dict(action_log=self.action_log,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
+                       session=dict(action_log=self.action_log,action_sequence=self.action_sequence,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
                                     lease_expired=self.lease_expired,obs_id=self.obs_id,settled_s=self.settled_s,left_ground=self.left_ground,
                                     last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state,
                                     phantom_cg_gate=getattr(self,'phantom_cg_gate',None)))
             return self._write_checkpoint(state)
         state=dict(schema=1,run_id=self.run_id,
                    model_xml_sha256=p.provenance['model_xml_sha256'],
-                   mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pilot_epoch=self.pilot_epoch,authority=self.authority,
+                   mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,
+                   fallback_status=self.fallback_status,fallback_controller=self.fallback_controller.snapshot() if self.fallback_controller else None,authority=self.authority,
                    time_scale=self.time_scale,paused=self.paused,
                    physics=dict(time=float(d.time),qpos=d.qpos.tolist(),
                                 qvel=d.qvel.tolist(),act=d.act.tolist(),
@@ -239,7 +241,7 @@ class Laboratory:
                               experimental_assist=p._bench_apply_experimental_assist,
                               governor_integral_nm=p.governor.integral_nm,
                               governor_telemetry=p.governor.telemetry),
-                   session=dict(action_log=self.action_log,
+                   session=dict(action_log=self.action_log,action_sequence=self.action_sequence,
                                 next_pending_action=self.next_pending_action,
                                 last_command_time=self.last_command_time,
                                 lease_expired=self.lease_expired,obs_id=self.obs_id,
@@ -344,13 +346,16 @@ class Laboratory:
             self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
             self.mission=state['mission']
             self.objective=state.get('objective')
-            self.pilot_owner=state.get('pilot_owner');self.pilot_epoch=state.get('pilot_epoch',0)
+            self.pilot_owner=state.get('pilot_owner');self.pending_pilot=state.get('pending_pilot');self.pilot_epoch=state.get('pilot_epoch',0)
+            self.fallback_status=state.get('fallback_status')
+            self.fallback_controller=R6HoldController.restore(state['fallback_controller']) if state.get('fallback_controller') else None
             self.authority=state['authority']
             self.time_scale=state['time_scale']
             self.active=True
             self.paused=True
             self.wall_started=time.monotonic()
             self.action_log=session['action_log']
+            self.action_sequence=session.get('action_sequence',max((a['sequence'] for a in self.action_log),default=0))
             self.next_pending_action=session['next_pending_action']
             for action in self.action_log[self.next_pending_action:]:
                 action['cancelled']=True
@@ -391,9 +396,9 @@ class Laboratory:
         self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
         import gzip as _gz
         candidate.step_log=_gz.open(evidence/'phantom_steps.csv.gz','at');candidate.STEP_COLS=None
-        self.mission=state['mission'];self.objective=state.get('objective');self.pilot_owner=state.get('pilot_owner');self.pilot_epoch=state.get('pilot_epoch',0);self.authority=state['authority'];self.time_scale=state['time_scale']
+        self.mission=state['mission'];self.objective=state.get('objective');self.pilot_owner=state.get('pilot_owner');self.pending_pilot=state.get('pending_pilot');self.pilot_epoch=state.get('pilot_epoch',0);self.fallback_status=state.get('fallback_status');self.authority=state['authority'];self.time_scale=state['time_scale']
         self.active=True;self.paused=True;self.wall_started=time.monotonic()
-        self.action_log=session['action_log'];self.next_pending_action=session['next_pending_action']
+        self.action_log=session['action_log'];self.action_sequence=session.get('action_sequence',max((a['sequence'] for a in self.action_log),default=0));self.next_pending_action=session['next_pending_action']
         for action in self.action_log[self.next_pending_action:]:action['cancelled']=True
         self.next_pending_action=len(self.action_log)
         self.last_command_time=session['last_command_time'];self.lease_expired=session['lease_expired'];self.obs_id=session['obs_id']
@@ -503,10 +508,11 @@ class Laboratory:
                           environment=self.world.id,environment_version=self.world.version,label=request.label,
                           ignore_scenery_collisions=request.ignore_scenery_collisions)
         self.objective=None
-        self.pilot_owner=None;self.pilot_epoch=0
+        self.pilot_owner=None;self.pending_pilot=None;self.pilot_epoch=0
+        self.fallback_controller=None;self.fallback_status=None
         self.log_path=self.data_root/'evidence/flights'/self.run_id;self.log_path.mkdir(parents=True)
         self.audit_file=(self.log_path/'events.jsonl').open('w')
-        self.wall_started=time.monotonic();self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
+        self.wall_started=time.monotonic();self.action_log=[];self.action_sequence=0;self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.last_obs=None;self.obs_id=0;self.last_sensor_t=-1.;self.last_audit_t=-1.;self.observations={}
         self.settled_s=0.;self.left_ground=False;self.error=None;self.end_summary=None
         self.sensor_rng=np.random.default_rng(self.world.seed)
@@ -533,21 +539,53 @@ class Laboratory:
         if isinstance(a,PhantomAction)!=bool(getattr(self.aircraft,'is_phantom',False)):
             raise HTTPException(409,'Action schema does not match the active airframe (Phantom requires schema phantom-fbw-1)')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
+        if self.authority=='colin' and a.observation_id not in self.observations:raise HTTPException(409,'Colin action requires an actual permitted observation ID')
+        takeover=(a.authority=='colin' and self.pending_pilot is not None and a.pilot_id==self.pending_pilot
+                  and a.pilot_epoch==self.pilot_epoch and a.pilot_run_id==self.run_id)
+        if takeover:
+            for pending in self.action_log[self.next_pending_action:]:
+                if not pending.get('cancelled'):
+                    pending['cancelled']=True
+                    self.log('control_cancelled',dict(sequence=pending['sequence'],reason='Replacement pilot action accepted'))
+            previous=self.pilot_owner;self.pilot_owner=self.pending_pilot;self.pending_pilot=None
+            self.fallback_controller=None;self.fallback_status=None
+            self.log('pilot_takeover_applied',dict(previous=previous,pilot_id=self.pilot_owner,pilot_epoch=self.pilot_epoch))
         if a.authority=='colin' and (self.pilot_epoch>0 or a.pilot_id is not None or a.pilot_epoch is not None or a.pilot_run_id is not None) and (self.pilot_owner is None or a.pilot_id!=self.pilot_owner or a.pilot_epoch!=self.pilot_epoch or a.pilot_run_id!=self.run_id):
             raise HTTPException(409,'Pilot ownership has changed; reconnect to the current session')
-        if self.authority=='colin' and a.observation_id not in self.observations:raise HTTPException(409,'Colin action requires an actual permitted observation ID')
         obs=self.observations.get(a.observation_id)
-        row=dict(sequence=len(self.action_log)+1,issued_t_s=float(self.aircraft.data.time),
+        self.action_sequence+=1
+        row=dict(sequence=self.action_sequence,issued_t_s=float(self.aircraft.data.time),
                  apply_t_s=float(self.aircraft.data.time)+.02,observation=obs,decision=a.reason,
                  issued=a.model_dump(by_alias=True,exclude_none=True) if isinstance(a,PhantomAction) else a.model_dump())
         if isinstance(a,PhantomAction):phantom_live.accept_timing(self,row)
         self.action_log.append(row);self.last_command_time=float(self.aircraft.data.time);self.lease_expired=False
         self.log('pilot_decision',row)
+        if takeover:self.checkpoint(force=True)
         return dict(accepted=True,sequence=row['sequence'],apply_t_s=row['apply_t_s'])
+
+    def compact_actions(self):
+        # The append-only event log remains the full history. Keep recent
+        # decisions and every pending action in memory and in checkpoints.
+        if self.next_pending_action>64:
+            count=self.next_pending_action-32
+            del self.action_log[:count]
+            self.next_pending_action-=count
 
     def integrate(self):
         p=self.aircraft
-        if getattr(p,'is_phantom',False):return phantom_live.integrate(self)
+        if getattr(p,'is_phantom',False):
+            phantom_live.integrate(self);self.compact_actions();return
+        if self.fallback_controller and p.data.time-self.fallback_controller.last_time>=.05:
+            try:
+                obs=self.sensor_observation()
+                command=self.fallback_controller.decide(obs)
+                self.accept_action(Action(authority='colin',pilot_id=self.pilot_owner,
+                    pilot_epoch=self.pilot_epoch,pilot_run_id=self.run_id,
+                    observation_id=obs['observation_id'],**command))
+            except (ValueError,KeyError,TypeError,HTTPException) as exc:
+                self.fallback_controller=None
+                self.fallback_status=dict(state='unavailable',reason=str(exc))
+                self.log('fallback_unavailable',self.fallback_status)
         while self.next_pending_action<len(self.action_log):
             row=self.action_log[self.next_pending_action]
             if row.get('cancelled'):
@@ -562,6 +600,7 @@ class Laboratory:
             cmd={k:row['issued'][k] for k in p.command}
             p.set_command(cmd);row['applied']=True
             self.log('control_applied',dict(sequence=row['sequence'],requested=cmd))
+        self.compact_actions()
         p.step()
         if p.data.time-self.last_audit_t>=.05:
             self.last_audit_t=float(p.data.time)
@@ -581,10 +620,12 @@ class Laboratory:
     def stop(self,reason):
         if not self.active:return self.end_summary or dict(status='No active sortie')
         self.active=False;self.last_obs=None;p=self.aircraft
+        if self.fallback_controller:
+            self.fallback_controller=None;self.fallback_status=dict(state='inactive',reason='Flight ended')
         self.checkpoint_path.unlink(missing_ok=True)
         outcome=('landed_at_departure' if getattr(self,'phantom_landing_site',None)=='departure' else 'landed') if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
         summary=dict(run_id=self.run_id,outcome=outcome,reason=reason,simulated_seconds=float(p.data.time),
-                     wall_seconds=time.monotonic()-self.wall_started,decisions=len(self.action_log),
+                     wall_seconds=time.monotonic()-self.wall_started,decisions=self.action_sequence,
                      left_ground=self.left_ground,max_airframe_origin_altitude_m=p.max_alt,
                      max_contact_force_n=p.max_impact_n,fuel_used_kg=float((p.fuel_initial-p.fuel).sum()),
                      max_gear_load_n=getattr(p,'max_gear_load_n',None),max_nongear_impact_n=getattr(p,'max_nongear_impact_n',None),
@@ -633,7 +674,7 @@ class Laboratory:
                     active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,
                     clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
                     rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,objective=self.objective,
-                    pilot_owner=self.pilot_owner,pilot_epoch=self.pilot_epoch,
+                    pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback=self.fallback_status,
                     recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
                     end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
 
@@ -760,15 +801,56 @@ async def pilot_handover(request:dict):
         raise HTTPException(422,'Pilot ID and current epoch required')
     if request.get('run_id')!=lab.run_id:raise HTTPException(409,'Flight changed; refresh current state')
     if epoch!=lab.pilot_epoch:raise HTTPException(409,'Pilot ownership changed; refresh current state')
+    if lab.fallback_controller:
+        lab.pending_pilot=pilot.strip();lab.pilot_epoch+=1
+        lab.log('pilot_takeover_pending',dict(pilot_id=lab.pending_pilot,pilot_epoch=lab.pilot_epoch,objective=lab.objective))
+        lab.checkpoint(force=True)
+        return dict(run_id=lab.run_id,pilot_id=lab.pending_pilot,pilot_epoch=lab.pilot_epoch,
+                    objective=lab.objective,observation=lab.sensor_observation(),pending=True)
     for row in lab.action_log[lab.next_pending_action:]:
         if not row.get('cancelled'):
             row['cancelled']=True
             lab.log('control_cancelled',dict(sequence=row['sequence'],reason='Pilot handover'))
     previous=lab.pilot_owner
-    lab.pilot_owner=pilot.strip();lab.pilot_epoch+=1
+    lab.fallback_controller=None
+    lab.fallback_status=None
+    lab.pilot_owner=pilot.strip();lab.pending_pilot=None;lab.pilot_epoch+=1
     lab.log('pilot_handover',dict(previous=previous,pilot_id=lab.pilot_owner,pilot_epoch=lab.pilot_epoch,objective=lab.objective))
     lab.checkpoint(force=True)
     return dict(run_id=lab.run_id,pilot_id=lab.pilot_owner,pilot_epoch=lab.pilot_epoch,objective=lab.objective,observation=lab.sensor_observation())
+@app.post('/api/pilot/failure')
+async def pilot_failure(request:dict):
+    if not lab.active or lab.authority!='colin':raise HTTPException(409,'No active Colin-controlled flight')
+    reason=request.get('reason','Pilot provider unavailable')
+    if not isinstance(reason,str) or not 1<=len(reason.strip())<=500:
+        raise HTTPException(422,'Failure reason must contain 1 to 500 characters')
+    if (lab.fallback_controller and lab.pending_pilot is not None and request.get('run_id')==lab.run_id and request.get('pilot_id')==lab.pending_pilot
+            and request.get('pilot_epoch')==lab.pilot_epoch):
+        lab.log('pending_pilot_failed',dict(pilot_id=lab.pending_pilot,reason=reason.strip()))
+        lab.pending_pilot=None;lab.pilot_epoch+=1;lab.checkpoint(force=True)
+        return dict(run_id=lab.run_id,pilot_owner=lab.pilot_owner,pilot_epoch=lab.pilot_epoch,
+                    objective=lab.objective,fallback=lab.fallback_status)
+    if (request.get('run_id')!=lab.run_id or request.get('pilot_id')!=lab.pilot_owner
+            or request.get('pilot_epoch')!=lab.pilot_epoch or lab.pilot_owner is None):
+        raise HTTPException(409,'Pilot ownership changed; refresh current state')
+    for row in lab.action_log[lab.next_pending_action:]:
+        if not row.get('cancelled'):
+            row['cancelled']=True
+            lab.log('control_cancelled',dict(sequence=row['sequence'],reason='Pilot provider failed'))
+    previous=lab.pilot_owner;lab.pending_pilot=None
+    lab.pilot_epoch+=1
+    try:
+        lab.fallback_controller=R6HoldController(lab.sensor_observation())
+        lab.pilot_owner='r6-deterministic-hold'
+        lab.fallback_status=dict(state='active',controller='r6-deterministic-hold',reason=reason.strip())
+    except (ValueError,KeyError,TypeError) as exc:
+        lab.fallback_controller=None;lab.pilot_owner=None
+        lab.fallback_status=dict(state='unavailable',reason=str(exc),provider_failure=reason.strip())
+    lab.log('pilot_provider_failed',dict(previous=previous,pilot_epoch=lab.pilot_epoch,
+                                         objective=lab.objective,fallback=lab.fallback_status))
+    lab.checkpoint(force=True)
+    return dict(run_id=lab.run_id,pilot_owner=lab.pilot_owner,pilot_epoch=lab.pilot_epoch,
+                objective=lab.objective,fallback=lab.fallback_status)
 @app.get('/api/validate')
 async def validate(x:float,y:float,variant:str|None=None,ignore_scenery_collisions:bool=False):
     from dataclasses import asdict
@@ -841,6 +923,7 @@ async def operator(request:dict):
                     lab.log('control_cancelled',dict(sequence=row['sequence'],reason='Control authority changed before application'))
             if lab.pilot_owner is not None:
                 lab.pilot_owner=None;lab.pilot_epoch+=1
+            lab.fallback_controller=None;lab.fallback_status=None;lab.pending_pilot=None
         lab.log('authority_change',dict(before=lab.authority,after=request['authority']));lab.authority=request['authority']
     if 'paused' in request:
         lab.paused=bool(request['paused']);lab.clock_epoch+=1;lab.log('explicit_operator_pause',dict(paused=lab.paused))
