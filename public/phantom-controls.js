@@ -25,9 +25,12 @@ export function createPhantomPanel({api,toast}){
     const s=el.querySelector('#ph-sliders');
     for(const [k,lo,hi,st,v] of FIELDS){const l=document.createElement('label');l.style.display='block';l.innerHTML=`${k} <output>${v}</output><input type=range min=${lo} max=${hi} step=${st} value=${v} style="width:100%">`;
       const i=l.querySelector('input'),o=l.querySelector('output');i.oninput=()=>{cmd[k]=+i.value;o.value=i.value;engage();dirty=true;};s.appendChild(l);}
+    for(const [side,index] of [['Left',0],['Right',1]]){const l=document.createElement('label');l.style.display='block';l.innerHTML=`Front ${side.toLowerCase()} surface <output>0</output> deg <input type=range min=-20 max=25 step=1 value=0 style="width:100%">`;
+      const i=l.querySelector('input'),o=l.querySelector('output');i.oninput=()=>{cmd.canard_pitch_deg=cmd.canard_pitch_deg||[0,0];cmd.canard_pitch_deg[index]=+i.value;o.value=i.value;engage();dirty=true;};s.appendChild(l);}
     el.querySelector('#ph-mode').onchange=e=>{cmd.stability_mode=e.target.value;engage();dirty=true;};
     el.querySelector('#ph-take').onclick=()=>{if(engaged)disengage();else{engage();dirty=true;}};
-    let vtol=true,brakes=true,wing=false,can=false;
+    let vtol=true,brakes=true,wing=false,can=true;
+    el.querySelector('#ph-canard').textContent='Canards fold';
     el.querySelector('#ph-gear').onclick=e=>{engage();vtol=!vtol;cmd.pod_tilt_deg=Array(4).fill(vtol?90:0);cmd.leg_extension_m=Array(4).fill(vtol?.52:0);e.target.textContent='Legs/pods: '+(vtol?'VTOL':'ROAD');dirty=true;};
     el.querySelector('#ph-brake').onclick=e=>{engage();brakes=!brakes;cmd.brake=Array(4).fill(brakes?1:0);e.target.textContent='Brakes '+(brakes?'on':'off');dirty=true;};
     el.querySelector('#ph-wing').onclick=e=>{engage();wing=!wing;cmd.wing=wing?'deploy':'stow';e.target.textContent='Wing '+(wing?'stow':'deploy');dirty=true;};
@@ -42,6 +45,6 @@ export function createPhantomPanel({api,toast}){
       const tb=el.querySelector('#ph-take');if(tb)tb.textContent=engaged?'Release control':'Take control';
       el.querySelector('#ph-state').textContent=[engaged?'PANEL ENGAGED: manual controls':'panel idle: sends nothing',`t ${o.t_s?.toFixed?.(2)} s · ${v.time_scale}× · commands held`,
         `variant ${o.configuration?.airframe_variant} ${o.configuration?.load_state||''}`,`radar ${JSON.stringify(o.radar_altitude_m??o.radar_clearance_m)}`,
-        `wing ${JSON.stringify(t.phantom?.wing_state)}`,`lamps ${(o.warning_lamps||[]).join(' ')}`].join('\n');},
+        `wing ${JSON.stringify(t.phantom?.wing_state)}`,`front L/R ${[t.phantom?.joints?.canard_left,t.phantom?.joints?.canard_right].map(x=>x==null?'-':(x*180/Math.PI).toFixed(1)).join(' / ')} deg | DRS ${t.phantom?.drs_deg?.toFixed?.(1)??'-'} deg`,`lamps ${(o.warning_lamps||[]).join(' ')}`].join('\n');},
   };
 }

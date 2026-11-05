@@ -388,7 +388,7 @@ class Laboratory:
         if saved.pop('fuel_kg_explicit',True) is False:saved.pop('fuel_kg',None)
         request=Mission(**saved)
         flight_world=self.world_for(request.ignore_scenery_collisions)
-        candidate=phantom_live.make_aircraft(flight_world,request)
+        candidate=phantom_live.make_aircraft(flight_world,request,enable_a10_surfaces='stab_te_up' in state['plant'])
         if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:raise ValueError('Checkpoint model differs from current physics model')
         candidate.restore_state(state['plant'])
         session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']

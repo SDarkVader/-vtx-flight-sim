@@ -69,12 +69,16 @@ export function attachPhantom(model){
   const joints=[];
   model.traverse(n=>{const u=n.userData;if(u&&u.phantom_joint){joints.push({node:n,name:u.phantom_joint,type:u.joint_type,
     axis:new THREE.Vector3(...u.axis_parent).normalize(),q0:+u.q_rest,pos:n.position.clone(),quat:n.quaternion.clone()});}});
-  return {joints};
+  const node=model.getObjectByName('VTX_VISUAL_DRS_HINGE');
+  const drs=node?{node,axis:new THREE.Vector3(...node.userData.axis_parent).normalize(),quat:node.quaternion.clone(),rest:node.userData.rest_te_up_deg??6}:null;
+  return {joints,drs};
 }
 
 const tmp=new THREE.Quaternion();
 export function updatePhantom(rig,truth){
   const q=truth?.phantom?.joints;if(!rig||!q)return;
+  const angle=truth.phantom.drs_deg;
+  if(rig.drs && angle!=null){tmp.setFromAxisAngle(rig.drs.axis,THREE.MathUtils.degToRad(angle-rig.drs.rest));rig.drs.node.quaternion.copy(tmp).multiply(rig.drs.quat);}
   for(const j of rig.joints){const v=q[j.name];if(v===undefined)continue;const d=v-j.q0;
     if(j.type==='slide'){j.node.position.copy(j.pos).addScaledVector(j.axis,d);}
     else{tmp.setFromAxisAngle(j.axis,d);j.node.quaternion.copy(tmp).multiply(j.quat);}}

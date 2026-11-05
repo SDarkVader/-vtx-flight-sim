@@ -194,6 +194,8 @@ class PhantomAircraft:
         self.motor_torque = np.zeros(4); self.booster_torque = np.zeros(2); self.prop_scale = 1.0
         self.aero_out = dict(force_body=np.zeros(3), moment_body=np.zeros(3), surfaces=[], hinge_moments={})
         self.alloc = {}; self.contacts = {}; self.airborne = False; self.first_contact_sink = None
+        self.p6 = P['proposals.p6_drs_stabilator'] > 0.5
+        self.stab_te_up = math.radians(P['proposals.p6_stab_rest_te_up_deg']) if self.p6 else 0.0
         self.no_support_since = None; self.support_force_n = 0.0
         self.ring = np.zeros((int(20 / DT), 32)); self.ring_i = 0; self.ring_full = False
         self.step_log = None; self.rng = np.random.default_rng(41031)
@@ -396,6 +398,15 @@ class PhantomAircraft:
             self.ramp(f'canard_{s}_fold', 0.0 if deployed else WING_SIGN[s] * math.pi / 2, math.radians(hl['canard_fold']['rate_deg_s']), dt)
             can_ok = abs(self.joint(f'canard_{s}_fold')[0]) < math.radians(5)
             self.ramp(f'canard_{s}', math.radians(al['canard_deg'][j]) if can_ok else 0.0, math.radians(hl['canard_pitch']['rate_deg_s']), dt)
+        if self.p6:
+            rest = P['proposals.p6_stab_rest_te_up_deg']; lo, hi = P['proposals.p6_stab_travel_deg']
+            dem = float((self.fcc.last or {}).get('moment_demand', [0, 0, 0])[1])
+            tgt = rest + float(np.clip(P['proposals.p6_stab_gain_deg_per_demand'] * dem, lo, hi))
+            rate = P['proposals.p6_stab_rate_deg_s']
+            if np.mean(c['brake']) > 0.3 and self.support_count() > 0 and v_air > 12.0:
+                tgt = P['proposals.p6_airbrake_te_up_deg']    # airbrake while braking on the ground
+            step = math.radians(rate) * dt
+            self.stab_te_up += float(np.clip(math.radians(tgt) - self.stab_te_up, -step, step))
         for n_, a in self.aid.items():
             if n_[4:] in self.targets:
                 d.ctrl[a] = self.targets[n_[4:]]
@@ -457,7 +468,7 @@ class PhantomAircraft:
                   wing_locked={s: self.wing_locked(s) for s in WING_SIDES},
                   flap={s: self.joint(f'flap_{s}')[0] for s in WING_SIDES}, aileron={s: self.joint(f'aileron_{s}')[0] for s in WING_SIDES},
                   canard_pitch={s: self.joint(f'canard_{s}')[0] for s in WING_SIDES},
-                  canard_deployed={s: abs(self.joint(f'canard_{s}_fold')[0]) < math.radians(5) for s in WING_SIDES})
+                  canard_deployed={s: abs(self.joint(f'canard_{s}_fold')[0]) < math.radians(5) for s in WING_SIDES}, stab_te_up=self.stab_te_up)
         # velocity of the body origin in body axes
         self.aero_out = self.aero.compute(vb, w, wind_b, st)
         self.aero_state = st
@@ -627,7 +638,8 @@ class PhantomAircraft:
         poses['cabin'] = dict(position=np.round(d.xpos[self.bids['airframe']] + Rb @ seat, 5).tolist(), quaternion_wxyz=poses['airframe']['quaternion_wxyz'])
         return dict(t_s=float(d.time), variant=self.variant, config_sha256=self.P.config_sha256, body_poses=poses, provenance=self.provenance, events=self.events[-20:],
                     phantom=dict(joints=joints, fan_rpm=[abs(self.joint(f'pod_{k}_fan')[1]) * 60 / (2 * math.pi) for k in PODS],
-                                 wheel_rad_s=[self.joint(f'pod_{k}_wheel')[1] for k in PODS], wing_state=dict(self.wing_state)),
+                                 wheel_rad_s=[self.joint(f'pod_{k}_wheel')[1] for k in PODS], wing_state=dict(self.wing_state),
+                                 drs_deg=(math.degrees(self.stab_te_up) if self.p6 else None)),
                     mass=mp, propulsors=[dict(pod=k, cmd_n=(self.alloc.get('thrust') or [0] * 4)[i], **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.fan_state[i].items()},
                                               motor_torque_nm=float(self.motor_torque[i])) for i, k in enumerate(PODS)],
                     boosters=[dict(side=s, **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.booster_state[j].items()}) for j, s in enumerate(WING_SIDES)],
@@ -681,7 +693,7 @@ class PhantomAircraft:
         return dict(qpos=d.qpos.tolist(), qvel=d.qvel.tolist(), act=d.act.tolist(), ctrl=d.ctrl.tolist(), qacc_warmstart=d.qacc_warmstart.tolist(), time=float(d.time),
                     eq_active=d.eq_active.tolist(), cmd=self.fcc.cmd, vs_int=self.fcc.vs_int, targets=self.targets, wing_state=self.wing_state, fuel=self.fuel.tolist(),
                     bus=self.bus.state(), flags=sorted(self.flags), faults=self.faults, events=self.events[-200:], crashed=self.crashed, max_alt=self.max_alt,
-                    max_impact_n=self.max_impact_n, step_count=self.step_count, airborne=self.airborne, spawn_z=getattr(self, 'spawn_z', 0.0))
+                    max_impact_n=self.max_impact_n, step_count=self.step_count, airborne=self.airborne, spawn_z=getattr(self, 'spawn_z', 0.0), stab_te_up=self.stab_te_up)
 
     def restore_state(self, s):
         d = self.data
@@ -695,4 +707,5 @@ class PhantomAircraft:
         self.fuel = np.array(s['fuel']); self.bus.restore(s['bus']); self.flags = set(s['flags']); self.faults = s['faults']; self.events = s['events']
         self.crashed = s['crashed']; self.max_alt = s['max_alt']; self.max_impact_n = s['max_impact_n']; self.step_count = s['step_count']
         self.airborne = s['airborne']; self.spawn_z = s['spawn_z']
+        self.stab_te_up = s.get('stab_te_up', self.stab_te_up)
         self.apply_fuel_mass(force=True); mj.mj_forward(self.model, d)

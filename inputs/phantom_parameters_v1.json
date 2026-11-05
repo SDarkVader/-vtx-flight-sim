@@ -1482,6 +1482,79 @@
     "u": "-",
     "l": "SYNTHETIC_UNVALIDATED",
     "s": "research_notes/.../cg_and_compensation.md P5 canard plain flap enabled (1) / off (0)"
+   },
+   "p6_drs_stabilator": {
+    "v": 0.0,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "P6 (proposal): DRS flap flown as an all-moving stabilator in the plant (pitch control and stability; airbrake on the brake command while rolling); 0 = off"
+   },
+   "p6_stab_area_m2": {
+    "v": 0.219,
+    "u": "m^2",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: AREA = 2 (Y_TIP - Y_ROOT) CHORD"
+   },
+   "p6_stab_position_m": {
+    "v": [
+     -2.055,
+     0.0,
+     1.13
+    ],
+    "u": "m",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: PIVOT (hinge at 25% chord = section AC)"
+   },
+   "p6_stab_cla_per_rad": {
+    "v": 4.69,
+    "u": "1/rad",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: Helmbold slope at AR_eff 6.75 (Hoerner end-plate correction, fins as end plates)"
+   },
+   "p6_stab_alpha0_deg": {
+    "v": 5.5,
+    "u": "deg",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: inverted NACA 4412 zero-lift +4.0 deg + 10 mm Gurney ~+1.5 deg"
+   },
+   "p6_stab_rest_te_up_deg": {
+    "v": 6.0,
+    "u": "deg",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: REST_DEG (trailing edge up, downforce incidence)"
+   },
+   "p6_stab_gain_deg_per_demand": {
+    "v": 15.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "stabilator travel per unit FBW pitch demand (same mapping as the canards)"
+   },
+   "p6_stab_travel_deg": {
+    "v": [
+     -10.0,
+     30.0
+    ],
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "control travel about zero, trailing edge up positive"
+   },
+   "p6_stab_rate_deg_s": {
+    "v": 100.0,
+    "u": "deg/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "rotary EMA rate; drs_flap.py hinge moment 56 N m at 200 mph sizes a 120 N m actuator"
+   },
+   "p6_airbrake_te_up_deg": {
+    "v": 55.0,
+    "u": "deg",
+    "l": "DERIVED",
+    "s": "engineering/phantom/drs_flap.py: AIRBRAKE_DEG (deployed on the brake command while rolling above 12 m/s)"
+   },
+   "p6_stab_eta_q": {
+    "v": 0.85,
+    "u": "-",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "engineering/phantom/drs_flap.py: ETA_Q dynamic-pressure ratio at the flap (deck/cabin wake)"
    }
   }
  },

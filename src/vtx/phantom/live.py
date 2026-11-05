@@ -39,15 +39,20 @@ def is_phantom_variant(v):
     return v in VARIANTS
 
 
-def make_aircraft(world, request):
+def make_aircraft(world, request, *, enable_a10_surfaces=True):
     o = request.phantom or PhantomOptions()
     # Mission.fuel_kg defaults to the four-fan 10 kg; it is Phantom fuel only when the operator set it
     # explicitly (flight campaign D-2). Otherwise: load-state fuel, else full tanks.
     explicit = 'fuel_kg' in request.model_fields_set
     fuel = o.fuel_kg if o.fuel_kg is not None else (None if o.load_state in ('FX-A', 'FX-C') or not explicit else request.fuel_kg)
-    return PhantomAircraft(world, request.airframe_variant, fuel_kg=fuel, occupants=o.occupants, start_configuration=o.start_configuration,
+    aircraft = PhantomAircraft(world, request.airframe_variant, fuel_kg=fuel, occupants=o.occupants, start_configuration=o.start_configuration,
                            engines_running=o.engines_running, buffer_soc=o.buffer_soc, wind=o.wind_world_m_s,
-                           load_state=None if o.load_state == 'nominal' else o.load_state)
+                           load_state=None if o.load_state == 'nominal' else o.load_state,
+                           overrides=({'proposals': {'p6_drs_stabilator': {'v': 1.0}}}
+                                      if enable_a10_surfaces and not request.airframe_variant.endswith('-a9') else None))
+    if enable_a10_surfaces and not request.airframe_variant.endswith('-a9'):
+        aircraft.set_command({'canard_fold': 'deployed'})
+    return aircraft
 
 
 def after_start(lab, request):

@@ -57,3 +57,10 @@ geometry for that flight while retaining terrain contact. The scenery remains
 visible. The choice is included in mission evidence and checkpoint recovery and
 is available for both R6 and Phantom. It defaults off and applies to a new
 flight, not a live change to an existing physics model.
+
+For new live A10 flights, both front canards deploy and the existing P6 DRS
+stabilator proposal is enabled. The model's split flap sits between the rear
+fins and shares a central hinge. Pitch demand moves the DRS; its aerodynamic
+force and rendered angle follow the same state. The prior P6 campaign reported
+pitch loss of control; this is an experimental model, not a flight validation.
+Older checkpoints without a P6 state resume with that proposal disabled.
