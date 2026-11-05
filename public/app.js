@@ -71,9 +71,9 @@ const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
 const sky=buildSky(scene,renderer,{quality}),environment={};
 const rideCgLocal=[-0.15156246846624952,0.00004531509472356366,0.5529781802070567];
 let visualTraffic=null,airportOperations=null,rideRoute=null,rideTime=0,rideLastFrame=0,ridePaused=false,ridePose=null,rideActor=null,ridePlan=null;
-let sceneTime=0,sceneScale=1,selectedVehicleId='physical-plant',passengerRide=new URLSearchParams(location.search).has('trafficRide');
+let sceneTime=0,sceneScale=1,selectedVehicleId='a10-primary',passengerRide=new URLSearchParams(location.search).has('trafficRide');
 let pendingRideExteriorMode=null;
-let rideEnabled=false;
+let rideEnabled=true;
 const trafficPreviewEnabled=true;
 {
  const panel=document.createElement('div');panel.id='ride-controls';
@@ -108,12 +108,11 @@ const trafficPreviewEnabled=true;
   $('ride-direction').onchange=changeJourney;
  $('ride-start').onclick=()=>{changeJourney();passengerRide=true;selectedVehicleId='a10-primary';rideEnabled=true;$('airport-aircraft').value=selectedVehicleId;$('airport-ops').open=false;showRideAircraft('chase');};
  $('airport-aircraft').onchange=()=>{selectedVehicleId=$('airport-aircraft').value;rideEnabled=selectedVehicleId!=='physical-plant';if(rideEnabled)showRideAircraft('chase');else {if(model)model.visible=true;setCameraMode('chase');} $('view-mode').textContent=rideEnabled?'SCRIPTED VISUAL TRAFFIC · NO COLLISION PHYSICS':'PHYSICAL STATE · LIVE';};
- $('airport-aircraft').value='physical-plant';
-  $('traffic-density').value=mobile?'3':'5';
+ $('traffic-density').value=mobile?'3':'5';
  $('traffic-density').onchange=()=>airportOperations?.setDensity($('traffic-density').value);
  $('airport-speed').onchange=()=>{sceneScale=Number($('airport-speed').value);};
  $('airport-camera').onchange=()=>{const mode=$('airport-camera').value;if(mode==='orbit')$('view-top').click();else if(rideEnabled&&mode==='chase')showRideAircraft('chase');else setCameraMode(mode);};
-  $('view-mode').textContent='PHYSICAL STATE - LIVE';
+ $('view-mode').textContent='SCRIPTED VISUAL TRAFFIC · NO COLLISION PHYSICS';
 }
 const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
