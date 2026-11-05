@@ -9,7 +9,10 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
   const assets = new Map();
   const loadAsset = (spec) => {
     if (!assets.has(spec.asset)) assets.set(spec.asset, new Promise((resolve, reject) =>
-      loader.load(spec.asset, gltf => resolve(gltf.scene), progress => spec.onProgress?.(progress), reject)));
+      loader.load(spec.asset, gltf => {
+        try{spec.prepareSource?.(gltf.scene);resolve(gltf.scene);}
+        catch(error){reject(error);}
+      }, progress => spec.onProgress?.(progress), reject)));
     return assets.get(spec.asset);
   };
   for (const spec of aircraft) {

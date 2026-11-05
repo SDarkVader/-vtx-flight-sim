@@ -133,6 +133,7 @@ function buildWorld(w){
   const specs=airportOperations.actors.map(actor=>{
    const modelSpec=VEHICLE_MODELS[actor.modelId],isA10=actor.id==='a10-primary',isRotor=modelSpec.animation==='rotor';
    return {id:actor.id,asset:modelSpec.asset,cgLocal:modelSpec.cgLocal,rotateToZUp:modelSpec.rotateToZUp,
+    prepareSource:actor.modelId==='r6'?root=>enhanceAircraft(root,scene.environment):undefined,
     validate:actor.modelId==='r6'?root=>{
      let meshes=0;root.traverse(node=>{if(node.isMesh)meshes++;});
      return meshes>=700&&[1,2,3,4].every(i=>root.getObjectByName('rotor'+i))&&[1,2,3,4,5,6].every(i=>root.getObjectByName('gear'+i));

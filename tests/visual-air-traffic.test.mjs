@@ -131,12 +131,14 @@ assert.deepEqual(actor2[0].position.v,landed,'end of passenger ride loops/telepo
 oneShot.dispose();
 traffic.dispose();
 const beforeLoads=loads;
+let prepared=0;
 const shared=createVisualAirTraffic({THREE,GLTFLoader:Loader,scene,aircraft:[
- {id:'r6-a',asset:'/assets/phantom-a10.glb',cgLocal:cg,waypoints},
- {id:'r6-b',asset:'/assets/phantom-a10.glb',cgLocal:cg,waypoints}
+ {id:'r6-a',asset:'/assets/phantom-a10.glb',cgLocal:cg,waypoints,prepareSource:()=>prepared++},
+ {id:'r6-b',asset:'/assets/phantom-a10.glb',cgLocal:cg,waypoints,prepareSource:()=>prepared++}
 ]});
 await new Promise(setImmediate);
 assert.equal(loads,beforeLoads+1,'shared GLB should load once');
+assert.equal(prepared,1,'shared R6 appearance should be prepared once before cloning');
 assert.notEqual(shared.getActor('r6-a').pivot.children[0],shared.getActor('r6-b').pivot.children[0],'aircraft must have separate transforms');
 shared.dispose();
 console.log('Visual aircraft route bounds, CG pivot, timing, deterministic sampling and render wiring passed');
