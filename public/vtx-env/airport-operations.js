@@ -8,10 +8,10 @@ import {DEFAULT_VISUAL_MODEL,vehicleModel} from './vehicle-registry.js';
 
 const AIRCRAFT=[
  {id:'a10-primary',modelId:DEFAULT_VISUAL_MODEL,route:'standard',direction:'left',stand:[-45,-50]},
- {id:'r6-flight',modelId:'r6',route:'holding',direction:'left',runwayId:'03/21',alternateIndex:0,stand:[190,-90]},
- {id:'r6-training',modelId:'r6',route:'training',direction:'right',stand:[-15,-50]},
- {id:'r6-teardrop',modelId:'r6',route:'teardrop',direction:'left',runwayId:'03/21',alternateIndex:1,stand:[220,-90]},
- {id:'r6-go-around',modelId:'r6',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:[250,-90]}
+ {id:'r6-flight',modelId:'r6',route:'holding',direction:'left',runwayId:'03/21',alternateIndex:0,stand:[185,-90]},
+ {id:'r6-training',modelId:'r6',route:'training',direction:'right',stand:[0,0]},
+ {id:'r6-teardrop',modelId:'r6',route:'teardrop',direction:'left',runwayId:'03/21',alternateIndex:1,stand:[205,-90]},
+ {id:'r6-go-around',modelId:'r6',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:[225,-90]}
 ];
 const ease=u=>u*u*(3-2*u), clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const collide=(a,b,pad=6)=>a[0]<b[1]+pad&&b[0]<a[1]+pad;

@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {createAirportOperations,inspectFleetSafety} from '../public/vtx-env/airport-operations.js';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from '../public/vtx-env/vehicle-registry.js';
+import {LAYOUT} from '../public/vtx-env/layout.js';
 
 const world=JSON.parse(readFileSync(new URL('../public/vtx-env/ride-world.json',import.meta.url)));
 const airport=createAirportOperations(world);
@@ -24,7 +25,14 @@ assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='teardrop')
 assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='go-around'));
 assert.ok(airport.aircraft.some(a=>!a.runwayId),'main runway lacks scheduled arrivals');
 assert.deepEqual(airport.sample('a10-primary',0).position.slice(0,2),[-45,-50]);
-assert.deepEqual(airport.sample('r6-flight',0).position.slice(0,2),[190,-90]);
+assert.deepEqual(airport.sample('r6-flight',0).position.slice(0,2),[185,-90]);
+assert.deepEqual(airport.sample('r6-training',0).position.slice(0,2),LAYOUT.spawn);
+for(const actor of airport.aircraft.filter(a=>a.id!=='a10-primary')){
+ const [x,y]=airport.sample(actor.id,0).position;
+ const marked=LAYOUT.pads.some(p=>Math.hypot(x-p.x,y-p.y)<.1)||
+   LAYOUT.stands_expanded.some(s=>Math.hypot(x-s.center[0],y-s.center[1])<.1);
+ assert.ok(marked,`${actor.id} does not start on a marked stand`);
+}
 assert.equal(DEFAULT_VISUAL_MODEL,'phantom-a10-81c823e2');
 const current=VEHICLE_MODELS[DEFAULT_VISUAL_MODEL];
 const glb=readFileSync(new URL('../public'+current.asset,import.meta.url));
