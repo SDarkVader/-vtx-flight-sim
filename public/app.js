@@ -13,7 +13,8 @@ import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
 import {buildAirfield} from './vtx-env/airfield.js?v=6';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
-import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=6';
+import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=8';
+import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
 import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=2';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
@@ -23,7 +24,7 @@ import {RIDE_JOURNEYS,buildRideJourney} from './vtx-env/visual-ride-journeys.js?
 import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from './vtx-env/ride-trajectory.js?v=1';
 import {attachVisualPhantom,animateVisualPhantom} from './vtx-env/visual-phantom-animation.js?v=2';
 import {createAirportOperations} from './vtx-env/airport-operations.js?v=1';
-import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=1';
+import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
 import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
 import {attachPhantom,updatePhantom} from './vtx-env/phantom-look.js?v=2';import {createPhantomPanel} from './phantom-controls.js?v=2';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
@@ -136,12 +137,12 @@ function buildWorld(w){
     prepareSource:actor.modelId==='r6'?root=>enhanceAircraft(root,scene.environment):undefined,
     validate:actor.modelId==='r6'?root=>{
      let meshes=0;root.traverse(node=>{if(node.isMesh)meshes++;});
-     return meshes>=700&&[1,2,3,4].every(i=>root.getObjectByName('rotor'+i))&&[1,2,3,4,5,6].every(i=>root.getObjectByName('gear'+i));
+     return meshes>=691&&[1,2,3,4].every(i=>root.getObjectByName('rotor'+i))&&[1,2,3,4,5,6].every(i=>root.getObjectByName('gear'+i));
     }:undefined,
     makeModel:modelSpec.asset?undefined:THREE=>makeAirportModel(THREE,modelSpec.kind==='ground'?'ground':modelSpec.kind==='rotorcraft'?'rotorcraft':'fixed-wing',actor.color),
     visible:()=>{
      if(!(airportOperations.isVisible(actor.id)||selectedVehicleId===actor.id))return false;
-     const physical=last?.active&&last.rendering_truth?.body_poses?.airframe?.position;
+     const physical=!rideEnabled&&last?.rendering_truth?.body_poses?.airframe?.position;
      return clearOfPhysicalAircraft(airportOperations.sample(actor.id,sceneTime).position,physical);
     },
     poseAt:t=>isA10&&passengerRide&&rideRoute?{...sampleRideTrajectory(rideRoute,rideTime),operation:'passenger ride',mode:'scripted'}:airportOperations.sample(actor.id,t),
@@ -209,7 +210,7 @@ function loadAirframe(asset){
  if(asset!==loadedAsset){disposeModel(g.scene);return;}
  if(model){scene.remove(model);disposeModel(model);}
  for(const key of Object.keys(bodyNodes))delete bodyNodes[key];pitchMeshes.length=0;
- model=g.scene;modelReady=false;scene.add(model);model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
+ model=preparePhysicalVisual(THREE,g.scene,asset,VEHICLE_MODELS['phantom-a10-81c823e2'].asset);modelReady=false;scene.add(model);model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
  // Blender exports empty groups as Object3D or Group depending on loader.
  for(const name of ['airframe','cabin',...Array.from({length:4},(_,i)=>`nacelle${i+1}`),...Array.from({length:4},(_,i)=>`rotor${i+1}`),...Array.from({length:6},(_,i)=>`gear${i+1}`),...Array.from({length:4},(_,i)=>`shaft${i+1}`)]){const n=model.getObjectByName(name);if(n)bodyNodes[name]=n;}
   aircraftFx=enhanceAircraft(model,scene.environment);phantomRig=asset.includes('phantom')?attachPhantom(model):null;

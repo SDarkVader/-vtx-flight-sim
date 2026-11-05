@@ -14,10 +14,10 @@ assert.equal(airport.aircraft.filter(a=>a.modelId==='r6').length,4);
 assert.equal(VEHICLE_MODELS.r6.sourceRevision,'P0-V4A-assembly-r6');
 assert.equal(VEHICLE_MODELS.r6.calibrationId,'ARGON-R6-LIVE-STABILITY-CALIBRATION-20261101');
 assert.deepEqual(VEHICLE_MODELS.r6.cgLocal,[-0.0003,0.0792,1.4097]);
-const r6=readFileSync(new URL('../public/assets/airframe-r6.glb',import.meta.url));
+const r6=readFileSync(new URL('../public/assets/airframe-r6-blendstra-rig.glb',import.meta.url));
 assert.equal(createHash('sha256').update(r6).digest('hex'),VEHICLE_MODELS.r6.sha256);
 const r6Manifest=JSON.parse(r6.subarray(20,20+r6.readUInt32LE(12)).toString());
-assert.equal(r6Manifest.meshes.length,731);
+assert.equal(r6Manifest.meshes.length,691);
 for(const name of ['airframe','cabin',...Array.from({length:4},(_,i)=>`rotor${i+1}`),...Array.from({length:6},(_,i)=>`gear${i+1}`)])
  assert.ok(r6Manifest.nodes.some(n=>n.name===name),`R6 ${name} missing`);
 assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='holding'));

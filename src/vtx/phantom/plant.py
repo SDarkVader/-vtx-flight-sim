@@ -198,7 +198,9 @@ class PhantomAircraft:
         self.ring = np.zeros((int(20 / DT), 32)); self.ring_i = 0; self.ring_full = False
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
-        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') else f'{variant}-a10', airframe_variant=variant, render_asset=f'/assets/phantom-{P.cassette_revision.lower()}.glb',
+        render_asset = ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10'
+                        else f'/assets/phantom-{P.cassette_revision.lower()}.glb')
+        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') else f'{variant}-a10', airframe_variant=variant, render_asset=render_asset,
                                model_xml_sha256=hashlib.sha256(self.xml.encode()).hexdigest(), parameter_file_sha256=P.file_sha256,
                                config_sha256=P.config_sha256, wing_cassette_revision=P.tree['geometry_sources']['wing_cassette_revision'],
                                ledger_mass_kg=self.mass_properties()['mass_kg'] if False else None)
