@@ -67,3 +67,10 @@ fins and shares a central hinge. Pitch demand moves the DRS; its aerodynamic
 force and rendered angle follow the same state. The prior P6 campaign reported
 pitch loss of control; this is an experimental model, not a flight validation.
 Older checkpoints without a P6 state resume with that proposal disabled.
+
+Supported and settled landings are recorded without automatically ending the
+flight, so testing can continue. The event and summary report distance from the
+destination separately from physical settling. An optional `landing_precision_m`
+mission setting evaluates the stated tolerance; when omitted, precision is
+`not_specified`. The landing indication is evidence of the modeled conditions,
+not a blanket assessment that the full mission objective was achieved.

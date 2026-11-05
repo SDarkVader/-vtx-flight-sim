@@ -80,6 +80,7 @@ class Mission(BaseModel):
     atmosphere_model:str='constant'
     wind_world_mps:list[float]=Field(default_factory=lambda:[0.,0.,0.])
     ignore_scenery_collisions:bool=False
+    landing_precision_m:float|None=Field(default=None,gt=0,allow_inf_nan=False)
     label:str='user selected mission'
     phantom:phantom_live.PhantomOptions|None=None
     @field_validator('departure','destination')
@@ -158,7 +159,7 @@ class Laboratory:
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
         self.mission=None;self.objective=None;self.pilot_owner=None;self.pending_pilot=None;self.pilot_epoch=0;self.fallback_controller=None;self.fallback_status=None;self.action_log=[];self.action_sequence=0;self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
-        self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
+        self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False;self.landing_recorded=False;self.last_landing=None
         self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
         self.retry_hint=None
         self.data_root=Path(os.environ.get('VTX_DATA_ROOT',str(ROOT))).resolve()
@@ -211,6 +212,7 @@ class Laboratory:
                        time_scale=self.time_scale,paused=self.paused,plant=p.checkpoint_state(),
                        session=dict(action_log=self.action_log,action_sequence=self.action_sequence,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
                                     lease_expired=self.lease_expired,obs_id=self.obs_id,settled_s=self.settled_s,left_ground=self.left_ground,
+                                    landing_recorded=self.landing_recorded,last_landing=self.last_landing,
                                     last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state,
                                     phantom_cg_gate=getattr(self,'phantom_cg_gate',None)))
             return self._write_checkpoint(state)
@@ -246,6 +248,7 @@ class Laboratory:
                                 last_command_time=self.last_command_time,
                                 lease_expired=self.lease_expired,obs_id=self.obs_id,
                                 settled_s=self.settled_s,left_ground=self.left_ground,
+                                landing_recorded=self.landing_recorded,last_landing=self.last_landing,
                                 last_audit_t=self.last_audit_t,
                                 sensor_rng_state=self.sensor_rng.bit_generator.state))
         return self._write_checkpoint(state)
@@ -369,6 +372,7 @@ class Laboratory:
             self.last_audit_t=session['last_audit_t']
             self.settled_s=session['settled_s']
             self.left_ground=session['left_ground']
+            self.landing_recorded=session.get('landing_recorded',False);self.last_landing=session.get('last_landing')
             self.last_checkpoint_t=float(d.time)
             self.end_summary=None
             self.log('flight_checkpoint_restored',
@@ -403,8 +407,8 @@ class Laboratory:
         self.next_pending_action=len(self.action_log)
         self.last_command_time=session['last_command_time'];self.lease_expired=session['lease_expired'];self.obs_id=session['obs_id']
         self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.last_audit_t=session['last_audit_t']
-        self.settled_s=session['settled_s'];self.left_ground=session['left_ground'];self.last_checkpoint_t=float(candidate.data.time);self.end_summary=None
-        self.phantom_cg_gate=session.get('phantom_cg_gate');self.phantom_landing_site=None
+        self.settled_s=session['settled_s'];self.left_ground=session['left_ground'];self.landing_recorded=session.get('landing_recorded',False);self.last_landing=session.get('last_landing');self.last_checkpoint_t=float(candidate.data.time);self.end_summary=None
+        self.phantom_cg_gate=session.get('phantom_cg_gate');self.phantom_landing_site=(self.last_landing or {}).get('closest_reference')
         self.log('flight_checkpoint_restored',dict(checkpoint_t_s=candidate.data.time,paused=True,pending_actions_cancelled=True,variant=candidate.variant,
                  reason='Explicit operator resume required; physics position and velocity retained'))
         return True
@@ -506,7 +510,7 @@ class Laboratory:
         self.mission=dict(departure=request.departure,destination=request.destination,
                           departure_z_m=mission.departure_surface_z_m,destination_z_m=mission.destination_surface_z_m,
                           environment=self.world.id,environment_version=self.world.version,label=request.label,
-                          ignore_scenery_collisions=request.ignore_scenery_collisions)
+                          ignore_scenery_collisions=request.ignore_scenery_collisions,landing_precision_m=request.landing_precision_m)
         self.objective=None
         self.pilot_owner=None;self.pending_pilot=None;self.pilot_epoch=0
         self.fallback_controller=None;self.fallback_status=None
@@ -514,7 +518,7 @@ class Laboratory:
         self.audit_file=(self.log_path/'events.jsonl').open('w')
         self.wall_started=time.monotonic();self.action_log=[];self.action_sequence=0;self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.last_obs=None;self.obs_id=0;self.last_sensor_t=-1.;self.last_audit_t=-1.;self.observations={}
-        self.settled_s=0.;self.left_ground=False;self.error=None;self.end_summary=None
+        self.settled_s=0.;self.left_ground=False;self.landing_recorded=False;self.last_landing=None;self.error=None;self.end_summary=None
         self.sensor_rng=np.random.default_rng(self.world.seed)
         try:commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True,stderr=subprocess.DEVNULL).strip()
         except (subprocess.CalledProcessError,FileNotFoundError):
@@ -608,14 +612,34 @@ class Laboratory:
             self.sensor_observation()
             self.checkpoint()
             support=sum(1 for i in range(1,7) if p.joint(f'gear{i}_stroke')[0]>.002)
-            if support==0 and p.data.time>1:self.left_ground=True
-            dest=np.array(self.mission['destination'])
             speed=float(np.linalg.norm(p.data.qvel[:3]))
             level=float(p.data.xmat[p.bids['airframe']].reshape(3,3)[2,2])>.98
-            near=float(np.linalg.norm(p.data.qpos[:2]-dest))<2.
-            if self.left_ground and support>=3 and near and level and speed<.15 and not p.crashed:self.settled_s+=.05
-            else:self.settled_s=0.
-            if self.settled_s>=2:self.stop('supported stationary landing at destination')
+            self.update_landing_evidence(support=support,level=level,speed=speed,loaded=True)
+
+    def update_landing_evidence(self, *, support, level, speed, loaded):
+        """Record supported settling independently of waypoint precision; keep physics running."""
+        p=self.aircraft
+        if support==0 and p.data.time>1:
+            self.left_ground=True;self.landing_recorded=False
+        if self.left_ground and support>=3 and loaded and level and speed<.15 and not p.crashed:
+            self.settled_s+=.05
+        else:
+            self.settled_s=0.
+        if self.settled_s>=2 and not self.landing_recorded:
+            xy=np.asarray(p.data.qpos[:2],dtype=float)
+            distance=float(np.linalg.norm(xy-np.asarray(self.mission['destination'],dtype=float)))
+            departure_distance=float(np.linalg.norm(xy-np.asarray(self.mission['departure'],dtype=float)))
+            precision=self.mission.get('landing_precision_m')
+            self.last_landing=dict(t_s=float(p.data.time),position_m=xy.tolist(),support_count=support,
+                settled_s=self.settled_s,speed_m_s=speed,level=bool(level),collision=bool(p.crashed),
+                destination_distance_m=distance,departure_distance_m=departure_distance,
+                closest_reference='departure' if departure_distance<distance else 'destination',
+                physical='supported_stable',precision_tolerance_m=precision,
+                precision='not_specified' if precision is None else ('met' if distance<=precision else 'missed'))
+            self.landing_recorded=True
+            self.phantom_landing_site=self.last_landing['closest_reference'] if getattr(p,'is_phantom',False) else None
+            self.log('supported_landing_observed',self.last_landing)
+            self.checkpoint(force=True)
 
     def stop(self,reason):
         if not self.active:return self.end_summary or dict(status='No active sortie')
@@ -623,13 +647,13 @@ class Laboratory:
         if self.fallback_controller:
             self.fallback_controller=None;self.fallback_status=dict(state='inactive',reason='Flight ended')
         self.checkpoint_path.unlink(missing_ok=True)
-        outcome=('landed_at_departure' if getattr(self,'phantom_landing_site',None)=='departure' else 'landed') if self.settled_s>=2 else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
+        outcome=('landed_at_departure' if self.last_landing and self.last_landing['closest_reference']=='departure' else 'landed') if self.settled_s>=2 and self.last_landing and not p.crashed else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
         summary=dict(run_id=self.run_id,outcome=outcome,reason=reason,simulated_seconds=float(p.data.time),
                      wall_seconds=time.monotonic()-self.wall_started,decisions=self.action_sequence,
                      left_ground=self.left_ground,max_airframe_origin_altitude_m=p.max_alt,
                      max_contact_force_n=p.max_impact_n,fuel_used_kg=float((p.fuel_initial-p.fuel).sum()),
                      max_gear_load_n=getattr(p,'max_gear_load_n',None),max_nongear_impact_n=getattr(p,'max_nongear_impact_n',None),
-                     final=p.physical_snapshot(),mission=self.mission,
+                     final=p.physical_snapshot(),mission=self.mission,landing_assessment=self.last_landing,
                      claim='Conditional experimental model; not validated VTX performance')
         if getattr(p,'is_phantom',False):summary['phantom']=phantom_live.summary_extras(self)
         self.log('sortie_end',summary)
@@ -661,6 +685,7 @@ class Laboratory:
                   atmosphere_model=request.get('atmosphere_model',old.get('atmosphere_model','constant')),
                   wind_world_mps=request.get('wind_world_mps',old.get('wind_world_mps',[0.,0.,0.])),
                   ignore_scenery_collisions=request.get('ignore_scenery_collisions',old.get('ignore_scenery_collisions',False)),
+                  landing_precision_m=request.get('landing_precision_m',old.get('landing_precision_m')),
                   label='Explicit retry of '+hint['run_id'],
                   **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}))
         result=self.start(m)
@@ -671,7 +696,7 @@ class Laboratory:
 
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
-                    active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,
+                    active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,landing_assessment=self.last_landing,
                     clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
                     rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,objective=self.objective,
                     pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback=self.fallback_status,

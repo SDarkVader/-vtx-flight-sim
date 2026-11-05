@@ -199,9 +199,10 @@ def test_cg_gate_evaluated_after_settling_and_landing_needs_weight_on_gear(tmp_p
     assert lab.active
     monkeypatch.undo()
     monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
-    while lab.active and lab.aircraft.data.time < t0 + 5:
+    while lab.aircraft.data.time < t0 + 5:
         lab.integrate()
-    assert not lab.active
+    assert lab.active and lab.last_landing['physical'] == 'supported_stable'
+    lab.stop('End landing assessment test')
     s = json.loads((lab.log_path / 'summary.json').read_text())
     assert s['outcome'] == 'landed_at_departure' and s['phantom']['cg_gate']['status'] in ('GO', 'NO_GO')
 

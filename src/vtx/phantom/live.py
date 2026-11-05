@@ -182,22 +182,12 @@ def integrate(lab):
         lab.checkpoint()
         maybe_evaluate_cg_gate(lab)
         support = p.support_count()
-        if support == 0 and p.data.time > 1:
-            lab.left_ground = True
-        dest = np.array(lab.mission['destination'])
         speed = float(np.linalg.norm(p.data.qvel[:3]))
         level = float(p.R()[2, 2]) > .98
-        near = float(np.linalg.norm(p.data.qpos[:2] - dest)) < 2.
-        home = float(np.linalg.norm(p.data.qpos[:2] - np.array(lab.mission['departure']))) < 2.
-        # A landing needs the weight on the gear, not just touching feet (D-8).
+        # Distinguish gear-supported settling from touch while the fans carry the load.
         loaded = gear_weight_fraction(p) >= LANDED_GEAR_LOAD_FRACTION
-        if lab.left_ground and support >= 3 and (near or home) and loaded and level and speed < .15 and not p.crashed:
-            lab.settled_s += .05
-        else:
-            lab.settled_s = 0.
-        if lab.settled_s >= 2:
-            lab.phantom_landing_site = 'destination' if near else 'departure'
-            lab.stop('supported stationary landing at ' + lab.phantom_landing_site)
+        lab.update_landing_evidence(support=support,level=level,speed=speed,loaded=loaded)
+
 
 
 def checkpoint_plant(p):
