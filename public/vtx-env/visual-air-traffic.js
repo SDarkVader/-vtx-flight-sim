@@ -3,6 +3,10 @@ import {buildTrafficRoute, sampleTrafficRoute} from './traffic-path.js';
 import {sampleRideTrajectory} from './ride-trajectory.js';
 const sampleRoute=(route,time)=>route.kind==='smooth-ride'?sampleRideTrajectory(route,time):sampleTrafficRoute(route,time);
 
+export function clearOfPhysicalAircraft(traffic, physical) {
+  return !physical || Math.hypot(traffic[0]-physical[0],traffic[1]-physical[1])>12 || Math.abs(traffic[2]-physical[2])>8;
+}
+
 export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
   const actors = [];
   const loader = new GLTFLoader();

@@ -57,3 +57,22 @@ def test_explicit_stop_disables_recovery():
             lab.stop("operator stopped")
             recovered=Laboratory()
             assert not recovered.active
+
+def test_objective_survives_reconnect_and_checkpoint(tmp_path, monkeypatch):
+    import asyncio
+    import vtx.live_server as server
+    monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
+    lab=Laboratory()
+    monkeypatch.setattr(server,'lab',lab)
+    run=lab.start(Mission(authority='colin'))['run_id']
+    goal=asyncio.run(server.set_objective({'text':'Take us to the airport'}))
+    assert goal['status']=='pending' and lab.view()['objective']==goal
+    lab.audit_file.close();lab.audit_file=None
+    recovered=Laboratory()
+    assert recovered.run_id==run and recovered.objective==goal
+    assert recovered.view()['objective']==goal
+    monkeypatch.setattr(server,'lab',recovered)
+    with pytest.raises(server.HTTPException):
+        asyncio.run(server.complete_objective({'id':'stale'}))
+    assert asyncio.run(server.complete_objective({'id':goal['id']}))['status']=='completed'
+    recovered.stop('Objective recovery test complete')

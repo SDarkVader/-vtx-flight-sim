@@ -5,7 +5,11 @@ import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {runwayCircuit,scheduleVisualRoute} from '../public/vtx-env/visual-air-routes.js';
 import {buildTrafficRoute,sampleTrafficRoute} from '../public/vtx-env/traffic-path.js';
-import {createVisualAirTraffic} from '../public/vtx-env/visual-air-traffic.js';
+import {createVisualAirTraffic,clearOfPhysicalAircraft} from '../public/vtx-env/visual-air-traffic.js';
+assert.equal(clearOfPhysicalAircraft([0,0,1],[0,0,0]),false);
+assert.equal(clearOfPhysicalAircraft([20,0,1],[0,0,0]),true);
+assert.equal(clearOfPhysicalAircraft([0,0,20],[0,0,0]),true);
+assert.equal(clearOfPhysicalAircraft([0,0,1],null),true);
 import {RIDE_JOURNEYS,buildRideJourney} from '../public/vtx-env/visual-ride-journeys.js';
 import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from '../public/vtx-env/ride-trajectory.js';
 // Offline Vercel previews must have a versioned, parseable world snapshot.

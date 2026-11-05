@@ -4,6 +4,62 @@ from pydantic import ValidationError
 from fastapi import HTTPException
 import pytest
 
+@pytest.mark.parametrize('variant',['r6','phantom-fx'])
+def test_scenery_collision_option_keeps_ground_and_restores(tmp_path,monkeypatch,variant):
+    import mujoco as mj
+    import vtx.live_server as server
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path))
+    lab=Laboratory()
+    run=lab.start(Mission(airframe_variant=variant,ignore_scenery_collisions=True))['run_id']
+    model=lab.aircraft.model
+    assert mj.mj_name2id(model,mj.mjtObj.mjOBJ_GEOM,'terrain')>=0
+    assert all(mj.mj_name2id(model,mj.mjtObj.mjOBJ_GEOM,o['id'])<0 for o in lab.world.obstacles)
+    assert lab.view()['mission']['ignore_scenery_collisions'] is True
+    lab.checkpoint(force=True)
+    if getattr(lab.aircraft,'is_phantom',False):lab.aircraft.step_log.close()
+    lab.audit_file.close();lab.audit_file=None
+    restored=Laboratory()
+    assert restored.active and restored.run_id==run
+    assert restored.flight_world.obstacles==[]
+    assert mj.mj_name2id(restored.aircraft.model,mj.mjtObj.mjOBJ_GEOM,'terrain')>=0
+    restored.stop('Collision option test complete')
+
+def test_r6_stream_reconnect_resumes_existing_flight(tmp_path, monkeypatch):
+    import asyncio
+    import vtx.live_server as server
+
+    monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
+    lab = Laboratory()
+    monkeypatch.setattr(server, 'lab', lab)
+    run_id = lab.start(Mission())['run_id']
+
+    class OneFrameSocket:
+        headers = {}
+        cookies = {}
+        def __init__(self): self.frame = None
+        async def accept(self): pass
+        async def send_json(self, frame):
+            if self.frame is not None: raise RuntimeError('disconnected')
+            self.frame = frame
+
+    async def exercise():
+        clock = asyncio.create_task(server.physical_clock())
+        try:
+            first = OneFrameSocket()
+            await server.stream(first)
+            await asyncio.sleep(.15)
+            second = OneFrameSocket()
+            await server.stream(second)
+            return first.frame, second.frame
+        finally:
+            clock.cancel()
+            lab.stop('Reconnect test complete')
+
+    before, after = asyncio.run(exercise())
+    assert before['run_id'] == after['run_id'] == run_id
+    assert after['active'] and after['mission'] == before['mission']
+    assert after['observation']['t_s'] > before['observation']['t_s']
+
 @pytest.mark.parametrize('compressed',[False,True])
 def test_replay_is_bounded_and_preserves_endpoints(tmp_path,compressed):
     import gzip,json

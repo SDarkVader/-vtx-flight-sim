@@ -6,6 +6,7 @@ controls use that same endpoint. /api/view is renderer/audit truth, NOT a sensor
 """
 from __future__ import annotations
 import asyncio
+import copy
 from contextlib import asynccontextmanager
 from datetime import datetime,timezone
 import hashlib
@@ -74,6 +75,7 @@ class Mission(BaseModel):
     engine_power_limit_kw:float=Field(default=300.,ge=10.,le=469.8)
     atmosphere_model:str='constant'
     wind_world_mps:list[float]=Field(default_factory=lambda:[0.,0.,0.])
+    ignore_scenery_collisions:bool=False
     label:str='user selected mission'
     phantom:phantom_live.PhantomOptions|None=None
     @field_validator('departure','destination')
@@ -148,9 +150,9 @@ def foot_clearance_m(p):
 
 class Laboratory:
     def __init__(self):
-        self.world=TestWorld();self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
+        self.world=TestWorld();self.flight_world=self.world;self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
-        self.mission=None;self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
+        self.mission=None;self.objective=None;self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False
         self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
@@ -201,7 +203,7 @@ class Laboratory:
             return
         d=p.data
         if getattr(p,'is_phantom',False):
-            state=dict(schema='phantom-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],mission=self.mission,authority=self.authority,
+            state=dict(schema='phantom-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],mission=self.mission,objective=self.objective,authority=self.authority,
                        time_scale=self.time_scale,paused=self.paused,plant=p.checkpoint_state(),
                        session=dict(action_log=self.action_log,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
                                     lease_expired=self.lease_expired,obs_id=self.obs_id,settled_s=self.settled_s,left_ground=self.left_ground,
@@ -210,7 +212,7 @@ class Laboratory:
             return self._write_checkpoint(state)
         state=dict(schema=1,run_id=self.run_id,
                    model_xml_sha256=p.provenance['model_xml_sha256'],
-                   mission=self.mission,authority=self.authority,
+                   mission=self.mission,objective=self.objective,authority=self.authority,
                    time_scale=self.time_scale,paused=self.paused,
                    physics=dict(time=float(d.time),qpos=d.qpos.tolist(),
                                 qvel=d.qvel.tolist(),act=d.act.tolist(),
@@ -278,7 +280,8 @@ class Laboratory:
             saved_request.setdefault('airframe_variant','light')
             saved_request.setdefault('gear_variant','baseline')
             request=Mission(**saved_request)
-            candidate=Aircraft(self.world,request.gear_variant,request.reference_rpm,
+            flight_world=self.world_for(request.ignore_scenery_collisions)
+            candidate=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
@@ -332,10 +335,12 @@ class Laboratory:
             session=state['session']
             self.sensor_rng.bit_generator.state=session['sensor_rng_state']
             self.aircraft=candidate
+            self.flight_world=flight_world
             self.run_id=run_id
             self.log_path=evidence
             self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
             self.mission=state['mission']
+            self.objective=state.get('objective')
             self.authority=state['authority']
             self.time_scale=state['time_scale']
             self.active=True
@@ -373,15 +378,16 @@ class Laboratory:
         saved=dict(metadata['request'])
         if saved.pop('fuel_kg_explicit',True) is False:saved.pop('fuel_kg',None)
         request=Mission(**saved)
-        candidate=phantom_live.make_aircraft(self.world,request)
+        flight_world=self.world_for(request.ignore_scenery_collisions)
+        candidate=phantom_live.make_aircraft(flight_world,request)
         if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:raise ValueError('Checkpoint model differs from current physics model')
         candidate.restore_state(state['plant'])
         session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']
-        self.aircraft=candidate;self.run_id=run_id;self.log_path=evidence
+        self.aircraft=candidate;self.flight_world=flight_world;self.run_id=run_id;self.log_path=evidence
         self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
         import gzip as _gz
         candidate.step_log=_gz.open(evidence/'phantom_steps.csv.gz','at');candidate.STEP_COLS=None
-        self.mission=state['mission'];self.authority=state['authority'];self.time_scale=state['time_scale']
+        self.mission=state['mission'];self.objective=state.get('objective');self.authority=state['authority'];self.time_scale=state['time_scale']
         self.active=True;self.paused=True;self.wall_started=time.monotonic()
         self.action_log=session['action_log'];self.next_pending_action=session['next_pending_action']
         for action in self.action_log[self.next_pending_action:]:action['cancelled']=True
@@ -462,28 +468,37 @@ class Laboratory:
         self.log('observation',obs)
         return obs
 
+    def world_for(self,ignore_scenery):
+        if not ignore_scenery:return self.world
+        world=copy.copy(self.world);world.obstacles=[]
+        return world
+
     def start(self,request:Mission):
         if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.airframe_variant!='r6':
             raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
         self.phantom_landing_site=None;self.phantom_cg_gate=None
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
-        mission=select_mission(self.world.id,self.world.version,MapPoint(*request.departure),MapPoint(*request.destination),self.world)
+        flight_world=self.world_for(request.ignore_scenery_collisions)
+        mission=select_mission(flight_world.id,flight_world.version,MapPoint(*request.departure),MapPoint(*request.destination),flight_world)
         if phantom_live.is_phantom_variant(request.airframe_variant):
-            next_aircraft=phantom_live.make_aircraft(self.world,request)
+            next_aircraft=phantom_live.make_aircraft(flight_world,request)
         else:
-            next_aircraft=Aircraft(self.world,request.gear_variant,request.reference_rpm,
+            next_aircraft=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
         next_aircraft.spawn(*request.departure,mission.departure_surface_z_m)
         if self.active:self.stop('Operator started a new flight test; previous attempt retained')
         self.aircraft=next_aircraft
+        self.flight_world=flight_world
         self.aircraft.stability_assist=request.stability_assist
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
         self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
         self.mission=dict(departure=request.departure,destination=request.destination,
                           departure_z_m=mission.departure_surface_z_m,destination_z_m=mission.destination_surface_z_m,
-                          environment=self.world.id,environment_version=self.world.version,label=request.label)
+                          environment=self.world.id,environment_version=self.world.version,label=request.label,
+                          ignore_scenery_collisions=request.ignore_scenery_collisions)
+        self.objective=None
         self.log_path=self.data_root/'evidence/flights'/self.run_id;self.log_path.mkdir(parents=True)
         self.audit_file=(self.log_path/'events.jsonl').open('w')
         self.wall_started=time.monotonic();self.action_log=[];self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
@@ -597,6 +612,7 @@ class Laboratory:
                   engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
                   atmosphere_model=request.get('atmosphere_model',old.get('atmosphere_model','constant')),
                   wind_world_mps=request.get('wind_world_mps',old.get('wind_world_mps',[0.,0.,0.])),
+                  ignore_scenery_collisions=request.get('ignore_scenery_collisions',old.get('ignore_scenery_collisions',False)),
                   label='Explicit retry of '+hint['run_id'],
                   **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}))
         result=self.start(m)
@@ -609,7 +625,7 @@ class Laboratory:
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
                     active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,
                     clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
-                    rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,
+                    rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,objective=self.objective,
                     recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
                     end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
 
@@ -708,13 +724,34 @@ async def release_identity():
                 enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1')
 @app.get('/api/view')
 async def view():return lab.view()
+@app.post('/api/objective')
+async def set_objective(request:dict):
+    if not lab.active:raise HTTPException(409,'No active flight')
+    text=request.get('text')
+    if not isinstance(text,str) or not 1<=len(text.strip())<=1000:
+        raise HTTPException(422,'Objective must contain 1 to 1000 characters')
+    previous=lab.objective
+    lab.objective=dict(id=uuid.uuid4().hex,text=text.strip(),status='pending',run_id=lab.run_id)
+    lab.log('objective_changed',dict(previous=previous,objective=lab.objective))
+    lab.checkpoint(force=True)
+    return lab.objective
+@app.post('/api/objective/complete')
+async def complete_objective(request:dict):
+    if not lab.active:raise HTTPException(409,'No active flight')
+    if not lab.objective or request.get('id')!=lab.objective['id']:
+        raise HTTPException(409,'Objective no longer current')
+    lab.objective={**lab.objective,'status':'completed'}
+    lab.log('objective_completed',dict(objective=lab.objective))
+    lab.checkpoint(force=True)
+    return lab.objective
 @app.get('/api/validate')
-async def validate(x:float,y:float,variant:str|None=None):
+async def validate(x:float,y:float,variant:str|None=None,ignore_scenery_collisions:bool=False):
     from dataclasses import asdict
+    world=lab.world_for(ignore_scenery_collisions)
     if phantom_live.is_phantom_variant(variant):
         from .phantom.mission import validate_phantom
-        return validate_phantom(lab.world,MapPoint(x,y),variant)
-    return asdict(lab.world.validate(MapPoint(x,y),'mission'))
+        return validate_phantom(world,MapPoint(x,y),variant)
+    return asdict(world.validate(MapPoint(x,y),'mission'))
 @app.post('/api/destination')
 async def destination(request:dict):
     if not lab.active:raise HTTPException(409,'Start a flight test before changing its destination')
@@ -722,7 +759,7 @@ async def destination(request:dict):
         point=MapPoint(*request['destination'])
     except (KeyError,TypeError,ValueError) as e:
         raise HTTPException(422,'Destination requires two finite coordinates') from e
-    decision=lab.world.validate(point,'destination')
+    decision=lab.flight_world.validate(point,'destination')
     if not decision.valid:raise HTTPException(422,decision.reason)
     before=lab.mission['destination']
     lab.mission['destination']=[point.x_m,point.y_m]
