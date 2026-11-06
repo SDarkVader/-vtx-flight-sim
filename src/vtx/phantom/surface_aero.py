@@ -45,8 +45,10 @@ class SurfaceAero:
         a_st = w['CLmax_clean'] / w['CLalpha_per_rad_M0']
         self.cn_fp = P['aero.flat_plate_cn']; self.M = P['aero.stall_blend_rate']
         self.surfaces = []
+        inc = math.radians(P['proposals.p8_wing_incidence_deg'])      # P8: geometric incidence (chord and normal rotated, LE up)
+        cw, nw = [math.cos(inc), 0.0, math.sin(inc)], [-math.sin(inc), 0.0, math.cos(inc)]
         for side, s, z in (('left', 1, w['ac_height_R_m']), ('right', -1, w['ac_height_L_m'])):
-            self.surfaces.append(Surface(f'wing_{side}', [w['x_ac_mac_m'], s * w['y_mac_m'], z], [1, 0, 0], [0, 0, 1], S_side, w['CLalpha_per_rad_M0'],
+            self.surfaces.append(Surface(f'wing_{side}', [w['x_ac_mac_m'], s * w['y_mac_m'], z], cw, nw, S_side, w['CLalpha_per_rad_M0'],
                                          -w['cm0'] * 0.0 - math.radians(2.0), a_st, P['aero.wing_cd0'], k, 'wing', side, chord=w['mac_m']))
         ail = H['aileron']; flp = H['flap']
         y_ail = (np.mean(ail['eta'])); y_flp = np.mean(flp['eta'])

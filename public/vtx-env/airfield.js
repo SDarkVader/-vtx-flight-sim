@@ -259,9 +259,9 @@ export function buildAirfield(scene, { ppm = 11, world } = {}) {
   // DUAL CROSSING RUNWAYS (Gloucestershire EGBJ Operational Topology)
   // =========================================================================
 
-  // ---- 1. Primary Runway 08/26: 1,432m length x 30m width (heading 090°, X-aligned)
-  const rwy0826_len = 1432, rwy0826_w = 30 + 8;
-  decal(group, rwy0826_len, rwy0826_w, 0, 0, surface(rwy0826_len, rwy0826_w, 2.5, (g, w, h) => {
+  // Primary runway extends east along the matching flat physical strip.
+  const rwy0826_len = 4616, rwy0826_w = 30 + 8;
+  decal(group, rwy0826_len, rwy0826_w, 1592, 0, surface(rwy0826_len, rwy0826_w, 2.5, (g, w, h) => {
     patternFill(g, asph.map, w, h, 8);
     g.fillStyle = 'rgba(60,62,65,.4)'; g.fillRect(0, 0, w, 4); g.fillRect(0, h - 4, w, 4);
     const cy = h / 2; g.fillStyle = '#f0eee2';
@@ -500,17 +500,17 @@ export function buildAirfield(scene, { ppm = 11, world } = {}) {
   const add = (x, y, col) => lights.push([x, y, col]);
 
   // Runway 08/26 Edge Lights: white along runway, amber on last 300m of each end
-  for (let x = -710; x <= 710; x += 25) {
-    const isAmber = Math.abs(x) > 410;
+  for (let x = -710; x <= 3890; x += 25) {
+    const isAmber = x < -410 || x > 3600;
     const col = isAmber ? '#ffb822' : '#fff3d0';
     add(x, -15.4, col); add(x, 15.4, col);
   }
   // Runway 08/26 Threshold Lights (Green entrance / Red end)
   for (let y = -14; y <= 14; y += 3.5) {
     add(-715, y, '#35e060'); // 08 threshold green
-    add(715, y, '#ff3a2a');  // 26 end red
+    add(3899, y, '#ff3a2a');  // 26 end red
     add(-716, y, '#ff3a2a'); // 08 end red (from reverse)
-    add(714, y, '#35e060');  // 26 threshold green (from reverse)
+    add(3898, y, '#35e060'); // 26 threshold green (from reverse)
   }
 
   // Runway 03/21 Edge Lights along rotated axis

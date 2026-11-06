@@ -5,6 +5,7 @@ import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
 import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-6';
 import {zoomDistance} from './camera-zoom.js?v=1';
 import {rotorVisualOffset} from './rotor-visual.js?v=1';
+import {physicalCameraTarget} from './physical-camera-target.js?v=1';
 import {cockpitAxes,cockpitHorizon} from './cockpit-axes.js?v=1';
 import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=4';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
@@ -71,13 +72,14 @@ const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
 const sky=buildSky(scene,renderer,{quality}),environment={};
 const rideCgLocal=[-0.15156246846624952,0.00004531509472356366,0.5529781802070567];
 let visualTraffic=null,airportOperations=null,rideRoute=null,rideTime=0,rideLastFrame=0,ridePaused=false,ridePose=null,rideActor=null,ridePlan=null;
-let sceneTime=0,sceneScale=1,selectedVehicleId='a10-primary',passengerRide=new URLSearchParams(location.search).has('trafficRide');
+let sceneTime=0,sceneScale=1,selectedVehicleId='physical-plant',passengerRide=new URLSearchParams(location.search).has('trafficRide');
 let pendingRideExteriorMode=null;
-let rideEnabled=true;
+let rideEnabled=false;
 const trafficPreviewEnabled=true;
 {
  const panel=document.createElement('div');panel.id='ride-controls';
  panel.innerHTML=`<label>Aircraft <select id="airport-aircraft"><option value="a10-primary">Phantom A10</option><option value="r6-flight">Argon R6 · holding</option><option value="r6-training">Argon R6 · training</option><option value="r6-teardrop">Argon R6 · teardrop</option><option value="r6-go-around">Argon R6 · go around</option><option value="physical-plant">Colin · physical</option></select></label><label>Camera <select id="airport-camera"><option value="chase">Chase</option><option value="cockpit">Cockpit</option><option value="free">Exterior / free</option><option value="orbit">Top</option></select></label><details id="airport-ops"><summary>Flight ops</summary><div class="airport-menu"><label>Journey <select id="ride-route">${RIDE_JOURNEYS.map(r=>`<option value="${r.id}">${r.label}</option>`).join('')}</select></label><label>Direction <select id="ride-direction"><option value="left">Left-hand</option><option value="right">Right-hand</option></select></label><button id="ride-start" type="button">Start passenger ride</button><label>Traffic <select id="traffic-density"><option value="5">Full · 5 aircraft</option><option value="4">Standard · 4</option><option value="3">Mobile · 3</option><option value="2">Light · 2</option></select></label><label>Speed <select id="airport-speed"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select></label><div class="airport-menu-actions"><button id="ride-pause" type="button">Pause</button><button id="ride-restart" type="button">Restart</button></div><span id="ride-progress" aria-live="polite">Loading airport...</span><div class="airport-menu-actions" id="airport-extra"></div></div></details>`;
+ panel.style.display='none'; // One physical flight view; background traffic remains in the same airport.
  document.querySelector('header').append(panel);
  $('airport-extra').append($('engineering'),$('history'));
   const cameraTools=$('view-tools');
@@ -108,11 +110,12 @@ const trafficPreviewEnabled=true;
   $('ride-direction').onchange=changeJourney;
  $('ride-start').onclick=()=>{changeJourney();passengerRide=true;selectedVehicleId='a10-primary';rideEnabled=true;$('airport-aircraft').value=selectedVehicleId;$('airport-ops').open=false;showRideAircraft('chase');};
  $('airport-aircraft').onchange=()=>{selectedVehicleId=$('airport-aircraft').value;rideEnabled=selectedVehicleId!=='physical-plant';if(rideEnabled)showRideAircraft('chase');else {if(model)model.visible=true;setCameraMode('chase');} $('view-mode').textContent=rideEnabled?'SCRIPTED VISUAL TRAFFIC · NO COLLISION PHYSICS':'PHYSICAL STATE · LIVE';};
- $('traffic-density').value=mobile?'3':'5';
+ $('airport-aircraft').value='physical-plant';
+  $('traffic-density').value=mobile?'3':'5';
  $('traffic-density').onchange=()=>airportOperations?.setDensity($('traffic-density').value);
  $('airport-speed').onchange=()=>{sceneScale=Number($('airport-speed').value);};
  $('airport-camera').onchange=()=>{const mode=$('airport-camera').value;if(mode==='orbit')$('view-top').click();else if(rideEnabled&&mode==='chase')showRideAircraft('chase');else setCameraMode(mode);};
- $('view-mode').textContent='SCRIPTED VISUAL TRAFFIC · NO COLLISION PHYSICS';
+  $('view-mode').textContent='PHYSICAL STATE - LIVE';
 }
 const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
@@ -131,7 +134,9 @@ function buildWorld(w){
   airportOperations.setDensity($('traffic-density').value);
   const plan=buildRideJourney($('ride-route').value,$('ride-direction').value,rideCgLocal[2]);
   ridePlan=plan;rideRoute=buildRideTrajectory(plan.points,{cruiseSpeed:plan.speed});
-  const specs=airportOperations.actors.map(actor=>{
+  // Only the physical A10 is shown. A second scripted A10 can look like
+  // the active aircraft and rotate about its separate trajectory pivot.
+  const specs=airportOperations.actors.filter(actor=>actor.id!=='a10-primary').map(actor=>{
    const modelSpec=VEHICLE_MODELS[actor.modelId],isA10=actor.id==='a10-primary',isRotor=modelSpec.animation==='rotor';
    return {id:actor.id,asset:modelSpec.asset,cgLocal:modelSpec.cgLocal,rotateToZUp:modelSpec.rotateToZUp,
     prepareSource:actor.modelId==='r6'?root=>enhanceAircraft(root,scene.environment):undefined,
@@ -404,8 +409,8 @@ function setCameraMode(mode){
     camera.position.copy(aim).add(mode==='chase'?rideChaseOffset:new THREE.Vector3(0,-.01,Math.max(55,rideChaseOffset.length())));
     orbit.update();
   }else if(!rideEnabled&&mode==='chase'&&previous==='cockpit'){
-    const position=last?.rendering_truth?.body_poses?.airframe?.position;
-    if(position)orbit.target.set(position[0],position[1],position[2]+1.5);
+    const target=physicalCameraTarget(last?.rendering_truth);
+    if(target)orbit.target.set(...target);
     camera.up.set(0,0,1);
     camera.position.copy(orbit.target).add(savedChaseOffset||new THREE.Vector3(9,-11,8));
     orbit.update();
@@ -435,11 +440,11 @@ function zoomCamera(factor){
 }
 $('zoom-in').onclick=()=>zoomCamera(.8);$('zoom-out').onclick=()=>zoomCamera(1.25);
 $('view-top').onclick=()=>{
- const truth=replayFrames?.[replayFrame]||last?.rendering_truth,air=truth?.body_poses?.airframe?.position;
+ const truth=replayFrames?.[replayFrame]||last?.rendering_truth,target=physicalCameraTarget(truth);
  if(rideEnabled){
     const actor=visualTraffic?.getActor(selectedVehicleId)?.root;
     if(actor)orbit.target.copy(actor.position).add(new THREE.Vector3(0,0,1.5));
-  }else if(air)orbit.target.set(air[0],air[1],air[2]+1.5);
+  }else if(target)orbit.target.set(...target);
  const distance=rideEnabled?65:THREE.MathUtils.clamp(camera.position.distanceTo(orbit.target),18,orbit.maxDistance);
  setCameraMode('orbit');camera.up.set(0,0,1);camera.position.copy(orbit.target).add(new THREE.Vector3(0,-.01,distance));orbit.update();
 };
@@ -617,7 +622,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
     if(angle)n.quaternion.multiply(rotorSpinQ.setFromAxisAngle(rotorSpinAxis,angle));
    }
   }if(phantomRig)updatePhantom(phantomRig,truth);for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
-  const base=truth.body_poses.airframe,posArray=base.position;pos.set(posArray[0],posArray[1],posArray[2]+1.5);
+  const target=physicalCameraTarget(truth);if(target)pos.set(...target);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
   else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position);if(truth.phantom)camera.position.add(new THREE.Vector3(0,.15,.30).applyQuaternion(q));if(!truth.phantom)camera.position.add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);const sight=truth.phantom?new THREE.Vector3(Math.cos(cockpitYaw)*cp,Math.sin(cockpitYaw)*cp,Math.sin(cockpitPitch)):new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch));cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));camera.lookAt(cameraTarget);}
   else if(cameraMode==='free'){freeCam.update(0.08);}

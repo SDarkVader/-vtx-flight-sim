@@ -78,7 +78,7 @@ def test_live_server_and_mission_panel_offer_a10_main_and_a9_earlier():
         assert v in VARIANTS and is_phantom_variant(v)
         assert Mission.airframe(v) == v
     html = (ROOT / 'public/index.html').read_text(encoding='utf-8')
-    assert '<option value="phantom-fx">Phantom FX-A A10 · CURRENT PROTOTYPE' in html and '<option value="phantom">Phantom A10 ·' in html
+    assert '<option value="phantom-fx" selected>Phantom FX-A A10 · CURRENT PROTOTYPE' in html and '<option value="phantom">Phantom A10 ·' in html
     assert Params('phantom-fx').variant_info['release_stage'] == 'current_prototype'
     assert html.count('A9 · EARLIER VERSION') == 2
     raw = json.loads((ROOT / 'inputs/phantom_parameters_v1.json').read_text())

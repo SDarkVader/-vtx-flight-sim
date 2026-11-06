@@ -53,3 +53,49 @@ def test_ledger_equals_mujoco(variant, start):
 def test_fx_c_load_state_lighter_than_fx_a():
     a = PhantomAircraft(W, 'phantom-fx', load_state='FX-A'); c = PhantomAircraft(W, 'phantom-fx', load_state='FX-C')
     assert sum(c.model.body_mass) < sum(a.model.body_mass) - 100
+
+
+def test_physical_snapshot_tracks_body_origin_not_a_fixed_world_pivot():
+    a = PhantomAircraft(W, 'phantom-fx', start_configuration='road', engines_running=False)
+    a.spawn(0, 0, 0)
+    mj.mj_forward(a.model, a.data)
+    cg_world = np.array(a.mass_properties()['cg_world_m'])
+    cg_body = np.array(a.mass_properties()['cg_body_m'])
+    q = np.array([np.cos(.35), 0., np.sin(.35), 0.])
+    rotation = np.zeros(9)
+    mj.mju_quat2Mat(rotation, q)
+    a.data.qpos[3:7] = q
+    a.data.qpos[:3] = cg_world - rotation.reshape(3, 3) @ cg_body
+    mj.mj_forward(a.model, a.data)
+    snapshot = a.physical_snapshot()
+    pose = snapshot['body_poses']['airframe']
+    np.testing.assert_allclose(a.mass_properties()['cg_world_m'], cg_world, atol=1e-6)
+    np.testing.assert_allclose(pose['position'], a.data.xpos[a.bids['airframe']], atol=1e-5)
+    np.testing.assert_allclose(pose['quaternion_wxyz'], q, atol=1e-6)
+
+
+def test_controller_uses_current_articulated_centre_of_gravity(monkeypatch):
+    a = PhantomAircraft(W, 'phantom-fx', start_configuration='road', engines_running=False)
+    a.spawn(0, 0, 0)
+    seen = []
+    original = a.fcc.update
+
+    def capture(t, sensed, mass_kg, cg_x, g, fan_enabled, thrust_avail):
+        seen.append(cg_x)
+        return original(t, sensed, mass_kg, cg_x, g, fan_enabled, thrust_avail)
+
+    monkeypatch.setattr(a.fcc, 'update', capture)
+    mj.mj_forward(a.model, a.data)
+    a.control_update(.01)
+    first_actual = a.mass_properties()['cg_body_m'][0]
+    for side in ('left', 'right'):
+        jid = a.jid[f'wing_{side}']
+        a.data.qpos[a.model.jnt_qposadr[jid]] = 0.0
+        jid = a.jid[f'canard_{side}_fold']
+        a.data.qpos[a.model.jnt_qposadr[jid]] = 0.0
+    mj.mj_forward(a.model, a.data)
+    a.control_update(.01)
+    second_actual = a.mass_properties()['cg_body_m'][0]
+    assert abs(second_actual - first_actual) > 1e-5
+    assert seen[0] == pytest.approx(first_actual, abs=2e-3)
+    assert seen[1] == pytest.approx(second_actual, abs=2e-3)

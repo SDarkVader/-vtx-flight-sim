@@ -41,6 +41,17 @@ class Component:
     tags: list = field(default_factory=list)
 
 
+def turbine_station(P):
+    """P7 per-station turbine data (None when off). Mirrors plant.turbine_boosters without importing the plant."""
+    opt = int(round(P['proposals.p7_booster_engine']))
+    if opt == 0:
+        return None
+    k = {1: 'tj150', 2: 'fj33'}[opt]
+    count = P['proposals.p7_tj150_count'] if opt == 1 else 1
+    return dict(kind=k, count=count, t0_station_n=count / 2 * P[f'proposals.p7_{k}_thrust_n'],
+                mass_station_kg=count / 2 * P[f'proposals.p7_{k}_mass_kg'] * P['proposals.p7_installation_mass_factor'])
+
+
 def _c(id, kind, body, m, pos, I, label, src, cad=None, limits=None, tags=None):
     I = np.asarray(I, float)
     if I.shape == (3,):
@@ -155,11 +166,18 @@ class PhantomLedger:
         bp = np.array(P['boosters.position_m'])
         for side in WING_SIDES:
             pos = bp * [1, WING_SIGN[side], 1]
-            C.append(_c(f'booster_{side}_housing', 'booster', 'airframe', P['boosters.housing_mass_kg'], pos + [0.15, 0, 0], [0.2, 0.15, 0.15], S,
-                        'EDF motor, inverter, duct', f'POWER_{CAD_SIDE[side]}_REAR_THRUST_NOZZLE', limits=dict(power_w=P['boosters.shaft_power_max_w'])))
+            jet = turbine_station(P)
+            if jet:   # P7: turbine engines (datasheet dry mass x installation factor) replace the EDF housing; rotor body kept as a 0.5 kg stub
+                C.append(_c(f'booster_{side}_housing', 'booster', 'airframe', jet['mass_station_kg'], pos + [0.15, 0, 0], [0.3, 0.2, 0.2], S,
+                            f"P7 {jet['kind']} turbine x{jet['count'] / 2:g} (datasheet mass x installation factor)", f'POWER_{CAD_SIDE[side]}_REAR_THRUST_NOZZLE',
+                            limits=dict(thrust_n=jet['t0_station_n'])))
+            else:
+                C.append(_c(f'booster_{side}_housing', 'booster', 'airframe', P['boosters.housing_mass_kg'], pos + [0.15, 0, 0], [0.2, 0.15, 0.15], S,
+                            'EDF motor, inverter, duct', f'POWER_{CAD_SIDE[side]}_REAR_THRUST_NOZZLE', limits=dict(power_w=P['boosters.shaft_power_max_w'])))
             body(f'booster_{side}_rotor', 'airframe', pos, 'hinge', [1, 0, 0], None)
-            Ir = P['boosters.rotor_inertia_kg_m2']
-            C.append(_c(f'booster_{side}_rotor', 'rotor', f'booster_{side}_rotor', P['boosters.rotor_mass_kg'], pos, np.diag([Ir, Ir / 2, Ir / 2]), S, 'EDF rotor'))
+            Ir = P['boosters.rotor_inertia_kg_m2'] * (0.125 if jet else 1.0)
+            C.append(_c(f'booster_{side}_rotor', 'rotor', f'booster_{side}_rotor', 0.5 if jet else P['boosters.rotor_mass_kg'], pos, np.diag([Ir, Ir / 2, Ir / 2]), S,
+                        'unpowered EDF rotor stub (P7)' if jet else 'EDF rotor'))
         self.validate()
 
     def validate(self):
