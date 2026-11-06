@@ -660,10 +660,10 @@ export function buildServiceRoads(scene, world, surfaceZ) {
 
   group.add(cabGroup);
 
-  // Black Cab Follow-Me Route (Along Taxiway Alpha: [-500, 100] to [400, 100])
+  // Black Cab Follow-Me Route: out and back along the north service road (x = 20 and y = 93),
+  // clear of every obstacle box, the water and the pads.
   const cabWaypoints = [
-    [-550, 100], [-350, 100], [-100, 100], [150, 100], [450, 100],
-    [500, 100], [450, 100], [150, 100], [-100, 100], [-350, 100], [-550, 100]
+    [20, 34], [20, 93], [100, 93], [20, 93]
   ];
 
   vehicles.push({

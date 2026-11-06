@@ -1,0 +1,1484 @@
+﻿{
+    "mode":  "live",
+    "run_id":  "20261106T125337-b1e1a0",
+    "authority":  "manual",
+    "active":  true,
+    "paused":  true,
+    "time_scale":  0.5,
+    "error":  null,
+    "landing_assessment":  null,
+    "clock_lag_s":  0.0005696999840427699,
+    "observation":  {
+                        "frame_labels":  {
+                                             "attitude":  "roll right-down +, pitch nose-up +, yaw nose-left + (ENU heading)",
+                                             "body_rates":  "p roll-right +, q nose-up +, r nose-left + (body axes)",
+                                             "velocity_body":  "u forward, v left, w up (body axes)",
+                                             "velocity_world":  "x, y, z world (z up)",
+                                             "radar_altimeter":  "antenna-to-surface distance along -z world, NOT gear clearance; on the gear it reads about radar_altimeter_ground_reference_m"
+                                         },
+                        "gnss_xy_m":  [
+                                          -689.94,
+                                          0.0
+                                      ],
+                        "baro_m":  0.16,
+                        "radar_altimeter_m":  0.325,
+                        "radar_altimeter_ground_reference_m":  0.395,
+                        "attitude_deg":  {
+                                             "roll":  -0.074,
+                                             "pitch":  0.373,
+                                             "yaw":  -0.126
+                                         },
+                        "body_rates_deg_s":  {
+                                                 "p":  0.014,
+                                                 "q":  0.127,
+                                                 "r":  -0.004
+                                             },
+                        "velocity_world_m_s":  [
+                                                   0.007,
+                                                   0.001,
+                                                   0.014
+                                               ],
+                        "velocity_body_m_s":  [
+                                                  0.002,
+                                                  -0.001,
+                                                  0.004
+                                              ],
+                        "airspeed_m_s":  0.01,
+                        "fan_rpm":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                        "pod_tilt_deg":  [
+                                             0.0,
+                                             0.0,
+                                             0.0,
+                                             0.0
+                                         ],
+                        "leg_extension_m":  [
+                                                0.499,
+                                                0.499,
+                                                0.495,
+                                                0.495
+                                            ],
+                        "leg_compression_m":  [
+                                                  0.0376,
+                                                  0.0364,
+                                                  0.0516,
+                                                  0.0504
+                                              ],
+                        "weight_on_wheels":  true,
+                        "wing_state":  {
+                                           "left":  "stowed",
+                                           "right":  "stowed"
+                                       },
+                        "flap_deg":  [
+                                         0.02,
+                                         0.02
+                                     ],
+                        "aileron_deg":  [
+                                            0.01,
+                                            0.01
+                                        ],
+                        "canard_pitch_deg":  [
+                                                 0.02,
+                                                 0.02
+                                             ],
+                        "canard_fold_deg":  [
+                                                0.0,
+                                                0.0
+                                            ],
+                        "generator_kw":  900.0,
+                        "buffer_kw":  841.7,
+                        "buffer_soc":  0.7976,
+                        "power_unmet_kw":  6769.9,
+                        "loop_temperature_c":  35.9,
+                        "motor_temperature_c":  [
+                                                    15.0,
+                                                    15.0,
+                                                    15.0,
+                                                    15.0
+                                                ],
+                        "fuel_kg":  [
+                                        63.342,
+                                        63.342
+                                    ],
+                        "stability_mode":  "rate_damping",
+                        "pti_active":  null,
+                        "faults":  [
+
+                                   ],
+                        "warning_lamps":  [
+                                              "POWER_LIMITED"
+                                          ],
+                        "observation_id":  563,
+                        "t_s":  28.43,
+                        "wall_utc":  "2026-11-06T12:54:55.496810+00:00",
+                        "command_mode":  "hold_until_changed",
+                        "scheduler_backlog_s":  0.001,
+                        "time_scale":  0.5,
+                        "action_schema":  "phantom-fbw-1",
+                        "mission":  {
+                                        "departure":  [
+                                                          -690.0,
+                                                          0.0
+                                                      ],
+                                        "destination":  [
+                                                            690.0,
+                                                            0.0
+                                                        ],
+                                        "departure_z_m":  0.0,
+                                        "destination_z_m":  0.0,
+                                        "environment":  "stage1-valley",
+                                        "environment_version":  "2",
+                                        "label":  "Explicit retry of 20261106T125301-5d826a",
+                                        "ignore_scenery_collisions":  false,
+                                        "landing_precision_m":  null
+                                    },
+                        "authority":  "manual",
+                        "active":  true,
+                        "paused":  true,
+                        "configuration":  {
+                                              "airframe_variant":  "phantom-fx",
+                                              "airframe_revision":  "phantom-fx-a10",
+                                              "config_sha256":  "70089ccace22e4ce1cfd28104654257fe4d03771c4f6b1faa3c89fce253247dd",
+                                              "load_state":  null,
+                                              "occupants":  2,
+                                              "initial_fuel_kg":  129.0
+                                          },
+                        "sensor_status":  "Provisional modelled sensors: GNSS, baro, radar altimeter (ray along gravity), AHRS, body-axis gyro, fan rpm, pod/leg/surface position, power, fuel; no truth forces"
+                    },
+    "rendering_truth":  {
+                            "t_s":  28.430000000005318,
+                            "variant":  "phantom-fx",
+                            "config_sha256":  "70089ccace22e4ce1cfd28104654257fe4d03771c4f6b1faa3c89fce253247dd",
+                            "body_poses":  {
+                                               "airframe":  {
+                                                                "position":  [
+                                                                                 -689.92455,
+                                                                                 -0.00474,
+                                                                                 0.15812
+                                                                             ],
+                                                                "quaternion_wxyz":  [
+                                                                                        0.999994,
+                                                                                        -0.000726,
+                                                                                        -0.003228,
+                                                                                        -0.001074
+                                                                                    ]
+                                                            },
+                                               "buffer":  {
+                                                              "position":  [
+                                                                               -688.12731,
+                                                                               -0.00799,
+                                                                               0.58974
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000726,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "fuel_left":  {
+                                                                 "position":  [
+                                                                                  -689.98597,
+                                                                                  0.11577,
+                                                                                  0.41756
+                                                                              ],
+                                                                 "quaternion_wxyz":  [
+                                                                                         0.999994,
+                                                                                         -0.000726,
+                                                                                         -0.003228,
+                                                                                         -0.001074
+                                                                                     ]
+                                                             },
+                                               "fuel_right":  {
+                                                                  "position":  [
+                                                                                   -689.98649,
+                                                                                   -0.12423,
+                                                                                   0.4179
+                                                                               ],
+                                                                  "quaternion_wxyz":  [
+                                                                                          0.999994,
+                                                                                          -0.000726,
+                                                                                          -0.003228,
+                                                                                          -0.001074
+                                                                                      ]
+                                                              },
+                                               "pod_FL":  {
+                                                              "position":  [
+                                                                               -688.38584,
+                                                                               1.24284,
+                                                                               0.77625
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000728,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "pod_FL_fan":  {
+                                                                  "position":  [
+                                                                                   -688.38584,
+                                                                                   1.24284,
+                                                                                   0.77625
+                                                                               ],
+                                                                  "quaternion_wxyz":  [
+                                                                                          0.99997,
+                                                                                          -0.000733,
+                                                                                          -0.007645,
+                                                                                          -0.001071
+                                                                                      ]
+                                                              },
+                                               "pod_FL_wheel":  {
+                                                                    "position":  [
+                                                                                     -688.38584,
+                                                                                     1.24284,
+                                                                                     0.77625
+                                                                                 ],
+                                                                    "quaternion_wxyz":  [
+                                                                                            -0.096074,
+                                                                                            -0.001002,
+                                                                                            -0.995373,
+                                                                                            0.000824
+                                                                                        ]
+                                                                },
+                                               "pod_FR":  {
+                                                              "position":  [
+                                                                               -688.39122,
+                                                                               -1.25715,
+                                                                               0.77986
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000747,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "pod_FR_fan":  {
+                                                                  "position":  [
+                                                                                   -688.39122,
+                                                                                   -1.25715,
+                                                                                   0.77986
+                                                                               ],
+                                                                  "quaternion_wxyz":  [
+                                                                                          0.99997,
+                                                                                          -0.000752,
+                                                                                          -0.007644,
+                                                                                          -0.001071
+                                                                                      ]
+                                                              },
+                                               "pod_FR_wheel":  {
+                                                                    "position":  [
+                                                                                     -688.39122,
+                                                                                     -1.25715,
+                                                                                     0.77986
+                                                                                 ],
+                                                                    "quaternion_wxyz":  [
+                                                                                            -0.096075,
+                                                                                            -0.001,
+                                                                                            -0.995373,
+                                                                                            0.000844
+                                                                                        ]
+                                                                },
+                                               "pod_RL":  {
+                                                              "position":  [
+                                                                               -691.51576,
+                                                                               1.24955,
+                                                                               0.75604
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000728,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "pod_RL_fan":  {
+                                                                  "position":  [
+                                                                                   -691.51576,
+                                                                                   1.24955,
+                                                                                   0.75604
+                                                                               ],
+                                                                  "quaternion_wxyz":  [
+                                                                                          0.99997,
+                                                                                          -0.000733,
+                                                                                          -0.007616,
+                                                                                          -0.001071
+                                                                                      ]
+                                                              },
+                                               "pod_RL_wheel":  {
+                                                                    "position":  [
+                                                                                     -691.51576,
+                                                                                     1.24955,
+                                                                                     0.75604
+                                                                                 ],
+                                                                    "quaternion_wxyz":  [
+                                                                                            -0.096074,
+                                                                                            -0.001002,
+                                                                                            -0.995373,
+                                                                                            0.000824
+                                                                                        ]
+                                                                },
+                                               "pod_RR":  {
+                                                              "position":  [
+                                                                               -691.52115,
+                                                                               -1.25044,
+                                                                               0.75965
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000747,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "pod_RR_fan":  {
+                                                                  "position":  [
+                                                                                   -691.52115,
+                                                                                   -1.25044,
+                                                                                   0.75965
+                                                                               ],
+                                                                  "quaternion_wxyz":  [
+                                                                                          0.99997,
+                                                                                          -0.000752,
+                                                                                          -0.007616,
+                                                                                          -0.001071
+                                                                                      ]
+                                                              },
+                                               "pod_RR_wheel":  {
+                                                                    "position":  [
+                                                                                     -691.52115,
+                                                                                     -1.25044,
+                                                                                     0.75965
+                                                                                 ],
+                                                                    "quaternion_wxyz":  [
+                                                                                            -0.096075,
+                                                                                            -0.001,
+                                                                                            -0.995373,
+                                                                                            0.000844
+                                                                                        ]
+                                                                },
+                                               "leg_FL":  {
+                                                              "position":  [
+                                                                               -688.82196,
+                                                                               0.52257,
+                                                                               -0.06449
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000726,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "leg_FL_oleo":  {
+                                                                   "position":  [
+                                                                                    -688.8222,
+                                                                                    0.52262,
+                                                                                    -0.02724
+                                                                                ],
+                                                                   "quaternion_wxyz":  [
+                                                                                           0.999994,
+                                                                                           -0.000726,
+                                                                                           -0.003228,
+                                                                                           -0.001074
+                                                                                       ]
+                                                               },
+                                               "leg_FR":  {
+                                                              "position":  [
+                                                                               -688.82424,
+                                                                               -0.53743,
+                                                                               -0.0633
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000726,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "leg_FR_oleo":  {
+                                                                   "position":  [
+                                                                                    -688.82447,
+                                                                                    -0.53738,
+                                                                                    -0.02717
+                                                                                ],
+                                                                   "quaternion_wxyz":  [
+                                                                                           0.999994,
+                                                                                           -0.000726,
+                                                                                           -0.003228,
+                                                                                           -0.001074
+                                                                                       ]
+                                                               },
+                                               "leg_RL":  {
+                                                              "position":  [
+                                                                               -691.10193,
+                                                                               0.52746,
+                                                                               -0.075
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000726,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "leg_RL_oleo":  {
+                                                                   "position":  [
+                                                                                    -691.10227,
+                                                                                    0.52754,
+                                                                                    -0.02345
+                                                                                ],
+                                                                   "quaternion_wxyz":  [
+                                                                                           0.999994,
+                                                                                           -0.000726,
+                                                                                           -0.003228,
+                                                                                           -0.001074
+                                                                                       ]
+                                                               },
+                                               "leg_RR":  {
+                                                              "position":  [
+                                                                               -691.10421,
+                                                                               -0.53254,
+                                                                               -0.07382
+                                                                           ],
+                                                              "quaternion_wxyz":  [
+                                                                                      0.999994,
+                                                                                      -0.000726,
+                                                                                      -0.003228,
+                                                                                      -0.001074
+                                                                                  ]
+                                                          },
+                                               "leg_RR_oleo":  {
+                                                                   "position":  [
+                                                                                    -691.10454,
+                                                                                    -0.53246,
+                                                                                    -0.02345
+                                                                                ],
+                                                                   "quaternion_wxyz":  [
+                                                                                           0.999994,
+                                                                                           -0.000726,
+                                                                                           -0.003228,
+                                                                                           -0.001074
+                                                                                       ]
+                                                               },
+                                               "wing_left":  {
+                                                                 "position":  [
+                                                                                  -690.98092,
+                                                                                  0.02498,
+                                                                                  1.15078
+                                                                              ],
+                                                                 "quaternion_wxyz":  [
+                                                                                         0.999994,
+                                                                                         -0.000726,
+                                                                                         -0.003228,
+                                                                                         -0.001074
+                                                                                     ]
+                                                             },
+                                               "pin_left_front_out":  {
+                                                                          "position":  [
+                                                                                           -690.69493,
+                                                                                           -0.03677,
+                                                                                           1.05322
+                                                                                       ],
+                                                                          "quaternion_wxyz":  [
+                                                                                                  0.999994,
+                                                                                                  -0.000726,
+                                                                                                  -0.003228,
+                                                                                                  -0.001074
+                                                                                              ]
+                                                                      },
+                                               "pin_left_front_in":  {
+                                                                         "position":  [
+                                                                                          -690.69693,
+                                                                                          -0.96677,
+                                                                                          1.05456
+                                                                                      ],
+                                                                         "quaternion_wxyz":  [
+                                                                                                 0.999994,
+                                                                                                 -0.000726,
+                                                                                                 -0.003228,
+                                                                                                 -0.001074
+                                                                                             ]
+                                                                     },
+                                               "flap_left":  {
+                                                                 "position":  [
+                                                                                  -691.17633,
+                                                                                  0.0893,
+                                                                                  1.14573
+                                                                              ],
+                                                                 "quaternion_wxyz":  [
+                                                                                         0.999993,
+                                                                                         -0.00071,
+                                                                                         -0.003407,
+                                                                                         -0.001073
+                                                                                     ]
+                                                             },
+                                               "aileron_left":  {
+                                                                    "position":  [
+                                                                                     -691.22727,
+                                                                                     0.6884,
+                                                                                     1.14185
+                                                                                 ],
+                                                                    "quaternion_wxyz":  [
+                                                                                            0.999994,
+                                                                                            -0.000716,
+                                                                                            -0.003336,
+                                                                                            -0.001074
+                                                                                        ]
+                                                                },
+                                               "pin_left_rear_out":  {
+                                                                         "position":  [
+                                                                                          -690.84584,
+                                                                                          1.16854,
+                                                                                          1.05049
+                                                                                      ],
+                                                                         "quaternion_wxyz":  [
+                                                                                                 0.999994,
+                                                                                                 -0.000726,
+                                                                                                 -0.003228,
+                                                                                                 -0.001074
+                                                                                             ]
+                                                                     },
+                                               "pin_left_rear_in":  {
+                                                                        "position":  [
+                                                                                         -690.84784,
+                                                                                         0.23854,
+                                                                                         1.05183
+                                                                                     ],
+                                                                        "quaternion_wxyz":  [
+                                                                                                0.999994,
+                                                                                                -0.000726,
+                                                                                                -0.003228,
+                                                                                                -0.001074
+                                                                                            ]
+                                                                    },
+                                               "canard_left_fold":  {
+                                                                        "position":  [
+                                                                                         -687.97815,
+                                                                                         1.19246,
+                                                                                         1.11896
+                                                                                     ],
+                                                                        "quaternion_wxyz":  [
+                                                                                                0.999994,
+                                                                                                -0.000726,
+                                                                                                -0.003228,
+                                                                                                -0.001055
+                                                                                            ]
+                                                                    },
+                                               "canard_left":  {
+                                                                   "position":  [
+                                                                                    -688.12802,
+                                                                                    1.25278,
+                                                                                    1.11791
+                                                                                ],
+                                                                   "quaternion_wxyz":  [
+                                                                                           0.999993,
+                                                                                           -0.000726,
+                                                                                           -0.003408,
+                                                                                           -0.001054
+                                                                                       ]
+                                                               },
+                                               "hatch_left":  {
+                                                                  "position":  [
+                                                                                   -690.9779,
+                                                                                   1.25138,
+                                                                                   1.09001
+                                                                               ],
+                                                                  "quaternion_wxyz":  [
+                                                                                          0.000724,
+                                                                                          0.999994,
+                                                                                          -0.001074,
+                                                                                          0.003228
+                                                                                      ]
+                                                              },
+                                               "wing_right":  {
+                                                                  "position":  [
+                                                                                   -690.98104,
+                                                                                   -0.02703,
+                                                                                   1.15086
+                                                                               ],
+                                                                  "quaternion_wxyz":  [
+                                                                                          0.999994,
+                                                                                          -0.000726,
+                                                                                          -0.003228,
+                                                                                          -0.001074
+                                                                                      ]
+                                                              },
+                                               "pin_right_front_out":  {
+                                                                           "position":  [
+                                                                                            -691.12327,
+                                                                                            0.03413,
+                                                                                            1.05035
+                                                                                        ],
+                                                                           "quaternion_wxyz":  [
+                                                                                                   0.999994,
+                                                                                                   -0.000726,
+                                                                                                   -0.003228,
+                                                                                                   -0.001074
+                                                                                               ]
+                                                                       },
+                                               "pin_right_front_in":  {
+                                                                          "position":  [
+                                                                                           -691.12126,
+                                                                                           0.96413,
+                                                                                           1.04901
+                                                                                       ],
+                                                                          "quaternion_wxyz":  [
+                                                                                                  0.999994,
+                                                                                                  -0.000726,
+                                                                                                  -0.003228,
+                                                                                                  -0.001074
+                                                                                              ]
+                                                                      },
+                                               "flap_right":  {
+                                                                  "position":  [
+                                                                                   -691.17672,
+                                                                                   -0.09052,
+                                                                                   1.14599
+                                                                               ],
+                                                                  "quaternion_wxyz":  [
+                                                                                          0.999993,
+                                                                                          -0.000741,
+                                                                                          -0.003407,
+                                                                                          -0.001075
+                                                                                      ]
+                                                              },
+                                               "aileron_right":  {
+                                                                     "position":  [
+                                                                                      -691.23024,
+                                                                                      -0.68941,
+                                                                                      1.14384
+                                                                                  ],
+                                                                     "quaternion_wxyz":  [
+                                                                                             0.999994,
+                                                                                             -0.000735,
+                                                                                             -0.003336,
+                                                                                             -0.001075
+                                                                                         ]
+                                                                 },
+                                               "pin_right_rear_out":  {
+                                                                          "position":  [
+                                                                                           -691.27937,
+                                                                                           -1.17054,
+                                                                                           1.0511
+                                                                                       ],
+                                                                          "quaternion_wxyz":  [
+                                                                                                  0.999994,
+                                                                                                  -0.000726,
+                                                                                                  -0.003228,
+                                                                                                  -0.001074
+                                                                                              ]
+                                                                      },
+                                               "pin_right_rear_in":  {
+                                                                         "position":  [
+                                                                                          -691.27736,
+                                                                                          -0.24054,
+                                                                                          1.04975
+                                                                                      ],
+                                                                         "quaternion_wxyz":  [
+                                                                                                 0.999994,
+                                                                                                 -0.000726,
+                                                                                                 -0.003228,
+                                                                                                 -0.001074
+                                                                                             ]
+                                                                     },
+                                               "canard_right_fold":  {
+                                                                         "position":  [
+                                                                                          -687.98331,
+                                                                                          -1.20753,
+                                                                                          1.12243
+                                                                                      ],
+                                                                         "quaternion_wxyz":  [
+                                                                                                 0.999994,
+                                                                                                 -0.000725,
+                                                                                                 -0.003228,
+                                                                                                 -0.001096
+                                                                                             ]
+                                                                     },
+                                               "canard_right":  {
+                                                                    "position":  [
+                                                                                     -688.13344,
+                                                                                     -1.2672,
+                                                                                     1.12155
+                                                                                 ],
+                                                                    "quaternion_wxyz":  [
+                                                                                            0.999993,
+                                                                                            -0.000726,
+                                                                                            -0.003409,
+                                                                                            -0.001096
+                                                                                        ]
+                                                                },
+                                               "hatch_right":  {
+                                                                   "position":  [
+                                                                                    -690.9833,
+                                                                                    -1.25361,
+                                                                                    1.09363
+                                                                                ],
+                                                                   "quaternion_wxyz":  [
+                                                                                           -0.000727,
+                                                                                           -0.999994,
+                                                                                           0.001074,
+                                                                                           -0.003228
+                                                                                       ]
+                                                               },
+                                               "booster_left_rotor":  {
+                                                                          "position":  [
+                                                                                           -692.21693,
+                                                                                           0.40091,
+                                                                                           0.65275
+                                                                                       ],
+                                                                          "quaternion_wxyz":  [
+                                                                                                  0.947715,
+                                                                                                  -0.319099,
+                                                                                                  -0.002718,
+                                                                                                  -0.002046
+                                                                                              ]
+                                                                      },
+                                               "booster_right_rotor":  {
+                                                                           "position":  [
+                                                                                            -692.21865,
+                                                                                            -0.39909,
+                                                                                            0.6539
+                                                                                        ],
+                                                                           "quaternion_wxyz":  [
+                                                                                                   0.543966,
+                                                                                                   -0.8391,
+                                                                                                   -0.000857,
+                                                                                                   -0.003292
+                                                                                               ]
+                                                                       },
+                                               "cabin":  {
+                                                             "position":  [
+                                                                              -689.67886,
+                                                                              -0.35447,
+                                                                              0.71023
+                                                                          ],
+                                                             "quaternion_wxyz":  [
+                                                                                     0.999994,
+                                                                                     -0.000726,
+                                                                                     -0.003228,
+                                                                                     -0.001074
+                                                                                 ]
+                                                         }
+                                           },
+                            "provenance":  {
+                                               "revision":  "phantom-fx-a10",
+                                               "airframe_variant":  "phantom-fx",
+                                               "render_asset":  "/assets/phantom-a10-blendstra-81c823e2.glb",
+                                               "model_xml_sha256":  "55e0c5083f695bdab19e62e82aa3f623316914776f4efe0780c266957d142394",
+                                               "parameter_file_sha256":  "37020551406981f418069a3c7973a49da21b714ca23ec74aabf58d7f423e1a4e",
+                                               "config_sha256":  "70089ccace22e4ce1cfd28104654257fe4d03771c4f6b1faa3c89fce253247dd",
+                                               "wing_cassette_revision":  "A10",
+                                               "ledger_mass_kg":  1897.4851307899992
+                                           },
+                            "events":  [
+
+                                       ],
+                            "phantom":  {
+                                            "joints":  {
+                                                           "pod_FL":  -5E-06,
+                                                           "pod_FL_fan":  -0.00883,
+                                                           "pod_FL_wheel":  56678.672085,
+                                                           "pod_FR":  -4.4E-05,
+                                                           "pod_FR_fan":  0.008827,
+                                                           "pod_FR_wheel":  -56678.672083,
+                                                           "pod_RL":  -5E-06,
+                                                           "pod_RL_fan":  -0.008771,
+                                                           "pod_RL_wheel":  56678.672085,
+                                                           "pod_RR":  -4.4E-05,
+                                                           "pod_RR_fan":  0.008772,
+                                                           "pod_RR_wheel":  -56678.672083,
+                                                           "leg_FL":  -0.498506,
+                                                           "leg_FL_oleo":  0.037573,
+                                                           "leg_FR":  -0.498852,
+                                                           "leg_FR_oleo":  0.036443,
+                                                           "leg_RL":  -0.494727,
+                                                           "leg_RL_oleo":  0.051552,
+                                                           "leg_RR":  -0.49508,
+                                                           "leg_RR_oleo":  0.050376,
+                                                           "wing_left":  -1.204984,
+                                                           "pin_left_front_out":  -0.070005,
+                                                           "pin_left_front_in":  -0.070005,
+                                                           "flap_left":  0.000362,
+                                                           "aileron_left":  0.000217,
+                                                           "pin_left_rear_out":  -0.069986,
+                                                           "pin_left_rear_in":  -0.069986,
+                                                           "canard_left_fold":  3.5E-05,
+                                                           "canard_left":  0.00038,
+                                                           "hatch_left":  3.141595,
+                                                           "wing_right":  -1.205,
+                                                           "pin_right_front_out":  -0.070005,
+                                                           "pin_right_front_in":  -0.070005,
+                                                           "flap_right":  0.000362,
+                                                           "aileron_right":  0.000217,
+                                                           "pin_right_rear_out":  -0.069986,
+                                                           "pin_right_rear_in":  -0.069988,
+                                                           "canard_right_fold":  -3.9E-05,
+                                                           "canard_right":  0.00038,
+                                                           "hatch_right":  3.141595,
+                                                           "booster_left_rotor":  17946.795911,
+                                                           "booster_right_rotor":  17945.454199
+                                                       },
+                                            "fan_rpm":  [
+                                                            0.018128935908033775,
+                                                            0.018133340724491055,
+                                                            0.01816775538382071,
+                                                            0.018167133182531797
+                                                        ],
+                                            "wheel_rad_s":  [
+                                                                3067.277822467771,
+                                                                -3067.277822467165,
+                                                                3067.277822466941,
+                                                                -3067.277822467992
+                                                            ],
+                                            "wing_state":  {
+                                                               "left":  "stowed",
+                                                               "right":  "stowed"
+                                                           },
+                                            "booster_thrust_max_n":  2417.5587247125563,
+                                            "booster_engine":  "edf",
+                                            "drs_deg":  6.00789462786486,
+                                            "booster_vector_deg":  0.0,
+                                            "fan_rpm_max":  4880.751588151456
+                                        },
+                            "mass":  {
+                                         "mass_kg":  1895.1738142897202,
+                                         "cg_world_m":  [
+                                                            -690.0799214080106,
+                                                            -0.003560710921990775,
+                                                            0.7111070209514164
+                                                        ],
+                                         "cg_body_m":  [
+                                                           -0.15179571083098803,
+                                                           4.5631536668603685E-05,
+                                                           0.553976512264451
+                                                       ],
+                                         "inertia_body_kg_m2":  [
+                                                                    [
+                                                                        916.0329868571457,
+                                                                        3.4482284736539115,
+                                                                        107.91838043975018
+                                                                    ],
+                                                                    [
+                                                                        3.4482284736539084,
+                                                                        4146.10019929204,
+                                                                        -0.020175243849637408
+                                                                    ],
+                                                                    [
+                                                                        107.91838043975018,
+                                                                        -0.02017524384963619,
+                                                                        4853.001605088603
+                                                                    ]
+                                                                ]
+                                     },
+                            "propulsors":  [
+                                               {
+                                                   "pod":  "FL",
+                                                   "cmd_n":  0.0,
+                                                   "thrust_n":  4.2695889401112421E-08,
+                                                   "torque_nm":  0.0,
+                                                   "power_w":  0.0,
+                                                   "ram_drag_n":  7.5479051107240877E-07,
+                                                   "v_induced":  5.9459256220284695E-05,
+                                                   "ground_factor":  1.0,
+                                                   "descending_wake":  false,
+                                                   "advance_ratio":  -1.7395892512329667,
+                                                   "motor_torque_nm":  0.0
+                                               },
+                                               {
+                                                   "pod":  "FR",
+                                                   "cmd_n":  0.0,
+                                                   "thrust_n":  0.0,
+                                                   "torque_nm":  0.0,
+                                                   "power_w":  0.0,
+                                                   "ram_drag_n":  0.0,
+                                                   "v_induced":  0.0,
+                                                   "ground_factor":  1.0,
+                                                   "descending_wake":  false,
+                                                   "advance_ratio":  1.7382364095920666,
+                                                   "motor_torque_nm":  0.0
+                                               },
+                                               {
+                                                   "pod":  "RL",
+                                                   "cmd_n":  0.0,
+                                                   "thrust_n":  0.0,
+                                                   "torque_nm":  0.0,
+                                                   "power_w":  0.0,
+                                                   "ram_drag_n":  0.0,
+                                                   "v_induced":  0.0,
+                                                   "ground_factor":  1.0,
+                                                   "descending_wake":  false,
+                                                   "advance_ratio":  0.0,
+                                                   "motor_torque_nm":  0.0
+                                               },
+                                               {
+                                                   "pod":  "RR",
+                                                   "cmd_n":  0.0,
+                                                   "thrust_n":  0.0,
+                                                   "torque_nm":  0.0,
+                                                   "power_w":  0.0,
+                                                   "ram_drag_n":  0.0,
+                                                   "v_induced":  0.0,
+                                                   "ground_factor":  1.0,
+                                                   "descending_wake":  false,
+                                                   "advance_ratio":  0.0,
+                                                   "motor_torque_nm":  0.0
+                                               }
+                                           ],
+                            "boosters":  [
+                                             {
+                                                 "side":  "left",
+                                                 "thrust_n":  467.7073395948398,
+                                                 "torque_nm":  23.93373097335634,
+                                                 "power_w":  25528.62147238846,
+                                                 "ram_drag_n":  0.0,
+                                                 "v_induced":  65.49583227250486,
+                                                 "ground_factor":  1.0,
+                                                 "descending_wake":  false,
+                                                 "advance_ratio":  2.4460071079711777E-05
+                                             },
+                                             {
+                                                 "side":  "right",
+                                                 "thrust_n":  467.70784795145977,
+                                                 "torque_nm":  23.933748565169584,
+                                                 "power_w":  25528.638164141463,
+                                                 "ram_drag_n":  0.0,
+                                                 "v_induced":  65.49593182480062,
+                                                 "ground_factor":  1.0,
+                                                 "descending_wake":  false,
+                                                 "advance_ratio":  2.3460688785223846E-05
+                                             }
+                                         ],
+                            "aero":  {
+                                         "force_body_n":  [
+                                                              -1.2784138697162569E-05,
+                                                              -4.2226481216265336E-07,
+                                                              0.0003838268401374881
+                                                          ],
+                                         "moment_body_nm":  [
+                                                                7.9419945587552073E-06,
+                                                                -0.00015408369979774133,
+                                                                1.2191665810344424E-06
+                                                            ],
+                                         "surfaces":  [
+                                                          {
+                                                              "name":  "wing_left",
+                                                              "alpha_deg":  37.34727331155127,
+                                                              "q_pa":  4.3041972311476934E-05,
+                                                              "cl":  0.9549336816943396,
+                                                              "cd":  0.7366697159492264,
+                                                              "stall_blend":  0.999973937489114,
+                                                              "force_n":  [
+                                                                              -7.2153785777886349E-12,
+                                                                              0.0,
+                                                                              1.375294512362343E-09
+                                                                          ],
+                                                              "active":  true
+                                                          },
+                                                          {
+                                                              "name":  "flap_left",
+                                                              "locked":  false,
+                                                              "force_n":  [
+                                                                              0,
+                                                                              0,
+                                                                              0
+                                                                          ]
+                                                          },
+                                                          {
+                                                              "name":  "aileron_left",
+                                                              "locked":  false,
+                                                              "force_n":  [
+                                                                              0,
+                                                                              0,
+                                                                              0
+                                                                          ]
+                                                          },
+                                                          {
+                                                              "name":  "wing_right",
+                                                              "alpha_deg":  0.0,
+                                                              "q_pa":  0.0,
+                                                              "cl":  0.0,
+                                                              "cd":  0.0,
+                                                              "force_n":  [
+                                                                              0,
+                                                                              0,
+                                                                              0
+                                                                          ],
+                                                              "active":  false
+                                                          },
+                                                          {
+                                                              "name":  "canard_left",
+                                                              "alpha_deg":  61.605368735257095,
+                                                              "q_pa":  0.00012008529459982553,
+                                                              "cl":  0.8282950663151731,
+                                                              "cd":  1.5422428267569366,
+                                                              "stall_blend":  0.9999999999850471,
+                                                              "force_n":  [
+                                                                              -1.7597570075489033E-07,
+                                                                              0.0,
+                                                                              5.84411208797991E-05
+                                                                          ],
+                                                              "active":  true
+                                                          },
+                                                          {
+                                                              "name":  "canard_right",
+                                                              "alpha_deg":  62.928466391080185,
+                                                              "q_pa":  0.00010900206537352667,
+                                                              "cl":  0.8023773453477363,
+                                                              "cd":  1.5799056782774548,
+                                                              "stall_blend":  0.9999999999925208,
+                                                              "force_n":  [
+                                                                              -1.5375883308414181E-07,
+                                                                              0.0,
+                                                                              5.3695320156021953E-05
+                                                                          ],
+                                                              "active":  true
+                                                          },
+                                                          {
+                                                              "name":  "drs_stab",
+                                                              "alpha_deg":  6.41551915280801,
+                                                              "q_pa":  3.0246224937255289E-05,
+                                                              "cl":  0.08233717471779554,
+                                                              "cd":  0.01353889954939075,
+                                                              "stall_blend":  0.051040114183394505,
+                                                              "force_n":  [
+                                                                              2.5289673025161423E-08,
+                                                                              0.0,
+                                                                              4.6913012040775857E-07
+                                                                          ],
+                                                              "active":  true
+                                                          },
+                                                          {
+                                                              "name":  "fin_left",
+                                                              "alpha_deg":  -4.061101235667325,
+                                                              "q_pa":  2.7601673183846797E-05,
+                                                              "cl":  -0.17707614569294533,
+                                                              "cd":  0.01672710014619164,
+                                                              "stall_blend":  0.003290486732313009,
+                                                              "force_n":  [
+                                                                              -2.413750365264167E-08,
+                                                                              -1.009050680451044E-06,
+                                                                              2.3295770534975116E-07
+                                                                          ],
+                                                              "active":  true
+                                                          },
+                                                          {
+                                                              "name":  "fin_right",
+                                                              "alpha_deg":  -1.7521939601798526,
+                                                              "q_pa":  2.5831117445352038E-05,
+                                                              "cl":  -0.07643594187647611,
+                                                              "cd":  0.012877876265394411,
+                                                              "stall_blend":  0.0011256146138610092,
+                                                              "force_n":  [
+                                                                              -5.7417910136663786E-08,
+                                                                              4.078276622069805E-07,
+                                                                              9.4154434664692783E-08
+                                                                          ],
+                                                              "active":  true
+                                                          },
+                                                          {
+                                                              "name":  "body",
+                                                              "force_n":  [
+                                                                              -1.2398131207180815E-05,
+                                                                              1.789582060814102E-07,
+                                                                              0.0002708927815467325
+                                                                          ],
+                                                              "cda_m2":  [
+                                                                             0.6784,
+                                                                             3.5618399999999997,
+                                                                             10.138000000000002
+                                                                         ],
+                                                              "munk_moment":  "not modelled"
+                                                          }
+                                                      ],
+                                         "hinge_moments":  {
+                                                               "canard_left":  -5.384207786555874E-07,
+                                                               "canard_right":  -4.9922381805443386E-07
+                                                           }
+                                     },
+                            "energy":  {
+                                           "generator_w":  899999.9999956528,
+                                           "generator_available_w":  899999.9999956528,
+                                           "generator_each_w":  [
+                                                                    899999.9999956528
+                                                                ],
+                                           "takeoff_rating_used_s":  [
+                                                                         24.990000000001107
+                                                                     ],
+                                           "buffer_w":  841721.1932554867,
+                                           "buffer_soc":  0.7976120441262333,
+                                           "buffer_temperature_k":  295.09456734446053,
+                                           "buffer_discharge_limit_w":  841721.1932554868,
+                                           "demand_w":  8511645.636253428,
+                                           "delivered_w":  1741721.1932511395,
+                                           "unmet_w":  6769924.443002288,
+                                           "propulsion_scale":  0.20205437827257103,
+                                           "cooling_w":  2000.0,
+                                           "loop_temperature_k":  309.05082922886436,
+                                           "motor_temperature_k":  [
+                                                                       288.15,
+                                                                       288.15,
+                                                                       288.15,
+                                                                       288.15
+                                                                   ],
+                                           "fuel_flow_kg_s":  0.08999999999956527,
+                                           "bus_voltage_v":  783.8089635300987,
+                                           "bus_current_a":  2177.1514915639245,
+                                           "balance_residual_w":  0.0,
+                                           "totals":  {
+                                                          "fuel_kg":  2.3158165002804822,
+                                                          "generator_j":  23158165.002804823,
+                                                          "buffer_out_j":  27974518.173784904,
+                                                          "buffer_in_j":  0.0,
+                                                          "propulsion_j":  50350175.297463186,
+                                                          "unmet_j":  105164959.06332031,
+                                                          "losses_j":  0.0,
+                                                          "residual_j":  0.0
+                                                      }
+                                       },
+                            "fcc":  {
+                                        "mode":  "rate_damping",
+                                        "pilot_moment":  [
+                                                             0.0,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                        "augmentation_moment":  [
+                                                                    6.5621099636592123E-05,
+                                                                    0.0005263085243239515,
+                                                                    8.2646840574803753E-05
+                                                                ],
+                                        "moment_demand":  [
+                                                              6.5621099636592123E-05,
+                                                              0.0005263085243239515,
+                                                              8.2646840574803753E-05
+                                                          ],
+                                        "collective_cmd":  0.0,
+                                        "collective_applied":  0.0,
+                                        "vs_cmd":  0.0,
+                                        "vs_contribution":  0.0,
+                                        "vs_integrator":  0.0,
+                                        "trim_collective_estimate":  0.7092145980391572,
+                                        "trim_front_share":  0.45949019184294826,
+                                        "pti_axis":  null,
+                                        "pti_value":  0.0,
+                                        "pod_thrust_cmd":  [
+                                                               0.0,
+                                                               0.0,
+                                                               0.0,
+                                                               0.0
+                                                           ],
+                                        "saturated":  false,
+                                        "tilt_cmd":  [
+                                                         0.0,
+                                                         0.0,
+                                                         0.0,
+                                                         0.0
+                                                     ],
+                                        "aileron_cmd":  [
+                                                            0.0013124219927318425,
+                                                            -0.0013124219927318425
+                                                        ],
+                                        "canard_cmd":  [
+                                                           0.007894627864859272,
+                                                           0.007894627864859272
+                                                       ]
+                                    },
+                            "command":  {
+                                            "engine":  1.0,
+                                            "collective":  0.0,
+                                            "vertical_speed_m_s":  0.0,
+                                            "pitch":  0.0,
+                                            "roll":  0.0,
+                                            "yaw":  0.0,
+                                            "stability_mode":  "rate_damping",
+                                            "pod_tilt_deg":  [
+                                                                 0.0,
+                                                                 0.0,
+                                                                 0.0,
+                                                                 0.0
+                                                             ],
+                                            "flap_deg":  [
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                            "aileron_trim_deg":  [
+                                                                     0.0,
+                                                                     0.0
+                                                                 ],
+                                            "canard_pitch_deg":  [
+                                                                     0.0,
+                                                                     0.0
+                                                                 ],
+                                            "canard_fold":  "deployed",
+                                            "booster_throttle":  [
+                                                                     0.5,
+                                                                     0.5
+                                                                 ],
+                                            "wheel_drive":  [
+                                                                1.0,
+                                                                1.0,
+                                                                1.0,
+                                                                1.0
+                                                            ],
+                                            "brake":  [
+                                                          0.0,
+                                                          0.0,
+                                                          0.0,
+                                                          0.0
+                                                      ],
+                                            "leg_extension_m":  [
+                                                                    0.52,
+                                                                    0.52,
+                                                                    0.52,
+                                                                    0.52
+                                                                ],
+                                            "wing":  "hold"
+                                        },
+                            "targets":  {
+                                            "pod_FL":  0.0,
+                                            "pod_FR":  0.0,
+                                            "pod_RL":  0.0,
+                                            "pod_RR":  0.0,
+                                            "leg_FL":  -0.52,
+                                            "leg_FR":  -0.52,
+                                            "leg_RL":  -0.52,
+                                            "leg_RR":  -0.52,
+                                            "wing_left":  -1.205,
+                                            "pin_left_front_out":  -0.07,
+                                            "pin_left_front_in":  -0.07,
+                                            "flap_left":  0.0,
+                                            "aileron_left":  0.0,
+                                            "pin_left_rear_out":  -0.07,
+                                            "pin_left_rear_in":  -0.07,
+                                            "canard_left_fold":  0.0,
+                                            "canard_left":  0.00013778724946148424,
+                                            "hatch_left":  3.141592653589793,
+                                            "wing_right":  -1.205,
+                                            "pin_right_front_out":  -0.07,
+                                            "pin_right_front_in":  -0.07,
+                                            "flap_right":  0.0,
+                                            "aileron_right":  0.0,
+                                            "pin_right_rear_out":  -0.07,
+                                            "pin_right_rear_in":  -0.07,
+                                            "canard_right_fold":  0.0,
+                                            "canard_right":  0.00013778724946148424,
+                                            "hatch_right":  3.141592653589793
+                                        },
+                            "fuel_kg":  [
+                                            63.3420917498601,
+                                            63.3420917498601
+                                        ],
+                            "contact":  {
+                                            "support":  [
+                                                            "foot_FL",
+                                                            "foot_FR",
+                                                            "foot_RL",
+                                                            "foot_RR"
+                                                        ],
+                                            "max_contact_force_n":  6510.802921020076
+                                        },
+                            "faults":  [
+
+                                       ],
+                            "flags":  [
+
+                                      ],
+                            "crashed":  false,
+                            "mechanical_energy_j":  43303358.33907384
+                        },
+    "mission":  {
+                    "departure":  [
+                                      -690.0,
+                                      0.0
+                                  ],
+                    "destination":  [
+                                        690.0,
+                                        0.0
+                                    ],
+                    "departure_z_m":  0.0,
+                    "destination_z_m":  0.0,
+                    "environment":  "stage1-valley",
+                    "environment_version":  "2",
+                    "label":  "Explicit retry of 20261106T125301-5d826a",
+                    "ignore_scenery_collisions":  false,
+                    "landing_precision_m":  null
+                },
+    "objective":  null,
+    "pilot_owner":  null,
+    "pending_pilot":  null,
+    "pilot_epoch":  0,
+    "fallback":  null,
+    "recent_decisions":  [
+                             {
+                                 "sequence":  1,
+                                 "issued_t_s":  0.0,
+                                 "apply_t_s":  0.02,
+                                 "decision":  "Runway acceleration with canards level and no DRS; wings to deploy below 30 m/s",
+                                 "issued":  {
+                                                "schema":  "phantom-fbw-1",
+                                                "authority":  "manual",
+                                                "expected_run_id":  "20261106T125337-b1e1a0",
+                                                "reason":  "Runway acceleration with canards level and no DRS; wings to deploy below 30 m/s",
+                                                "engine":  1.0,
+                                                "collective":  0.0,
+                                                "stability_mode":  "rate_damping",
+                                                "pod_tilt_deg":  [
+                                                                     0.0,
+                                                                     0.0,
+                                                                     0.0,
+                                                                     0.0
+                                                                 ],
+                                                "flap_deg":  [
+                                                                 0.0,
+                                                                 0.0
+                                                             ],
+                                                "aileron_trim_deg":  [
+                                                                         0.0,
+                                                                         0.0
+                                                                     ],
+                                                "canard_pitch_deg":  [
+                                                                         0.0,
+                                                                         0.0
+                                                                     ],
+                                                "canard_fold":  "deployed",
+                                                "booster_throttle":  [
+                                                                         0.0,
+                                                                         0.0
+                                                                     ],
+                                                "wheel_drive":  [
+                                                                    1.0,
+                                                                    1.0,
+                                                                    1.0,
+                                                                    1.0
+                                                                ],
+                                                "brake":  [
+                                                              0.0,
+                                                              0.0,
+                                                              0.0,
+                                                              0.0
+                                                          ],
+                                                "wing":  "hold"
+                                            },
+                                 "timing":  {
+                                                "observation_sim_t_s":  null,
+                                                "observation_wall_utc":  null,
+                                                "accept_wall_utc":  "2026-11-06T12:53:45.044178+00:00",
+                                                "accept_sim_t_s":  0.0,
+                                                "apply_sim_t_s":  0.02,
+                                                "observation_age_s":  null,
+                                                "command_mode":  "hold_until_changed",
+                                                "scheduler_backlog_s":  0.00043115800246596337,
+                                                "time_scale":  0.02
+                                            },
+                                 "applied":  true
+                             },
+                             {
+                                 "sequence":  2,
+                                 "issued_t_s":  11.717499999999811,
+                                 "apply_t_s":  11.73749999999981,
+                                 "decision":  "Add forward propulsion to reach wing deployment speed; no DRS",
+                                 "issued":  {
+                                                "schema":  "phantom-fbw-1",
+                                                "authority":  "manual",
+                                                "expected_run_id":  "20261106T125337-b1e1a0",
+                                                "reason":  "Add forward propulsion to reach wing deployment speed; no DRS",
+                                                "canard_pitch_deg":  [
+                                                                         0.0,
+                                                                         0.0
+                                                                     ],
+                                                "booster_throttle":  [
+                                                                         0.5,
+                                                                         0.5
+                                                                     ],
+                                                "wing":  "hold"
+                                            },
+                                 "timing":  {
+                                                "observation_sim_t_s":  null,
+                                                "observation_wall_utc":  null,
+                                                "accept_wall_utc":  "2026-11-06T12:54:08.545637+00:00",
+                                                "accept_sim_t_s":  11.717499999999811,
+                                                "apply_sim_t_s":  11.73749999999981,
+                                                "observation_age_s":  null,
+                                                "command_mode":  "hold_until_changed",
+                                                "scheduler_backlog_s":  0.002203450077212453,
+                                                "time_scale":  0.5
+                                            },
+                                 "applied":  true
+                             },
+                             {
+                                 "sequence":  3,
+                                 "issued_t_s":  16.91749999999943,
+                                 "apply_t_s":  16.937499999999428,
+                                 "decision":  "Straight runway acceleration, gear down, neutral surfaces, no DRS",
+                                 "issued":  {
+                                                "schema":  "phantom-fbw-1",
+                                                "authority":  "manual",
+                                                "expected_run_id":  "20261106T125337-b1e1a0",
+                                                "reason":  "Straight runway acceleration, gear down, neutral surfaces, no DRS",
+                                                "engine":  1.0,
+                                                "collective":  0.0,
+                                                "pitch":  0.0,
+                                                "roll":  0.0,
+                                                "yaw":  0.0,
+                                                "pod_tilt_deg":  [
+                                                                     0.0,
+                                                                     0.0,
+                                                                     0.0,
+                                                                     0.0
+                                                                 ],
+                                                "flap_deg":  [
+                                                                 0.0,
+                                                                 0.0
+                                                             ],
+                                                "aileron_trim_deg":  [
+                                                                         0.0,
+                                                                         0.0
+                                                                     ],
+                                                "canard_pitch_deg":  [
+                                                                         0.0,
+                                                                         0.0
+                                                                     ],
+                                                "canard_fold":  "deployed",
+                                                "wheel_drive":  [
+                                                                    1.0,
+                                                                    1.0,
+                                                                    1.0,
+                                                                    1.0
+                                                                ],
+                                                "brake":  [
+                                                              0.0,
+                                                              0.0,
+                                                              0.0,
+                                                              0.0
+                                                          ],
+                                                "leg_extension_m":  [
+                                                                        0.52,
+                                                                        0.52,
+                                                                        0.52,
+                                                                        0.52
+                                                                    ],
+                                                "wing":  "hold"
+                                            },
+                                 "timing":  {
+                                                "observation_sim_t_s":  null,
+                                                "observation_wall_utc":  null,
+                                                "accept_wall_utc":  "2026-11-06T12:54:32.401846+00:00",
+                                                "accept_sim_t_s":  16.91749999999943,
+                                                "apply_sim_t_s":  16.937499999999428,
+                                                "observation_age_s":  null,
+                                                "command_mode":  "hold_until_changed",
+                                                "scheduler_backlog_s":  0.0019167000008733213,
+                                                "time_scale":  0.5
+                                            },
+                                 "applied":  true
+                             }
+                         ],
+    "end_summary":  null,
+    "retry_available":  true
+}
