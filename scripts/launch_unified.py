@@ -49,7 +49,7 @@ def main(argv=None):
     import uvicorn
 
     server = uvicorn.Server(uvicorn.Config(
-        "vtx.live_server:app", host="0.0.0.0", port=args.port, log_level="warning"
+        "vtx.dashboard_site:app", host="0.0.0.0", port=args.port, log_level="warning"
     ))
     if not args.no_browser:
         def open_when_ready():

@@ -18,5 +18,6 @@
     });
     bar.appendChild(b);
   }
+  const link = document.createElement('a'); link.className = 'workspace-dashboard-link'; link.href = '/dashboard/'; link.textContent = 'Flight test dashboard'; bar.appendChild(link);
   document.querySelector('header').appendChild(bar);
 })();
