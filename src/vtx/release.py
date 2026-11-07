@@ -4,7 +4,7 @@ EXPECTED_RELEASE = {
     "airframe_revision": "P0-V4A-assembly-r6",
     "airframe_variant": "r6",
     "physics_revision": "audit-fixes-20261103-r3",
-    "render_asset": "/assets/airframe-r6.glb",
+    "render_asset": "/assets/airframe-r6-blendstra-rig.glb",
 }
 
 

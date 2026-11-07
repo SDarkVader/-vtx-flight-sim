@@ -59,7 +59,8 @@ def test_link_requires_session_binding_with_cabin_level():
         fake=FakeServer()
         with patch("tools.persistent_pilot.request",side_effect=fake):
             pilot.tick(now=100)
-            assert fake.actions==[]  # Wrong-run controls must not be issued.
+            assert fake.actions==[]
+            assert fake.operators==[]
             cfg["arm_run_id"]="run-a"
             controls.write_text(json.dumps(cfg))
             pilot.tick(now=101)
@@ -80,8 +81,21 @@ def test_explicit_cabin_level_opt_out_is_respected_for_armed_pilot():
             pilot.tick(now=100)
             assert fake.actions[-1]['cabin_level'] is False
 
+def test_reconnect_does_not_repeat_held_control_or_create_mission(tmp_path):
+    controls=tmp_path/'controls.json'
+    controls.write_text(json.dumps(dict(DEFAULT,armed=True,arm_run_id='run-a',serial=1,
+                                        engine=.4,reason='Hold current setting')))
+    pilot=Pilot(controls=controls,status=tmp_path/'status.json',events=tmp_path/'events.jsonl')
+    fake=FakeServer()
+    with patch('tools.persistent_pilot.request',side_effect=fake):
+        pilot.tick(now=100)
+        pilot.connected=False
+        pilot.tick(now=110)
+        assert len(fake.actions)==1
+        assert fake.retry_calls==[]
 
-def test_crash_retries_disarmed_and_keeps_lineage():
+
+def test_crash_does_not_start_a_new_mission():
     with TemporaryDirectory() as tmp:
         directory=Path(tmp)
         controls=directory/"controls.json"
@@ -96,10 +110,9 @@ def test_crash_retries_disarmed_and_keeps_lineage():
             assert fake.actions[-1]["engine"]==0.4
             fake.crashed=True
             pilot.tick(now=105)
-            assert fake.retry_calls[0]["authority"]=="colin"
-            assert fake.retry_calls[0]["stability_assist"]==1
+            assert fake.retry_calls==[]
             pilot.tick(now=106)
-            assert len(fake.actions)==1  # Retry disarms; no stale neutral/control commands.
+            assert len(fake.actions)==1
             assert len(fake.operators)==1
 
 
@@ -127,7 +140,7 @@ def test_manual_pause_and_guard_disallow_control():
             assert fake.actions==[]
             fake.obs["gyro_world_deg_s"]=[0,0,0]
             pilot.tick(now=103)
-            assert fake.actions==[]  # Guard remains latched until new serial.
+            assert fake.actions==[]  # latched until new serial
             cfg["serial"]=5
             controls.write_text(json.dumps(cfg))
             pilot.tick(now=104)
@@ -154,7 +167,7 @@ def test_rejects_invalid_cabin_level_and_excessive_tilt():
             pass
 
 
-def test_interrupted_colin_sortie_restarts_from_metadata_not_airborne_state():
+def test_interrupted_colin_sortie_does_not_create_a_new_mission():
     with TemporaryDirectory() as tmp:
         directory=Path(tmp)
         controls=directory/"controls.json"
@@ -168,10 +181,9 @@ def test_interrupted_colin_sortie_restarts_from_metadata_not_airborne_state():
         fake.end_summary=dict(outcome="interrupted",authority="colin",run_id="lost-run")
         with patch("tools.persistent_pilot.request",side_effect=fake):
             pilot.tick(now=100)
-            assert len(fake.retry_calls)==1
-            assert fake.retry_calls[0]["authority"]=="colin"
+            assert fake.retry_calls==[]
             pilot.tick(now=101)
-            assert fake.actions==[]  # Recovered sortie is deliberately disarmed.
+            assert fake.actions==[]
 
 
 def test_does_not_recover_interrupted_manual_sortie():

@@ -21,7 +21,7 @@ observations at 20 Hz. The displayed clock scale is actual simulated seconds per
 wall second. Agent mode uses a slower clock to accommodate reasoning latency;
 physics continues while the agent thinks. There is no action-driven stepping.
 Commands incur 20 ms simulated transport. Five simulated seconds without a
-command feathers collective and idles the engine; it does not rescue flight.
+command feathers collective and shuts the engine down (spool to 0; `engine=0` is not a ground idle); it does not rescue flight.
 
 `GET /api/observe` is the only instrument interface for piloting. It provides
 quantized/noisy GNSS, barometric and radar height, IMU attitude/rates, shaft

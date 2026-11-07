@@ -81,3 +81,59 @@
   dialog { max-width: calc(100% - 12px); width: calc(100vw - 12px); padding: 14px;
     max-height: calc(100svh - 16px); }
 }
+
+#cockpit-instruments:not([hidden]){position:absolute;z-index:2;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:clamp(8px,2vw,24px);padding:8px 14px;border:1px solid #81d9b070;border-radius:8px;background:#091817dc;color:#a8f6bd;font:10px ui-monospace,monospace;white-space:nowrap;pointer-events:none}#cockpit-instruments b{font-size:13px;color:#e4ffe9}@media(max-width:600px){#cockpit-instruments:not([hidden]){bottom:8px;font-size:8px;padding:6px;gap:7px}#cockpit-instruments b{font-size:10px}}
+
+#cockpit-frame:not([hidden]){position:absolute;z-index:1;left:2%;top:4%;width:96%;height:78%;border:7px solid #1b242bdd;border-bottom:0;border-radius:50% 50% 0 0 / 52% 52% 0 0;box-shadow:inset 0 2px #e0b85566;pointer-events:none}
+
+#ride-controls{position:absolute;z-index:8;top:42px;left:12px;right:12px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;width:max-content;max-width:calc(100% - 24px);padding:5px 7px;border:1px solid #75a49f88;border-radius:8px;background:#0a1c25e8;box-shadow:0 3px 12px #0005;color:#e5f5f2;font:10px system-ui}
+#ride-controls strong{font:700 10px ui-monospace,monospace;letter-spacing:1px;color:#a4eddc;white-space:nowrap}
+#ride-controls label{display:flex;align-items:center;gap:3px;white-space:nowrap}
+#ride-controls select,#ride-controls button,#ride-controls summary{min-height:32px;padding:4px 6px;font-size:10px;touch-action:manipulation}
+#ride-controls select{max-width:155px}
+#ride-controls button{white-space:nowrap}
+#ride-controls details{position:relative}
+#ride-controls summary{list-style:none;display:flex;align-items:center;border:1px solid #415661;border-radius:5px;background:#1b2833;cursor:pointer}
+#ride-controls details[open]{z-index:10;display:flex;align-items:center;gap:5px;padding:4px;border-radius:6px;background:#162b33}
+#ride-controls details[open]::before{content:'';position:absolute;inset:0;z-index:-1;background:#162b33;border-radius:6px}
+#ride-progress{font:9px ui-monospace,monospace;color:#b6dcd5;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:800px){#ride-controls{top:38px;left:6px;right:6px;max-width:calc(100% - 12px);gap:3px;padding:4px}#ride-controls strong{display:none}#ride-controls label{font-size:0}#ride-controls select,#ride-controls button,#ride-controls summary{min-height:32px;font-size:10px;padding:3px 5px}#ride-controls select{max-width:120px}#ride-progress{display:none}#view-tools{top:124px;right:7px}#scene-caption{display:none}#view-sync{font-size:9px!important}}
+#cockpit-look:not([hidden]){bottom:58px}
+@media(max-width:800px){#cockpit-look:not([hidden]){bottom:56px}#viewport:has(#cockpit-instruments:not([hidden])) #attitude,#viewport:has(#cockpit-instruments:not([hidden])) #view-mode{display:none}}
+
+/* The airport controls share the original header typography and use one row. */
+header{position:relative;z-index:20;height:auto;min-height:88px;flex-wrap:wrap;align-content:center;column-gap:18px;row-gap:2px;padding-top:5px;padding-bottom:5px;background:#0d151d}
+.header-actions{display:none}
+main{height:calc(100vh - 178px)}
+#ride-controls{position:relative;z-index:9;inset:auto;flex:0 0 100%;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;width:100%;max-width:none;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#b4c0c5;font:11px Inter,ui-sans-serif,system-ui,sans-serif}
+#ride-controls label{font:inherit;gap:5px}
+#ride-controls select,#ride-controls button,#ride-controls summary{font:inherit;min-height:28px;padding:4px 8px;border-color:#36454e;border-radius:5px;background:#1b2833;color:#e4eced}
+#ride-controls>label:first-child select{width:190px;max-width:190px}
+#ride-controls>label:nth-child(2) select{width:120px}
+#ride-controls details[open]{display:block;padding:0;background:transparent}
+#ride-controls details[open]::before{display:none}
+#ride-controls summary{list-style:none;cursor:pointer;white-space:nowrap}
+#ride-controls summary::-webkit-details-marker{display:none}
+#ride-controls summary::after{content:'⌄';margin-left:10px;color:#7cdfcb}
+.airport-menu{position:absolute;top:calc(100% + 6px);left:0;width:min(290px,calc(100vw - 24px));max-height:calc(100svh - 115px);overflow:auto;display:grid;gap:9px;padding:12px;background:#101d26f5;border:1px solid #42645e;border-radius:7px;box-shadow:0 14px 30px #0008;color:#d9e8e8}
+.airport-menu label{display:grid!important;grid-template-columns:70px 1fr;align-items:center}
+.airport-menu select{width:100%;max-width:none!important}
+.airport-menu-actions{display:flex;gap:6px}
+.airport-menu-actions button{flex:1}
+#ride-progress{font:10px Inter,ui-sans-serif,system-ui,sans-serif;max-width:none;white-space:normal;color:#a9cbc4}
+#view-tools{top:12px}
+#scene-caption{top:14px}
+@media(max-width:800px){
+ header{height:auto;min-height:80px;padding:6px 10px;column-gap:10px;row-gap:5px}
+ main{height:auto}
+ #ride-controls{inset:auto;max-width:none;gap:5px;padding:0}
+ #ride-controls label{font:10px Inter,ui-sans-serif,system-ui,sans-serif}
+ #ride-controls>label{font-size:0}
+ #ride-controls select,#ride-controls button,#ride-controls summary{min-height:29px;padding:4px 6px;font-size:10px}
+ #ride-controls>label:first-child select{width:min(43vw,170px);max-width:none}
+ #ride-controls>label:nth-child(2) select{width:105px;max-width:none}
+ #airport-ops .airport-menu{left:auto;right:0}
+ #ride-progress{display:block}
+ #scene-caption{display:none}
+ #view-tools{top:46px;right:7px}
+}

@@ -1,0 +1,1547 @@
+{
+  "run_id": "20261103T194858-35a724",
+  "outcome": "airborne attempt ended",
+  "reason": "FX-A sortie: H-1/O-2/O-3 part, X-5 rungs 1.5 and 2.5 m/s",
+  "simulated_seconds": 76.55249999996663,
+  "wall_seconds": 765.6050822999096,
+  "decisions": 751,
+  "left_ground": true,
+  "max_airframe_origin_altitude_m": 5.530823337357273,
+  "max_contact_force_n": 17286.283968476993,
+  "fuel_used_kg": 6.241175702801641,
+  "final": {
+    "t_s": 76.55249999996663,
+    "variant": "phantom-fx",
+    "config_sha256": "547bdca038bc071eb27d08fc32df85e74880e560b82ec92ef03645f2498ef2f2",
+    "body_poses": {
+      "airframe": {
+        "position": [
+          0.21487,
+          -27.49395,
+          0.16115
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "buffer": {
+        "position": [
+          2.01089,
+          -27.51607,
+          0.5973
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "fuel_left": {
+        "position": [
+          0.15402,
+          -27.37317,
+          0.42059
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "fuel_right": {
+        "position": [
+          0.15106,
+          -27.61316,
+          0.42061
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "pod_FL": {
+        "position": [
+          1.76462,
+          -26.26293,
+          0.78488
+        ],
+        "quaternion_wxyz": [
+          0.707135,
+          0.707038,
+          -0.007535,
+          -0.001183
+        ]
+      },
+      "pod_FL_fan": {
+        "position": [
+          1.76462,
+          -26.26293,
+          0.78488
+        ],
+        "quaternion_wxyz": [
+          -0.317906,
+          -0.323505,
+          0.631689,
+          0.628688
+        ]
+      },
+      "pod_FL_wheel": {
+        "position": [
+          1.76462,
+          -26.26293,
+          0.78488
+        ],
+        "quaternion_wxyz": [
+          0.707165,
+          0.707034,
+          -0.003659,
+          0.002692
+        ]
+      },
+      "pod_FR": {
+        "position": [
+          1.7338,
+          -28.76274,
+          0.78504
+        ],
+        "quaternion_wxyz": [
+          0.707052,
+          -0.70712,
+          0.001183,
+          -0.007535
+        ]
+      },
+      "pod_FR_fan": {
+        "position": [
+          1.7338,
+          -28.76274,
+          0.78504
+        ],
+        "quaternion_wxyz": [
+          0.333393,
+          -0.327829,
+          0.623516,
+          -0.626581
+        ]
+      },
+      "pod_FR_wheel": {
+        "position": [
+          1.7338,
+          -28.76274,
+          0.78504
+        ],
+        "quaternion_wxyz": [
+          0.707048,
+          -0.707152,
+          -0.002773,
+          -0.003579
+        ]
+      },
+      "pod_RL": {
+        "position": [
+          -1.36501,
+          -26.22434,
+          0.75676
+        ],
+        "quaternion_wxyz": [
+          0.707136,
+          0.707036,
+          -0.007535,
+          -0.001183
+        ]
+      },
+      "pod_RL_fan": {
+        "position": [
+          -1.36501,
+          -26.22434,
+          0.75676
+        ],
+        "quaternion_wxyz": [
+          -0.529121,
+          -0.524782,
+          -0.469179,
+          -0.47382
+        ]
+      },
+      "pod_RL_wheel": {
+        "position": [
+          -1.36501,
+          -26.22434,
+          0.75676
+        ],
+        "quaternion_wxyz": [
+          0.707167,
+          0.707032,
+          -0.003576,
+          0.002775
+        ]
+      },
+      "pod_RR": {
+        "position": [
+          -1.39584,
+          -28.72415,
+          0.75692
+        ],
+        "quaternion_wxyz": [
+          0.70705,
+          -0.707122,
+          0.001183,
+          -0.007535
+        ]
+      },
+      "pod_RR_fan": {
+        "position": [
+          -1.39584,
+          -28.72415,
+          0.75692
+        ],
+        "quaternion_wxyz": [
+          0.379017,
+          -0.384423,
+          -0.596882,
+          0.593546
+        ]
+      },
+      "pod_RR_wheel": {
+        "position": [
+          -1.39584,
+          -28.72415,
+          0.75692
+        ],
+        "quaternion_wxyz": [
+          0.707046,
+          -0.707153,
+          -0.002681,
+          -0.003671
+        ]
+      },
+      "leg_FL": {
+        "position": [
+          1.32334,
+          -26.97759,
+          -0.05864
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "leg_FL_oleo": {
+        "position": [
+          1.32302,
+          -26.97759,
+          -0.02341
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "leg_FR": {
+        "position": [
+          1.31027,
+          -28.03751,
+          -0.05859
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "leg_FR_oleo": {
+        "position": [
+          1.30995,
+          -28.03751,
+          -0.02341
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "leg_RL": {
+        "position": [
+          -0.95644,
+          -26.94948,
+          -0.07442
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "leg_RL_oleo": {
+        "position": [
+          -0.9569,
+          -26.94947,
+          -0.02345
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "leg_RR": {
+        "position": [
+          -0.96951,
+          -28.0094,
+          -0.07436
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "leg_RR_oleo": {
+        "position": [
+          -0.96997,
+          -28.00939,
+          -0.02345
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "wing_left": {
+        "position": [
+          -0.8457,
+          -27.61982,
+          1.15118
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "pin_left_front_out": {
+        "position": [
+          -0.56099,
+          -27.68433,
+          1.15375
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "pin_left_front_in": {
+        "position": [
+          -0.57245,
+          -28.61426,
+          1.15381
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "flap_left": {
+        "position": [
+          -1.04174,
+          -27.5452,
+          1.14564
+        ],
+        "quaternion_wxyz": [
+          0.99997,
+          -4.4e-05,
+          -0.004667,
+          -0.006164
+        ]
+      },
+      "aileron_left": {
+        "position": [
+          -1.09929,
+          -26.86244,
+          1.14162
+        ],
+        "quaternion_wxyz": [
+          0.99997,
+          -5.1e-05,
+          -0.004586,
+          -0.006164
+        ]
+      },
+      "pin_left_rear_out": {
+        "position": [
+          -1.39599,
+          -26.30393,
+          1.14601
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "pin_left_rear_in": {
+        "position": [
+          -1.40746,
+          -27.23386,
+          1.14607
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "canard_left_fold": {
+        "position": [
+          2.17091,
+          -26.31792,
+          1.12855
+        ],
+        "quaternion_wxyz": [
+          0.711457,
+          -0.003218,
+          -0.003134,
+          0.702715
+        ]
+      },
+      "canard_left": {
+        "position": [
+          2.10906,
+          -26.46716,
+          1.12802
+        ],
+        "quaternion_wxyz": [
+          0.711456,
+          -0.003097,
+          -0.003257,
+          0.702716
+        ]
+      },
+      "hatch_left": {
+        "position": [
+          -0.82801,
+          -26.22844,
+          1.0921
+        ],
+        "quaternion_wxyz": [
+          5.8e-05,
+          0.999971,
+          -0.006165,
+          0.004492
+        ]
+      },
+      "wing_right": {
+        "position": [
+          -0.84121,
+          -27.34186,
+          1.03317
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "pin_right_front_out": {
+        "position": [
+          -0.55499,
+          -27.28439,
+          1.03573
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "pin_right_front_in": {
+        "position": [
+          -0.54353,
+          -26.35446,
+          1.03567
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "flap_right": {
+        "position": [
+          -1.03903,
+          -27.41163,
+          1.02764
+        ],
+        "quaternion_wxyz": [
+          0.99997,
+          -7.8e-05,
+          -0.004667,
+          -0.006166
+        ]
+      },
+      "aileron_right": {
+        "position": [
+          -1.1134,
+          -28.09276,
+          1.0237
+        ],
+        "quaternion_wxyz": [
+          0.99997,
+          -6.9e-05,
+          -0.004586,
+          -0.006166
+        ]
+      },
+      "pin_right_rear_out": {
+        "position": [
+          -1.42379,
+          -28.64378,
+          1.02817
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "pin_right_rear_in": {
+        "position": [
+          -1.41232,
+          -27.71385,
+          1.02811
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      },
+      "canard_right_fold": {
+        "position": [
+          2.14131,
+          -28.71774,
+          1.1287
+        ],
+        "quaternion_wxyz": [
+          0.702738,
+          0.003134,
+          -0.003218,
+          -0.711434
+        ]
+      },
+      "canard_right": {
+        "position": [
+          2.08316,
+          -28.56701,
+          1.12816
+        ],
+        "quaternion_wxyz": [
+          0.702738,
+          0.003011,
+          -0.003339,
+          -0.711435
+        ]
+      },
+      "hatch_right": {
+        "position": [
+          -0.8589,
+          -28.73325,
+          1.09226
+        ],
+        "quaternion_wxyz": [
+          0.000118,
+          0.999971,
+          -0.006165,
+          0.004491
+        ]
+      },
+      "booster_left_rotor": {
+        "position": [
+          -2.07451,
+          -27.06566,
+          0.65053
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -0.000157,
+          -0.004491,
+          -0.006165
+        ]
+      },
+      "booster_right_rotor": {
+        "position": [
+          -2.08438,
+          -27.8656,
+          0.65058
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -0.000157,
+          -0.004491,
+          -0.006165
+        ]
+      },
+      "cabin": {
+        "position": [
+          0.45558,
+          -27.84691,
+          0.71339
+        ],
+        "quaternion_wxyz": [
+          0.999971,
+          -6e-05,
+          -0.004492,
+          -0.006165
+        ]
+      }
+    },
+    "provenance": {
+      "revision": "phantom-fx-a9",
+      "airframe_variant": "phantom-fx",
+      "render_asset": "/assets/phantom-a9.glb",
+      "model_xml_sha256": "35b52d0fad60cf2915bea9a8c9ba376f38329d36ccd2fe6373c9c85ec819df84",
+      "parameter_file_sha256": "cdf325387b873afa915dd8eb62a09a61daf6d55a5388943aff738c90a01ff463",
+      "config_sha256": "547bdca038bc071eb27d08fc32df85e74880e560b82ec92ef03645f2498ef2f2",
+      "wing_cassette_revision": "A9",
+      "ledger_mass_kg": 1888.4724446989992
+    },
+    "events": [
+      {
+        "event": "pti_start",
+        "t_s": 25.007500000003567,
+        "spec": {
+          "axis": "pitch",
+          "type": "step",
+          "amplitude": 0.3,
+          "pulse_s": 4.0,
+          "f0_hz": 0.1,
+          "f1_hz": 2.0,
+          "duration_s": 20.0
+        },
+        "_logged": true
+      },
+      {
+        "event": "pti_stop",
+        "t_s": 29.010000000005615,
+        "reason": "complete",
+        "spec": {
+          "axis": "pitch",
+          "type": "step",
+          "amplitude": 0.3,
+          "pulse_s": 4.0,
+          "f0_hz": 0.1,
+          "f1_hz": 2.0,
+          "duration_s": 20.0
+        },
+        "_logged": true
+      },
+      {
+        "event": "pti_start",
+        "t_s": 32.005000000007136,
+        "spec": {
+          "axis": "roll",
+          "type": "doublet",
+          "amplitude": 0.2,
+          "pulse_s": 1.2,
+          "f0_hz": 0.1,
+          "f1_hz": 2.0,
+          "duration_s": 20.0
+        },
+        "_logged": true
+      },
+      {
+        "event": "pti_stop",
+        "t_s": 34.41000000000495,
+        "reason": "complete",
+        "spec": {
+          "axis": "roll",
+          "type": "doublet",
+          "amplitude": 0.2,
+          "pulse_s": 1.2,
+          "f0_hz": 0.1,
+          "f1_hz": 2.0,
+          "duration_s": 20.0
+        },
+        "_logged": true
+      },
+      {
+        "event": "touchdown",
+        "t_s": 47.9899999999926,
+        "sink_rate_m_s": 0.46838118467004974,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 48.63999999999201,
+        "sink_rate_m_s": 0.12769753081423985,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 52.50999999998849,
+        "sink_rate_m_s": -0.06157709480308633,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 60.68999999998105,
+        "sink_rate_m_s": 1.752291712987387,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 60.979999999980784,
+        "sink_rate_m_s": -0.4965191092193409,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 61.29999999998049,
+        "sink_rate_m_s": 0.2725870666828741,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.34999999997136,
+        "sink_rate_m_s": 2.908630893287204,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.38999999997132,
+        "sink_rate_m_s": 2.190128640082659,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.42999999997129,
+        "sink_rate_m_s": 1.4143943415115083,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.47999999997124,
+        "sink_rate_m_s": 0.5720211929596103,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.5199999999712,
+        "sink_rate_m_s": -0.12043349816396025,
+        "supports": [
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.56999999997116,
+        "sink_rate_m_s": -0.8777281658341008,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 72.48999999997032,
+        "sink_rate_m_s": 1.2717020756056756,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      }
+    ],
+    "phantom": {
+      "joints": {
+        "pod_FL": 1.570779,
+        "pod_FL_fan": 28592.59847,
+        "pod_FL_wheel": 0.010963,
+        "pod_FR": -1.570774,
+        "pod_FR_fan": -28590.659313,
+        "pod_FR_wheel": 0.01119,
+        "pod_RL": 1.570774,
+        "pod_RL_fan": -30993.490544,
+        "pod_RL_wheel": 0.011197,
+        "pod_RR": -1.570779,
+        "pod_RR_fan": 30990.692953,
+        "pod_RR_wheel": 0.010931,
+        "leg_FL": -0.499644,
+        "leg_FL_oleo": 0.035232,
+        "leg_FR": -0.499659,
+        "leg_FR_oleo": 0.03518,
+        "leg_RL": -0.494939,
+        "leg_RL_oleo": 0.050968,
+        "leg_RR": -0.494955,
+        "leg_RR_oleo": 0.050916,
+        "wing_left": -1.369999,
+        "pin_left_front_out": -0.070001,
+        "pin_left_front_in": -0.070001,
+        "flap_left": 0.000352,
+        "aileron_left": 0.00019,
+        "pin_left_rear_out": -0.070001,
+        "pin_left_rear_in": -0.070001,
+        "canard_left_fold": 1.570764,
+        "canard_left": 0.000345,
+        "hatch_left": 3.141595,
+        "wing_right": -1.37,
+        "pin_right_front_out": -0.070001,
+        "pin_right_front_in": -0.070001,
+        "flap_right": 0.000352,
+        "aileron_right": 0.00019,
+        "pin_right_rear_out": -0.070001,
+        "pin_right_rear_in": -0.070001,
+        "canard_right_fold": -1.570765,
+        "canard_right": 0.000345,
+        "hatch_right": 3.141476,
+        "booster_left_rotor": -0.000196,
+        "booster_right_rotor": -0.000196
+      },
+      "fan_rpm": [
+        37.846312493161385,
+        38.04000343500232,
+        36.62325473181143,
+        36.620041430560285
+      ],
+      "wheel_rad_s": [
+        3.9689106049770933e-10,
+        2.602856834968164e-10,
+        3.415643855134971e-10,
+        2.056445525062601e-10
+      ],
+      "wing_state": {
+        "left": "stowed",
+        "right": "stowed"
+      }
+    },
+    "mass": {
+      "mass_kg": 1882.2324964682148,
+      "cg_world_m": [
+        0.05877219651832016,
+        -27.49187053955506,
+        0.7138335924240644
+      ],
+      "cg_body_m": [
+        -0.1511390325161021,
+        0.00011973281525281548,
+        0.5540655128781549
+      ],
+      "inertia_body_kg_m2": [
+        [
+          900.2378603008352,
+          0.17689023063721163,
+          109.34755664728452
+        ],
+        [
+          0.17689023063721293,
+          4144.640009322239,
+          0.07508575114878623
+        ],
+        [
+          109.34755664728453,
+          0.0750857511487863,
+          4853.215759142237
+        ]
+      ]
+    },
+    "propulsors": [
+      {
+        "pod": "FL",
+        "cmd_n": 0.0,
+        "thrust_n": 0.42694428041326027,
+        "torque_nm": 0.07266648532736589,
+        "power_w": 0.28802032744300277,
+        "ram_drag_n": 8.638076130548545e-05,
+        "v_induced": 0.6191704705095077,
+        "ground_factor": 1.0194279826643522,
+        "descending_wake": true,
+        "advance_ratio": -0.00012725821106635707,
+        "motor_torque_nm": 0.0
+      },
+      {
+        "pod": "FR",
+        "cmd_n": 0.0,
+        "thrust_n": 0.4313420214087822,
+        "torque_nm": 0.07341817892285563,
+        "power_w": 0.29248913763565487,
+        "ram_drag_n": 8.652040458798847e-05,
+        "v_induced": 0.6224267189405767,
+        "ground_factor": 1.0194199502951589,
+        "descending_wake": true,
+        "advance_ratio": -0.00016353989702160135,
+        "motor_torque_nm": 0.0
+      },
+      {
+        "pod": "RL",
+        "cmd_n": 0.0,
+        "thrust_n": 0.40021778227202714,
+        "torque_nm": 0.059149551913398025,
+        "power_w": 0.2268655443118086,
+        "ram_drag_n": 8.358138223404299e-05,
+        "v_induced": 0.5205258665721291,
+        "ground_factor": 1.0209294130788078,
+        "descending_wake": false,
+        "advance_ratio": 0.00018621333541566506,
+        "motor_torque_nm": 0.0
+      },
+      {
+        "pod": "RR",
+        "cmd_n": 0.0,
+        "thrust_n": 0.4001632125149982,
+        "torque_nm": 0.05913966622292697,
+        "power_w": 0.22680772512730377,
+        "ram_drag_n": 8.328069914979386e-05,
+        "v_induced": 0.5205257529452954,
+        "ground_factor": 1.020920425311225,
+        "descending_wake": false,
+        "advance_ratio": 0.00014786750311519,
+        "motor_torque_nm": 0.0
+      }
+    ],
+    "boosters": [
+      {
+        "side": "left",
+        "thrust_n": 0.0,
+        "torque_nm": 0.0,
+        "power_w": 0.0,
+        "ram_drag_n": 0.0,
+        "v_induced": 0.0,
+        "ground_factor": 1.0,
+        "descending_wake": false,
+        "advance_ratio": 0.0
+      },
+      {
+        "side": "right",
+        "thrust_n": 0.0,
+        "torque_nm": 0.0,
+        "power_w": 0.0,
+        "ram_drag_n": 0.0,
+        "v_induced": 0.0,
+        "ground_factor": 1.0,
+        "descending_wake": false,
+        "advance_ratio": 0.0
+      }
+    ],
+    "aero": {
+      "force_body_n": [
+        -7.545013816539713e-09,
+        4.693564820559653e-09,
+        -1.3681105466930071e-08
+      ],
+      "moment_body_nm": [
+        -4.9320103854217465e-09,
+        -1.1483039548809346e-08,
+        -7.756205642452925e-09
+      ],
+      "surfaces": [
+        {
+          "name": "wing_left",
+          "alpha_deg": -40.688453289988544,
+          "q_pa": 4.301001718624941e-08,
+          "cl": -0.978816873456422,
+          "cd": 0.8495637814115455,
+          "stall_blend": 0.9999954683699794,
+          "force_n": [
+            -3.005367932963539e-16,
+            -0.0,
+            -6.427949385107874e-14
+          ],
+          "active": true
+        },
+        {
+          "name": "flap_left",
+          "locked": false,
+          "force_n": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "aileron_left",
+          "locked": false,
+          "force_n": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "wing_right",
+          "alpha_deg": 0.0,
+          "q_pa": 0.0,
+          "cl": 0.0,
+          "cd": 0.0,
+          "force_n": [
+            0,
+            0,
+            0
+          ],
+          "active": false
+        },
+        {
+          "name": "canard_left",
+          "alpha_deg": 0.0,
+          "q_pa": 0.0,
+          "cl": 0.0,
+          "cd": 0.0,
+          "force_n": [
+            0,
+            0,
+            0
+          ],
+          "active": false
+        },
+        {
+          "name": "canard_right",
+          "alpha_deg": 0.0,
+          "q_pa": 0.0,
+          "cl": 0.0,
+          "cd": 0.0,
+          "force_n": [
+            0,
+            0,
+            0
+          ],
+          "active": false
+        },
+        {
+          "name": "fin_left",
+          "alpha_deg": 28.915562291527127,
+          "q_pa": 3.391135046016515e-08,
+          "cl": 0.8383076751542206,
+          "cd": 0.4747542288883526,
+          "stall_blend": 0.9993155233926898,
+          "force_n": [
+            -7.319506515575253e-11,
+            6.716397435482283e-09,
+            -1.5506025268101654e-09
+          ],
+          "active": true
+        },
+        {
+          "name": "fin_right",
+          "alpha_deg": 12.700807657328225,
+          "q_pa": 2.7244690410614826e-08,
+          "cl": 0.5242884381946118,
+          "cd": 0.06952404666308999,
+          "stall_blend": 0.23079065487041162,
+          "force_n": [
+            2.727560320383227e-10,
+            -2.950455212319741e-09,
+            -6.811662578652479e-10
+          ],
+          "active": true
+        },
+        {
+          "name": "body",
+          "force_n": [
+            -7.74457448288549e-09,
+            9.276225973971117e-10,
+            -1.1449272402760808e-08
+          ],
+          "cda_m2": [
+            0.6784,
+            3.5618399999999997,
+            10.138000000000002
+          ],
+          "munk_moment": "not modelled"
+        }
+      ],
+      "hinge_moments": {}
+    },
+    "energy": {
+      "generator_w": 134542.99582668673,
+      "generator_available_w": 134542.99582668673,
+      "generator_each_w": [
+        134542.99582668673
+      ],
+      "takeoff_rating_used_s": [
+        68.85999999999832
+      ],
+      "buffer_w": -109042.63597349833,
+      "buffer_soc": 0.7905208920398397,
+      "buffer_temperature_k": 295.8941473701104,
+      "buffer_discharge_limit_w": 1200933.8521400776,
+      "demand_w": 25500.359853188405,
+      "delivered_w": 25500.359853188405,
+      "unmet_w": 0.0,
+      "propulsion_scale": 1.0,
+      "cooling_w": 2000.0,
+      "loop_temperature_k": 322.55429726996135,
+      "motor_temperature_k": [
+        330.29612070073574,
+        330.3538205994285,
+        341.42681649112757,
+        341.53062418644964
+      ],
+      "fuel_flow_kg_s": 0.013454299582668673,
+      "bus_voltage_v": 783.2416713631872,
+      "bus_current_a": 31.875449816485506,
+      "balance_residual_w": 0.0,
+      "totals": {
+        "fuel_kg": 6.241175702797326,
+        "generator_j": 62411757.02797448,
+        "buffer_out_j": 30536801.692994576,
+        "buffer_in_j": 694259.2725556695,
+        "propulsion_j": 90269737.86640526,
+        "unmet_j": 0.0,
+        "losses_j": 0.0,
+        "residual_j": 0.0
+      }
+    },
+    "fcc": {
+      "mode": "attitude_vs",
+      "pilot_moment": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "augmentation_moment": [
+        0.0003837039512676454,
+        -0.010637486071255241,
+        4.8540783565704765e-05
+      ],
+      "moment_demand": [
+        0.0003837039512676454,
+        -0.010637486071255241,
+        4.8540783565704765e-05
+      ],
+      "collective_cmd": 0.0,
+      "collective_applied": 0.0,
+      "vs_cmd": 0.0,
+      "vs_contribution": -0.14179424629953324,
+      "vs_integrator": -3.5404680676638294,
+      "trim_collective_estimate": 0.70438351603388,
+      "trim_front_share": 0.4596999579982697,
+      "pti_axis": null,
+      "pti_value": 0.0,
+      "pod_thrust_cmd": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "saturated": false,
+      "tilt_cmd": [
+        90.0,
+        89.99961167373148,
+        89.99961167373148,
+        90.0
+      ],
+      "aileron_cmd": [
+        0.007674079025352908,
+        -0.007674079025352908
+      ],
+      "canard_cmd": [
+        -0.1595622910688286,
+        -0.1595622910688286
+      ]
+    },
+    "command": {
+      "engine": 1.0,
+      "collective": 0.0,
+      "vertical_speed_m_s": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0,
+      "yaw": 0.0,
+      "stability_mode": "attitude_vs",
+      "pod_tilt_deg": [
+        90.0,
+        90.0,
+        90.0,
+        90.0
+      ],
+      "flap_deg": [
+        0.0,
+        0.0
+      ],
+      "aileron_trim_deg": [
+        0.0,
+        0.0
+      ],
+      "canard_pitch_deg": [
+        0.0,
+        0.0
+      ],
+      "canard_fold": "folded",
+      "booster_throttle": [
+        0.0,
+        0.0
+      ],
+      "wheel_drive": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "brake": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "leg_extension_m": [
+        0.52,
+        0.52,
+        0.52,
+        0.52
+      ],
+      "wing": "hold"
+    },
+    "targets": {
+      "pod_FL": 1.5707963267948966,
+      "pod_FR": -1.570789549222939,
+      "pod_RL": 1.570789549222939,
+      "pod_RR": -1.5707963267948966,
+      "leg_FL": -0.52,
+      "leg_FR": -0.52,
+      "leg_RL": -0.52,
+      "leg_RR": -0.52,
+      "wing_left": -1.37,
+      "pin_left_front_out": -0.07,
+      "pin_left_front_in": -0.07,
+      "flap_left": 0.0,
+      "aileron_left": 0.0,
+      "pin_left_rear_out": -0.07,
+      "pin_left_rear_in": -0.07,
+      "canard_left_fold": 1.5707963267948966,
+      "canard_left": 0.0,
+      "hatch_left": 3.141592653589793,
+      "wing_right": -1.37,
+      "pin_right_front_out": -0.07,
+      "pin_right_front_in": -0.07,
+      "flap_right": 0.0,
+      "aileron_right": 0.0,
+      "pin_right_rear_out": -0.07,
+      "pin_right_rear_in": -0.07,
+      "canard_right_fold": -1.5707963267948966,
+      "canard_right": 0.0,
+      "hatch_right": 3.141592653589793
+    },
+    "fuel_kg": [
+      61.37941214859918,
+      61.37941214859918
+    ],
+    "contact": {
+      "support": [
+        "foot_FL",
+        "foot_FR",
+        "foot_RL",
+        "foot_RR"
+      ],
+      "max_contact_force_n": 17286.283968476993
+    },
+    "faults": [],
+    "flags": [],
+    "crashed": false,
+    "mechanical_energy_j": 13902.521232576632
+  },
+  "mission": {
+    "departure": [
+      13.7,
+      -28.4
+    ],
+    "destination": [
+      -45.0,
+      18.0
+    ],
+    "departure_z_m": 0.0,
+    "destination_z_m": 0.0,
+    "environment": "stage1-valley",
+    "environment_version": "2",
+    "label": "G-3/H-1/O-2 phantom-fx FX-A"
+  },
+  "claim": "Conditional experimental model; not validated VTX performance",
+  "phantom": {
+    "variant": "phantom-fx",
+    "config_sha256": "547bdca038bc071eb27d08fc32df85e74880e560b82ec92ef03645f2498ef2f2",
+    "time_scale": 0.1,
+    "load_state": "FX-A",
+    "mass_start_kg": 1888.4724446989992,
+    "mass_end_kg": 1882.2324964682148,
+    "energy": {
+      "fuel_kg": 6.241175702797326,
+      "generator_j": 62411757.02797448,
+      "buffer_out_j": 30536801.692994576,
+      "buffer_in_j": 694259.2725556695,
+      "propulsion_j": 90269737.86640526,
+      "unmet_j": 0.0,
+      "losses_j": 0.0,
+      "residual_j": 0.0
+    },
+    "events": [
+      {
+        "event": "pti_start",
+        "t_s": 25.007500000003567,
+        "spec": {
+          "axis": "pitch",
+          "type": "step",
+          "amplitude": 0.3,
+          "pulse_s": 4.0,
+          "f0_hz": 0.1,
+          "f1_hz": 2.0,
+          "duration_s": 20.0
+        },
+        "_logged": true
+      },
+      {
+        "event": "pti_stop",
+        "t_s": 29.010000000005615,
+        "reason": "complete",
+        "spec": {
+          "axis": "pitch",
+          "type": "step",
+          "amplitude": 0.3,
+          "pulse_s": 4.0,
+          "f0_hz": 0.1,
+          "f1_hz": 2.0,
+          "duration_s": 20.0
+        },
+        "_logged": true
+      },
+      {
+        "event": "pti_start",
+        "t_s": 32.005000000007136,
+        "spec": {
+          "axis": "roll",
+          "type": "doublet",
+          "amplitude": 0.2,
+          "pulse_s": 1.2,
+          "f0_hz": 0.1,
+          "f1_hz": 2.0,
+          "duration_s": 20.0
+        },
+        "_logged": true
+      },
+      {
+        "event": "pti_stop",
+        "t_s": 34.41000000000495,
+        "reason": "complete",
+        "spec": {
+          "axis": "roll",
+          "type": "doublet",
+          "amplitude": 0.2,
+          "pulse_s": 1.2,
+          "f0_hz": 0.1,
+          "f1_hz": 2.0,
+          "duration_s": 20.0
+        },
+        "_logged": true
+      },
+      {
+        "event": "touchdown",
+        "t_s": 47.9899999999926,
+        "sink_rate_m_s": 0.46838118467004974,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 48.63999999999201,
+        "sink_rate_m_s": 0.12769753081423985,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 52.50999999998849,
+        "sink_rate_m_s": -0.06157709480308633,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 60.68999999998105,
+        "sink_rate_m_s": 1.752291712987387,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 60.979999999980784,
+        "sink_rate_m_s": -0.4965191092193409,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 61.29999999998049,
+        "sink_rate_m_s": 0.2725870666828741,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.34999999997136,
+        "sink_rate_m_s": 2.908630893287204,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.38999999997132,
+        "sink_rate_m_s": 2.190128640082659,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.42999999997129,
+        "sink_rate_m_s": 1.4143943415115083,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.47999999997124,
+        "sink_rate_m_s": 0.5720211929596103,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.5199999999712,
+        "sink_rate_m_s": -0.12043349816396025,
+        "supports": [
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 71.56999999997116,
+        "sink_rate_m_s": -0.8777281658341008,
+        "supports": [
+          "foot_FL",
+          "foot_FR",
+          "foot_RL",
+          "foot_RR"
+        ]
+      },
+      {
+        "event": "touchdown",
+        "t_s": 72.48999999997032,
+        "sink_rate_m_s": 1.2717020756056756,
+        "supports": [
+          "foot_RL",
+          "foot_RR"
+        ]
+      }
+    ],
+    "faults": [],
+    "lease_expired": false,
+    "crash_capture": null,
+    "material_synthetic_assumptions": [
+      "pod fan FM_open and duct sigma",
+      "turbogenerator mass/SFC/spool",
+      "buffer power/energy density",
+      "component masses (ledger)",
+      "wing polars (handover, SYNTHETIC)",
+      "ground effect model"
+    ]
+  }
+}

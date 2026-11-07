@@ -1,0 +1,51 @@
+{
+ "run": "20261103T192918-14ade4",
+ "samples": 11621,
+ "trim_points": [
+  {
+   "t0": 32.12,
+   "t1": 82.53,
+   "height_m": 18.37,
+   "mass_kg": 1729.6,
+   "collective_applied": 0.6474,
+   "thrust_total_n": 16963.0,
+   "T_over_W": 1.0001,
+   "front_share": 0.4572,
+   "elec_power_kw": 1153.8,
+   "P_over_T15": 0.52209,
+   "W_per_N": 68.0,
+   "gef_FL": 1.0,
+   "soc_rate_per_s": -0.000929,
+   "pitch_deg": -2.34,
+   "roll_deg": 0.09,
+   "pil_roll": 0.0,
+   "saturated_frac": 0.0
+  }
+ ],
+ "pti": [],
+ "events": [
+  {
+   "event": "touchdown",
+   "t_s": 112.79999999993366,
+   "sink_rate_m_s": 0.39648504131277146,
+   "supports": [
+    "foot_RL"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 113.12999999993336,
+   "sink_rate_m_s": -0.0563939773683046,
+   "supports": [
+    "foot_FR"
+   ]
+  }
+ ],
+ "soc_start_end": [
+  0.899999,
+  0.780035
+ ],
+ "t_end": 116.21,
+ "max_height_m": 18.5443,
+ "saturation_time_s": 0.0
+}

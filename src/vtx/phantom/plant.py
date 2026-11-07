@@ -216,7 +216,9 @@ class PhantomAircraft:
         self.ring = np.zeros((int(20 / DT), 32)); self.ring_i = 0; self.ring_full = False
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
-        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') else f'{variant}-a10', airframe_variant=variant, render_asset=f'/assets/phantom-{P.cassette_revision.lower()}.glb',
+        render_asset = ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10'
+                        else f'/assets/phantom-{P.cassette_revision.lower()}.glb')
+        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') else f'{variant}-a10', airframe_variant=variant, render_asset=render_asset,
                                model_xml_sha256=hashlib.sha256(self.xml.encode()).hexdigest(), parameter_file_sha256=P.file_sha256,
                                config_sha256=P.config_sha256, wing_cassette_revision=P.tree['geometry_sources']['wing_cassette_revision'],
                                ledger_mass_kg=self.mass_properties()['mass_kg'] if False else None)
@@ -242,7 +244,7 @@ class PhantomAircraft:
                 self.set_q(n, v)
         for k in PODS:
             self.set_q(f'leg_{k}_oleo', 0.0)
-        # Start as a road car: the canards must be physically folded before the first physics step.
+        # Retain the checkpoint road-start canard position.
         if start == 'road':
             for s in WING_SIDES:
                 self.set_q(f'canard_{s}_fold', WING_SIGN[s] * math.pi / 2)
@@ -395,7 +397,11 @@ class PhantomAircraft:
         n = self.rng.normal
         sensed = dict(roll=att['roll'] + n(0, 1e-4), pitch_up=att['pitch_up'] + n(0, 1e-4), yaw=att['yaw_left'],
                       p=w[0] + n(0, 3e-4), q_up=-w[1] + n(0, 3e-4), r_left=w[2] + n(0, 3e-4), vz=float(d.qvel[2]) + n(0, 0.005))
-        led = self.L.mass_properties(None, fuel_kg=list(self.fuel))   # declared mass properties (FCC configuration data)
+        # Compute the controller's balance from the measured joint positions
+        # and current fuel, rather than the ledger's default parked geometry.
+        joint_positions = {name: float(self.joint(name)[0])
+                           for name in self.L.bodies if name in self.jid}
+        led = self.L.mass_properties(joint_positions, fuel_kg=list(self.fuel))
         fan_en = {k: abs(self.joint(f'pod_{k}')[0]) >= math.radians(P['pods.fan_enable_tilt_deg']) for k in PODS}
         avail = {k: self.fan.thrust_max * min(1.0, (self.bus.motor_power_limit(i) / P['pods.motor_power_peak_w']) ** (2 / 3)) for i, k in enumerate(PODS)}
         al = self.alloc = self.fcc.update(float(d.time), sensed, float(sum(self.model.body_mass)), led['cg_m'][0], g, fan_en, avail)
@@ -675,6 +681,7 @@ class PhantomAircraft:
                                  wheel_rad_s=[self.joint(f'pod_{k}_wheel')[1] for k in PODS], wing_state=dict(self.wing_state),
                                  # render-only context for the booster glow / vectoring cowl (no effect on physics)
                                  booster_thrust_max_n=float(self.jet['t0_station_n'] if self.jet else self.booster.thrust_max),
+                                 fan_thrust_max_n=float(self.fan.thrust_max),
                                  booster_engine=(self.jet['kind'] if self.jet else 'edf'),
                                  drs_deg=(math.degrees(self.stab_te_up) if self.p6 else None),
                                  booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg']),

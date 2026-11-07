@@ -2,7 +2,9 @@
 # the Vercel Serverless Function bundle (250 MB unzipped limit).
 # All files remain tracked in Git for local engineering and pytest.
 
-assets/
+# Only exclude the ROOT offline CAD source directory.
+# Unanchored assets/ also excluded public/assets/phantom-a10.glb on Vercel.
+/assets/
 archive/
 refs/
 scratch/
@@ -22,4 +24,5 @@ evidence/source/assembly_repairs*.json
 evidence/source/native_inventory.json
 evidence/r6_clearance_audit.json
 evidence/argon_task01_transmission_tanks.json
-public/assets/airframe-r6.glb
+# Recorded mobile flight archives are GitHub evidence, not Vercel runtime files.
+evidence/phantom/mobile_flights_20261104/

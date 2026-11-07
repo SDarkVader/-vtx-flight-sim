@@ -95,6 +95,12 @@ export const LAYOUT = {
       name: 'VTX Remote / Engineering Apron',
       center: [700, 355],
       size: [340, 205]
+    },
+    {
+      id: 'R6-SOUTH-APRON',
+      name: 'Argon R6 Flight Test Apron',
+      center: [205, -85],
+      size: [60, 55]
     }
   ],
   stands_expanded: [
@@ -104,6 +110,9 @@ export const LAYOUT = {
     { id: 'VTX-STAND-4', name: 'Stand 4 (Terminal Apron)', center: [-210, 285], radius: 14 },
     { id: 'VTX-STAND-5', name: 'Stand 5 (Remote Stand)', center: [590, 330], radius: 14 },
     { id: 'VTX-STAND-6', name: 'Stand 6 (Remote / MRO Stand)', center: [730, 330], radius: 14 },
+    { id: 'R6-STAND-A', name: 'R6 Holding', center: [185, -90], radius: 9 },
+    { id: 'R6-STAND-B', name: 'R6 Teardrop', center: [205, -90], radius: 9 },
+    { id: 'R6-STAND-C', name: 'R6 Go Around', center: [225, -90], radius: 9 },
   ],
 
   taxiways: [ // north-south connectors from runway edge to apron edge

@@ -18,7 +18,7 @@ if errorlevel 1 (
   if errorlevel 1 goto failed
 )
 echo Starting the VTX simulator. Keep this window open.
-.venv\Scripts\python.exe scripts\launch_pc.py
+.venv\Scripts\python.exe scripts\launch_unified.py
 if errorlevel 1 goto failed
 exit /b 0
 :failed

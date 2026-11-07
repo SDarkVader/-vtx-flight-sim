@@ -1,66 +1,75 @@
 # VTX — Vader's Taxis
 
-**A proprietary, physics-driven 3D VTOL flight game in active development.**
+**Build it. Fly it. Break it. Figure out why.**
 
-VTX puts the player in control of an experimental four-fan aircraft in an interactive 3D world. Take off, hover, manoeuvre around terrain and structures, navigate to a chosen destination and attempt a controlled landing. Aircraft movement is produced by the live physics simulation—not by a scripted flight path or a decorative animation.
+VTX is an experimental flight simulation and development game set in the world of Vader's Taxis. Pick an aircraft, set up a test, take control yourself or work with an AI pilot, then use the flight data to decide what to try next.
 
-**Status:** playable experimental prototype / flight-test game, **not a finished commercial release**. The repository is private. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
+The airport is your playground and your test range. You might be working through a careful hover, taking the Phantom down the runway, exploring the terrain, or discovering exactly which part of your latest engineering idea needs another look. Crashes are part of the programme.
 
-## Play the game
+> **In active development:** this is a playable experimental prototype, not a finished game. Aircraft, controls, visuals and flight behaviour are still being built, compared and tuned.
 
-- **Manual flight:** take control of the four independently articulated ducted fans through the browser interface, keyboard inputs and live cockpit instruments.
-- **AI-piloted flight:** connect an AI pilot that receives live observations and issues actual fly-by-wire commands. The pilot must respond to the evolving simulation rather than follow a precomputed route.
-- **Missions and exploration:** choose valid departure and destination positions, fly through the test environment, avoid obstacles and attempt takeoff, navigation and landing.
-- **Real consequences:** mass, gravity, inertia, actuator limits, contact dynamics and collisions affect each flight. Failures and crashes are recorded rather than concealed.
-- **Flight evidence:** inspect telemetry, mission traces, controller actions and post-flight reports to understand what happened.
+## Choose your ride
 
-The 3D environment, visuals, controls and AI-pilot integration are under ongoing development. Some aircraft behaviours and flight scenarios remain uncalibrated or unproven.
+**R6 Argon** — the four-pod aircraft that started the flight-test programme. Explore hovering, directional control and flights between selected points.
 
-## Getting started — Windows development build
+**Phantom A10** — a transforming flight-test vehicle with rotating wheel pods, wings, control surfaces and rear boosters. Try a wheels-down runway start or a vertical configuration, then experiment with the mechanisms and flight controls.
 
-This is a private developer/tester build, not a public download.
+Aircraft variants and configurations are selectable in the cockpit. Each version is a work in progress: a successful flight in one configuration does not establish the behaviour of another.
 
-1. Obtain **written authorisation** from the rights holder and access to the private repository.
-2. Install a supported Python version with the Windows `py` launcher.
-3. Clone the repository and run `launch-windows.bat` from its root.
-4. Allow the first launch to install the packages listed in `requirements.txt`.
-5. Open `http://127.0.0.1:8765/` if it does not open automatically; keep the launcher running.
+## From hangar to flight test
 
-See [live access and manual controls](docs/LIVE_ACCESS.md) for the current keyboard mappings, flight modes and operational limits. Any previously shared hosted Vercel Sandbox URL is temporary and **not** a permanent game service.
+1. Start the simulator and open the cockpit in your browser.
+2. Choose an aircraft and a departure and destination. For the Phantom, select a road or vertical starting configuration; the runway-start button places the departure near the long runway threshold.
+3. Take manual control, inspect the instruments and experiment with the aircraft's controls. The Phantom has separate controls for its pods, legs, wings, canards and other systems.
+4. Fly, drive, hover, land or crash. The physical aircraft responds to the running simulation, including its modelled forces, mass, inertia, actuators and ground contacts.
+5. Inspect the telemetry and flight records. Use what happened to set up the next attempt.
 
-## AI pilots and conversation
+The airport includes terrain, runways, buildings, vehicles, cameras and aircraft presentation. Visual airport traffic has its own scripted behaviour; your physical aircraft is driven by the simulator.
 
-VTX is designed for **actual interaction between human operators, AI pilots and the simulated aircraft**. A connected agent can observe aircraft state, select controls, react to the resulting motion and participate in the flight-test workflow. AI flights are auditable through preserved records.
+## How it works
 
-We have also experimented with conversational operation from a phone through an **external remote-command integration**, including live actuator demonstrations, flight observations and engineering changes. That workflow is experimental; it is **not a claim that a standalone in-game voice-chat feature has shipped**.
+The browser is the cockpit and window into the world. A persistent **Python and MuJoCo** runtime maintains the aircraft state, advances the physics and supplies telemetry to the interface. The 3D model follows that state, and flight controls send commands to the same runtime.
 
-For the active pilot requirements, see the [live fly-by-wire pilot contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md). Scripted paths, replay masquerading as live flight and unearned successful landings are not acceptable substitutes for genuine control.
+The Phantom's wheel animation follows simulated wheel motion. Its wheel-pod and rear-booster glows and trails respond to simulated thrust; the colours are visual effects, not temperature measurements. The aircraft's simulated mass distribution and forces determine its motion—there is no fixed, scripted vehicle rotation point.
 
-## Development status and engineering basis
+Some engineering values are still estimated or provisional. Flight records and test results describe what happened in the simulation; they are evidence for further development, not proof of real-world performance.
 
-The current prototype includes a browser-based interactive flight laboratory, instrumented aircraft dynamics, four independently controllable ducted fans, manual controls, AI control interfaces, contact/collision handling and retained flight evidence. Alternate aircraft configurations and improved world presentation are experimental.
+## Start the Windows development build
 
-The underlying model is a conditional simulation. Its real-world aircraft parameters have **not** all been measured or validated. Recorded launches, airborne flights and collisions must not be confused with reliable autonomous navigation, successful end-to-end missions or real aircraft flightworthiness.
+You need Python and the Windows `py` launcher. From the repository root:
 
-The simulation is built around a 6-DOF Newton–Euler / MuJoCo physics model, with a Python server and browser-based game interface. Modelled forces, torques, mass properties and actuators are intended to drive the rendered motion.
+1. Run `launch-windows.bat`.
+2. On the first run, allow it to create a virtual environment and install the dependencies in `requirements.txt`.
+3. Keep the launcher open and use [http://127.0.0.1:8765/](http://127.0.0.1:8765/) on the same PC.
 
-**Primary project documents:**
+The launcher refuses to replace an existing process on its chosen port. To run an isolated candidate alongside another flight, choose a free port and a separate data directory after installing the dependencies:
 
-- [Engineering physics and research baseline](docs/PHYSICS_AND_RESEARCH_BASELINE.md)
-- [Live flight interface and keyboard controls](docs/LIVE_ACCESS.md)
-- [AI pilot operating contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md)
-- [Game and pilot development mission](COLIN_MISSION.md)
-- [Experiment findings](evidence/EXPERIMENT_REPORT.md)
-- [Flight evidence and recorded tests](evidence/)
+```powershell
+.venv\Scripts\python.exe scripts\launch_unified.py --port 18901 --data-root .\my-test-data
+```
 
-The original aircraft concept and source provenance are documented in the engineering baseline; externally sourced models and reference materials do not automatically become VTX-owned assets. VTX is separate from *The Node* project.
+Then open [http://127.0.0.1:18901/](http://127.0.0.1:18901/). Localhost addresses refer to the device opening them. Authenticated remote and mobile access to the authoritative runtime remains development work; the current launcher listens on network interfaces, so use it only on a trusted network.
 
-## Ownership, licensing and commercial enquiries
+See [live access and manual controls](docs/LIVE_ACCESS.md) for control details. A hosted preview becoming available does not by itself mean it is connected to a persistent physics runtime.
 
-**Copyright © 2026 Steven Dark (SDarkVader). All rights reserved.**
+## AI pilots
 
-VTX is **proprietary software and game content, not open source**. No permission is granted to use, run, reproduce, copy, modify, adapt, redistribute, publish, host, sublicense, sell, commercially exploit or train models on original VTX content without prior express written authorisation from the relevant rights holder, subject to non-excludable legal rights.
+VTX includes pilot interfaces for sending observations and commands to the live simulation. The intended experience is to fly alongside a conversational AI pilot, hand over authority and review what happened together.
 
-Access to this private repository is not itself a licence. For commercial licensing, collaboration, testing or other permissions, contact the owner via [GitHub](https://github.com/SDarkVader).
+Pilot handover, reconnect and fallback behaviour, conversational voice, persistent sessions and reliable remote operation still need end-to-end development and testing. Existing voice-command experiments should not be taken as a finished conversational pilot.
 
-Third-party dependencies and externally sourced materials remain subject to **their own licences and rights**. See the full [proprietary licence notice](LICENSE). The game is not suitable for operating real aircraft or for safety-critical engineering use.
+## Currently in development
+
+- **One connected world:** bring the airport, models, physical flight, cockpit and engineering workspace together without losing existing features.
+- **Aircraft and engineering:** reconcile R6 and Phantom configurations, geometry, moving mechanisms, mass and centre of gravity, propulsion, aerodynamics and control response against available evidence.
+- **Testing and records:** run experiments against the selected physics configuration, compare runs and preserve telemetry, pilot summaries and engineering findings. Candidate failure-reset handling is being tested.
+- **Flight experience:** improve controls, cameras, visual effects, takeoff and landing behaviour, and transitions between road and vertical configurations.
+- **AI and access:** develop pilot continuity, authority handover, conversation, authentication and reliable PC/mobile access.
+
+See the [integration plan and source-of-truth comparison](INTEGRATION_PLAN_20261107.md), [physics and research baseline](docs/PHYSICS_AND_RESEARCH_BASELINE.md), [pilot contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md) and [flight evidence](evidence/) for the engineering detail and current limits.
+
+## Ownership and licensing
+
+Copyright © 2026 Steven Dark (SDarkVader). **All rights reserved.** VTX is proprietary software and game content, not open source. Access to this repository does not grant permission to use, run, reproduce, modify, redistribute, host, sell or otherwise exploit original VTX content without prior express written authorisation from the relevant rights holder, subject to non-excludable legal rights. See [LICENSE](LICENSE).
+
+Third-party dependencies and externally sourced materials remain subject to their own licences and rights. For permission, collaboration or commercial enquiries, contact [SDarkVader on GitHub](https://github.com/SDarkVader).

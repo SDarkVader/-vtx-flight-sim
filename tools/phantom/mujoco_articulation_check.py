@@ -19,9 +19,11 @@ import mujoco
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
-FRAG = ROOT / "evidence" / "phantom" / "a9_mujoco_fragment.xml"
-HAND = ROOT / "evidence" / "phantom" / "a9_handover.json"
-OUT = ROOT / "evidence" / "phantom" / "a9_mujoco_check.json"
+import sys
+_REV = (sys.argv[sys.argv.index("--rev") + 1] if "--rev" in sys.argv else "a9").lower()   # default A9 unchanged
+FRAG = ROOT / "evidence" / "phantom" / f"{_REV}_mujoco_fragment.xml"
+HAND = ROOT / "evidence" / "phantom" / f"{_REV}_handover.json"
+OUT = ROOT / "evidence" / "phantom" / f"{_REV}_mujoco_check.json"
 
 # actuator caps (N or N m) and rates (m/s or deg/s) from the handover control limits
 CAPS = {
@@ -40,7 +42,7 @@ def cap_for(name):
 
 def build_model():
     frag = FRAG.read_text()
-    xml = f"""<mujoco model="phantom_a9_articulation_check">
+    xml = f"""<mujoco model="phantom_{_REV}_articulation_check">
   <compiler angle="degree" inertiafromgeom="false"/>
   <option timestep="0.001" gravity="0 0 -9.81" integrator="implicitfast"/>
   <worldbody>

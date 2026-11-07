@@ -3,7 +3,7 @@
 import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-const load=async f=>import('data:text/javascript;base64,'+Buffer.from(await readFile(new URL('../public/'+f,import.meta.url),'utf8')).toString('base64'));
+const load=async f=>{let source=await readFile(new URL('../public/'+f,import.meta.url),'utf8'); if(f==='phantom-controls.js'){const voice=await readFile(new URL('../public/voice-pilot.js',import.meta.url),'utf8'); source=source.replace('./voice-pilot.js?v=1','data:text/javascript;base64,'+Buffer.from(voice).toString('base64'));} return import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));};
 const {heartbeatDue}=await load('phantom-controls.js');
 const {cockpitToBody}=await load('tilt-direction.js');
 const view={active:true,paused:false,authority:'manual',run_id:'r1'};
@@ -11,9 +11,9 @@ const view={active:true,paused:false,authority:'manual',run_id:'r1'};
 test('an open panel that the operator never touched sends nothing',()=>{
   for(let beat=0;beat<50;beat++)assert.equal(heartbeatDue({engaged:false,pending:false,view,dirty:true,beat,engagedRun:'r1'}),false);
 });
-test('an engaged panel heartbeats only for its own run and manual authority',()=>{
+test('an engaged panel sends changes only for its own run and manual authority',()=>{
   assert.equal(heartbeatDue({engaged:true,pending:false,view,dirty:true,beat:1,engagedRun:'r1'}),true);
-  assert.equal(heartbeatDue({engaged:true,pending:false,view,dirty:false,beat:10,engagedRun:'r1'}),true);
+  assert.equal(heartbeatDue({engaged:true,pending:false,view,dirty:false,beat:10,engagedRun:'r1'}),false);
   assert.equal(heartbeatDue({engaged:true,pending:false,view,dirty:false,beat:3,engagedRun:'r1'}),false);
   assert.equal(heartbeatDue({engaged:true,pending:false,view:{...view,run_id:'r2'},dirty:true,beat:1,engagedRun:'r1'}),false);
   assert.equal(heartbeatDue({engaged:true,pending:false,view:{...view,authority:'colin'},dirty:true,beat:1,engagedRun:'r1'}),false);

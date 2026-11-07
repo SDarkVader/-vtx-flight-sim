@@ -1,0 +1,114 @@
+{
+ "run": "20261103T144853-5e8e48",
+ "samples": 8028,
+ "trim_points": [
+  {
+   "t0": 59.51,
+   "t1": 64.4,
+   "height_m": 1.9,
+   "mass_kg": 1730.9,
+   "collective_applied": 0.6456,
+   "thrust_total_n": 16916.0,
+   "T_over_W": 0.9966,
+   "front_share": 0.4581,
+   "elec_power_kw": 1234.5,
+   "P_over_T15": 0.56099,
+   "W_per_N": 72.97,
+   "gef_FL": 1.0019,
+   "soc_rate_per_s": -0.001225,
+   "pitch_deg": -0.01,
+   "roll_deg": -1.88,
+   "pil_roll": 0.0,
+   "saturated_frac": 0.0
+  }
+ ],
+ "pti": [
+  {
+   "t0": 40.52,
+   "axis": "roll",
+   "type": "step",
+   "amplitude": 0.2,
+   "pulse_s": 1.0,
+   "peak_rate": 1.08,
+   "peak_rate_units": "deg/s",
+   "peak_accel": 8.6,
+   "delay_10pct_s": 0.043,
+   "peak_attitude_change_deg": 0.29,
+   "commanded_attitude_deg": 3.0,
+   "steady_attitude_deg": 0.19,
+   "steady_error_frac": 0.937,
+   "time_constant_63pct_s": 0.213,
+   "off_axis_ratio": 0.302
+  },
+  {
+   "t0": 43.62,
+   "axis": "pitch",
+   "type": "step",
+   "amplitude": 0.3,
+   "pulse_s": 1.0,
+   "peak_rate": 0.37,
+   "peak_rate_units": "deg/s",
+   "peak_accel": 3.2,
+   "delay_10pct_s": 0.038,
+   "peak_attitude_change_deg": 0.07,
+   "commanded_attitude_deg": 3.0,
+   "steady_attitude_deg": 0.05,
+   "steady_error_frac": 0.983,
+   "time_constant_63pct_s": 0.178,
+   "off_axis_ratio": 0.475
+  },
+  {
+   "t0": 46.71,
+   "axis": "yaw",
+   "type": "step",
+   "amplitude": 0.25,
+   "pulse_s": 2.0,
+   "peak_rate": 0.01,
+   "peak_rate_units": "deg/s",
+   "peak_accel": 0.7,
+   "delay_10pct_s": 0.025
+  }
+ ],
+ "events": [
+  {
+   "event": "touchdown",
+   "t_s": 53.50999999998758,
+   "sink_rate_m_s": -0.11434972118721971,
+   "supports": [
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 69.82999999997274,
+   "sink_rate_m_s": 0.24033516957281392,
+   "supports": [
+    "foot_FR",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 70.5399999999721,
+   "sink_rate_m_s": 0.07336949130630961,
+   "supports": [
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 70.58999999997205,
+   "sink_rate_m_s": 0.07228592486261784,
+   "supports": [
+    "foot_RR"
+   ]
+  }
+ ],
+ "soc_start_end": [
+  0.899999,
+  0.869906
+ ],
+ "t_end": 80.28,
+ "max_height_m": 1.95876,
+ "saturation_time_s": 0.0
+}

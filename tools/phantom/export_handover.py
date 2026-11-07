@@ -22,6 +22,8 @@ from mathutils import Vector, Matrix
 argv = sys.argv[sys.argv.index('--') + 1:]
 OUT_JSON, OUT_XML = Path(argv[0]).resolve(), Path(argv[1]).resolve()
 SC = bpy.context.scene
+P = SC.get('vtx_revision_tag', 'A9')          # revision prefix of the built parts (A9 default; A10 sets it)
+ROOT = Path(__file__).resolve().parents[2]
 REF, STOW = 240, 1
 DENSITY = {'CFRP': 1580.0, 'Ti': 4430.0, 'steel': 7800.0, 'actuator': 2700.0, 'duct': 1580.0}
 
@@ -102,16 +104,16 @@ def collect(frame):
         if ob.type != 'MESH':
             continue
         b = body_of(ob)
-        if b is None and not ob.name.startswith('A9_'):
+        if b is None and not ob.name.startswith(P + '_'):
             continue
-        b = b or 'chassis_A9_fixed_parts'
+        b = b or f'chassis_{P}_fixed_parts'
         V, Cm, I = mass_props(ob)
         if V <= 0:
             continue
         rho, mat = density_of(ob)
         if 'mass_kg' in ob.keys():
             m, basis = float(ob['mass_kg']), 'property (DERIVED/SYNTHETIC)'
-        elif ob.name.startswith('A9_'):
+        elif ob.name.startswith(P + '_'):
             m, basis = V * rho, f'DERIVED volume x {mat} density'
         else:
             m, basis = V * rho, f'A8 PLACEHOLDER: solid CAD volume x {mat} density, not a mass estimate'
@@ -173,7 +175,7 @@ sites = {}
 SC.frame_set(REF)
 for side, s in (('R', 1), ('L', -1)):
     for st, tag in ((1.17, 'OUT'), (0.24, 'IN')):
-        j = bpy.data.objects.get(f'A9_JOINT_WING_{side}_LOCK_REAR_{tag}')
+        j = bpy.data.objects.get(f'{P}_JOINT_WING_{side}_LOCK_REAR_{tag}')
         if j:
             sites[f'lock_station_{side}_{tag}'] = list(j.matrix_world.translation)
 aero = dict(
@@ -185,6 +187,32 @@ aero = dict(
     canard=dict(area_each_m2=0.278, x_pivot_m=1.80, y_root_m=1.26, y_tip_m=1.84, z_m=0.95, section='NACA 0009', CLalpha_per_rad=3.0,
                 pivot_frac_mac=0.25),
 )
+control_limits = dict(
+        wing_slide=dict(stroke_m=1.37, max_speed_m_s=0.30, stall_force_N=2500, transit_q_limit_Pa=600, sequence='hatch open -> slide -> 4 pins -> locked'),
+        locks=dict(pins_per_wing=4, engage_stroke_m=0.07, engage_time_s=0.5, ultimate_pin_force_N=54000, sensor='2 proximity sensors per pin'),
+        aileron=dict(travel_deg=[-20, 20], rate_deg_s=80, stall_torque_Nm=72, power_peak_W=78, min_stiffness_Nm_rad=6929),
+        flap=dict(travel_deg=[-5, 35], rate_deg_s=15, stall_torque_Nm=60, min_stiffness_Nm_rad=27276, max_speed_m_s=75),
+        canard_pitch=dict(travel_deg=[-20, 25], rate_deg_s=40, stall_torque_Nm=420),
+        canard_fold=dict(travel_deg=90, rate_deg_s=60, lock='shoot bolt'),
+        hatch=dict(travel_deg=180, rate_deg_s=180, latch_load_at_VD_N=2105))
+if P != 'A9':   # later revisions: aero and limits from the loads case + measured heights, same keys as A9
+    case = json.loads((ROOT / 'evidence/phantom/wing_loads_results.json').read_text())['cases'][SC['handover_loads_case']]
+    hts = json.loads((ROOT / SC['handover_heights_file']).read_text())
+    pl, cs = case['planform'], case['control_surfaces']
+    w = aero['wing']
+    w.update(S_ref_m2=round(pl['S_ref'], 3), S_exposed_each_m2=round(pl['S_exposed_both'] / 2, 3), span_m=round(pl['span'], 3),
+             mac_m=round(pl['mac'], 3), x_ac_mac_m=round(pl['x_ac_mac'], 3), y_mac_m=round(pl['y_mac'], 3),
+             ac_height_R_m=round(hts['root_chord_plane_R_m'], 4), ac_height_L_m=round(hts['root_chord_plane_L_m'], 4),
+             basis=f"DERIVED/SYNTHETIC, wing_loads.py {SC['handover_loads_case']}; heights MEASURED-K")
+    aero['aileron']['area_each_m2'] = round(cs['aileron']['geometry']['area'], 4)
+    aero['flap']['area_each_m2'] = round(cs['flap']['geometry']['area'], 4)
+    control_limits['wing_slide']['stroke_m'] = SC['handover_stroke_m']
+    control_limits['locks']['ultimate_pin_force_N'] = round(case['root_joint']['options']['C_spanwise_tongue_couple']['max_pin_force_N'], -2)
+    control_limits['aileron'].update(stall_torque_Nm=round(cs['aileron']['actuator_stall_torque_Nm']),
+                                     power_peak_W=round(cs['aileron']['elec_power_peak_W']),
+                                     min_stiffness_Nm_rad=round(cs['aileron']['actuator_min_stiffness_Nm_per_rad']))
+    control_limits['flap'].update(stall_torque_Nm=round(cs['flap']['actuator_stall_torque_Nm']),
+                                  min_stiffness_Nm_rad=round(cs['flap']['actuator_min_stiffness_Nm_per_rad']))
 handover = dict(
     schema='phantom-a9-handover-0.1', source_file=bpy.data.filepath, reference_frame=REF, stowed_frame=STOW,
     frame_convention='Blender model: X forward, Y to A8-RIGHT side (+Y), Z up, right-handed, metres. Use the same '
@@ -192,14 +220,7 @@ handover = dict(
     status='Kinematic CAD + DERIVED/SYNTHETIC mass. Chassis (A8 hull, tub, pods, occupants, powertrain) mass is NOT included.',
     bodies_reference_pose=ref, body_coms_stowed_pose={k: v['com_world_m'] for k, v in stow.items()},
     joints=joints, sites=sites, aero_surfaces=aero,
-    control_limits=dict(
-        wing_slide=dict(stroke_m=1.37, max_speed_m_s=0.30, stall_force_N=2500, transit_q_limit_Pa=600, sequence='hatch open -> slide -> 4 pins -> locked'),
-        locks=dict(pins_per_wing=4, engage_stroke_m=0.07, engage_time_s=0.5, ultimate_pin_force_N=54000, sensor='2 proximity sensors per pin'),
-        aileron=dict(travel_deg=[-20, 20], rate_deg_s=80, stall_torque_Nm=72, power_peak_W=78, min_stiffness_Nm_rad=6929),
-        flap=dict(travel_deg=[-5, 35], rate_deg_s=15, stall_torque_Nm=60, min_stiffness_Nm_rad=27276, max_speed_m_s=75),
-        canard_pitch=dict(travel_deg=[-20, 25], rate_deg_s=40, stall_torque_Nm=420),
-        canard_fold=dict(travel_deg=90, rate_deg_s=60, lock='shoot bolt'),
-        hatch=dict(travel_deg=180, rate_deg_s=180, latch_load_at_VD_N=2105)),
+    control_limits=control_limits,
 )
 OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
 OUT_JSON.write_text(json.dumps(handover, indent=1, default=float))
@@ -243,11 +264,11 @@ def body_xml(j, parent_anchor, depth):
     return lines
 
 
-xml = ['<!-- VTX Phantom A9 articulation fragment (generated by tools/phantom/export_handover.py).',
+xml = [f'<!-- VTX Phantom {P} articulation fragment (generated by tools/phantom/export_handover.py).',
        '     Insert inside the chassis body; positions are relative to the chassis origin (model origin).',
        '     Angles in degrees (compiler angle="degree"). Mass/inertia DERIVED/SYNTHETIC; chassis not included. -->']
 for j in by_parent.get('chassis', []):
-    if j['name'].startswith('A9_'):
+    if j['name'].startswith(P + '_'):
         xml += body_xml(j, [0, 0, 0], 0)
 OUT_XML.write_text('\n'.join(xml) + '\n')
 print('HANDOVER', len(ref), 'bodies', len(joints), 'joints ->', OUT_JSON.name, OUT_XML.name)
