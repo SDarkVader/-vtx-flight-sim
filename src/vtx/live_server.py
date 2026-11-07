@@ -916,8 +916,16 @@ async def model_preview(request:dict):
     if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before changing vehicles')
     if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.get('airframe_variant')!='r6':
         raise HTTPException(409,'This cockpit is pinned to R6')
-    try:selection=Mission(airframe_variant=request.get('airframe_variant'))
+    try:selection=Mission(airframe_variant=request.get('airframe_variant'), departure=request.get('departure',[0,0]), phantom={'start_configuration': request.get('start_configuration','vtol')})
     except ValidationError as e:raise HTTPException(422,str(e))
+    point=MapPoint(*selection.departure)
+    if phantom_live.is_phantom_variant(selection.airframe_variant):
+        from .phantom.mission import validate_phantom
+        verdict=validate_phantom(lab.world,point,selection.airframe_variant)
+        if not verdict['ok']:raise HTTPException(422,verdict['reason'])
+    else:
+        verdict=lab.world.validate(point,'departure')
+        if not verdict.valid:raise HTTPException(422,verdict.reason)
     def build():
         if phantom_live.is_phantom_variant(selection.airframe_variant):
             aircraft=phantom_live.make_aircraft(lab.world,selection)
@@ -926,7 +934,7 @@ async def model_preview(request:dict):
                               fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
                               engine_power_limit_kw=selection.engine_power_limit_kw,
                               atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
-        aircraft.spawn(0,0,lab.world.surface_z(0,0))
+        aircraft.spawn(*selection.departure,lab.world.surface_z(*selection.departure))
         return aircraft
     aircraft=await asyncio.to_thread(build)
     if lab.active:raise HTTPException(409,'A sortie started while the inspection model was loading')

@@ -62,7 +62,7 @@ document.getElementById('model-choice-cancel').addEventListener('click', () => d
 async function applyPreview(variant) {
   const response = await fetch('/api/model-preview', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ airframe_variant: variant }),
+    body: JSON.stringify({ airframe_variant: variant, start_configuration: document.getElementById('phantom-start').value, departure: document.getElementById('dep').value.split(',').map(Number) }),
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.detail || `HTTP ${response.status}`);
@@ -99,3 +99,19 @@ airframe.addEventListener('change', async () => {
 });
 // The existing LOWER FRAME selector is the sole vehicle selector.
 
+
+// Keep idle inspection in the selected physical starting configuration.
+document.getElementById('phantom-start').addEventListener('change', async () => {
+  if (!airframe.value.startsWith('phantom') || airframe.disabled) return;
+  const selector = document.getElementById('phantom-start');
+  selector.disabled = true;
+  try { await applyPreview(airframe.value); }
+  catch (error) { status.textContent = error.message; }
+  finally { selector.disabled = false; }
+});
+
+document.addEventListener('vtx-preview-start', async () => {
+  if (airframe.disabled) return;
+  try { await applyPreview(airframe.value); }
+  catch (error) { document.getElementById('validation').textContent = error.message; }
+});

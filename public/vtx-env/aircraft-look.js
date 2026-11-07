@@ -50,7 +50,7 @@ function paintDuct(geo) {
   geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
 }
 
-export function enhanceAircraft(root, envTexture) {
+export function enhanceAircraft(root, envTexture, {phantom = false} = {}) {
   const cache = new Map(), replaced = new Set(), fx = { rotorDiscs: [], strobes: [], landingLights: [] };
   const make = (key, fn) => { if (!cache.has(key)) cache.set(key, fn()); return cache.get(key); };
   const phys = (o) => new THREE.MeshPhysicalMaterial({ side: THREE.DoubleSide, envMap: envTexture, ...o });
@@ -337,7 +337,7 @@ export function enhanceAircraft(root, envTexture) {
   if (sub('nacelle1')) lamp(sub('nacelle1'), '#ff2211', 1.23, 0, .3);
   if (sub('nacelle3')) lamp(sub('nacelle3'), '#11ff44', -1.23, 0, .3);
   if (sub('nacelle2')) fx.strobes.push(lamp(sub('nacelle2'), '#ffffff', 0, 1.23, .3, .09));
-  if (sub('airframe')) fx.strobes.push(lamp(sub('airframe'), '#ff2211', 0, 0, .08, .09)); // belly beacon
+  if (!phantom && sub('airframe')) fx.strobes.push(lamp(sub('airframe'), '#ff2211', 0, 0, .08, .09)); // belly beacon
 
   // Cyan glowing inner duct aerodynamic rings (matching VTX specification diagram)
   const ductRingMat = new THREE.MeshStandardMaterial({

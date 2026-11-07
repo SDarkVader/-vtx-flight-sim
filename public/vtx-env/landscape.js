@@ -121,7 +121,7 @@ export function makeSkyline(heightAt) {
 }
 
 // ---- far forest (outside the physical area; visual only) -------------------------------------
-export function makeFarForest(heightAt, count = 1700) {
+export function makeFarForest(heightAt, count = 1700, physicalHalf = 500) {
   const r = rng(515), crown = mergeGeometries([
     new THREE.ConeGeometry(7, 14, 7).rotateX(Math.PI / 2).translate(0, 0, 8),
     new THREE.ConeGeometry(5.2, 12, 7).rotateX(Math.PI / 2).translate(0, 0, 15),
@@ -130,7 +130,7 @@ export function makeFarForest(heightAt, count = 1700) {
   const mesh = new THREE.InstancedMesh(crown, new THREE.MeshStandardMaterial({ color: '#304832', roughness: 1 }), count), m = new THREE.Matrix4(), col = new THREE.Color();
   let n = 0;
   while (n < count) {
-    const th = r() * Math.PI * 2, d = 40 + Math.pow(r(), .8) * 1500, E = 500, mx = Math.max(Math.abs(Math.cos(th)), Math.abs(Math.sin(th)));
+    const th = r() * Math.PI * 2, d = 40 + Math.pow(r(), .8) * 1500, E = physicalHalf, mx = Math.max(Math.abs(Math.cos(th)), Math.abs(Math.sin(th)));
     const x = (E / mx + d) * Math.cos(th), y = (E / mx + d) * Math.sin(th);
     if (fbm(x / 140, y / 140) < .48) continue;                      // forest patches, not a uniform carpet
     if (y > 1100 && Math.abs(x) < 1300) continue;                   // keep the town clear

@@ -2,6 +2,7 @@
 import asyncio
 import urllib.request
 import urllib.error
+from contextlib import asynccontextmanager
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.routing import APIRoute
@@ -30,3 +31,15 @@ async def dashboard_data(request: Request):
 
 # Register ahead of the root static-file mount.
 app.router.routes.insert(0, APIRoute("/api/data", dashboard_data, methods=["GET","PUT"]))
+
+# Fresh idle startup only; never replace an active or recoverable flight.
+_original_lifespan = app.router.lifespan_context
+@asynccontextmanager
+async def _dashboard_lifespan(application):
+    async with _original_lifespan(application):
+        from vtx.live_server import get_lab, model_preview
+        lab = get_lab()
+        if not lab.active and not lab.run_id and not lab.recovery_blocked:
+            await model_preview({'airframe_variant':'phantom-fx', 'start_configuration':'road', 'departure':[-700,0]})
+        yield
+app.router.lifespan_context = _dashboard_lifespan

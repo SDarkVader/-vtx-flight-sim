@@ -14,10 +14,10 @@ import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
 import {buildAirfield} from './vtx-env/airfield.js?v=6';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
-import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=8';
+import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=phantom-beacon-20261107';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=2';
+import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=airport-scale-20261107';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=4';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
@@ -45,7 +45,7 @@ function setMissionOptions(variant){
 }
 setMissionOptions($('airframe').value);
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
-let departure=[0,0],destination=[-50,20],track=[],lastDecision='',lastRun=null;
+let departure=[-700,0],destination=[-50,20],track=[],lastDecision='',lastRun=null;
 const bodyNodes={},pitchMeshes=[];
 const rotorSpinAxis=new THREE.Vector3(0,0,1),rotorSpinQ=new THREE.Quaternion();
 let latestTruthReceivedMs=0,lastHudUpdateMs=0,panelWasStale=false;
@@ -207,7 +207,7 @@ function buildWorld(w){
  }
  // Ground uses the same heightfield samples as the physics terrain; the distant landscape lies outside the +/-500 m test area.
  scene.add(buildTerrain(w));
- const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,quality.forest));const ground=createGround(w,hills.mesh);
+ const hills=makeHills(w);scene.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,quality.forest,w.half_m));const ground=createGround(w,hills.mesh);
  const groundZ=(x,y)=>Math.max(Math.abs(x),Math.abs(y))<=w.half_m?surfaceZ(x,y):ground.heightAt(x,y);
  // Buildings are dressed onto the physical obstacle boxes; airfield markings are flush paint.
  environment.buildings=buildBuildings(scene,w,{ppm:quality.facadePpm,quality});buildAirfield(scene,{ppm:quality.airfieldPpm,quality,world:w});buildTrees(scene,w,{quality});buildForecourt(scene,w);environment.volcano=buildVolcanoBasement(scene,w);environment.serviceRoads=buildServiceRoads(scene,w,groundZ);
@@ -229,6 +229,7 @@ const VISUAL_ASSET={'/assets/phantom-a10.glb':'/assets/phantom-a10-blendstra-81c
 function visualAsset(a){return a&&!new URLSearchParams(location.search).has('cad')?(VISUAL_ASSET[a]||a):a;}
 function loadAirframe(asset){
  if(asset===loadedAsset||performance.now()<assetRetryAfter)return;loadedAsset=asset;
+ modelReady=false;if(model)model.visible=false;
  $('loading').hidden=false;$('loading').textContent='Loading physical revision…';
  new GLTFLoader().load(asset+(asset.includes('?')?'&':'?')+'v=20261106-zup-pose-bound-1',async g=>{
  if(asset!==loadedAsset){disposeModel(g.scene);return;}
@@ -243,10 +244,10 @@ function loadAirframe(asset){
   model.rotation.x=Math.PI/2;
   const visualBody=new THREE.Group();visualBody.name='airframe';visualBody.userData.visualPoseBinding='mujoco-free-body';visualBody.add(model);model=visualBody;
  }
- modelReady=false;scene.add(model);if(!quality.glow)model.traverse(n=>{if(n.isLight)n.visible=false;});model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
+ modelReady=false;model.visible=false;scene.add(model);if(!quality.glow)model.traverse(n=>{if(n.isLight)n.visible=false;});model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
  // Blender exports empty groups as Object3D or Group depending on loader.
  for(const name of ['airframe','cabin',...Array.from({length:4},(_,i)=>`nacelle${i+1}`),...Array.from({length:4},(_,i)=>`rotor${i+1}`),...Array.from({length:6},(_,i)=>`gear${i+1}`),...Array.from({length:4},(_,i)=>`shaft${i+1}`)]){const n=model.getObjectByName(name);if(n)bodyNodes[name]=n;}
-  aircraftFx=enhanceAircraft(model,scene.environment);phantomRig=asset.includes('phantom')?attachPhantom(model):null;
+  aircraftFx=enhanceAircraft(model,scene.environment,{phantom:asset.includes('phantom')});phantomRig=asset.includes('phantom')?attachPhantom(model):null;
  aircraftFx?.setCockpitMode?.(cameraMode==='cockpit');aircraftFx?.updateAvionics?.(last?.observation);
  setCockpitVisibility(model,cameraMode==='cockpit');
  // Display-only batching retains every triangle and the source IDs; the mass
@@ -319,7 +320,26 @@ const onMap=async(event,canvas)=>{
   }
   await choosePoint([Math.round(x*10)/10,Math.round(y*10)/10]);
 };
-async function choosePoint(p){const verdict=await api(`/api/validate?x=${p[0]}&y=${p[1]}`);$('validation').textContent=`${pick.toUpperCase()} (${p.join(', ')}): ${verdict.reason}`;$('large-validation').textContent=$('validation').textContent;if(pick==='a'){if(!verdict.valid){toast(verdict.reason);return;}departure=p;$('dep').value=p.join(', ');}else{if(last?.active){const result=await api('/api/destination',{run_id:last.run_id,destination:p});toast(result.landing_valid?'Target B changed in flight':'Target B changed; landing clearance not certified');}else if(Math.max(...p.map(Math.abs))>world.half_m-8){toast('Outside surveyed map');return;}destination=p;$('dest').value=p.join(', ');}updateMarkers();drawMaps();}
+async function choosePoint(p){
+ const variant=$('airframe').value;
+ const verdict=await api(`/api/validate?x=${p[0]}&y=${p[1]}&variant=${encodeURIComponent(variant)}`);
+ const valid=verdict.valid ?? verdict.ok;
+ $('validation').textContent=`${pick.toUpperCase()} (${p.join(', ')}): ${verdict.reason}`;
+ $('large-validation').textContent=$('validation').textContent;
+ if(pick==='a'){
+  if(!valid){toast(verdict.reason);return;}
+  departure=p;$('dep').value=p.join(', ');
+  const preset=$('start-preset');const key=p.join(',');
+  preset.value=[...preset.options].some(o=>o.value===key)?key:'custom';
+  if(!last?.active)document.dispatchEvent(new CustomEvent('vtx-preview-start'));
+ }else{
+  if(last?.active){const result=await api('/api/destination',{run_id:last.run_id,destination:p});toast(result.landing_valid?'Target B changed in flight':'Target B changed; landing clearance not certified');}
+  else if(Math.max(...p.map(Math.abs))>world.half_m-8){toast('Outside surveyed map');return;}
+  destination=p;$('dest').value=p.join(', ');
+ }
+ updateMarkers();drawMaps();
+}
+$('start-preset').onchange=guard(async()=>{const value=$('start-preset').value;if(value==='custom')return;pick='a';await choosePoint(value.split(',').map(Number));});
 $('map').onclick=guard(e=>onMap(e,$('map')));$('large-map').onclick=guard(e=>onMap(e,$('large-map')));
 function setPick(p){pick=p;$('pick-a').classList.toggle('selected',p==='a');$('pick-b').classList.toggle('selected',p==='b');$('large-pick').textContent=p.toUpperCase();}
 $('runway-start').onclick=guard(async()=>{pick='a';await choosePoint([-700,0]);toast('Departure set near runway 08 threshold: X -700 m, Y 0 m.');});
@@ -332,9 +352,10 @@ if(mapModeBtn){
     const mm=getMinimap($('map'));
     if(mm){
       mm.tacticalMode=!mm.tacticalMode;
-      mm.zoom=mm.tacticalMode?2.4:0.88;
-      mm.center=mm.tacticalMode?[0,40]:[20,110];
-      mapModeBtn.textContent=mm.tacticalMode?'Valley':'Tactical';
+      mm.zoom=mm.tacticalMode?1000/(world.half_m*2*Math.max(1,$('map').width/$('map').height)):0.5;
+      mm.center=mm.tacticalMode?[0,0]:[0,100];
+      mapModeBtn.textContent=mm.tacticalMode?'Airport':'World';
+      $('grid-label').textContent=mm.tacticalMode?'1 km grid':'200 m grid';
       drawMaps(true);
     }
   };
@@ -554,6 +575,8 @@ function describeFlightEvent(event){
  }
 }
 $('history').onclick=guard(async()=>{
+ if(!$('history-dialog').open)$('history-dialog').showModal();
+ $('runs').textContent='Loading flight records…';
  const records=await api('/api/runs');$('runs').replaceChildren();$('timeline').hidden=true;
  for(const r of records){
   const article=document.createElement('article'),replayButton=document.createElement('button'),timelineButton=document.createElement('button');
@@ -575,7 +598,6 @@ $('history').onclick=guard(async()=>{
   article.append(replayButton,timelineButton,document.createTextNode(`${r.run_id} · ${r.outcome} · ${r.simulated_seconds.toFixed(1)} s · ${r.decisions} decisions`));$('runs').appendChild(article);
  }
  try{const archive=await api('/api/archive/runs');const heading=document.createElement('h3');heading.textContent='Historical PC flight summaries (read only)';$('runs').appendChild(heading);if(!archive.records.length){const empty=document.createElement('p');empty.textContent='No historical summaries found in the configured PC archives.';$('runs').appendChild(empty);}for(const r of archive.records){const row=document.createElement('p');row.textContent=`${r.run_id} · ${r.source} · recorded outcome: ${r.recorded_outcome||'unknown'} · ${Number.isFinite(r.simulated_seconds)?r.simulated_seconds.toFixed(1)+' s':'duration unknown'}`;$('runs').appendChild(row);}}catch(e){const notice=document.createElement('p');notice.textContent='Historical archive unavailable: '+e.message;$('runs').appendChild(notice);}
- $('history-dialog').showModal();
 });
 $('open-records').onclick=()=>$('history').click();
 $('replay-time').oninput=()=>replayFrame=+$('replay-time').value;
@@ -584,6 +606,7 @@ function drawMap(canvas){
   if(!world||!canvas)return;
   const mm=getMinimap(canvas);
   if(mm){
+    if(canvas===$('map'))$('grid-label').textContent=mm.zoom<0.3?'1 km grid':'200 m grid';
     mm.render(world,{last,track,departure,destination});
   }
 }
@@ -592,7 +615,10 @@ function drawMap(canvas){
 let lastMapMs=0;
 function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return;lastMapMs=performance.now();drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
 function updateEngineering(){if(!last)return;const t=last.rendering_truth,o=last.observation;$('engineering-content').textContent=JSON.stringify({live:{simulation_time_s:o.t_s,observation_id:o.observation_id,clock_scale:last.time_scale,active:last.active,paused:last.paused,authority:last.authority,command_warnings:o.warning_lamps,rotor_rpm:o.rotor_rpm,shaft_torque_nm:o.shaft_torque_nm,shaft_power_kw:o.engine_shaft_kw,collective_deg:o.collective_feedback_deg,fan_tilt_deg:o.tilt_feedback_deg,cabin_gimbal_deg:o.cabin_feedback_deg,attitude_deg:o.attitude_xyz_deg,angular_rate_world_deg_s:o.gyro_world_deg_s,angular_rate_body_deg_s:o.gyro_body_deg_s,velocity_world_m_s:o.gnss_velocity_mps,velocity_body_m_s:o.velocity_body_mps,clearance_m:o.radar_clearance_m,fuel_kg:o.fuel_kg,scheduler_backlog_s:o.scheduler_backlog_s},engineering:{revision:t.provenance.revision,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses}},null,2);}
-function updateView(v){last=v;latestTruthReceivedMs=performance.now();panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
+function updateView(v){
+ const nextAsset=visualAsset(v.rendering_truth?.provenance?.render_asset);
+ if(model && nextAsset && loadedAsset!==nextAsset){model.visible=false;modelReady=false;renderer.clear();}
+ last=v;latestTruthReceivedMs=performance.now();panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
  if(v.active&&v.mission?.destination&&document.activeElement!==$('dest')){const target=v.mission.destination;if(destination[0]!==target[0]||destination[1]!==target[1]){destination=[...target];$('dest').value=destination.join(', ');updateMarkers();drawMaps(true);}}
  const objective=v.objective; $('objective-current').textContent=objective?`Current objective (${objective.status}): ${objective.text}`:'No objective set.';
  const owner=v.pilot_owner;const fallback=v.fallback?.state;
@@ -649,15 +675,16 @@ function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:'
 api('/api/world').then(w=>{buildWorld(w);connect();}).catch(()=>fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{buildWorld(w);$('view-sync').textContent='SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';})).catch(e=>{$('loading').textContent='Unable to load airport: '+e.message;console.error('Airport world',e);});
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
-if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,get model(){return model;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
+if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,get model(){return model;},get loadedAsset(){return loadedAsset;},get modelReady(){return modelReady;},get last(){return last;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
 function animate(){requestAnimationFrame(animate);if(document.hidden)return;const now=performance.now();if(now-lastFrameMs<(lightweightView?67:50))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
  const frameDt=rideLastFrame?Math.min(.25,(now-rideLastFrame)/1000):0;
  rideLastFrame=now;
  if(!ridePaused)sceneTime+=frameDt*sceneScale;
  if(passengerRide&&!ridePaused&&rideRoute&&!last?.active)rideTime=Math.min(rideRoute.duration+22,rideTime+frameDt*sceneScale);
  visualTraffic?.update(sceneTime);
- if(model)model.visible=!rideEnabled;
- if(truth)loadAirframe(visualAsset(truth.provenance.render_asset)||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb'));
+ const requestedAsset=truth?(visualAsset(truth.provenance.render_asset)||(truth.provenance.revision.endsWith('r4')?'/assets/airframe-r4.glb':'/assets/airframe-live.glb')):null;
+ if(requestedAsset)loadAirframe(requestedAsset);
+ if(model)model.visible=!rideEnabled&&modelReady&&loadedAsset===requestedAsset;
  if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);
    // The authoritative rotor pose is sampled at 20 Hz. At 1200 RPM one full
    // revolution occurs between samples, so drawing snapshots alone looks static.
@@ -669,7 +696,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
    }
   }if(phantomRig){
    const offsets=(truth.phantom?.wheel_rad_s||[]).map(omega=>rotorVisualOffset(omega,now-latestTruthReceivedMs,last?.time_scale,!!last?.active&&!replayFrames,last?.paused));
-   updatePhantom(phantomRig,truth,!last?.active&&!replayFrames,offsets);
+   updatePhantom(phantomRig,truth,false,offsets);
   }if(truth.pitch_deg)for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
   const physicalTarget=physicalCameraTarget(truth);if(physicalTarget)pos.set(...physicalTarget);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
