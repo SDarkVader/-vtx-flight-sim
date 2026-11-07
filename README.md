@@ -4,7 +4,7 @@
 
 VTX puts the player in control of experimental VTOL aircraft in an interactive 3D world: the original four-fan aircraft and the **VTX Phantom A10**, a two-seat road, VTOL and wing-borne vehicle design. Take off, hover, manoeuvre around terrain and structures, navigate to a chosen destination and attempt a controlled landing. Aircraft movement is produced by the live physics simulation—not by a scripted flight path or a decorative animation.
 
-**Status:** playable experimental prototype / flight-test game, **not a finished commercial release**. This GitHub repository is currently public. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
+**Status:** playable experimental prototype / flight-test game, **not a finished commercial release**. This GitHub repository is private. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
 
 ## Play the game
 
@@ -18,6 +18,20 @@ The [flight index](docs/FLIGHT_INDEX.md) lists each retained sortie by run ID an
 
 The 3D environment, visuals, controls and AI-pilot integration are under ongoing development. Some aircraft behaviours and flight scenarios remain uncalibrated or unproven.
 
+## Latest integration work
+
+We're building one connected Vader's Taxis environment: the airport, the physical aircraft, cockpit controls, AI pilot interfaces and the engineering and flight-test workspace together.
+
+The [integration development branch](https://github.com/SDarkVader/-vtx-flight-sim/tree/integration/vtx-unified-20261107) contains the current **test candidate**:
+
+- **A shared airport and cockpit:** work to bring the terrain, buildings, runway, cameras, aircraft selection and physics-driven flight together. Scripted airport traffic remains separate from the physical aircraft.
+- **Phantom starting configurations:** select wheels down for a runway start or pods at 90° with legs extended. Pod rotation and leg extension have separate controls for testing transitions.
+- **Thrust and wheel visuals:** wheel motion follows the simulated wheel joints; wheel-pod and rear-booster effects respond to simulated thrust, with bright cores and short trails. The colours are visual cues, not temperature measurements.
+- **Flight-test evidence:** candidate work records pilot summaries and engineering findings for simulated crashes and confirmed pilot-provider failures, then starts a fresh test run. Causes remain unassessed until the evidence supports a finding.
+- **Reference and comparison:** the isolated candidate brings together the A10 checkpoint, airport work and other recovery changes. The [integration plan](https://github.com/SDarkVader/-vtx-flight-sim/blob/integration/vtx-unified-20261107/INTEGRATION_PLAN_20261107.md) records the sources, checks and remaining work.
+
+These changes are backed up on the integration branch and are **not yet promoted to `main`**. Flight controls, model/physics compatibility, aircraft mechanisms, AI handover, persistence and mobile access still need full end-to-end acceptance testing. The thrust and wheel visuals have passed browser checks but still need observation during a live driving run.
+
 ## Aircraft
 
 Choose the airframe under **Lower frame** on the mission panel.
@@ -27,7 +41,7 @@ Choose the airframe under **Lower frame** on the mission panel.
 
 **What the Phantom A10 is.** An angular two-seat vehicle designed to drive on the road, lift off vertically on four ducted fans inside tilting wheel pods, and fly on retractable wings. It has two rear boosters, telescopic landing legs, and wings that slide out of a split-level cassette behind the cabin (the A10 puts both wings at one height), with flaps, ailerons, two nose canards and raked twin fins. Power is turbogenerator-electric with a battery buffer. The FX-A prototype is a design proposal with Ø0.90 m fans in Ø1.10 m fan-wheels, a 900 kW take-off turbogenerator and a nose battery; the as-drawn reference has Ø0.49 m fans and two 600 kW turbogenerators. The mass ledger puts the as-drawn A10 at 1.9 t.
 
-**Where it stands.** Every Phantom number is a labelled synthetic or derived figure, not a measurement. As drawn, its lift fans cannot hover it (thrust-to-weight 0.52 measured in the plant). The FX-A prototype changes the fans and the power plant; its test record is in the [flight-test report](docs/phantom/PHANTOM_FLIGHT_TEST_20261103.md). In the physics plant, on a flat test strip with canned pilot schedules (not game flights), the as-drawn A10 left the ground under wing lift in 8 of 11 rolling take-off runs, at 69 to 106 m/s, and the best reached 32 m. With the optional stabilator, turbine-booster and wing-incidence proposals it lifts off at 60 to 95 m/s. **Every flight so far ended in a pitch loss of control: none is a controlled flight, a landing or a mission.** See [first take-offs and flights](docs/phantom/A10_FIRST_FLIGHTS_20261104.md).
+**Where it stands.** Every Phantom number is a labelled synthetic or derived figure, not a measurement. As drawn, its lift fans cannot hover it (thrust-to-weight 0.52 measured in the plant). The FX-A prototype changes the fans and the power plant; its test record is in the [flight-test report](docs/phantom/PHANTOM_FLIGHT_TEST_20261103.md). In the physics plant, on a flat test strip with canned pilot schedules (not game flights), the as-drawn A10 left the ground under wing lift in 8 of 11 rolling take-off runs, at 69 to 106 m/s, and the best reached 32 m. With the optional stabilator, turbine-booster and wing-incidence proposals it lifts off at 60 to 95 m/s. **Every flight in that recorded campaign ended in a pitch loss of control: none of those runs is a controlled flight, a landing or a mission.** See [first take-offs and flights](docs/phantom/A10_FIRST_FLIGHTS_20261104.md).
 
 **3D model.** The current refined model, with smooth bodywork, livery, a visible wing-cassette window, carbon and titanium DRS flap, vectoring booster cowls and alloy VTX wheels, is here:
 
