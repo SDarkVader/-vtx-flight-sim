@@ -4,9 +4,13 @@
  bar.className = 'workspace-tabs';
  bar.setAttribute('role','group');
  bar.setAttribute('aria-label','Cockpit panels');
- for (const [label, cls, selector] of [['Mission','mission-open','.mission-panel'],['Controls','controls-open','.controls-panel']]) {
+ const airportPanel = document.createElement('aside');
+ airportPanel.className = 'airport-panel';
+ airportPanel.innerHTML = '<div class="section-label">03 / AIRPORT</div><h2>Airport views</h2>';
+ main.appendChild(airportPanel);
+ for (const [label, cls, selector] of [['Mission','mission-open','.mission-panel'],['Controls','controls-open','.controls-panel'],['Airport views','airport-open','.airport-panel']]) {
    const panel = document.querySelector(selector);
-   const id = label.toLowerCase() + '-drawer';
+   const id = cls.replace('-open', '-drawer');
    panel.id = id;
    const button = document.createElement('button');
    button.type = 'button';
@@ -20,14 +24,6 @@
    });
    bar.appendChild(button);
  }
- const airport = document.createElement('button');
- airport.type = 'button'; airport.textContent = 'Airport views'; airport.setAttribute('aria-expanded','false');
- airport.addEventListener('click', () => {
-   const panel = document.getElementById('ride-controls'); if (!panel) return;
-   const open = panel.style.display === 'none'; panel.style.display = open ? 'flex' : 'none';
-   airport.setAttribute('aria-expanded', String(open)); window.dispatchEvent(new Event('resize'));
- });
- bar.appendChild(airport);
  const link = document.createElement('a');
  link.className = 'workspace-dashboard-link';
  link.href = '/dashboard/';
