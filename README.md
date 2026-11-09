@@ -6,13 +6,13 @@ VTX is a proprietary, physics-driven 3D VTOL flight game set in the world of Vad
 
 Every movement comes from the live physics simulation, not from a scripted path or a canned animation. Mass, inertia, thrust, actuator limits, tyre grip and ground contact decide what happens. A good flight is earned, and a crash is a real result. Crashes are part of the programme.
 
-**Status:** playable experimental prototype / flight-test game, **not a finished commercial release**. This GitHub repository is private. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
+**Status:** experimental prototype / flight-test game, **not a finished commercial release**. The GitHub repository is public. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
 
 ## Choose your ride
 
 Pick a vehicle with **Choose vehicle**, or under **Lower frame** on the mission panel.
 
-**Phantom A10-B**: the current Phantom, and the vehicle the cockpit opens on. It is a two-seat transforming vehicle that you can:
+**Phantom A10-B**: the current Phantom, selected in a new, empty dashboard workspace. A restored flight or an existing workspace retains its existing state. It is a two-seat transforming vehicle that you can:
 - drive on the road, steered through its front wheels;
 - deploy its wings from the cassette behind the cabin, even from a standstill;
 - lift off on the four fans inside its wheel pods;
@@ -57,22 +57,37 @@ Conversational operation from a phone has been tried through an **external remot
 
 ## Start the Windows development build
 
-Aircraft variants and configurations are selectable in the cockpit. Each version is a work in progress: a successful flight in one configuration does not establish the behaviour of another.
+Use a Python 3.11+ environment with the dependencies in `requirements.txt`. From the repository root, PowerShell can start the combined dashboard and simulator on a separate local port:
+
+```powershell
+python -m pip install -r requirements.txt
+$env:PYTHONPATH = 'src'
+$env:VTX_DATA_ROOT = "$env:LOCALAPPDATA\VTX\unified-dashboard"
+python -m uvicorn vtx.dashboard_site:app --host 127.0.0.1 --port 8766
+```
+
+Open [http://127.0.0.1:8766/](http://127.0.0.1:8766/). Use a free port if 8766 is occupied. `VTX_DATA_ROOT` keeps new flight and experiment records outside the checkout; choose an existing archive only when you intend to use it. Do not reset or clean a worktree to run the simulator. The older `scripts/launch_pc.py` starts `vtx.live_server` on port 8765 and can use a different data root and startup selection.
+
+Use **Live cockpit**, **Flight test dashboard**, and **Physics experiments** to show any combination of the three pages. In the cockpit, **Mission**, **Controls**, and **Airport views** open independently. Desktop pages share the window; on mobile they stack vertically. Experiments run their own MuJoCo state and retain a request, parameters, results, events and downloadable evidence, separate from live flight. Configuration overrides are labelled experimental and create a new fingerprint.
+
+The dashboard assessment store is a separate upstream service; its availability is required for dashboard record edits. A persistent Python process is required for the actual simulator. A Vercel build or static page alone is not a running physics backend. External access requires deliberate network and authentication configuration; the command above binds to this PC only.
+
+For tests, run `python -m pytest -q` with `PYTHONPATH=src`; JavaScript tests use Node and the loader in `tests/vendor-three-loader.mjs`. The [integration handoff](docs/INTEGRATION_HANDOFF_20261109.md) and [workspace verification](evidence/ui-isolation-20261109-2022/workspace-verification.md) record what was tested and what remains open.
 
 ## From hangar to flight test
 
 Any previously shared hosted Vercel Sandbox URL is temporary and **not** a permanent game service.
 
-## Coming next: one connected world
+## One connected workspace
 
-We're building one connected Vader's Taxis world: the airport, the physical aircraft, cockpit controls, AI pilot interfaces and the engineering and flight-test workspace, all together. The test candidate is on the [integration development branch](https://github.com/SDarkVader/-vtx-flight-sim/tree/integration/vtx-unified-20261107):
+The integration joins the airport, physical aircraft, cockpit controls and flight-test workspace. The simulator remains an experimental engineering model:
 
 - **A shared airport and cockpit:** an extended airfield with terrain, buildings, runways, cameras, aircraft selection and physics-driven flight. Scripted airport traffic and cockpit rides are kept separate from the physical aircraft.
 - **Phantom starting configurations:** start wheels-down at the runway threshold, or with the pods at 90° and the legs extended. Pod rotation and leg extension have separate controls for testing transitions.
 - **Thrust and wheel visuals:** wheel motion follows the simulated wheel joints. The wheel-pod and rear-booster effects respond to simulated thrust, with bright cores and short trails. The colours are visual cues, not temperature measurements.
 - **Flight-test evidence:** the candidate records pilot summaries and engineering findings for simulated crashes and confirmed pilot-provider failures, then starts a fresh test run. Causes stay unassessed until the evidence supports a finding. The newer [dashboard candidate](https://github.com/SDarkVader/-vtx-flight-sim/tree/work/dashboard-cockpit-20261107) also serves the flight-test dashboard and its seven evidence gates alongside the cockpit.
 
-These changes are **not yet promoted to `main`**, and the Phantom A10-B on `main` has not been merged into the candidate yet. Flight controls, model and physics compatibility, aircraft mechanisms, AI handover, persistence and mobile access still need full end-to-end acceptance testing. The [integration plan](https://github.com/SDarkVader/-vtx-flight-sim/blob/integration/vtx-unified-20261107/INTEGRATION_PLAN_20261107.md) records the sources, checks and remaining work.
+The experiment page covers only a subset of the requested engineering settings. Complete geometry and inertia editing, external AI conversation persistence and reconnection, and a persistent hosted backend remain open. A10-B fan-assisted turning has recorded evidence; runway rotation and sustained fans-off wingborne flight remain separate objectives. The [resolution register](docs/INTEGRATION_RESOLUTION_20261109.md) identifies the branch sources and retained work.
 
 ## Phantom model status (for agents and integrators)
 
