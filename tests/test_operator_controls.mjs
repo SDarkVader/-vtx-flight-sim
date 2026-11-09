@@ -3,7 +3,14 @@
 import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-const load=async f=>import('data:text/javascript;base64,'+Buffer.from(await readFile(new URL('../public/'+f,import.meta.url),'utf8')).toString('base64'));
+// Browser modules are loaded as data: URLs (no package.json marks public/*.js as ES modules). A data: module cannot
+// resolve relative imports, so inline them the same way, recursively (phantom-controls.js imports voice-pilot.js).
+const dataUrl=async f=>{
+  let src=await readFile(new URL('../public/'+f,import.meta.url),'utf8');
+  for(const m of [...src.matchAll(/from '\.\/([\w\-\/]+\.js)(?:\?[^']*)?'/g)])src=src.replace(m[0],`from '${await dataUrl(m[1])}'`);
+  return 'data:text/javascript;base64,'+Buffer.from(src).toString('base64');
+};
+const load=async f=>import(await dataUrl(f));
 const {heartbeatDue}=await load('phantom-controls.js');
 const {cockpitToBody}=await load('tilt-direction.js');
 const view={active:true,paused:false,authority:'manual',run_id:'r1'};
