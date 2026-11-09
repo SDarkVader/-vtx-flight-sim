@@ -1,0 +1,43 @@
+{
+ "_note": "Opt-in overlay (merge as Params overrides). Forebody lifting-body / Munk term missing from the base plant: the wing reference area already spans the body, so only the body ahead of the wing (pitch) and the side profile ahead of the fins (yaw) are added. Free air: no ground effect, thin-surface vortex lattice on the CAD envelope.",
+ "aero": {
+  "hull_lift": {
+   "enabled": {
+    "v": 1.0,
+    "u": "-",
+    "l": "DERIVED",
+    "s": "hull lift / Munk overlay switch (1 = on)"
+   },
+   "k_pitch_m2": {
+    "v": 9.281,
+    "u": "m^2",
+    "l": "DERIVED",
+    "s": "tools/phantom/hull_lift_vlm.py -> evidence/phantom/hull_lift_vlm.json: pitch_forebody.K_m2 (dL/dalpha / q, nose to wing MAC LE)"
+   },
+   "x_cp_pitch_m": {
+    "v": 1.809,
+    "u": "m",
+    "l": "DERIVED",
+    "s": "tools/phantom/hull_lift_vlm.py -> evidence/phantom/hull_lift_vlm.json: pitch_forebody.x_cp_m"
+   },
+   "k_yaw_m2": {
+    "v": 1.658,
+    "u": "m^2",
+    "l": "DERIVED",
+    "s": "tools/phantom/hull_lift_vlm.py -> evidence/phantom/hull_lift_vlm.json: yaw_side_profile_ahead_of_fins.K_m2"
+   },
+   "x_cp_yaw_m": {
+    "v": 1.305,
+    "u": "m",
+    "l": "DERIVED",
+    "s": "tools/phantom/hull_lift_vlm.py -> evidence/phantom/hull_lift_vlm.json: yaw_side_profile_ahead_of_fins.x_cp_m"
+   },
+   "z_cp_m": {
+    "v": 0.62,
+    "u": "m",
+    "l": "DERIVED",
+    "s": "aero.body_centre_m z (body section mid-height)"
+   }
+  }
+ }
+}

@@ -79,6 +79,13 @@ class Params:
         n = self.node(key)
         return n['v'] if isinstance(n, dict) and 'v' in n else n
 
+    def get(self, key, default=None):
+        """Value of an optional parameter (e.g. one supplied only by an overlay); default when absent."""
+        try:
+            return self[key]
+        except (KeyError, TypeError):
+            return default
+
     def label(self, key):
         return self.node(key)['l']
 

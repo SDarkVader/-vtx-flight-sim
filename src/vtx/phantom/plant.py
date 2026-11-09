@@ -30,14 +30,36 @@ def f3(v):
     return ' '.join(f'{float(x):.6g}' for x in np.ravel(v))
 
 
-def tyre_solref(P, L):
-    """Tyre N/m and N s/m -> MuJoCo (timeconst, dampratio) for a corner mass of total/4.
-    MuJoCo's negative solref is an acceleration gain per metre, not a force stiffness, so the
+def tyre_solref(P, L, mass=None):
+    """Tyre N/m and N s/m -> MuJoCo (timeconst, dampratio) for the mass the contact acts on: a corner mass of
+    total/4 when the wheel is rigid on its pod, the unsprung wheel mass when the road suspension overlay is on.
+    MuJoCo's solref is an acceleration-level (mass-normalised) gain, not a force stiffness, so the
     physical values are converted: omega = sqrt(k/m), zeta = c/(2 sqrt(k m)), tc = 1/(zeta omega)."""
     k = P['contact.tyre_stiffness_n_m']; c = P['contact.tyre_damping_ns_m']
-    m = L.mass_properties(None)['mass_kg'] / 4
+    m = mass if mass is not None else L.mass_properties(None)['mass_kg'] / 4
     w = math.sqrt(k / m); z = max(0.05, c / (2 * math.sqrt(k * m)))
     return f'{max(0.005, 1 / (z * w)):.5f} {z:.4f}'
+
+
+def suspension_design(P, L, inert):
+    """Road suspension overlay: per-corner spring, damper and preload from the ledger's static corner loads.
+    Slide joint q (m, + = wheel up / bump) along the pod z axis, which is vertical in road stance. The spring is
+    preloaded so that q = 0 (the design ride height) carries the static sprung corner load."""
+    if P.get('suspension.enabled', 0.0) <= 0.5:
+        return None
+    mp = L.mass_properties(None); M = mp['mass_kg']; xcg = mp['cg_m'][0]
+    g = P['atmosphere.gravity_m_s2']; f = P['suspension.ride_frequency_hz']; zeta = P['suspension.damping_ratio']
+    xf = L.bodies['pod_FL_wheel'].anchor[0]; xr = L.bodies['pod_RL_wheel'].anchor[0]
+    front = (xcg - xr) / (xf - xr)
+    out = {}
+    for k in PODS:
+        m_u = inert[f'pod_{k}_wheel'][0]
+        F = M * g * (front if FRONT[k] else 1 - front) / 2 - m_u * g          # static sprung load at this corner
+        ms = F / g; w = 2 * math.pi * f
+        kk = ms * w * w; c = 2 * zeta * math.sqrt(kk * ms)
+        out[k] = dict(stiffness_n_m=kk, damping_ns_m=c, preload_n=F, springref_m=-F / kk, unsprung_kg=m_u, sprung_kg=ms,
+                      travel_m=list(P['suspension.travel_m']))
+    return out
 
 
 def build_xml(L: PhantomLedger, world):
@@ -62,6 +84,7 @@ def build_xml(L: PhantomLedger, world):
         a['size'] = f3(o['half']) if o['kind'] == 'box' else f3([o['half'][0], o['half'][2]])
         ET.SubElement(wb, 'geom', **a)
     inert = L.body_inertials()
+    susp = suspension_design(P, L, inert)
     els = {}
     C = P.tree
     for name, b in L.bodies.items():
@@ -105,11 +128,17 @@ def build_xml(L: PhantomLedger, world):
                 ja['armature'] = str(arm)
             if damp:
                 ja['damping'] = str(damp)
+            if susp and name.endswith('_wheel'):
+                # road suspension overlay: slide (pod z axis, + = bump) before the wheel spin hinge in the same body
+                s = susp[name.split('_')[1]]
+                ET.SubElement(e, 'joint', name=f'{name[:-6]}_susp', type='slide', pos='0 0 0', axis='0 0 1', limited='true',
+                              range=f3(s['travel_m']), stiffness=f'{s["stiffness_n_m"]:.6g}', springref=f'{s["springref_m"]:.6g}',
+                              damping=f'{s["damping_ns_m"]:.6g}')
             ET.SubElement(e, 'joint', **ja)
         if name.endswith('_wheel'):
             k = name.split('_')[1]
             ET.SubElement(e, 'geom', name=f'tyre_{k}', type='cylinder', size=f3([P['pods.tyre_radius_m'], P['pods.tyre_half_width_m']]),
-                          zaxis=f3([0, SIDE[k], 0]), solref=tyre_solref(P, L),
+                          zaxis=f3([0, SIDE[k], 0]), solref=tyre_solref(P, L, susp[k]['unsprung_kg'] if susp else None),
                           friction=f'{P["contact.tyre_friction"]} .01 .001', rgba='.08 .08 .08 1', **VEH)
         elif name.endswith('_oleo'):
             k = name.split('_')[1]
@@ -242,7 +271,9 @@ class PhantomAircraft:
                 self.set_q(n, v)
         for k in PODS:
             self.set_q(f'leg_{k}_oleo', 0.0)
-        self.targets = {n: float(self.joint(n)[0]) for n in self.jid if n != 'free' and not n.endswith(('_fan', '_wheel', '_rotor', '_oleo'))}
+            if f'pod_{k}_susp' in self.jid:
+                self.set_q(f'pod_{k}_susp', 0.0)
+        self.targets = {n: float(self.joint(n)[0]) for n in self.jid if n != 'free' and not n.endswith(('_fan', '_wheel', '_rotor', '_oleo', '_susp'))}
         for n, a in self.aid.items():
             if n[4:] in self.targets:
                 self.data.ctrl[a] = self.targets[n[4:]]
@@ -462,9 +493,9 @@ class PhantomAircraft:
                 self.jet_spool[j] += (tgt - self.jet_spool[j]) * a_sp
                 jet_fuel += self.jet['sfc_kg_per_n_s'] * (self.booster_state[j] or {}).get('thrust_n', 0.0) * dt
         bshaft = np.array([breq[j] * self.joint(f'booster_{s}_rotor')[1] for j, s in enumerate(WING_SIDES)])
-        hub = 0.0
+        hub = 0.0; wheel_tq = self.wheel_drive_torque(c)
         for i, k in enumerate(PODS):
-            hub += abs(c['wheel_drive'][i] * P['pods.hub_motor_torque_nm'] * self.joint(f'pod_{k}_wheel')[1]) / 0.9
+            hub += abs(wheel_tq[i] * self.joint(f'pod_{k}_wheel')[1]) / 0.9
         eta = self.bus.eta_drive
         prop_e = float(np.sum(np.maximum(shaft, 0)) / eta + np.sum(np.maximum(bshaft, 0)) / P['boosters.efficiency'] + hub)
         act_w = float(np.sum(np.abs(d.actuator_force * d.actuator_velocity)[[self.aid[n_] for n_ in self.aid if 'fan' not in n_ and 'wheel' not in n_ and 'booster' not in n_]]) / P['electrical.actuator_efficiency'])
@@ -476,7 +507,7 @@ class PhantomAircraft:
             tau = req[i] * (scale if req[i] > 0 else 1.0)
             self.motor_torque[i] = tau
             d.ctrl[self.aid[f'act_pod_{k}_fan']] = P['pods.rotor_spin_sense'][k] * tau
-            wd = c['wheel_drive'][i] * P['pods.hub_motor_torque_nm'] * (scale if prop_e > 0 else 1)
+            wd = wheel_tq[i] * (scale if prop_e > 0 else 1)
             d.ctrl[self.aid[f'act_pod_{k}_wheel']] = SIDE[k] * wd
             self.model.dof_frictionloss[self.model.jnt_dofadr[self.jid[f'pod_{k}_wheel']]] = c['brake'][i] * P['pods.brake_torque_nm']
         for j, s in enumerate(WING_SIDES):
@@ -500,6 +531,21 @@ class PhantomAircraft:
         self.check_contacts()
 
     # ------------------------------------------------------------ per-step forces
+    def wheel_drive_torque(self, c):
+        """Hub motor torque per wheel. Base plant: command x rated torque at any speed. With the wheel_drive_limits
+        overlay: capped at rated power / wheel speed, and faded by traction control between 1x and 2x the slip limit."""
+        P = self.P; T = [c['wheel_drive'][i] * P['pods.hub_motor_torque_nm'] for i in range(4)]
+        if P.get('drive.limits_enabled', 0.0) <= 0.5:
+            return T
+        v = abs(float(self.vel_body()[0])); lam = P['drive.traction_slip_max']; r = P['pods.tyre_radius_m']
+        out = []
+        for i, k in enumerate(PODS):
+            om = abs(float(self.joint(f'pod_{k}_wheel')[1]))
+            t = math.copysign(min(abs(T[i]), P['pods.hub_motor_power_w'] / max(om, 1e-3)), T[i])
+            slip = (om * r - v) / max(v, P['drive.slip_reference_speed_min_m_s'])
+            out.append(t * float(np.clip((2 * lam - slip) / lam, 0.0, 1.0)))
+        return out
+
     def apply_forces(self):
         d = self.data; P = self.P
         d.xfrc_applied[:] = 0; d.qfrc_applied[:] = 0
@@ -721,7 +767,8 @@ class PhantomAircraft:
             fuel_kg=np.round(self.fuel, 3).tolist(), stability_mode=self.fcc.cmd['stability_mode'],
             pti_active=self.fcc.pti.active, faults=[f['fault'] for f in self.faults],
             warning_lamps=(['IMPACT'] if self.crashed else []) + (['POWER_LIMITED'] if self.prop_scale < 0.999 else []) + (['FUEL_EXHAUSTED'] if self.fuel.sum() <= 1e-3 else [])
-                          + (['HARD_LANDING'] if 'hard_landing' in self.flags else []))
+                          + (['HARD_LANDING'] if 'hard_landing' in self.flags else []),
+            **({'suspension_m': [round(self.joint(f'pod_{k}_susp')[0], 4) for k in PODS]} if 'pod_FL_susp' in self.jid else {}))
 
     def checkpoint_state(self):
         d = self.data
