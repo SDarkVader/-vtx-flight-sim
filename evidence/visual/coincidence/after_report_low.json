@@ -1,0 +1,762 @@
+{
+ "source": "evidence/visual/coincidence/after_sample_low.json",
+ "quality": "low",
+ "terrain": {
+  "vertices": 10201,
+  "matrix_identity": true,
+  "vertices_on_grid": true,
+  "max_vertex_vs_heights_m": 1.9041207934833437e-06,
+  "max_vertex_vs_terrain_z_m": 2.3667688537898357e-06,
+  "triangles": 20000,
+  "triangles_with_wrong_diagonal": 0,
+  "interior_samples": 22000,
+  "max_interior_diff_m": 1.8648054336267705e-06
+ },
+ "rays": [
+  {
+   "name": "stand-1",
+   "x": 0,
+   "y": 0,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "spawn-13.7,-28.4",
+   "x": 13.7,
+   "y": -28.4,
+   "centre_diff": 0.0,
+   "centre_obj": "terrain-visual|terrain-visual",
+   "footprint_min_diff": 0.0,
+   "footprint_max_diff": 0.0,
+   "worst_obj": "terrain-visual|terrain-visual",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "pad-b",
+   "x": -50,
+   "y": 20,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "dest-45,18",
+   "x": -45,
+   "y": 18,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "dest-30,20",
+   "x": 30,
+   "y": 20,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "dest-100,100",
+   "x": 100,
+   "y": 100,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "roof-hangar",
+   "x": 85,
+   "y": 45,
+   "centre_diff": 0.0,
+   "centre_obj": "vtx-buildings|Mesh",
+   "footprint_min_diff": 0.0,
+   "footprint_max_diff": 0.0,
+   "worst_obj": "vtx-buildings|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "roof-workshop",
+   "x": 150,
+   "y": -95,
+   "centre_diff": 0.0,
+   "centre_obj": "vtx-buildings|Mesh",
+   "footprint_min_diff": 0.0,
+   "footprint_max_diff": 0.0,
+   "worst_obj": "vtx-buildings|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "roof-freight",
+   "x": -100,
+   "y": 105,
+   "centre_diff": 0.0,
+   "centre_obj": "vtx-buildings|Mesh",
+   "footprint_min_diff": 0.0,
+   "footprint_max_diff": 0.0,
+   "worst_obj": "vtx-buildings|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "roof-dispatch",
+   "x": 45,
+   "y": 110,
+   "centre_diff": 0.0,
+   "centre_obj": "vtx-buildings|Mesh",
+   "footprint_min_diff": 0.0,
+   "footprint_max_diff": 0.0,
+   "worst_obj": "vtx-buildings|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "roof-arcade",
+   "x": 185,
+   "y": 45,
+   "centre_diff": 0.0,
+   "centre_obj": "vtx-buildings|Mesh",
+   "footprint_min_diff": 0.0,
+   "footprint_max_diff": 0.0,
+   "worst_obj": "vtx-buildings|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "roof-operations",
+   "x": 50,
+   "y": -145,
+   "centre_diff": 0.0,
+   "centre_obj": "vtx-buildings|Mesh",
+   "footprint_min_diff": 0.0,
+   "footprint_max_diff": 0.0,
+   "worst_obj": "vtx-buildings|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "roof-terminal",
+   "x": -145,
+   "y": 100,
+   "centre_diff": 0.0,
+   "centre_obj": "vtx-buildings|Mesh",
+   "footprint_min_diff": 0.0,
+   "footprint_max_diff": 0.0,
+   "worst_obj": "vtx-buildings|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "stand-A-40,0",
+   "x": 40,
+   "y": 0,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "stand-70,-8",
+   "x": 70,
+   "y": -8,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "stand--30,-4",
+   "x": -30,
+   "y": -4,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "exp-stand-2",
+   "x": -470,
+   "y": 285,
+   "centre_diff": -5.360633750228772e-07,
+   "centre_obj": "terrain-visual|terrain-visual",
+   "footprint_min_diff": -1.5538675910420352e-06,
+   "footprint_max_diff": 6.971384038934048e-07,
+   "worst_obj": "terrain-visual|terrain-visual",
+   "validate": {
+    "ok": false,
+    "reason": "Uneven six-foot support exceeds the provisional preflight limit"
+   }
+  },
+  {
+   "name": "exp-stand-3",
+   "x": -340,
+   "y": 285,
+   "centre_diff": -5.031964427359981e-07,
+   "centre_obj": "terrain-visual|terrain-visual",
+   "footprint_min_diff": -7.572337850092481e-07,
+   "footprint_max_diff": -1.4187598651460576e-07,
+   "worst_obj": "terrain-visual|terrain-visual",
+   "validate": {
+    "ok": false,
+    "reason": "Uneven six-foot support exceeds the provisional preflight limit"
+   }
+  },
+  {
+   "name": "exp-stand-4",
+   "x": -210,
+   "y": 285,
+   "centre_diff": 4.0183439686813927e-08,
+   "centre_obj": "terrain-visual|terrain-visual",
+   "footprint_min_diff": -1.6811909286928994e-07,
+   "footprint_max_diff": 2.4848593760395943e-07,
+   "worst_obj": "terrain-visual|terrain-visual",
+   "validate": {
+    "ok": false,
+    "reason": "Uneven six-foot support exceeds the provisional preflight limit"
+   }
+  },
+  {
+   "name": "runway-east-300",
+   "x": 300,
+   "y": 0,
+   "centre_diff": 6.148829001517697e-08,
+   "centre_obj": "terrain-visual|terrain-visual",
+   "footprint_min_diff": -1.275570333802989e-07,
+   "footprint_max_diff": 8.1672247631559e-08,
+   "worst_obj": "terrain-visual|terrain-visual",
+   "validate": {
+    "ok": false,
+    "reason": "Uneven six-foot support exceeds the provisional preflight limit"
+   }
+  },
+  {
+   "name": "runway-west--400",
+   "x": -400,
+   "y": 0,
+   "centre_diff": -1.759604181472696e-06,
+   "centre_obj": "terrain-visual|terrain-visual",
+   "footprint_min_diff": -1.759604181472696e-06,
+   "footprint_max_diff": -5.205543374131594e-07,
+   "worst_obj": "terrain-visual|terrain-visual",
+   "validate": {
+    "ok": false,
+    "reason": "Uneven six-foot support exceeds the provisional preflight limit"
+   }
+  },
+  {
+   "name": "rwy0321-300,92",
+   "x": 300,
+   "y": 92,
+   "centre_diff": -3.093315648072803e-07,
+   "centre_obj": "terrain-visual|terrain-visual",
+   "footprint_min_diff": -4.45561150641538e-07,
+   "footprint_max_diff": -3.6872444653113234e-08,
+   "worst_obj": "terrain-visual|terrain-visual",
+   "validate": {
+    "ok": false,
+    "reason": "Uneven six-foot support exceeds the provisional preflight limit"
+   }
+  },
+  {
+   "name": "taxi-A",
+   "x": -45,
+   "y": -36,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "road-west",
+   "x": -72,
+   "y": 50,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "road-north",
+   "x": 20,
+   "y": 60,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  },
+  {
+   "name": "portal",
+   "x": -30,
+   "y": 43,
+   "centre_diff": 0.019999999552965164,
+   "centre_obj": "vtx-airfield|Mesh",
+   "footprint_min_diff": 0.019999999552965164,
+   "footprint_max_diff": 0.019999999552965164,
+   "worst_obj": "vtx-airfield|Mesh",
+   "validate": {
+    "ok": true,
+    "reason": "Six-foot support, swept footprint and local vertical approach column are clear"
+   }
+  }
+ ],
+ "boxes": [
+  {
+   "id": "hangar",
+   "meshes": 59,
+   "max_protrusion_m": 5253,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5253
+    },
+    {
+     "obj": "vtx-buildings|Mesh",
+     "prot": 1.3
+    }
+   ]
+  },
+  {
+   "id": "workshop",
+   "meshes": 10,
+   "max_protrusion_m": 5318,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5318
+    }
+   ]
+  },
+  {
+   "id": "tower",
+   "meshes": 11,
+   "max_protrusion_m": 5317,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5317
+    },
+    {
+     "obj": "vtx-buildings|Mesh",
+     "prot": 5.7
+    },
+    {
+     "obj": "vtx-buildings|Mesh",
+     "prot": 5.4
+    },
+    {
+     "obj": "vtx-buildings|Mesh",
+     "prot": 1.25
+    }
+   ]
+  },
+  {
+   "id": "freight",
+   "meshes": 6,
+   "max_protrusion_m": 5305,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5305
+    }
+   ]
+  },
+  {
+   "id": "ridge-block",
+   "meshes": 6,
+   "max_protrusion_m": 5370,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5370
+    }
+   ]
+  },
+  {
+   "id": "dispatch",
+   "meshes": 8,
+   "max_protrusion_m": 5309,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5309
+    }
+   ]
+  },
+  {
+   "id": "arcade",
+   "meshes": 6,
+   "max_protrusion_m": 5361,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5361
+    }
+   ]
+  },
+  {
+   "id": "operations",
+   "meshes": 6,
+   "max_protrusion_m": 5322,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5322
+    }
+   ]
+  },
+  {
+   "id": "terminal",
+   "meshes": 6,
+   "max_protrusion_m": 5339,
+   "over_trim_limit": [
+    {
+     "obj": "sky|Mesh",
+     "prot": 5339
+    }
+   ]
+  }
+ ],
+ "trees": {
+  "instances": 58,
+  "max_radius_ratio": 0.9600074069832008,
+  "max_top_excess_m": 4.6388040608746905e-07,
+  "min_base_z": 0,
+  "max_centre_offset_m": 7.619646351332364e-06,
+  "outside_collider": 0
+ },
+ "paint": {
+  "vtx-airfield": {
+   "n": 2269,
+   "buried": 910,
+   "floating": 312,
+   "max_above": 1.1799999986588956,
+   "min_above": -49.616745085339886,
+   "outside_physics": 704,
+   "depthTest_off": 0
+  },
+  "vtx-service-roads": {
+   "n": 2400,
+   "buried": 7,
+   "floating": 484,
+   "max_above": 2.786142872734274,
+   "min_above": -1.0316454047900976,
+   "outside_physics": 1908,
+   "depthTest_off": 0
+  },
+  "water": {
+   "n": 495,
+   "buried": 0,
+   "floating": 0,
+   "max_above": 0.04147089875303145,
+   "min_above": 0.04004518529989315,
+   "outside_physics": 0,
+   "depthTest_off": 0
+  }
+ },
+ "inventory": {
+  "vtx-airfield": {
+   "count": 41,
+   "example": {
+    "obj": "vtx-airfield|Mesh",
+    "min": [
+     -460.5,
+     109.88,
+     0.32
+    ],
+    "max": [
+     -458.5,
+     110.13,
+     1.18
+    ]
+   }
+  },
+  "vtx-buildings": {
+   "count": 4,
+   "example": {
+    "obj": "vtx-buildings|Mesh",
+    "min": [
+     63.95,
+     26.7,
+     -0.25
+    ],
+    "max": [
+     64.45,
+     27.65,
+     0.25
+    ]
+   }
+  },
+  "vtx-service-roads": {
+   "count": 22,
+   "example": {
+    "obj": "vtx-service-roads|Mesh",
+    "min": [
+     -650,
+     489.82,
+     22.48
+    ],
+    "max": [
+     680.01,
+     540.18,
+     49.1
+    ]
+   }
+  },
+  "vtx-volcano-basement": {
+   "count": 167,
+   "example": {
+    "obj": "vtx-volcano-basement|Mesh",
+    "min": [
+     -119.2,
+     129.74,
+     0
+    ],
+    "max": [
+     58.58,
+     308.84,
+     64
+    ]
+   }
+  }
+ },
+ "lights": [
+  {
+   "type": "HemisphereLight",
+   "name": "",
+   "visible": true,
+   "intensity": 1.05,
+   "pos": [
+    0,
+    0,
+    100
+   ]
+  },
+  {
+   "type": "DirectionalLight",
+   "name": "",
+   "visible": true,
+   "intensity": 3.9,
+   "pos": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "type": "SpotLight",
+   "name": "",
+   "visible": false,
+   "intensity": 2.5,
+   "pos": [
+    64.2,
+    26.15,
+    -0.6
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 1.8,
+   "pos": [
+    -112,
+    -38,
+    6.6
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 4.5,
+   "pos": [
+    -30,
+    152,
+    9
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 6.4591100168679585,
+   "pos": [
+    -30,
+    248,
+    16
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 4.8,
+   "pos": [
+    -30,
+    210,
+    28
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 3,
+   "pos": [
+    -49.2,
+    222,
+    5.2
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 1.2,
+   "pos": [
+    -48.5,
+    205,
+    1
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 1.2,
+   "pos": [
+    -48.5,
+    215,
+    1
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 1.2,
+   "pos": [
+    -48.5,
+    225,
+    1
+   ]
+  },
+  {
+   "type": "PointLight",
+   "name": "",
+   "visible": false,
+   "intensity": 1.2,
+   "pos": [
+    -48.5,
+    235,
+    1
+   ]
+  }
+ ],
+ "vehicles": {
+  "vtx-gsv-follow-me-cab": {
+   "samples": 600,
+   "conflicts": {},
+   "max_ground_gap": 0.14911607833891938
+  },
+  "vtx-gsv-baggage-train": {
+   "samples": 600,
+   "conflicts": {},
+   "max_ground_gap": 1.3387019153695405
+  },
+  "vtx-gsv-fuel-bowser": {
+   "samples": 600,
+   "conflicts": {},
+   "max_ground_gap": 0.23888670784731048
+  },
+  "vtx-gsv-fire-crash-tender": {
+   "samples": 600,
+   "conflicts": {},
+   "max_ground_gap": 0.28705583820251945
+  },
+  "vtx-gsv-pushback-tug": {
+   "samples": 600,
+   "conflicts": {},
+   "max_ground_gap": 0.0
+  }
+ }
+}

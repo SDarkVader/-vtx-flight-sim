@@ -1,0 +1,14 @@
+{
+ "run": "20261103T144550-be8193",
+ "samples": 4268,
+ "trim_points": [],
+ "pti": [],
+ "events": [],
+ "soc_start_end": [
+  0.899995,
+  0.85389
+ ],
+ "t_end": 42.68,
+ "max_height_m": 0.229407,
+ "saturation_time_s": 23.22
+}

@@ -1,0 +1,318 @@
+{
+ "base": "A9 (assets/derived/phantom-a9-cassette.blend, built from A8 version_a5589426...); A10 rebuilt from the same A8 source",
+ "builder": "tools/phantom/build_a10_cassette.py (imports build_a9_cassette.py, A9_IMPORT_ONLY=1)",
+ "removed_vs_A9": [
+  "A9_WING_L_LOCK_ACTUATOR_REAR_IN",
+  "A9_WING_L_LOCK_ACTUATOR_REAR_OUT",
+  "A9_WING_L_SLIDE_BALL_SCREW",
+  "A9_WING_L_SLIDE_NUT_ARM",
+  "A9_WING_L_SLIDE_NUT_CARRIAGE",
+  "A9_WING_R_LOCK_ACTUATOR_REAR_IN",
+  "A9_WING_R_LOCK_ACTUATOR_REAR_OUT",
+  "A9_WING_R_SLIDE_BALL_SCREW",
+  "A9_WING_R_SLIDE_NUT_ARM",
+  "A9_WING_R_SLIDE_NUT_CARRIAGE"
+ ],
+ "added_vs_A9": [
+  "A10_HATCH_L_HINGE_KNUCKLE_0",
+  "A10_HATCH_L_HINGE_KNUCKLE_1",
+  "A10_HATCH_R_HINGE_KNUCKLE_0",
+  "A10_HATCH_R_HINGE_KNUCKLE_1",
+  "A10_SLEEVE_L_BUSHING_IN_A",
+  "A10_SLEEVE_L_BUSHING_IN_D",
+  "A10_SLEEVE_L_BUSHING_OUT_A",
+  "A10_SLEEVE_L_BUSHING_OUT_D",
+  "A10_SLEEVE_L_FLOOR_RAIL_0",
+  "A10_SLEEVE_L_FLOOR_RAIL_1",
+  "A10_SLEEVE_L_INBOARD_ELASTOMER_STOP",
+  "A10_SLEEVE_L_STATIONARY_SCREW",
+  "A10_SLEEVE_R_BUSHING_IN_D",
+  "A10_SLEEVE_R_BUSHING_IN_F",
+  "A10_SLEEVE_R_BUSHING_OUT_D",
+  "A10_SLEEVE_R_BUSHING_OUT_F",
+  "A10_SLEEVE_R_FLOOR_RAIL_0",
+  "A10_SLEEVE_R_FLOOR_RAIL_1",
+  "A10_SLEEVE_R_INBOARD_ELASTOMER_STOP",
+  "A10_SLEEVE_R_STATIONARY_SCREW",
+  "A10_SLEEVE_SUPPORT_BASE_FITTING_L_A",
+  "A10_SLEEVE_SUPPORT_BASE_FITTING_L_D",
+  "A10_SLEEVE_SUPPORT_BASE_FITTING_L_F",
+  "A10_SLEEVE_SUPPORT_BASE_FITTING_R_A",
+  "A10_SLEEVE_SUPPORT_BASE_FITTING_R_D",
+  "A10_SLEEVE_SUPPORT_BASE_FITTING_R_F",
+  "A10_SLEEVE_SUPPORT_BRACE_L_0",
+  "A10_SLEEVE_SUPPORT_BRACE_L_1",
+  "A10_SLEEVE_SUPPORT_BRACE_R_0",
+  "A10_SLEEVE_SUPPORT_BRACE_R_1",
+  "A10_SLEEVE_SUPPORT_POST_L_D",
+  "A10_SLEEVE_SUPPORT_POST_R_D",
+  "A10_SLEEVE_SUPPORT_TOP_FITTING_L_A",
+  "A10_SLEEVE_SUPPORT_TOP_FITTING_L_D",
+  "A10_SLEEVE_SUPPORT_TOP_FITTING_L_F",
+  "A10_SLEEVE_SUPPORT_TOP_FITTING_R_A",
+  "A10_SLEEVE_SUPPORT_TOP_FITTING_R_D",
+  "A10_SLEEVE_SUPPORT_TOP_FITTING_R_F",
+  "A10_WING_L_GUIDE_SHOE_0A",
+  "A10_WING_L_GUIDE_SHOE_0F",
+  "A10_WING_L_GUIDE_SHOE_1A",
+  "A10_WING_L_GUIDE_SHOE_1F",
+  "A10_WING_L_LOCK_EMA_IN",
+  "A10_WING_L_LOCK_EMA_OUT",
+  "A10_WING_L_ROOT_JOGGLE_FRAME",
+  "A10_WING_L_SLIDE_ROTATING_NUT_AND_BEARINGS",
+  "A10_WING_R_GUIDE_SHOE_0A",
+  "A10_WING_R_GUIDE_SHOE_0F",
+  "A10_WING_R_GUIDE_SHOE_1A",
+  "A10_WING_R_GUIDE_SHOE_1F",
+  "A10_WING_R_LOCK_EMA_IN",
+  "A10_WING_R_LOCK_EMA_OUT",
+  "A10_WING_R_ROOT_JOGGLE_FRAME",
+  "A10_WING_R_SLIDE_ROTATING_NUT_AND_BEARINGS"
+ ],
+ "carried_over_renamed": 67,
+ "changed_vs_A9": [
+  {
+   "a9": "A9_HATCH_L_AMBER_EDGE",
+   "a10": "A10_HATCH_L_AMBER_EDGE",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_HATCH_L_FLUSH_DOOR",
+   "a10": "A10_HATCH_L_FLUSH_DOOR",
+   "change": "left slot moved to the panel level; door now mirrors the right door (hinge at z 0.9405, flips down)"
+  },
+  {
+   "a9": "A9_JOINT_AILERON_L",
+   "a10": "A10_JOINT_AILERON_L",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_FLAP_L",
+   "a10": "A10_JOINT_FLAP_L",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_HATCH_L",
+   "a10": "A10_JOINT_HATCH_L",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_L_LOCK_FRONT_IN",
+   "a10": "A10_JOINT_WING_L_LOCK_FRONT_IN",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_L_LOCK_FRONT_OUT",
+   "a10": "A10_JOINT_WING_L_LOCK_FRONT_OUT",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_L_LOCK_REAR_IN",
+   "a10": "A10_JOINT_WING_L_LOCK_REAR_IN",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_L_LOCK_REAR_OUT",
+   "a10": "A10_JOINT_WING_L_LOCK_REAR_OUT",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_L_SLIDE",
+   "a10": "A10_JOINT_WING_L_SLIDE",
+   "change": "stroke 1.37 -> 1.205 m; anchor z 0.8815 -> 0.9995"
+  },
+  {
+   "a9": "A9_JOINT_WING_R_LOCK_FRONT_IN",
+   "a10": "A10_JOINT_WING_R_LOCK_FRONT_IN",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_R_LOCK_FRONT_OUT",
+   "a10": "A10_JOINT_WING_R_LOCK_FRONT_OUT",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_R_LOCK_REAR_IN",
+   "a10": "A10_JOINT_WING_R_LOCK_REAR_IN",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_R_LOCK_REAR_OUT",
+   "a10": "A10_JOINT_WING_R_LOCK_REAR_OUT",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_JOINT_WING_R_SLIDE",
+   "a10": "A10_JOINT_WING_R_SLIDE",
+   "change": "stroke 1.37 -> 1.205 m"
+  },
+  {
+   "a9": "A9_SLEEVE_CARRY_THROUGH_BOX",
+   "a10": "A10_SLEEVE_CARRY_THROUGH_BOX",
+   "change": "twin-cell sleeve -> split-level sleeve (panel level over two fore/aft tongue channels + divider spar); same outer box"
+  },
+  {
+   "a9": "A9_SLEEVE_SUPPORT_POST_L_A",
+   "a10": "A10_SLEEVE_SUPPORT_POST_L_A",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_SLEEVE_SUPPORT_POST_L_F",
+   "a10": "A10_SLEEVE_SUPPORT_POST_L_F",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_SLEEVE_SUPPORT_POST_R_A",
+   "a10": "A10_SLEEVE_SUPPORT_POST_R_A",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_SLEEVE_SUPPORT_POST_R_F",
+   "a10": "A10_SLEEVE_SUPPORT_POST_R_F",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_AILERON",
+   "a10": "A10_WING_L_AILERON",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_AILERON_ROTARY_EMA",
+   "a10": "A10_WING_L_AILERON_ROTARY_EMA",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_FLAP",
+   "a10": "A10_WING_L_FLAP",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_FLAP_ROTARY_EMA",
+   "a10": "A10_WING_L_FLAP_ROTARY_EMA",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_LOCK_PIN_FRONT_IN",
+   "a10": "A10_WING_L_LOCK_PIN_FRONT_IN",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_LOCK_PIN_FRONT_OUT",
+   "a10": "A10_WING_L_LOCK_PIN_FRONT_OUT",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_LOCK_PIN_REAR_IN",
+   "a10": "A10_WING_L_LOCK_PIN_REAR_IN",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_LOCK_PIN_REAR_OUT",
+   "a10": "A10_WING_L_LOCK_PIN_REAR_OUT",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_PANEL_CFRP_TORSION_BOX",
+   "a10": "A10_WING_L_PANEL_CFRP_TORSION_BOX",
+   "change": "moved up 0.118 m to the common panel level; span 1.364 -> 1.198 m, tip chord 0.32 -> 0.42 m"
+  },
+  {
+   "a9": "A9_WING_L_ROOT_SEAL_STOP_PLATE",
+   "a10": "A10_WING_L_ROOT_SEAL_STOP_PLATE",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_SLIDE_MOTOR",
+   "a10": "A10_WING_L_SLIDE_MOTOR",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_L_TONGUE_CARRY_THROUGH_BOX",
+   "a10": "A10_WING_L_TONGUE_CARRY_THROUGH_BOX",
+   "change": "full-chord tongue in lower cell -> half-chord tongue in rear channel"
+  },
+  {
+   "a9": "A9_WING_R_LOCK_PIN_FRONT_IN",
+   "a10": "A10_WING_R_LOCK_PIN_FRONT_IN",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_R_LOCK_PIN_FRONT_OUT",
+   "a10": "A10_WING_R_LOCK_PIN_FRONT_OUT",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_R_LOCK_PIN_REAR_IN",
+   "a10": "A10_WING_R_LOCK_PIN_REAR_IN",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_R_LOCK_PIN_REAR_OUT",
+   "a10": "A10_WING_R_LOCK_PIN_REAR_OUT",
+   "change": "relocated/re-sized for the split-level cassette (see A10_WING_SYMMETRY_REVISION.md)"
+  },
+  {
+   "a9": "A9_WING_R_PANEL_CFRP_TORSION_BOX",
+   "a10": "A10_WING_R_PANEL_CFRP_TORSION_BOX",
+   "change": "same height as A9; span 1.364 -> 1.198 m, tip chord 0.32 -> 0.42 m"
+  },
+  {
+   "a9": "A9_WING_R_TONGUE_CARRY_THROUGH_BOX",
+   "a10": "A10_WING_R_TONGUE_CARRY_THROUGH_BOX",
+   "change": "full-chord 0.090 m tongue in upper cell -> half-chord 0.095 m tongue in front channel"
+  }
+ ],
+ "unchanged_from_A9": "canards (blades, spindles, yokes, root structures), induction ducts, haunch/hull shoulders, A8 trims, timeline (frames 1-530)",
+ "a8_removed": [
+  "CANARD_LEFT_FLUSH_AERO_COVER",
+  "CANARD_LEFT_TITANIUM_CLEVIS_MOUNT_RESERVATION",
+  "CANARD_RIGHT_FLUSH_AERO_COVER",
+  "CANARD_RIGHT_TITANIUM_CLEVIS_MOUNT_RESERVATION",
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_LEFT_SEALING_PERIMETER",
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_LEFT_SWEPT_CENTER_GUIDE",
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_RIGHT_SEALING_PERIMETER",
+  "DUCT_ENGINE_MAIN_SHOULDER_INLET_RIGHT_SWEPT_CENTER_GUIDE",
+  "MOUNT_001_WING_CARBON_CARRY_THROUGH_BENDING_BOX",
+  "PHANTOM_LEFT_CANARD_AMBER_EDGE",
+  "PHANTOM_LEFT_NOSE_CANARD_STOWED_BLADE",
+  "PHANTOM_LEFT_WING_AERODYNAMIC_ENVELOPE",
+  "PHANTOM_LEFT_WING_AMBER_OUTER_EDGE",
+  "PHANTOM_LEFT_WING_TITANIUM_ROOT_FAIRING",
+  "PHANTOM_NOSE_CANARD_HINGE_LEFT",
+  "PHANTOM_NOSE_CANARD_HINGE_RIGHT",
+  "PHANTOM_RIGHT_CANARD_AMBER_EDGE",
+  "PHANTOM_RIGHT_NOSE_CANARD_STOWED_BLADE",
+  "PHANTOM_RIGHT_WING_AERODYNAMIC_ENVELOPE",
+  "PHANTOM_RIGHT_WING_AMBER_OUTER_EDGE",
+  "PHANTOM_RIGHT_WING_TITANIUM_ROOT_FAIRING",
+  "PHANTOM_WING_HINGE_LEFT",
+  "PHANTOM_WING_HINGE_RIGHT",
+  "WING_LEFT_SEALED_REMOVABLE_FLUSH_FAIRING",
+  "WING_LEFT_TITANIUM_BEARING_LOAD_DISTRIBUTION",
+  "WING_RIGHT_SEALED_REMOVABLE_FLUSH_FAIRING",
+  "WING_RIGHT_TITANIUM_BEARING_LOAD_DISTRIBUTION"
+ ],
+ "a8_trimmed": [
+  "TUB_L_BONDED_ROOF_SHEAR_LONGERON",
+  "TUB_L_REAR_CONTINUOUS_SHEAR_WALL",
+  "TUB_R_BONDED_ROOF_SHEAR_LONGERON",
+  "TUB_R_REAR_CONTINUOUS_SHEAR_WALL",
+  "PHANTOM_REAR_LEFT_WIDEBODY_ANGULAR_FENDER",
+  "PHANTOM_LEFT_AFT_WHEEL_TO_ENGINE_FAIRING",
+  "PHANTOM_REAR_LEFT_FENDER_TOP_RIDGE",
+  "PHANTOM_REAR_RIGHT_WIDEBODY_ANGULAR_FENDER",
+  "PHANTOM_RIGHT_AFT_WHEEL_TO_ENGINE_FAIRING",
+  "PHANTOM_REAR_RIGHT_FENDER_TOP_RIDGE",
+  "PHANTOM_LEFT_SIDEBLADE_AMBER",
+  "PHANTOM_RIGHT_SIDEBLADE_AMBER",
+  "PHANTOM_LEFT_TRIANGULAR_COUP\u00c9_SIDEGLASS",
+  "PHANTOM_LEFT_CANOPY_GASKET_LINE",
+  "PHANTOM_RIGHT_TRIANGULAR_COUP\u00c9_SIDEGLASS",
+  "PHANTOM_RIGHT_CANOPY_GASKET_LINE",
+  "PHANTOM_LEFT_ANGULAR_RAKED_V_TAIL",
+  "PHANTOM_LEFT_FIN_AMBER_RAKE",
+  "PHANTOM_RIGHT_ANGULAR_RAKED_V_TAIL",
+  "PHANTOM_RIGHT_FIN_AMBER_RAKE",
+  "PHANTOM_CARBON_CENTRAL_REAR_DORSAL"
+ ]
+}

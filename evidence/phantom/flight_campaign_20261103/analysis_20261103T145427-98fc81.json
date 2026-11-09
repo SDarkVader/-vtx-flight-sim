@@ -1,0 +1,159 @@
+{
+ "run": "20261103T145427-98fc81",
+ "samples": 148879,
+ "trim_points": [
+  {
+   "t0": 7.97,
+   "t1": 23.54,
+   "height_m": 1.21,
+   "mass_kg": 1733.6,
+   "collective_applied": 0.649,
+   "thrust_total_n": 17001.0,
+   "T_over_W": 1.0,
+   "front_share": 0.4581,
+   "elec_power_kw": 1213.8,
+   "P_over_T15": 0.54754,
+   "W_per_N": 71.39,
+   "gef_FL": 1.0036,
+   "soc_rate_per_s": -0.001178,
+   "pitch_deg": -0.19,
+   "roll_deg": -0.08,
+   "pil_roll": 0.0,
+   "saturated_frac": 0.0
+  },
+  {
+   "t0": 27.88,
+   "t1": 37.12,
+   "height_m": 2.97,
+   "mass_kg": 1732.1,
+   "collective_applied": 0.6442,
+   "thrust_total_n": 16949.0,
+   "T_over_W": 0.9978,
+   "front_share": 0.4582,
+   "elec_power_kw": 1195.4,
+   "P_over_T15": 0.54087,
+   "W_per_N": 70.45,
+   "gef_FL": 1.0009,
+   "soc_rate_per_s": -0.001092,
+   "pitch_deg": 0.28,
+   "roll_deg": 0.63,
+   "pil_roll": 0.0,
+   "saturated_frac": 0.0
+  }
+ ],
+ "pti": [],
+ "events": [
+  {
+   "event": "ABORT",
+   "behavior": "collective 0, boosters 0, wheel drive 0, brakes on; all other targets held; no flight rescue"
+  },
+  {
+   "event": "touchdown",
+   "t_s": 37.93000000000175,
+   "sink_rate_m_s": 7.1444179020206455,
+   "supports": [
+    "foot_FL",
+    "foot_FR",
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "hard_landing",
+   "t_s": 37.93000000000175,
+   "sink_rate_m_s": 7.1444179020206455
+  },
+  {
+   "event": "touchdown",
+   "t_s": 37.9800000000017,
+   "sink_rate_m_s": 6.429514944452078,
+   "supports": [
+    "foot_FL",
+    "foot_RL"
+   ]
+  },
+  {
+   "event": "hard_landing",
+   "t_s": 37.9800000000017,
+   "sink_rate_m_s": 6.429514944452078
+  },
+  {
+   "event": "collision",
+   "t_s": 37.99000000000169,
+   "force_n": 863182.3143422987
+  },
+  {
+   "file": "crash_ring.npz",
+   "impact_velocity_m_s": [
+    -0.18060463983207228,
+    -0.5003388923777318,
+    -1.7677951677275603
+   ],
+   "attitude": {
+    "roll": 0.037788719015553356,
+    "pitch_up": 0.007278617103140258,
+    "yaw_left": -0.06866088723965345
+   },
+   "max_contact_force_n": 863182.3143422987
+  },
+  {
+   "event": "touchdown",
+   "t_s": 38.020000000001666,
+   "sink_rate_m_s": -0.7939869160630034,
+   "supports": [
+    "foot_FR",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 38.16000000000154,
+   "sink_rate_m_s": -2.106251078487699,
+   "supports": [
+    "foot_FL",
+    "foot_RL"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 38.21000000000149,
+   "sink_rate_m_s": -2.113891590643889,
+   "supports": [
+    "foot_FL",
+    "foot_RL"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 38.51000000000122,
+   "sink_rate_m_s": 0.557960886449022,
+   "supports": [
+    "foot_RL"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 39.60000000000023,
+   "sink_rate_m_s": -0.1250802804260628,
+   "supports": [
+    "foot_FR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 39.96999999999989,
+   "sink_rate_m_s": -0.008394323944943572,
+   "supports": [
+    "foot_FR",
+    "foot_RR"
+   ]
+  }
+ ],
+ "soc_start_end": [
+  0.899999,
+  0.999
+ ],
+ "t_end": 1488.79,
+ "max_height_m": 3.09116,
+ "saturation_time_s": 0.0
+}

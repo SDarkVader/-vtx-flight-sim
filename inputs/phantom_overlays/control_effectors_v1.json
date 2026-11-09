@@ -1,0 +1,318 @@
+{
+ "_note": "Opt-in overlay (A10-B). Wing-borne flight-control law and control effectors calibrated to real hardware. Gains scheduled on dynamic pressure blend from the hover law (q below q_blend[0]) to the wing-borne law (above q_blend[1]).",
+ "fbw_wingborne": {
+  "enabled": {
+   "v": 1.0,
+   "u": "-",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "wing-borne control law switch (1 = on)"
+  },
+  "q_blend_pa": {
+   "v": [
+    400.0,
+    2000.0
+   ],
+   "u": "Pa",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "dynamic pressure blend window (about 26-57 m/s): hover gains below, wing-borne gains above"
+  },
+  "attitude_gain": {
+   "v": [
+    2.0,
+    12.0
+   ],
+   "u": "1/rad",
+   "l": "DERIVED",
+   "s": "roll, pitch attitude gain; pitch sized so gain x control power exceeds the hull-lift instability (dM/da ~ +49.5 kN m/rad at 95 m/s) with the fans' differential thrust in the loop"
+  },
+  "rate_gain_s": {
+   "v": [
+    0.5,
+    2.0,
+    1.0
+   ],
+   "u": "s",
+   "l": "DERIVED",
+   "s": "roll, pitch, yaw rate damping (demand per rad/s); pitch for ~0.7 damping on the stabilised short period"
+  },
+  "beta_gain_per_rad": {
+   "v": 3.0,
+   "u": "1/rad",
+   "l": "DERIVED",
+   "s": "sideslip feedback; restores weathercock stability lost to the hull side force (Cn_beta -0.026/rad with the hull term)"
+  },
+  "bank_max_deg": {
+   "v": 45.0,
+   "u": "deg",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "wing-borne bank limit at full roll stick (1.41 g level turn); hover law keeps fbw.attitude_bank_max_deg"
+  }
+ },
+ "effectors": {
+  "enabled": {
+   "v": 1.0,
+   "u": "-",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "control effectors switch (1 = on): rudders, booster thrust vectoring, front steering, actuator calibration"
+  },
+  "canard_rate_deg_s": {
+   "v": 70.0,
+   "u": "deg/s",
+   "l": "MANUFACTURER",
+   "s": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg)"
+  },
+  "canard_stall_torque_nm": {
+   "v": 282.0,
+   "u": "N m",
+   "l": "MANUFACTURER",
+   "s": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg) (canard hinge moment ~25 N m at 120 m/s: pivot at the section AC)"
+  },
+  "rudder": {
+   "travel_deg": {
+    "v": 25.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "rudder travel (design choice)"
+   },
+   "rate_deg_s": {
+    "v": 70.0,
+    "u": "deg/s",
+    "l": "MANUFACTURER",
+    "s": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg)"
+   },
+   "tau": {
+    "v": 0.55,
+    "u": "-",
+    "l": "DERIVED",
+    "s": "flap effectiveness for a 30 % chord rudder (thin-aerofoil flap theory)"
+   },
+   "gain_deg_per_demand": {
+    "v": 25.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "rudder per unit yaw moment demand"
+   }
+  },
+  "tvc": {
+   "travel_deg": {
+    "v": 20.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "booster nozzle vectoring range (petal cowl), pitch and yaw combined"
+   },
+   "rate_deg_s": {
+    "v": 70.0,
+    "u": "deg/s",
+    "l": "MANUFACTURER",
+    "s": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg) (side load ~0.5 kN at ~0.1 m: ~55 N m)"
+   },
+   "pitch_gain_deg_per_demand": {
+    "v": 20.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "TVC pitch per unit pitch moment demand"
+   },
+   "yaw_gain_deg_per_demand": {
+    "v": 20.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "TVC yaw per unit yaw moment demand"
+   }
+  },
+  "steering": {
+   "max_deg": {
+    "v": 35.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "front road-wheel lock (road car range; corner modules reach 90 deg: Schaeffler Intelligent Corner Module, Hyundai Mobis e-Corner)"
+   },
+   "rate_deg_s": {
+    "v": 40.0,
+    "u": "deg/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "road-wheel steering rate (speed not published by ZF; Chalmers rear-steer study requires >= 25 deg/s)"
+   },
+   "rack_force_n": {
+    "v": 11000.0,
+    "u": "N",
+    "l": "MANUFACTURER",
+    "s": "ZF AKC 2nd-generation central steering actuator: 11 kN actuating force, vehicles up to 3.5 t (ZF press release); speed not published"
+   },
+   "steering_arm_m": {
+    "v": 0.12,
+    "u": "m",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "steering arm (knuckle) length"
+   },
+   "lat_accel_max_g": {
+    "v": 0.8,
+    "u": "g",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "speed schedule: wheel angle limited to the angle giving this lateral acceleration (tyre friction 1.0)"
+   },
+   "takeoff_lock_deg": {
+    "v": 2.0,
+    "u": "deg",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "take-off mode (wings deploying or out, on the ground): road-wheel lock; runway tracking only (0.8 g schedule already gives 1.6 deg at 30 m/s)"
+   },
+   "takeoff_rate_deg_s": {
+    "v": 10.0,
+    "u": "deg/s",
+    "l": "SYNTHETIC_UNVALIDATED",
+    "s": "take-off mode steering rate"
+   }
+  },
+  "added_components": {
+   "v": [
+    {
+     "id": "rudder_actuator_left",
+     "kind": "flight_control",
+     "mass_kg": 5.2,
+     "position_m": [
+      -2.06,
+      0.541,
+      0.95
+     ],
+     "half_m": [
+      0.08,
+      0.06,
+      0.08
+     ],
+     "label": "MANUFACTURER",
+     "source": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg)"
+    },
+    {
+     "id": "rudder_actuator_right",
+     "kind": "flight_control",
+     "mass_kg": 5.2,
+     "position_m": [
+      -2.06,
+      -0.541,
+      0.95
+     ],
+     "half_m": [
+      0.08,
+      0.06,
+      0.08
+     ],
+     "label": "MANUFACTURER",
+     "source": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg)"
+    },
+    {
+     "id": "rudder_surface_left",
+     "kind": "flight_control",
+     "mass_kg": 0.8,
+     "position_m": [
+      -2.2,
+      0.541,
+      1.05
+     ],
+     "half_m": [
+      0.06,
+      0.01,
+      0.15
+     ],
+     "label": "SYNTHETIC_UNVALIDATED",
+     "source": "CFRP rudder, 30 % fin chord"
+    },
+    {
+     "id": "rudder_surface_right",
+     "kind": "flight_control",
+     "mass_kg": 0.8,
+     "position_m": [
+      -2.2,
+      -0.541,
+      1.05
+     ],
+     "half_m": [
+      0.06,
+      0.01,
+      0.15
+     ],
+     "label": "SYNTHETIC_UNVALIDATED",
+     "source": "CFRP rudder, 30 % fin chord"
+    },
+    {
+     "id": "tvc_actuator_left",
+     "kind": "flight_control",
+     "mass_kg": 5.2,
+     "position_m": [
+      -2.45,
+      0.4,
+      0.51
+     ],
+     "half_m": [
+      0.08,
+      0.06,
+      0.08
+     ],
+     "label": "MANUFACTURER",
+     "source": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg)"
+    },
+    {
+     "id": "tvc_actuator_right",
+     "kind": "flight_control",
+     "mass_kg": 5.2,
+     "position_m": [
+      -2.45,
+      -0.4,
+      0.51
+     ],
+     "half_m": [
+      0.08,
+      0.06,
+      0.08
+     ],
+     "label": "MANUFACTURER",
+     "source": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg)"
+    },
+    {
+     "id": "stabilator_actuator",
+     "kind": "flight_control",
+     "mass_kg": 5.2,
+     "position_m": [
+      -2.055,
+      0.0,
+      1.05
+     ],
+     "half_m": [
+      0.08,
+      0.06,
+      0.08
+     ],
+     "label": "MANUFACTURER",
+     "source": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg)"
+    },
+    {
+     "id": "front_steering_actuator",
+     "kind": "chassis",
+     "mass_kg": 8.0,
+     "position_m": [
+      1.54,
+      0.0,
+      0.4
+     ],
+     "half_m": [
+      0.1,
+      0.35,
+      0.06
+     ],
+     "label": "SYNTHETIC_UNVALIDATED",
+     "source": "rack-type steer-by-wire actuator, AKC-class (mass not published)"
+    }
+   ],
+   "u": "-",
+   "l": "DERIVED",
+   "s": "components added by the control_effectors overlay (labels per item)"
+  }
+ },
+ "proposals": {
+  "p6_stab_rate_deg_s": {
+   "v": 70.0,
+   "u": "deg/s",
+   "l": "MANUFACTURER",
+   "s": "Moog Model 965 rotary actuator datasheet: 2,200 lb-in rated / 2,500 lb-in peak (249 / 282 N m), 70 deg/s no-load at 28 VDC, +/-90 deg stroke, 11.5 lb max (5.2 kg)"
+  }
+ }
+}

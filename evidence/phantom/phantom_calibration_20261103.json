@@ -1,0 +1,718 @@
+{
+ "schema": "phantom-calibration-20261103-1",
+ "date": "2026-11-03",
+ "label_key": {
+  "MEASURED_SIM": "read from the simulator run logs (phantom_steps.csv.gz 100 Hz FBW/plant channels, events.jsonl); simulator output, not aircraft data",
+  "DERIVED": "computed by the test pilot from MEASURED_SIM values with the stated formula or assumption"
+ },
+ "caveat": "All values come from a SYNTHETIC_UNVALIDATED model (inputs/phantom_parameters_v1.json). They are not validated aircraft performance.",
+ "server": {
+  "host": "127.0.0.1:8766",
+  "data_root": "evidence/phantom/flight_campaign_20261103/",
+  "time_scale_used": [
+   0.25,
+   0.1
+  ]
+ },
+ "runs": {
+  "20261103T144211-55c7ac": "phantom G-3 attempt voided: the operator-panel heartbeat overrode the collective, and the legacy 10 kg fuel default applied",
+  "20261103T144550-be8193": "phantom (as drawn, 110 kg fuel): G-2/G-3 and 2 lift-off attempts; no lift-off",
+  "20261103T144853-5e8e48": "phantom-fx FX-C: G-2/G-3/G-4, H-1 #1",
+  "20261103T145427-98fc81": "phantom-fx FX-C: H-1 #2, H-2 at 1.4/3 m, then an UNPLANNED X-1 lease-expiry crash from 3.1 m",
+  "20261103T190252-3ef734": "phantom-fx FX-C: O-1, O-2, O-3 PTIs, L-1 (1.6/3.1/4.8 m/s forward, 2.2 m/s aft), landing",
+  "20261103T192918-14ade4": "phantom-fx FX-C: T-2X hop 200 m east; landed at B",
+  "20261103T194858-35a724": "phantom-fx FX-A: H-1, O-2, part of O-3, X-5 rungs"
+ },
+ "ground_thrust_calibration_G3": {
+  "phantom": {
+   "label": "MEASURED_SIM",
+   "run": "20261103T144550-be8193",
+   "mass_kg": 1897,
+   "steps": [
+    {
+     "collective": 0.2,
+     "thrust_n": [
+      422,
+      423,
+      1111,
+      1111
+     ],
+     "T_over_W": 0.165,
+     "elec_kw": 256
+    },
+    {
+     "collective": 0.4,
+     "thrust_n": [
+      812,
+      812,
+      2143,
+      2142
+     ],
+     "T_over_W": 0.318,
+     "elec_kw": 612
+    },
+    {
+     "collective": 0.6,
+     "thrust_n": [
+      1208,
+      1207,
+      3202,
+      3206
+     ],
+     "T_over_W": 0.474,
+     "elec_kw": 1088
+    },
+    {
+     "collective": 0.8,
+     "thrust_n": [
+      1385,
+      1386,
+      3531,
+      3533
+     ],
+     "T_over_W": 0.529,
+     "elec_kw": 1254,
+     "saturated": true
+    },
+    {
+     "collective": 1.0,
+     "thrust_n": [
+      1384,
+      1384,
+      3533,
+      3532
+     ],
+     "T_over_W": 0.529,
+     "elec_kw": 1253,
+     "saturated": true
+    },
+    {
+     "mode": "attitude_vs VS +0.5",
+     "T_over_W": 0.525,
+     "elec_kw": 1245,
+     "saturated": true
+    }
+   ],
+   "max_T_over_W": 0.529,
+   "limit": "The rear pods top out at about 3530 N (8480 rpm) with the generators at their 1.2 MW cap. Attitude-priority desaturation then scales the front pods down to hold the pitch moment, so total thrust plateaus at 53% of weight.",
+   "note_vs_bench": "The bench (phantom_bench_results.json) reports a collective margin of -0.208 (0.79 W). The live G-3 ceiling is 0.53 W. Logged as defect D-9."
+  },
+  "phantom-fx FX-C": {
+   "label": "MEASURED_SIM",
+   "run": "20261103T144853-5e8e48",
+   "mass_kg": 1734,
+   "steps": [
+    {
+     "collective": 0.1,
+     "T_over_W": 0.167,
+     "elec_kw": 119
+    },
+    {
+     "collective": 0.2,
+     "T_over_W": 0.316,
+     "elec_kw": 244
+    },
+    {
+     "collective": 0.3,
+     "T_over_W": 0.465,
+     "elec_kw": 403
+    },
+    {
+     "collective": 0.4,
+     "T_over_W": 0.616,
+     "elec_kw": 588
+    },
+    {
+     "collective": 0.5,
+     "T_over_W": 0.771,
+     "elec_kw": 808
+    },
+    {
+     "collective": 0.6,
+     "T_over_W": 0.925,
+     "elec_kw": 1055
+    }
+   ],
+   "thrust_per_collective_over_W": {
+    "v": 1.54,
+    "label": "DERIVED",
+    "formula": "slope of T/W against collective"
+   },
+   "front_share": {
+    "v": 0.458,
+    "label": "MEASURED_SIM"
+   }
+  }
+ },
+ "hover_trim_table": [
+  {
+   "variant": "phantom-fx",
+   "load": "FX-C",
+   "condition": "IGE 1.9 m",
+   "label": "MEASURED_SIM",
+   "height_m": 1.9,
+   "mass_kg": 1730.9,
+   "collective_applied": 0.6456,
+   "T_over_W": 0.9966,
+   "front_share": 0.4581,
+   "elec_power_kw": 1234.5,
+   "W_per_N": 72.97,
+   "P_over_T15": 0.56099,
+   "soc_rate_per_s": -0.001225,
+   "roll_deg": -1.88,
+   "pitch_deg": -0.01
+  },
+  {
+   "variant": "phantom-fx",
+   "load": "FX-C",
+   "condition": "OGE",
+   "label": "MEASURED_SIM",
+   "height_m": 8.78,
+   "mass_kg": 1732.2,
+   "collective_applied": 0.6477,
+   "T_over_W": 0.9989,
+   "front_share": 0.4581,
+   "elec_power_kw": 1247.3,
+   "W_per_N": 73.5,
+   "P_over_T15": 0.56423,
+   "soc_rate_per_s": -0.001272,
+   "roll_deg": -0.19,
+   "pitch_deg": -0.0
+  },
+  {
+   "variant": "phantom-fx",
+   "load": "FX-C",
+   "condition": "OGE",
+   "label": "MEASURED_SIM",
+   "height_m": 8.74,
+   "mass_kg": 1731.4,
+   "collective_applied": 0.6489,
+   "T_over_W": 1.0013,
+   "front_share": 0.4597,
+   "elec_power_kw": 1218.0,
+   "W_per_N": 71.64,
+   "P_over_T15": 0.54943,
+   "soc_rate_per_s": -0.001164,
+   "roll_deg": -0.16,
+   "pitch_deg": -0.74
+  },
+  {
+   "variant": "phantom-fx",
+   "load": "FX-C",
+   "condition": "OGE",
+   "label": "MEASURED_SIM",
+   "height_m": 8.74,
+   "mass_kg": 1730.9,
+   "collective_applied": 0.6486,
+   "T_over_W": 1.0012,
+   "front_share": 0.4571,
+   "elec_power_kw": 1211.9,
+   "W_per_N": 71.31,
+   "P_over_T15": 0.54703,
+   "soc_rate_per_s": -0.001141,
+   "roll_deg": -0.38,
+   "pitch_deg": 0.36
+  },
+  {
+   "variant": "phantom-fx",
+   "load": "FX-C",
+   "condition": "OGE",
+   "label": "MEASURED_SIM",
+   "height_m": 8.73,
+   "mass_kg": 1730.1,
+   "collective_applied": 0.6476,
+   "T_over_W": 1.0,
+   "front_share": 0.4579,
+   "elec_power_kw": 1209.4,
+   "W_per_N": 71.28,
+   "P_over_T15": 0.54718,
+   "soc_rate_per_s": -0.001132,
+   "roll_deg": -0.19,
+   "pitch_deg": 0.05
+  },
+  {
+   "variant": "phantom-fx",
+   "load": "FX-C",
+   "condition": "OGE",
+   "label": "MEASURED_SIM",
+   "height_m": 10.76,
+   "mass_kg": 1728.8,
+   "collective_applied": 0.6476,
+   "T_over_W": 1.0008,
+   "front_share": 0.4568,
+   "elec_power_kw": 1212.4,
+   "W_per_N": 71.46,
+   "P_over_T15": 0.54859,
+   "soc_rate_per_s": -0.001144,
+   "roll_deg": -0.16,
+   "pitch_deg": 0.33
+  },
+  {
+   "variant": "phantom-fx",
+   "load": "FX-C",
+   "condition": "OGE",
+   "label": "MEASURED_SIM",
+   "height_m": 10.75,
+   "mass_kg": 1728.1,
+   "collective_applied": 0.6471,
+   "T_over_W": 1.0004,
+   "front_share": 0.458,
+   "elec_power_kw": 1208.4,
+   "W_per_N": 71.28,
+   "P_over_T15": 0.54741,
+   "soc_rate_per_s": -0.001129,
+   "roll_deg": -0.62,
+   "pitch_deg": -0.04
+  },
+  {
+   "variant": "phantom-fx",
+   "load": "FX-A",
+   "condition": "OGE 5.6 m",
+   "label": "MEASURED_SIM",
+   "height_m": 5.61,
+   "mass_kg": 1886.9,
+   "collective_applied": 0.7056,
+   "T_over_W": 0.9989,
+   "front_share": 0.4598,
+   "elec_power_kw": 1407.1,
+   "W_per_N": 76.12,
+   "P_over_T15": 0.55988,
+   "soc_rate_per_s": -0.001857,
+   "roll_deg": -0.02,
+   "pitch_deg": -0.0
+  },
+  {
+   "variant": "phantom-fx",
+   "load": "FX-C",
+   "condition": "cruise 4.8 m/s at 18 m (hop)",
+   "label": "MEASURED_SIM",
+   "height_m": 18.37,
+   "mass_kg": 1729.6,
+   "collective_applied": 0.6474,
+   "T_over_W": 1.0001,
+   "front_share": 0.4572,
+   "elec_power_kw": 1153.8,
+   "W_per_N": 68.0,
+   "P_over_T15": 0.52209,
+   "soc_rate_per_s": -0.000929,
+   "roll_deg": 0.09,
+   "pitch_deg": -2.34
+  }
+ ],
+ "pilot_trim_stick": {
+  "label": "MEASURED_SIM",
+  "fxC_roll_stick_for_wings_level": {
+   "v": -0.13,
+   "range": [
+    -0.12,
+    -0.16
+   ],
+   "note": "The attitude loop is proportional only. With one occupant the lateral CG is at y -0.014 m, which leaves about 2 deg of right bank with zero stick."
+  },
+  "fxA_roll_stick": 0.0,
+  "pitch_trim_stick_hover": 0.0,
+  "per_pod_split": {
+   "front_share_FX_C": 0.458,
+   "front_share_FX_A": 0.46,
+   "phantom_as_drawn_required_front": 0.27,
+   "note": "phantom-fx splits thrust 0.46/0.54 front/rear, matching the ledger CG at -0.15 m. As drawn, the rear pods would need 0.73 of the thrust, and they saturate."
+  }
+ },
+ "control_response_identified": {
+  "label": "MEASURED_SIM",
+  "note": "attitude_vs (M2). Commanded attitude is stick x 15 deg for roll and stick x 10 deg for pitch. Delay is the first time the on-axis rate exceeds 10% of its peak. Produced by analyse.py.",
+  "fxC": [
+   {
+    "t0": 33.16,
+    "axis": "pitch",
+    "type": "doublet",
+    "amplitude": 0.3,
+    "pulse_s": 1.2,
+    "peak_rate": 8.01,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 5.9,
+    "delay_10pct_s": 0.147,
+    "peak_attitude_change_deg": 5.08,
+    "commanded_attitude_deg": 3.0,
+    "off_axis_ratio": 0.037
+   },
+   {
+    "t0": 39.2,
+    "axis": "roll",
+    "type": "doublet",
+    "amplitude": 0.2,
+    "pulse_s": 1.2,
+    "peak_rate": 15.58,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 20.4,
+    "delay_10pct_s": 0.107,
+    "peak_attitude_change_deg": 6.61,
+    "commanded_attitude_deg": 3.0,
+    "off_axis_ratio": 0.427
+   },
+   {
+    "t0": 45.23,
+    "axis": "yaw",
+    "type": "doublet",
+    "amplitude": 0.4,
+    "pulse_s": 2.3,
+    "peak_rate": 4.03,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 3.1,
+    "delay_10pct_s": 0.173
+   },
+   {
+    "t0": 53.26,
+    "axis": "heave",
+    "type": "step",
+    "amplitude": 0.17,
+    "pulse_s": 4.0,
+    "peak_rate": 0.57,
+    "peak_rate_units": "m/s",
+    "peak_accel": 0.6,
+    "delay_10pct_s": 0.138
+   },
+   {
+    "t0": 60.29,
+    "axis": "pitch",
+    "type": "3211",
+    "amplitude": 0.3,
+    "pulse_s": 0.6,
+    "peak_rate": 9.56,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 5.8,
+    "delay_10pct_s": 0.135,
+    "peak_attitude_change_deg": 5.27,
+    "commanded_attitude_deg": 3.0,
+    "off_axis_ratio": 0.011
+   },
+   {
+    "t0": 68.33,
+    "axis": "roll",
+    "type": "3211",
+    "amplitude": 0.2,
+    "pulse_s": 0.6,
+    "peak_rate": 18.28,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 24.2,
+    "delay_10pct_s": 0.12,
+    "peak_attitude_change_deg": 5.91,
+    "commanded_attitude_deg": 3.0,
+    "off_axis_ratio": 0.211
+   },
+   {
+    "t0": 76.36,
+    "axis": "pitch",
+    "type": "step",
+    "amplitude": 0.5,
+    "pulse_s": 4.0,
+    "peak_rate": 7.2,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 11.6,
+    "delay_10pct_s": 0.115,
+    "peak_attitude_change_deg": 8.57,
+    "commanded_attitude_deg": 5.0,
+    "steady_attitude_deg": 5.92,
+    "steady_error_frac": -0.184,
+    "time_constant_63pct_s": 1.075,
+    "off_axis_ratio": 0.151
+   },
+   {
+    "t0": 84.4,
+    "axis": "roll",
+    "type": "step",
+    "amplitude": 0.33,
+    "pulse_s": 4.0,
+    "peak_rate": 10.58,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 35.5,
+    "delay_10pct_s": 0.068,
+    "peak_attitude_change_deg": 7.23,
+    "commanded_attitude_deg": 4.95,
+    "steady_attitude_deg": 4.75,
+    "steady_error_frac": 0.04,
+    "time_constant_63pct_s": 0.498,
+    "off_axis_ratio": 0.18
+   }
+  ],
+  "fxA": [
+   {
+    "t0": 25.01,
+    "axis": "pitch",
+    "type": "step",
+    "amplitude": 0.3,
+    "pulse_s": 4.0,
+    "peak_rate": 3.62,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 5.9,
+    "delay_10pct_s": 0.102,
+    "peak_attitude_change_deg": 4.97,
+    "commanded_attitude_deg": 3.0,
+    "steady_attitude_deg": 3.29,
+    "steady_error_frac": -0.097,
+    "time_constant_63pct_s": 0.962,
+    "off_axis_ratio": 0.058
+   },
+   {
+    "t0": 32.01,
+    "axis": "roll",
+    "type": "doublet",
+    "amplitude": 0.2,
+    "pulse_s": 1.2,
+    "peak_rate": 15.5,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 21.4,
+    "delay_10pct_s": 0.105,
+    "peak_attitude_change_deg": 6.68,
+    "commanded_attitude_deg": 3.0,
+    "off_axis_ratio": 0.178
+   }
+  ],
+  "on_gear_G4_fxC": [
+   {
+    "t0": 40.52,
+    "axis": "roll",
+    "type": "step",
+    "amplitude": 0.2,
+    "pulse_s": 1.0,
+    "peak_rate": 1.08,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 8.6,
+    "delay_10pct_s": 0.043,
+    "peak_attitude_change_deg": 0.29,
+    "commanded_attitude_deg": 3.0,
+    "steady_attitude_deg": 0.19,
+    "steady_error_frac": 0.937,
+    "time_constant_63pct_s": 0.213,
+    "off_axis_ratio": 0.302
+   },
+   {
+    "t0": 43.62,
+    "axis": "pitch",
+    "type": "step",
+    "amplitude": 0.3,
+    "pulse_s": 1.0,
+    "peak_rate": 0.37,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 3.2,
+    "delay_10pct_s": 0.038,
+    "peak_attitude_change_deg": 0.07,
+    "commanded_attitude_deg": 3.0,
+    "steady_attitude_deg": 0.05,
+    "steady_error_frac": 0.983,
+    "time_constant_63pct_s": 0.178,
+    "off_axis_ratio": 0.475
+   },
+   {
+    "t0": 46.71,
+    "axis": "yaw",
+    "type": "step",
+    "amplitude": 0.25,
+    "pulse_s": 2.0,
+    "peak_rate": 0.01,
+    "peak_rate_units": "deg/s",
+    "peak_accel": 0.7,
+    "delay_10pct_s": 0.025
+   }
+  ],
+  "summary": {
+   "label": "DERIVED",
+   "roll": {
+    "peak_accel_deg_s2": "20-35",
+    "peak_rate_3deg_doublet_deg_s": 15.6,
+    "doublet_attitude_overshoot_ratio": 2.2,
+    "step_time_constant_s": 0.5,
+    "step_steady_error_frac": 0.04,
+    "delay_s": "0.07-0.12",
+    "off_axis_ratio": "0.18-0.43"
+   },
+   "pitch": {
+    "peak_accel_deg_s2": "6-12",
+    "peak_rate_3deg_doublet_deg_s": 8.0,
+    "doublet_attitude_overshoot_ratio": 1.7,
+    "step_time_constant_s": "0.96-1.08",
+    "step_peak_over_command": "1.66 (3 deg) / 1.71 (5 deg)",
+    "step_steady_over_command": "1.10 / 1.18",
+    "delay_s": "0.10-0.15",
+    "off_axis_ratio": "0.01-0.15"
+   },
+   "yaw": {
+    "commanded_rate_deg_s": 8,
+    "achieved_peak_rate_deg_s": 4.0,
+    "ratio": 0.5,
+    "delay_s": 0.17,
+    "note": "Yaw authority is about half the command. Heading creeps 0.3-1 deg/s with zero pedal, because there is no heading hold."
+   },
+   "heave": {
+    "commanded_m_s": 0.51,
+    "achieved_m_s": 0.57,
+    "delay_s": 0.14
+   },
+   "damping_note": "Doublet responses overshoot 1.7-2.2x. A sustained pitch oscillation of +/-3 to 8 deg (q up to +/-10 deg/s, period about 2-3 s) appeared after pitch inputs in translation (L-1 rearward, hop deceleration) with no PTI active.",
+   "fbw_transport_delay_s": {
+    "v": 0.02,
+    "label": "parameter fbw.transport_delay_s"
+   }
+  }
+ },
+ "power_vs_thrust": {
+  "label": "DERIVED",
+  "formula": "P_elec / T^1.5 from trim points (W per N^1.5)",
+  "fxC_OGE": 0.547,
+  "fxA_OGE": 0.56,
+  "fxC_IGE_1p9m": 0.561,
+  "fxC_cruise_4p8_m_s": 0.522,
+  "on_gear_fxC_W_per_N": [
+   41.7,
+   45.4,
+   50.9,
+   56.1,
+   61.7,
+   67.1
+  ],
+  "hover_W_per_N": {
+   "fxC": 71.3,
+   "fxA": 76.1,
+   "phantom_as_drawn_at_0p53W": 127.4
+  },
+  "ground_effect": {
+   "gef_FL_at_1p9m": 1.0019,
+   "label": "MEASURED_SIM",
+   "note": "No useful IGE benefit at the heights flown: the fans sit high and ground effect is capped."
+  }
+ },
+ "low_speed_L1_fxC": {
+  "label": "MEASURED_SIM",
+  "points": [
+   {
+    "speed_m_s": 1.6,
+    "pitch_deg": -1.6
+   },
+   {
+    "speed_m_s": 3.1,
+    "pitch_deg": -3.6
+   },
+   {
+    "speed_m_s": 4.8,
+    "pitch_deg": -4.0,
+    "elec_kw": 1154
+   },
+   {
+    "speed_m_s": -2.2,
+    "pitch_deg": "+2 commanded; actual oscillated +6.6/-1.6"
+   }
+  ],
+  "derived": {
+   "label": "DERIVED",
+   "trim_pitch_deg_per_m_s": -1.0,
+   "note": "Ram drag dominates at low speed. Electrical power falls about 5% from hover to 4.8 m/s."
+  }
+ },
+ "energy_and_endurance": {
+  "buffer": {
+   "energy_j": 288000000.0,
+   "soc_initial": 0.9,
+   "soc_min": 0.1,
+   "continuous_w": 799892,
+   "peak_w": 1199838,
+   "label": "parameter"
+  },
+  "hover_buffer_draw_kw": {
+   "fxC": 310,
+   "fxA": 470,
+   "label": "MEASURED_SIM"
+  },
+  "predicted_OGE_hover_endurance_s": {
+   "fxC": 517,
+   "fxA": 397,
+   "label": "DERIVED",
+   "formula": "Buffer from SOC 0.9 to 0.1 (288 MJ x 0.8). 300 s at the 900 kW take-off rating, then 600 kW continuous. FX-A post-rating draw of 807 kW exceeds the 800 kW continuous buffer limit."
+  },
+  "hop_T2X": {
+   "label": "MEASURED_SIM",
+   "sim_s": 116.2,
+   "propulsion_j": 131477287,
+   "generator_j": 101666368,
+   "buffer_out_j": 32787623,
+   "fuel_kg": 10.17,
+   "soc": [
+    0.9,
+    0.78
+   ],
+   "energy_residual_j": 0.0
+  }
+ },
+ "variant_comparison": {
+  "phantom": {
+   "lift_off": false,
+   "max_T_over_W": 0.529,
+   "label": "MEASURED_SIM"
+  },
+  "fxC": {
+   "lift_off": true,
+   "hover_collective": 0.648,
+   "hover_kw": 1210,
+   "front_share": 0.458,
+   "roll_trim_stick": -0.13,
+   "endurance_s_pred": 517
+  },
+  "fxA": {
+   "lift_off": true,
+   "hover_collective": 0.706,
+   "hover_kw": 1407,
+   "front_share": 0.46,
+   "roll_trim_stick": 0.0,
+   "endurance_s_pred": 397
+  }
+ },
+ "pilot_loop": {
+  "label": "MEASURED_SIM",
+  "note": "sim seconds between deliberate pilot decisions; keep-alive holds every ~0.1 s sim",
+  "fxC_O_L_sortie": {
+   "p50": 7.55,
+   "p95": 10.37
+  },
+  "hop": {
+   "p50": 5.75,
+   "p95": 16.65
+  },
+  "fxA": {
+   "p50": 6.05,
+   "p95": 12.95
+  },
+  "keepalive_p95": 0.107
+ },
+ "touchdowns": {
+  "label": "MEASURED_SIM",
+  "events": [
+   {
+    "run": "20261103T145427-98fc81",
+    "sink_m_s": 7.14,
+    "outcome": "collision, 863 kN peak contact (lease expiry from 3.1 m)"
+   },
+   {
+    "run": "20261103T144853-5e8e48",
+    "sink_m_s": 0.25
+   },
+   {
+    "run": "20261103T190252-3ef734",
+    "sink_m_s": 0.35
+   },
+   {
+    "run": "20261103T192918-14ade4",
+    "sink_m_s": 0.4,
+    "outcome": "landed at B, 1.4 m from the point"
+   },
+   {
+    "run": "20261103T194858-35a724",
+    "sink_m_s": [
+     0.47,
+     1.75,
+     2.91
+    ],
+    "max_contact_n": 17286,
+    "bounce_up_m_s": 1.04
+   }
+  ]
+ }
+}

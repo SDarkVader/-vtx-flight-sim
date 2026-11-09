@@ -1,0 +1,511 @@
+{
+ "schema": "phantom-bench-1",
+ "note": "Canned-input physics benches; not missions or piloted flights.",
+ "results": {
+  "phantom": {
+   "zero_power_on_gear": {
+    "vtol": {
+     "dz_m": -0.07221221945852163,
+     "roll_deg": -0.03321566428344816,
+     "pitch_deg": 3.223574823072329,
+     "speed_m_s": 0.023451203714941717,
+     "support": [
+      "foot_FL",
+      "foot_FR",
+      "foot_RL",
+      "foot_RR"
+     ],
+     "crashed": false,
+     "passed": true
+    },
+    "road": {
+     "dz_m": -0.003965837350502342,
+     "roll_deg": -5.156617662857785e-06,
+     "pitch_deg": 0.003351354385448123,
+     "speed_m_s": 0.0036171866310756155,
+     "support": [
+      "tyre_FL",
+      "tyre_FR",
+      "tyre_RL",
+      "tyre_RR"
+     ],
+     "crashed": false,
+     "passed": true
+    }
+   },
+   "fixture_freefall": {
+    "mean_vertical_accel_m_s2": -9.767167724094865,
+    "expected": -9.80665,
+    "body_drag_included": true,
+    "passed": true
+   },
+   "joint_travel": {
+    "legs_retract": {
+     "t_s": 1.7500000000000067,
+     "min_t_s": 1.7333333333333334,
+     "passed": true
+    },
+    "legs_extend": {
+     "t_s": 1.7000000000002657,
+     "min_t_s": 1.6333333333333333,
+     "achieved_m": 0.5117809538873823,
+     "note": "lifting the vehicle off its tyres; residual = servo droop under load",
+     "passed": true
+    },
+    "pods_to_fan": {
+     "t_s": 1.4000000000000945,
+     "min_t_s": 1.2466637514245211,
+     "passed": true
+    },
+    "pods_to_road": {
+     "t_s": 1.3999999999997215,
+     "min_t_s": 1.2466637514245211,
+     "passed": true
+    },
+    "canards_deploy": {
+     "t_s": 1.5499999999996916,
+     "min_t_s": 1.5,
+     "passed": true
+    },
+    "canard_pitch_max": {
+     "t_s": 0.6499999999998707,
+     "min_t_s": 0.625,
+     "passed": true
+    },
+    "canard_pitch_min": {
+     "t_s": 1.1499999999997712,
+     "min_t_s": 1.125,
+     "passed": true
+    },
+    "wing_deploy_sequence": {
+     "t_s": 6.400000000002279,
+     "state": {
+      "left": "locked",
+      "right": "locked"
+     },
+     "lock_eq": [
+      true,
+      true
+     ],
+     "min_t_s": 6.066666666666667,
+     "slide_m": -7.383307908558089e-07,
+     "passed": true
+    },
+    "flap_full": {
+     "t_s": 2.3500000000012022,
+     "min_t_s": 2.3333333333333335,
+     "passed": true
+    },
+    "aileron_trim_max": {
+     "t_s": 0.3000000000001535,
+     "min_t_s": 0.25,
+     "passed": true
+    },
+    "wing_stow_sequence": {
+     "t_s": 6.300000000001869,
+     "state": {
+      "left": "stowed",
+      "right": "stowed"
+     },
+     "min_t_s": 6.066666666666667,
+     "passed": true
+    }
+   },
+   "thrust_and_gyro": {
+    "thrust_direction": {
+     "pod": "FL",
+     "tilt_deg": 60.00887064884256,
+     "axis_world": [
+      -0.19048612785300667,
+      0.5367030179593942,
+      0.8219883853247841
+     ],
+     "expected": [
+      -0.1904861228011207,
+      0.5367029461801371,
+      0.821988433362512
+     ],
+     "thrust_n": 603.1103500769005,
+     "passed": true
+    },
+    "gyro_sign": {
+     "delta_body_rates_spin_pos": [
+      0.19697695720768027,
+      -0.11832138638847889,
+      0.019146394055607908
+     ],
+     "delta_body_rates_spin_neg": [
+      0.19537419084011595,
+      -0.11943817734558533,
+      -0.005751404095577083
+     ],
+     "gyro_part_body": [
+      0.0008013831837821589,
+      0.0005583954785532211,
+      0.012448899075592495
+     ],
+     "expected_direction_body": [
+      0.17101265070621316,
+      -0.9836295362007456,
+      0.056812048123080466
+     ],
+     "passed": true
+    }
+   },
+   "power_limited_thrust": {
+    "engine_lever": 0.3,
+    "soc_start": 0.11,
+    "soc_end": 0.09995657731499387,
+    "demand_w": 1021695.5880223115,
+    "delivered_w": 342115.8739666474,
+    "unmet_w": 679579.714055664,
+    "propulsion_scale": 0.31773186751130256,
+    "thrust_cmd_n": 10145.878866390196,
+    "thrust_achieved_n": 4153.429248229636,
+    "soc_never_below_min": false,
+    "passed": true
+   },
+   "mass_update": {
+    "mass_full": 1897.1169595989998,
+    "mass_burned": 1809.1169595989998,
+    "cg_full": [
+     -0.7335572111287724,
+     0.00012976549257174931,
+     0.540013835930665
+    ],
+    "cg_burned": [
+     -0.7181646378222679,
+     0.00013607761257356784,
+     0.544392335352645
+    ],
+    "Izz_full": 3677.0627388053213,
+    "Izz_burned": 3653.375457395483,
+    "ledger_mass_burned": 1809.1169557793764,
+    "one_occupant_mass": 1812.1169595989998,
+    "one_occupant_cg_y": -0.013936066685389515,
+    "passed": true
+   },
+   "contact_no_pose_jumps": {
+    "max_step_displacement_m": 0.007733654349652751,
+    "speed_bound_per_step_m": 0.1,
+    "rolling_speed_m_s": 3.0934561283900206,
+    "after_brake_speed_m_s": 0.0015908736546362495,
+    "support_after": [
+     "tyre_FL",
+     "tyre_FR",
+     "tyre_RL",
+     "tyre_RR"
+    ],
+    "crashed": false,
+    "passed": true
+   },
+   "energy_residual": {
+    "bus_residual_j": 0.0,
+    "generator_j": 1174377.5828985395,
+    "buffer_out_j": 385112.97498865874,
+    "buffer_in_j": 0.0,
+    "unmet_j": 349808.67845357343,
+    "passed": true
+   },
+   "hover": [
+    {
+     "variant": "phantom",
+     "load_state": null,
+     "mass_kg": 1897.116959598999,
+     "cg_x_m": -0.7333933447720122,
+     "height_gain_m": -0.023266723449981458,
+     "vz_m_s": 0.016825866087088543,
+     "left_ground": false,
+     "thrust_max_per_pod_n": 3682.9111245400013,
+     "collective_margin": -0.20816180243435645,
+     "worst_pod_margin": -0.4548999705484277,
+     "generator_w": 1199835.6896224425,
+     "buffer_w": 59169.333185739815,
+     "unmet_w": 0.0,
+     "soc": 0.8738965121581269,
+     "saturated": true,
+     "roll_deg": -0.06130288326502425,
+     "pitch_deg": 1.1609152955459048,
+     "crashed": false,
+     "energy_balance_residual_j": 0.0,
+     "fuel_used_kg": 0.9812298900872918
+    }
+   ]
+  },
+  "phantom-fx": {
+   "zero_power_on_gear": {
+    "vtol": {
+     "dz_m": -0.06919496127385175,
+     "roll_deg": -0.003189533179098334,
+     "pitch_deg": 0.5171856500618869,
+     "speed_m_s": 1.490795939578983e-10,
+     "support": [
+      "foot_FL",
+      "foot_FR",
+      "foot_RL",
+      "foot_RR"
+     ],
+     "crashed": false,
+     "passed": true
+    },
+    "road": {
+     "dz_m": -0.0036962948533483947,
+     "roll_deg": 4.3113298385474236e-06,
+     "pitch_deg": 0.00032969592843151154,
+     "speed_m_s": 0.0015883419558021517,
+     "support": [
+      "tyre_FL",
+      "tyre_FR",
+      "tyre_RL",
+      "tyre_RR"
+     ],
+     "crashed": false,
+     "passed": true
+    }
+   },
+   "fixture_freefall": {
+    "mean_vertical_accel_m_s2": -9.77967633861039,
+    "expected": -9.80665,
+    "body_drag_included": true,
+    "passed": true
+   },
+   "joint_travel": {
+    "legs_retract": {
+     "t_s": 1.7500000000000067,
+     "min_t_s": 1.7333333333333334,
+     "passed": true
+    },
+    "legs_extend": {
+     "t_s": 1.7500000000002736,
+     "min_t_s": 1.6333333333333333,
+     "achieved_m": 0.4983235329770617,
+     "note": "lifting the vehicle off its tyres; residual = servo droop under load",
+     "passed": true
+    },
+    "pods_to_fan": {
+     "t_s": 1.4000000000000767,
+     "min_t_s": 1.2466637514245211,
+     "passed": true
+    },
+    "pods_to_road": {
+     "t_s": 1.3999999999997215,
+     "min_t_s": 1.2466637514245211,
+     "passed": true
+    },
+    "canards_deploy": {
+     "t_s": 1.5499999999996916,
+     "min_t_s": 1.5,
+     "passed": true
+    },
+    "canard_pitch_max": {
+     "t_s": 0.6499999999998707,
+     "min_t_s": 0.625,
+     "passed": true
+    },
+    "canard_pitch_min": {
+     "t_s": 1.1499999999997712,
+     "min_t_s": 1.125,
+     "passed": true
+    },
+    "wing_deploy_sequence": {
+     "t_s": 6.400000000002315,
+     "state": {
+      "left": "locked",
+      "right": "locked"
+     },
+     "lock_eq": [
+      true,
+      true
+     ],
+     "min_t_s": 6.066666666666667,
+     "slide_m": -3.338585832298025e-07,
+     "passed": true
+    },
+    "flap_full": {
+     "t_s": 2.3500000000012022,
+     "min_t_s": 2.3333333333333335,
+     "passed": true
+    },
+    "aileron_trim_max": {
+     "t_s": 0.3000000000001535,
+     "min_t_s": 0.25,
+     "passed": true
+    },
+    "wing_stow_sequence": {
+     "t_s": 6.300000000001798,
+     "state": {
+      "left": "stowed",
+      "right": "stowed"
+     },
+     "min_t_s": 6.066666666666667,
+     "passed": true
+    }
+   },
+   "thrust_and_gyro": {
+    "thrust_direction": {
+     "pod": "FL",
+     "tilt_deg": 60.11776018937675,
+     "axis_world": [
+      -0.22449911720992297,
+      0.7665849456470539,
+      0.6016208668914894
+     ],
+     "expected": [
+      -0.22449811452043894,
+      0.766581524607109,
+      0.6016256001100742
+     ],
+     "thrust_n": 1809.23093502321,
+     "passed": true
+    },
+    "gyro_sign": {
+     "delta_body_rates_spin_pos": [
+      1.9556534127285716,
+      -0.48431106025407156,
+      0.1910015335171477
+     ],
+     "delta_body_rates_spin_neg": [
+      1.884098329562345,
+      -0.5248177265447689,
+      0.16489145275286768
+     ],
+     "gyro_part_body": [
+      0.035777541583113304,
+      0.020253333145348662,
+      0.013055040382140004
+     ],
+     "expected_direction_body": [
+      0.4945737467483687,
+      0.7093003716766417,
+      -0.5022845724951744
+     ],
+     "passed": true
+    }
+   },
+   "power_limited_thrust": {
+    "engine_lever": 0.3,
+    "soc_start": 0.11,
+    "soc_end": 0.09998548954312006,
+    "demand_w": 1089404.1766191444,
+    "delivered_w": 255256.29160409578,
+    "unmet_w": 834147.8850150486,
+    "propulsion_scale": 0.21592426370670137,
+    "thrust_cmd_n": 21586.796431825576,
+    "thrust_achieved_n": 6046.27160481951,
+    "soc_never_below_min": false,
+    "passed": true
+   },
+   "mass_update": {
+    "mass_full": 1888.4724446989999,
+    "mass_burned": 1785.272444699,
+    "cg_full": [
+     -0.15083785073828831,
+     0.00011933003492875798,
+     0.5524596527789595
+    ],
+    "cg_burned": [
+     -0.156088851068253,
+     0.0001262280630931506,
+     0.5693656641031172
+    ],
+    "Izz_full": 4855.077343764664,
+    "Izz_burned": 4824.24520052401,
+    "ledger_mass_burned": 1785.2724444351966,
+    "one_occupant_mass": 1803.4724446989999,
+    "one_occupant_cg_y": -0.014014441381456156,
+    "passed": true
+   },
+   "contact_no_pose_jumps": {
+    "max_step_displacement_m": 0.005086834511445268,
+    "speed_bound_per_step_m": 0.1,
+    "rolling_speed_m_s": 2.0347285571976252,
+    "after_brake_speed_m_s": 0.0002036660966236832,
+    "support_after": [
+     "tyre_FL",
+     "tyre_FR",
+     "tyre_RL",
+     "tyre_RR"
+    ],
+    "crashed": false,
+    "passed": true
+   },
+   "energy_residual": {
+    "bus_residual_j": 0.0,
+    "generator_j": 794746.7174271465,
+    "buffer_out_j": 989129.8264754597,
+    "buffer_in_j": 0.0,
+    "unmet_j": 0.0,
+    "passed": true
+   },
+   "hover": [
+    {
+     "variant": "phantom-fx",
+     "load_state": null,
+     "mass_kg": 1888.472444698999,
+     "cg_x_m": -0.15086996389312296,
+     "height_gain_m": 9.434869566812612,
+     "vz_m_s": 0.9931390066509445,
+     "left_ground": true,
+     "thrust_max_per_pod_n": 6551.514613327454,
+     "collective_margin": 0.4150454118670823,
+     "worst_pod_margin": 0.30970808924485804,
+     "generator_w": 899562.5536049843,
+     "buffer_w": 399353.56920643465,
+     "unmet_w": 0.0,
+     "soc": 0.877121605694656,
+     "saturated": false,
+     "roll_deg": -0.017941004752922204,
+     "pitch_deg": 1.1754612244478002,
+     "crashed": false,
+     "energy_balance_residual_j": 0.0,
+     "fuel_used_kg": 0.6656492964498568
+    },
+    {
+     "variant": "phantom-fx",
+     "load_state": "FX-C",
+     "mass_kg": 1734.472444698999,
+     "cg_x_m": -0.15599970244229663,
+     "height_gain_m": 9.663455480646645,
+     "vz_m_s": 0.9978095737959918,
+     "left_ground": true,
+     "thrust_max_per_pod_n": 6551.514613327454,
+     "collective_margin": 0.5406841869848664,
+     "worst_pod_margin": 0.4216811177261113,
+     "generator_w": 899562.5535893338,
+     "buffer_w": 247787.4888977597,
+     "unmet_w": 0.0,
+     "soc": 0.8825163699360777,
+     "saturated": false,
+     "roll_deg": 1.8362124137326121,
+     "pitch_deg": 0.5624846498318088,
+     "crashed": false,
+     "energy_balance_residual_j": 0.0,
+     "fuel_used_kg": 0.6656492932687215
+    },
+    {
+     "variant": "phantom-fx",
+     "load_state": "FX-A",
+     "mass_kg": 1888.472444698999,
+     "cg_x_m": -0.15086996389312296,
+     "height_gain_m": 9.434869566812612,
+     "vz_m_s": 0.9931390066509445,
+     "left_ground": true,
+     "thrust_max_per_pod_n": 6551.514613327454,
+     "collective_margin": 0.4150454118670823,
+     "worst_pod_margin": 0.30970808924485804,
+     "generator_w": 899562.5536049843,
+     "buffer_w": 399353.56920643465,
+     "unmet_w": 0.0,
+     "soc": 0.877121605694656,
+     "saturated": false,
+     "roll_deg": -0.017941004752922204,
+     "pitch_deg": 1.1754612244478002,
+     "crashed": false,
+     "energy_balance_residual_j": 0.0,
+     "fuel_used_kg": 0.6656492964498568
+    }
+   ]
+  }
+ },
+ "wall_s": 86.06015491485596
+}

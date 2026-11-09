@@ -1,0 +1,293 @@
+{
+ "variant": "phantom-a10b",
+ "config_sha256": "3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01",
+ "parameter_file_sha256": "c6c4d32d30ff090b1b2840c2f0559db8490be8820cc8815e81248b31e1894a5f",
+ "release_stage": "current_prototype",
+ "description": "A10-B: CURRENT PROTOTYPE and default Phantom (Phantom FX-A A10-B). A10-A (phantom-fx + P6 stabilator) with the model fixes found in the 9 Nov take-off and flight investigation: hull lift / Munk term, road suspension, wheel-drive power and slip limits, 7 deg wing incidence (P8), and calibrated control effectors: front steer-by-wire (ZF AKC-class 11 kN), fin rudders, booster thrust vectoring and Moog Model 965 actuators, wing-borne flight-control law, wing deployment guard. See docs/phantom/PHANTOM_A10B_MODEL.md.",
+ "inherits": "phantom-fx (A10-A geometry and powertrain)",
+ "overlays": [
+  "hull_lift_v1",
+  "road_suspension_v1",
+  "wheel_drive_limits_v1",
+  "control_effectors_v1"
+ ],
+ "mass": {
+  "mass_kg": 1933.09,
+  "cg_body_m": [
+   -0.174,
+   0.0,
+   0.5641
+  ],
+  "inertia_body_kg_m2": [
+   [
+    902.9,
+    3.4,
+    121.1
+   ],
+   [
+    3.4,
+    4280.1,
+    -0.0
+   ],
+   [
+    121.1,
+    -0.0,
+    4990.3
+   ]
+  ],
+  "added_components": [
+   {
+    "id": "rudder_actuator_left",
+    "mass_kg": 5.2,
+    "label": "MANUFACTURER"
+   },
+   {
+    "id": "rudder_actuator_right",
+    "mass_kg": 5.2,
+    "label": "MANUFACTURER"
+   },
+   {
+    "id": "rudder_surface_left",
+    "mass_kg": 0.8,
+    "label": "SYNTHETIC_UNVALIDATED"
+   },
+   {
+    "id": "rudder_surface_right",
+    "mass_kg": 0.8,
+    "label": "SYNTHETIC_UNVALIDATED"
+   },
+   {
+    "id": "tvc_actuator_left",
+    "mass_kg": 5.2,
+    "label": "MANUFACTURER"
+   },
+   {
+    "id": "tvc_actuator_right",
+    "mass_kg": 5.2,
+    "label": "MANUFACTURER"
+   },
+   {
+    "id": "stabilator_actuator",
+    "mass_kg": 5.2,
+    "label": "MANUFACTURER"
+   },
+   {
+    "id": "front_steering_actuator",
+    "mass_kg": 8.0,
+    "label": "SYNTHETIC_UNVALIDATED"
+   }
+  ]
+ },
+ "geometry": {
+  "length_m": 4.89,
+  "max_body_width_m": 2.5,
+  "wheelbase_m": 3.13,
+  "track_m": 2.5,
+  "tyre_radius_m": 0.55,
+  "wing": {
+   "S_ref_m2": 3.934,
+   "span_m": 4.858,
+   "mac_m": 0.872,
+   "aspect_ratio": 6.0,
+   "x_ac_m": -0.806,
+   "incidence_deg": 7.0,
+   "CLalpha_per_rad": 4.0,
+   "CLmax_clean": 1.2,
+   "CLmax_flap": 1.6,
+   "wing_loading_pa": 4819
+  },
+  "canards": {
+   "area_each_m2": 0.278,
+   "x_m": 1.8,
+   "travel_deg": [
+    -20,
+    25
+   ]
+  },
+  "stabilator": {
+   "area_m2": 0.219,
+   "x_m": -2.055,
+   "travel_deg": [
+    -10.0,
+    30.0
+   ]
+  },
+  "fins": {
+   "area_each_m2": 0.211,
+   "x_m": -2.06,
+   "rudder_tau": 0.55,
+   "rudder_travel_deg": 25.0
+  },
+  "hull_lift": {
+   "k_pitch_m2": 9.281,
+   "x_cp_pitch_m": 1.809,
+   "k_yaw_m2": 1.658,
+   "x_cp_yaw_m": 1.305
+  }
+ },
+ "aero": {
+  "at_60": {
+   "V_m_s": 60.0,
+   "q_pa": 2205,
+   "Cm_alpha_per_rad": 2.875,
+   "Cn_beta_per_rad": -0.029,
+   "pitch_moment_free_Nm_vs_body_alpha_deg": {
+    "-4": -4176,
+    "0": -2492,
+    "4": -974,
+    "8": 1125,
+    "12": 4876
+   },
+   "aero_lift_N_vs_body_alpha_deg": {
+    "0": 5060,
+    "4": 9268,
+    "8": 12562
+   }
+  },
+  "at_95": {
+   "V_m_s": 95.0,
+   "q_pa": 5528,
+   "Cm_alpha_per_rad": 2.875,
+   "Cn_beta_per_rad": -0.029,
+   "pitch_moment_free_Nm_vs_body_alpha_deg": {
+    "-4": -10469,
+    "0": -6248,
+    "4": -2442,
+    "8": 2820,
+    "12": 12225
+   },
+   "aero_lift_N_vs_body_alpha_deg": {
+    "0": 12686,
+    "4": 23234,
+    "8": 31492
+   }
+  }
+ },
+ "propulsion": {
+  "lift_fans": {
+   "count": 4,
+   "thrust_max_each_n": 6552,
+   "disk_area_each_m2": 0.59,
+   "thrust_to_weight": 1.382,
+   "rotor_inertia_kg_m2": 0.6
+  },
+  "boosters": {
+   "count": 2,
+   "kind": "EDF",
+   "static_thrust_each_n": 2569,
+   "thrust_each_at_95_m_s_n": 1552,
+   "tvc_travel_deg": 20.0,
+   "tvc_rate_deg_s": 70.0
+  },
+  "wheel_drive": {
+   "torque_each_nm": 600.0,
+   "power_each_w": 60000.0,
+   "traction_slip_max": 0.15
+  }
+ },
+ "power": {
+  "generator_continuous_w": 600000.0,
+  "generator_takeoff_w": 900000.0,
+  "takeoff_rating_s": 300.0,
+  "buffer_energy_kwh": 80.0,
+  "buffer_position_m": [
+   1.8,
+   0.0,
+   0.42
+  ]
+ },
+ "chassis": {
+  "suspension": {
+   "FL": {
+    "stiffness_n_m": 42271.022723517475,
+    "damping_ns_m": 2943.3434694989664,
+    "preload_n": 4101.698453890515,
+    "springref_m": -0.09703333843419257,
+    "unsprung_kg": 19.0,
+    "sprung_kg": 418.256841417866,
+    "travel_m": [
+     -0.12,
+     0.08
+    ]
+   },
+   "FR": {
+    "stiffness_n_m": 42271.022723517475,
+    "damping_ns_m": 2943.3434694989664,
+    "preload_n": 4101.698453890515,
+    "springref_m": -0.09703333843419257,
+    "unsprung_kg": 19.0,
+    "sprung_kg": 418.256841417866,
+    "travel_m": [
+     -0.12,
+     0.08
+    ]
+   },
+   "RL": {
+    "stiffness_n_m": 51571.898632960925,
+    "damping_ns_m": 3590.966134030577,
+    "preload_n": 5004.193493745969,
+    "springref_m": -0.09703333843419254,
+    "unsprung_kg": 19.0,
+    "sprung_kg": 510.2857238451428,
+    "travel_m": [
+     -0.12,
+     0.08
+    ]
+   },
+   "RR": {
+    "stiffness_n_m": 51571.898632960925,
+    "damping_ns_m": 3590.966134030577,
+    "preload_n": 5004.193493745969,
+    "springref_m": -0.09703333843419254,
+    "unsprung_kg": 19.0,
+    "sprung_kg": 510.2857238451428,
+    "travel_m": [
+     -0.12,
+     0.08
+    ]
+   }
+  },
+  "steering": {
+   "max_deg": 35.0,
+   "torque_max_nm": 660.0,
+   "kp_nm_rad": 12605.07149287811,
+   "kv_nms_rad": 275.00987065425244
+  },
+  "steering_schedule": {
+   "max_deg": 35.0,
+   "rate_deg_s": 40.0,
+   "lat_accel_max_g": 0.8
+  }
+ },
+ "flight_control": {
+  "wingborne": {
+   "q_blend_pa": [
+    400.0,
+    2000.0
+   ],
+   "attitude_gain": [
+    2.0,
+    12.0
+   ],
+   "rate_gain_s": [
+    0.5,
+    2.0,
+    1.0
+   ],
+   "beta_gain_per_rad": 3.0,
+   "bank_max_deg": 45.0
+  },
+  "actuator_rates_deg_s": {
+   "canard": 70.0,
+   "stabilator": 70.0,
+   "rudder": 70.0,
+   "tvc": 70.0
+  }
+ },
+ "wing_deployment": {
+  "sequence_s": 5.52,
+  "transit_q_limit_pa": 600,
+  "transit_speed_limit_m_s": 31.3,
+  "guard": "refuse to start if the predicted speed at lock exceeds the limit; close the hatch if blocked; flag transit exceedance"
+ }
+}

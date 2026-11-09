@@ -1,4 +1,4 @@
-"""Launch the release-checked R6 cockpit, regardless of the Git worktree."""
+"""Launch the single local VTX cockpit with every reviewed vehicle variant."""
 
 import os
 from pathlib import Path
@@ -11,11 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 URL = "http://127.0.0.1:8765/"
 
-# All local worktrees share this one isolated R6 flight state. In particular,
-# do not auto-restore an R5 checkpoint from an obsolete checkout.
+# Keep new multi-vehicle sorties separate from the preserved R6 station archive.
 DEFAULT_DATA_ROOT = Path(
     os.environ.get("LOCALAPPDATA") or (Path.home() / ".local" / "share")
-) / "VTX" / "r6-live"
+) / "VTX" / "unified-live"
 
 
 def open_when_ready(server):
@@ -35,9 +34,11 @@ def main():
         raise SystemExit(f"R6 visual model missing; refusing to start: {asset}")
 
     os.environ.setdefault("VTX_DATA_ROOT", str(DEFAULT_DATA_ROOT))
-    os.environ["VTX_ENFORCE_RELEASE"] = "1"
+    # All reviewed variants share this one local process and evidence root.
+    # The old R6 pin made the visible Phantom selector return HTTP 409.
+    os.environ["VTX_ENFORCE_RELEASE"] = "0"
     print(
-        f"VTX R6 cockpit: data={os.environ['VTX_DATA_ROOT']}, "
+        f"VTX unified cockpit: data={os.environ['VTX_DATA_ROOT']}, "
         f"airframe={EXPECTED_RELEASE['airframe_revision']}, "
         f"physics={EXPECTED_RELEASE['physics_revision']}",
         flush=True,

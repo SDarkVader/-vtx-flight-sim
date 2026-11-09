@@ -483,17 +483,7 @@ export function buildBuildings(scene, world, { ppm = 24, quality = 1 } = {}) {
       if (kind === 'workshop') for (let i = 0; i < 3; i++) boxAt(fr, 3 + i * 14.5 + 4.75, 6.65, 10.4, .3, .7, trimMat);
       if (kind === 'office') {
         boxAt(fr, W / 2, 4.5, 11, .35, .8, dark);
-        // Rooftop black cab weather vane
-        const vaneGroup = new THREE.Group();
-        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.2, 8), metal('#1a1a1a'));
-        rod.position.set(0, 0, 1.1); vaneGroup.add(rod);
-        const cabShape = new THREE.Shape();
-        cabShape.moveTo(-0.8, 0); cabShape.lineTo(0.8, 0); cabShape.lineTo(0.8, 0.3); cabShape.lineTo(0.45, 0.35); cabShape.lineTo(0.25, 0.65); cabShape.lineTo(-0.35, 0.65); cabShape.lineTo(-0.55, 0.35); cabShape.lineTo(-0.8, 0.3); cabShape.closePath();
-        const cabMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(cabShape, { depth: 0.04, bevelEnabled: false }), metal('#f5b800'));
-        cabMesh.position.set(0, 0, 2.0); vaneGroup.add(cabMesh);
-        vaneGroup.position.set(o.center[0], o.center[1], o.center[2] + o.half[2]);
-        group.add(vaneGroup);
-        updaters.push((t) => { cabMesh.rotation.z = Math.sin(t * 0.6) * 0.5; });
+        // (Rooftop weather vane removed: it stood on a landable roof and had no collider.)
       }
       if (kind === 'tower') addTowerTop(group, o, updaters);
     }
