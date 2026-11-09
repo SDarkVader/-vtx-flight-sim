@@ -4,7 +4,7 @@
 
 VTX is a proprietary, physics-driven 3D VTOL flight game set in the world of Vader's Taxis. Pick an aircraft, set up a test, take control yourself or work with an AI pilot, then use the flight data to decide what to try next.
 
-Every movement comes from the live physics simulation, not from a scripted path or a canned animation. Mass, inertia, thrust, actuator limits, tyre grip and ground contact decide what happens. A good flight is earned, and a crash is a real result. Crashes are part of the programme.
+The controlled aircraft is driven by the live physics simulation. Mass, inertia, thrust, actuator limits, tyre grip and ground contact decide what happens. Decorative airport traffic and passenger rides follow separate scripted routes and are identified as such. A crash in the physical simulation is a recorded result.
 
 **Status:** experimental prototype / flight-test game, **not a finished commercial release**. The GitHub repository is public. **All original VTX game content and code are proprietary; no use or commercial exploitation is permitted without prior express written permission.** See [LICENSE](LICENSE).
 
@@ -34,7 +34,7 @@ Every Phantom figure is a labelled synthetic or derived value. A successful flig
 ## How to play
 
 1. Start the simulator (see [below](#start-the-windows-development-build)) and open the cockpit in your browser.
-2. Choose a vehicle. Set the departure (**A**) and destination (**B**) on the map of the 1 × 1 km valley test range. Any point with ground support works; landing areas are not limited to marked pads.
+2. Choose a vehicle. Set the departure (**A**) and destination (**B**) on the airport map. Any point with ground support works; landing areas are not limited to marked pads.
 3. Start a mission and take manual authority. Fly with the keyboard and the control panel; the Phantom also takes push-to-talk **🎙 Voice** commands.
 4. Drive, hover, fly, land or crash. You can switch between the external view, **Free roam camera** and **Cockpit · C** at any time.
 5. Open **Flight records** and **Engineering** to see what actually happened: telemetry, controller actions, events and post-flight reports. Use it to set up the next attempt.
