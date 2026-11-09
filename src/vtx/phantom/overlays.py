@@ -10,14 +10,9 @@ configuration SHA of runs that do not use them:
 from __future__ import annotations
 import json
 from pathlib import Path
-from .params import ROOT, _merge
+from .params import ROOT, OVERLAY_DIR, _merge, _strip
 
-OVERLAY_DIR = ROOT / 'inputs/phantom_overlays'
 AVAILABLE = tuple(sorted(p.stem for p in OVERLAY_DIR.glob('*.json')))
-
-
-def _strip(d):
-    return {k: (_strip(v) if isinstance(v, dict) else v) for k, v in d.items() if not k.startswith('_')}
 
 
 def load(*names, extra=None):

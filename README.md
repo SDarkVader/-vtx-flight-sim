@@ -32,6 +32,38 @@ The [integration development branch](https://github.com/SDarkVader/-vtx-flight-s
 
 These changes are backed up on the integration branch and are **not yet promoted to `main`**. Flight controls, model/physics compatibility, aircraft mechanisms, AI handover, persistence and mobile access still need full end-to-end acceptance testing. The thrust and wheel visuals have passed browser checks but still need observation during a live driving run.
 
+## Phantom model status (for agents and integrators)
+
+**Current, default Phantom: FX-A A10-B** (`phantom-a10b`, config `3ecae1a9`). This is the model the simulator and the game use. Full specification: [docs/phantom/PHANTOM_A10B_MODEL.md](docs/phantom/PHANTOM_A10B_MODEL.md).
+
+A10-B is A10-A plus hull lift (Munk), road suspension, wheel-drive limits, 7° wing incidence, front steer-by-wire, fin rudders, booster thrust vectoring, Moog Model 965 actuator calibration, a wing-borne control law and a wing-deployment guard. In the plant it drives and steers, deploys its wings from a standing start (locked by 25 m/s), takes off and hovers on its wheel fans, and flies, brakes (to 0.8 g) and turns under control with the fans facing down. It cannot yet fly wing-borne with the fans off, or rotate on a rolling take-off.
+
+**Previous: FX-A A10-A** (`phantom-fx` with the P6 stabilator, config `70089cca`; `b835295b` without P6). This is the configuration of the A10-A flight register, 4 to 7 November 2026:
+* **72 run IDs:** 66 on `70089cca`, 4 on `b835295b`, and 2 on the 4 November Vercel sandbox.
+* **Recorded outcomes:**
+
+  | Outcome | Runs |
+  |---|---|
+  | Airborne attempt ended | 20 |
+  | Collision | 12 |
+  | Landed | 3 |
+  | No take-off | 33 |
+  | Interrupted | 1 |
+  | Unclosed | 2 |
+  | No formal outcome | 1 |
+* **Peaks:**
+
+  | Peak | Run |
+  |---|---|
+  | 600.58 m | `20261106T101512-085037` |
+  | 299.94 m | `20261106T080610-01457b` |
+  | 74.96 m | `20261104T023710-072007` |
+  | 73.28 m | `20261105T212155-03a363` |
+
+Those runs used the base plant: no hull lift, rigid wheels, an unlimited hub drive and the hover-tuned control law. Their numbers are not directly comparable with A10-B.
+
+The register, the 9 November test telemetry and the images are on the reference branch [`reference/phantom-a10b-20261109`](https://github.com/SDarkVader/-vtx-flight-sim/tree/reference/phantom-a10b-20261109/reference/phantom_a10b_20261109).
+
 ## Aircraft
 
 Choose the airframe under **Lower frame** on the mission panel.

@@ -97,4 +97,19 @@ airframe.addEventListener('change', async () => {
     openSelector(true);
   }
 });
-openSelector(false);
+// Phantom first: when the server idles on its boot aircraft (R6) and nothing was chosen in this session, load the
+// default Phantom (A10-B) for inspection. A release-pinned R6 cockpit refuses the switch (409) and the page leaves it.
+const PHANTOM_DEFAULT = 'phantom-a10b';
+function chosenThisSession() { try { return sessionStorage.getItem('vtx-model-chosen') === '1'; } catch { return false; } }
+function markChosen() { try { sessionStorage.setItem('vtx-model-chosen', '1'); } catch { /* storage unavailable */ } }
+confirm.addEventListener('click', markChosen);
+airframe.addEventListener('change', markChosen);
+async function phantomFirst() {
+  try {
+    const view = await (await fetch('/api/view', { cache: 'no-store' })).json();
+    const actual = view.observation?.configuration?.airframe_variant;
+    if (!view.active && actual === 'r6' && !chosenThisSession()) await applyPreview(PHANTOM_DEFAULT);
+  } catch { /* pinned to R6 or server busy: keep the server's aircraft */ }
+  openSelector(false);
+}
+phantomFirst();

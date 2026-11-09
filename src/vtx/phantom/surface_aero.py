@@ -82,6 +82,7 @@ class SurfaceAero:
         self.body_centre = np.array(P['aero.body_centre_m'])
         # optional hull lift / Munk term (overlay hull_lift_v1): forebody normal force N = q K sin(a) cos(a) at its centre of
         # pressure, written bilinearly as 0.5 rho K (-v_n) v_x so it is exact for any direction and vanishes at 0 and 90 deg.
+        self.rudder_tau = P.get('effectors.rudder.tau', 0.0) if P.get('effectors.enabled', 0.0) > 0.5 else 0.0
         self.hull = None
         if P.get('aero.hull_lift.enabled', 0.0) > 0.5:
             z = P['aero.hull_lift.z_cp_m']
@@ -138,6 +139,18 @@ class SurfaceAero:
                     F += fs; Mo += np.cross(st['pos'], fs)
                     hinge[f'{cs}_{s.side}'] = qa * st['cs_area'] * st['cs_chord'] * (st['ch'][0] * alpha + st['ch'][1] * d)
                     out.append(dict(name=f'{cs}_{s.side}', locked=True, delta_deg=math.degrees(d), dcl=dcl, force_n=fs.tolist()))
+        rud = state.get('rudder', 0.0)
+        if self.rudder_tau and rud:
+            # control_effectors overlay: rudders on both fins; side-force increment (+ rudder -> +y) at each fin AC,
+            # effectiveness tau on the fin lift slope, increment capped at the fin stall incidence
+            for s in self.surfaces:
+                if s.kind != 'fin':
+                    continue
+                va = air(s.ac); qf = 0.5 * self.rho * float(va @ va)
+                da = float(np.clip(self.rudder_tau * rud, -s.alpha_stall, s.alpha_stall))
+                fr = np.array([0.0, qf * s.area * s.cla * da, 0.0])
+                F += fr; Mo += np.cross(s.ac, fr)
+                out.append(dict(name=f'rudder_{s.side}', delta_deg=math.degrees(rud), force_n=fr.tolist()))
         vb = air(self.body_centre)
         fb = -0.5 * self.rho * np.abs(vb) * vb * self.body_cda
         F += fb; Mo += np.cross(self.body_centre, fb)

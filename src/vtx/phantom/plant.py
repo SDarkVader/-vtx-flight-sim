@@ -62,6 +62,16 @@ def suspension_design(P, L, inert):
     return out
 
 
+def steering_design(P):
+    """control_effectors overlay: front steer-by-wire. Torque per wheel from the rack actuator force and steering arm
+    (shared by two wheels); position loop stiff enough to reach full torque at 3 deg error."""
+    if P.get('effectors.enabled', 0.0) <= 0.5:
+        return None
+    T = P['effectors.steering.rack_force_n'] * P['effectors.steering.steering_arm_m'] / 2
+    kp = T / math.radians(3.0)
+    return dict(max_deg=P['effectors.steering.max_deg'], torque_max_nm=T, kp_nm_rad=kp, kv_nms_rad=2 * math.sqrt(kp * 1.5))
+
+
 def build_xml(L: PhantomLedger, world):
     P = L.p
     x = ET.Element('mujoco', model=f'VTX-PHANTOM-{P.variant}')
@@ -85,6 +95,7 @@ def build_xml(L: PhantomLedger, world):
         ET.SubElement(wb, 'geom', **a)
     inert = L.body_inertials()
     susp = suspension_design(P, L, inert)
+    steer = steering_design(P)
     els = {}
     C = P.tree
     for name, b in L.bodies.items():
@@ -128,6 +139,10 @@ def build_xml(L: PhantomLedger, world):
                 ja['armature'] = str(arm)
             if damp:
                 ja['damping'] = str(damp)
+            if steer and name.endswith('_wheel') and FRONT[name.split('_')[1]]:
+                # control_effectors overlay: steer-by-wire about the pod z axis (vertical in road stance), first in the chain
+                ET.SubElement(e, 'joint', name=f'{name[:-6]}_steer', type='hinge', pos='0 0 0', axis='0 0 1', limited='true',
+                              range=f3([-math.radians(steer['max_deg']), math.radians(steer['max_deg'])]), armature='0.05', damping='5')
             if susp and name.endswith('_wheel'):
                 # road suspension overlay: slide (pod z axis, + = bump) before the wheel spin hinge in the same body
                 s = susp[name.split('_')[1]]
@@ -156,6 +171,8 @@ def build_xml(L: PhantomLedger, world):
         ET.SubElement(act, 'position', name=f'act_{j}', joint=j, kp=str(kp), kv=str(kv), forcerange=f'{-frc} {frc}', forcelimited='true')
     for k in PODS:
         pos_act(f'pod_{k}', P['pods.tilt_kp_nm_rad'], P['pods.tilt_kv_nms_rad'], P['pods.tilt_stall_torque_nm'])
+        if steer and FRONT[k]:
+            pos_act(f'pod_{k}_steer', steer['kp_nm_rad'], steer['kv_nms_rad'], steer['torque_max_nm'])
         ET.SubElement(act, 'motor', name=f'act_pod_{k}_fan', joint=f'pod_{k}_fan', ctrlrange=f'{-P["pods.motor_torque_peak_nm"]} {P["pods.motor_torque_peak_nm"]}')
         ET.SubElement(act, 'motor', name=f'act_pod_{k}_wheel', joint=f'pod_{k}_wheel', ctrlrange=f'{-P["pods.hub_motor_torque_nm"]} {P["pods.hub_motor_torque_nm"]}')
         pos_act(f'leg_{k}', P['contact.leg_kp_n_m'], P['contact.leg_kv_ns_m'], P['contact.leg_force_max_n'])
@@ -240,12 +257,14 @@ class PhantomAircraft:
         self.p6 = P['proposals.p6_drs_stabilator'] > 0.5
         self.stab_te_up = math.radians(P['proposals.p6_stab_rest_te_up_deg']) if self.p6 else 0.0
         self.jet = turbine_boosters(P)
+        self.eff = P.get('effectors.enabled', 0.0) > 0.5          # control_effectors overlay: rudders, booster TVC, steering
+        self.rudder = 0.0; self.tvc = [0.0, 0.0]                   # rad: rudder (+ = side force +y); TVC pitch (+ = thrust up), yaw (+ = thrust +y)
         self.jet_spool = [0.0, 0.0]
         self.no_support_since = None; self.support_force_n = 0.0
         self.ring = np.zeros((int(20 / DT), 32)); self.ring_i = 0; self.ring_full = False
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
-        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') else f'{variant}-a10', airframe_variant=variant, render_asset=f'/assets/phantom-{P.cassette_revision.lower()}.glb',
+        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=('/assets/phantom-a10b-visual.glb' if variant == 'phantom-a10b' else f'/assets/phantom-{P.cassette_revision.lower()}.glb'),
                                model_xml_sha256=hashlib.sha256(self.xml.encode()).hexdigest(), parameter_file_sha256=P.file_sha256,
                                config_sha256=P.config_sha256, wing_cassette_revision=P.tree['geometry_sources']['wing_cassette_revision'],
                                ledger_mass_kg=self.mass_properties()['mass_kg'] if False else None)
@@ -369,8 +388,21 @@ class PhantomAircraft:
         self.targets[name] = cur + max(-rate * dt, min(rate * dt, target - cur))
 
     # ------------------------------------------------------------ wing sequencer
+    def deploy_window_ok(self, qdyn, hl):
+        """Deployment guard (control_effectors overlay): predicted dynamic pressure at lock, from the current speed and
+        acceleration over the remaining sequence time (hatch + slide + pins), within the transit limit."""
+        ws = hl['wing_slide']; v = math.sqrt(max(0.0, 2 * qdyn / self.P['atmosphere.density_kg_m3']))
+        T = 180.0 / hl['hatch']['rate_deg_s'] + ws['stroke_m'] / ws['max_speed_m_s'] + hl['locks']['engage_time_s']
+        v_lock = v + max(0.0, getattr(self, 'accel_est', 0.0)) * T
+        return 0.5 * self.P['atmosphere.density_kg_m3'] * v_lock * v_lock <= ws['transit_q_limit_Pa']
+
     def wing_sequencer(self, dt, qdyn):
         cmd = self.fcc.cmd['wing']; P = self.P; hl = P.handover['control_limits']
+        guard = self.eff
+        v = math.sqrt(2 * qdyn / P['atmosphere.density_kg_m3'])           # filtered along-track acceleration estimate
+        if getattr(self, 'v_prev', None) is not None and dt > 0:
+            self.accel_est = 0.9 * getattr(self, 'accel_est', 0.0) + 0.1 * (v - self.v_prev) / dt
+        self.v_prev = v
         for s in WING_SIDES:
             st = self.wing_state[s]; slide = self.joint(f'wing_{s}')[0]; hatch = self.joint(f'hatch_{s}')[0]
             pins = [self.joint(f'pin_{s}_{p.lower()}')[0] for p in PINS]
@@ -378,6 +410,15 @@ class PhantomAircraft:
             new = st
             if cmd == 'deploy' and st in ('stowed', 'hatch_closing', 'sliding_in', 'unpinning'):
                 new = 'hatch_opening' if st in ('stowed', 'hatch_closing') else 'sliding_out' if st == 'sliding_in' else 'pinning'
+                if guard and new == 'hatch_opening' and not self.deploy_window_ok(qdyn, hl):
+                    new = st                                      # guard: lock would be reached above the transit limit
+                    if 'deploy_inhibited_q' not in self.flags:
+                        self.flags.add('deploy_inhibited_q'); self.events.append(dict(event='wing_deploy_inhibited_q', t_s=float(self.data.time), q_pa=qdyn))
+            if guard and st == 'hatch_opening' and qdyn > hl['wing_slide']['transit_q_limit_Pa']:
+                new = 'hatch_closing'                             # guard: never leave the hatch open above the transit limit
+                self.events.append(dict(event='wing_hatch_closed_by_q', side=s, t_s=float(self.data.time), q_pa=qdyn))
+            if guard and st in ('sliding_out', 'pinning') and qdyn > hl['wing_slide']['transit_q_limit_Pa'] and f'transit_q_exceeded_{s}' not in self.flags:
+                self.flags.add(f'transit_q_exceeded_{s}'); self.events.append(dict(event='wing_transit_q_exceeded', side=s, t_s=float(self.data.time), q_pa=qdyn))
             elif cmd == 'stow' and st in ('locked', 'pinning', 'sliding_out', 'hatch_opening'):
                 new = 'unpinning' if st in ('locked', 'pinning') else 'sliding_in' if st == 'sliding_out' else 'hatch_closing'
             if new == 'hatch_opening' and hatch < 0.05 and max(pins) < -0.065:
@@ -422,6 +463,8 @@ class PhantomAircraft:
         n = self.rng.normal
         sensed = dict(roll=att['roll'] + n(0, 1e-4), pitch_up=att['pitch_up'] + n(0, 1e-4), yaw=att['yaw_left'],
                       p=w[0] + n(0, 3e-4), q_up=-w[1] + n(0, 3e-4), r_left=w[2] + n(0, 3e-4), vz=float(d.qvel[2]) + n(0, 0.005))
+        va = vb - self.R().T @ self.wind                     # air data (used by the wing-borne law only)
+        sensed.update(qdyn=0.5 * P['atmosphere.density_kg_m3'] * float(va @ va), beta=math.atan2(float(va[1]), max(abs(float(va[0])), 1.0)))
         led = self.L.mass_properties(None, fuel_kg=list(self.fuel))   # declared mass properties (FCC configuration data)
         fan_en = {k: abs(self.joint(f'pod_{k}')[0]) >= math.radians(P['pods.fan_enable_tilt_deg']) for k in PODS}
         avail = {k: self.fan.thrust_max * min(1.0, (self.bus.motor_power_limit(i) / P['pods.motor_power_peak_w']) ** (2 / 3)) for i, k in enumerate(PODS)}
@@ -442,7 +485,8 @@ class PhantomAircraft:
             deployed = c['canard_fold'] == 'deployed'
             self.ramp(f'canard_{s}_fold', 0.0 if deployed else WING_SIGN[s] * math.pi / 2, math.radians(hl['canard_fold']['rate_deg_s']), dt)
             can_ok = abs(self.joint(f'canard_{s}_fold')[0]) < math.radians(5)
-            self.ramp(f'canard_{s}', math.radians(al['canard_deg'][j]) if can_ok else 0.0, math.radians(hl['canard_pitch']['rate_deg_s']), dt)
+            self.ramp(f'canard_{s}', math.radians(al['canard_deg'][j]) if can_ok else 0.0,
+                      math.radians(P.get('effectors.canard_rate_deg_s', hl['canard_pitch']['rate_deg_s'])), dt)
         if self.p6:
             rest = P['proposals.p6_stab_rest_te_up_deg']; lo, hi = P['proposals.p6_stab_travel_deg']
             dem = float((self.fcc.last or {}).get('moment_demand', [0, 0, 0])[1])
@@ -452,6 +496,8 @@ class PhantomAircraft:
                 tgt = P['proposals.p6_airbrake_te_up_deg']    # airbrake while braking on the ground
             step = math.radians(rate) * dt
             self.stab_te_up += float(np.clip(math.radians(tgt) - self.stab_te_up, -step, step))
+        if self.eff:
+            self.effector_update(dt, c, v_air)
         for n_, a in self.aid.items():
             if n_[4:] in self.targets:
                 d.ctrl[a] = self.targets[n_[4:]]
@@ -524,13 +570,41 @@ class PhantomAircraft:
                   flap={s: self.joint(f'flap_{s}')[0] for s in WING_SIDES}, aileron={s: self.joint(f'aileron_{s}')[0] for s in WING_SIDES},
                   canard_pitch={s: self.joint(f'canard_{s}')[0] for s in WING_SIDES},
                   canard_deployed={s: abs(self.joint(f'canard_{s}_fold')[0]) < math.radians(5) for s in WING_SIDES},
-                  stab_te_up=self.stab_te_up)
+                  stab_te_up=self.stab_te_up, rudder=self.rudder)
         # velocity of the body origin in body axes
         self.aero_out = self.aero.compute(vb, w, wind_b, st)
         self.aero_state = st
         self.check_contacts()
 
     # ------------------------------------------------------------ per-step forces
+    def effector_update(self, dt, c, v_air):
+        """control_effectors overlay: rudders and booster thrust vectoring from the FCC moment demand; front steering
+        from the yaw stick while on the road (speed-scheduled to a lateral-acceleration limit). All rate-limited."""
+        P = self.P; dem = (self.fcc.last or {}).get('moment_demand', [0.0, 0.0, 0.0])
+        def grp(g):
+            return {k: P[f'effectors.{g}.{k}'] for k in P.tree['effectors'][g]}
+        r = grp('rudder'); tv = grp('tvc')
+        def lim(x, rate):
+            return float(np.clip(x, -math.radians(rate) * dt, math.radians(rate) * dt))
+        tgt = math.radians(float(np.clip(r['gain_deg_per_demand'] * dem[2], -r['travel_deg'], r['travel_deg'])))
+        self.rudder += lim(tgt - self.rudder, r['rate_deg_s'])
+        tp = -tv['pitch_gain_deg_per_demand'] * dem[1]; ty = tv['yaw_gain_deg_per_demand'] * dem[2]
+        mag = math.hypot(tp, ty); k = min(1.0, tv['travel_deg'] / mag) if mag > 0 else 1.0
+        for i, x in enumerate((tp * k, ty * k)):
+            self.tvc[i] += lim(math.radians(x) - self.tvc[i], tv['rate_deg_s'])
+        st = grp('steering')
+        road = self.support_count() > 0 and all(abs(self.joint(f'pod_{k}')[0]) < math.radians(10) for k in PODS)
+        L = abs(self.L.bodies['pod_FL_wheel'].anchor[0] - self.L.bodies['pod_RL_wheel'].anchor[0])
+        dmax = min(st['max_deg'], math.degrees(math.atan(L * st['lat_accel_max_g'] * 9.80665 / max(v_air * v_air, 1e-6))))
+        rate = st['rate_deg_s']
+        if any(self.wing_state[s] != 'stowed' for s in WING_SIDES):           # take-off mode: calibrated lock while wings deploy / are out
+            dmax = min(dmax, st['takeoff_lock_deg']); rate = st['takeoff_rate_deg_s']
+        target = -math.radians(c['yaw'] * dmax) if road else 0.0                 # yaw +1 = nose right = wheels to the right
+        for k in PODS:
+            n = f'pod_{k}_steer'
+            if n in self.targets:
+                self.ramp(n, target, math.radians(rate), dt)
+
     def wheel_drive_torque(self, c):
         """Hub motor torque per wheel. Base plant: command x rated torque at any speed. With the wheel_drive_limits
         overlay: capped at rated power / wheel speed, and faded by traction control between 1x and 2x the slip limit."""
@@ -571,8 +645,8 @@ class PhantomAircraft:
         for j, s in enumerate(WING_SIDES):
             b = self.bids[f'booster_{s}_rotor']; om = self.joint(f'booster_{s}_rotor')[1]
             ax = self.R() @ np.array([1.0, 0, 0])
-            dang = math.radians(P['proposals.p3_booster_vector_angle_deg'])
-            th_dir = self.R() @ np.array([math.cos(dang), 0, math.sin(dang)])
+            dang = math.radians(P['proposals.p3_booster_vector_angle_deg']) + self.tvc[0]; dyaw = self.tvc[1]
+            th_dir = self.R() @ np.array([math.cos(dang) * math.cos(dyaw), math.sin(dyaw), math.sin(dang) * math.cos(dyaw)])
             v = self.point_velocity(b, d.xpos[b]) - self.wind
             if self.jet:
                 lapse = max(0.0, 1.0 - max(0.0, float(v @ ax)) / self.jet['vj_m_s'])
@@ -719,7 +793,9 @@ class PhantomAircraft:
                                  booster_thrust_max_n=float(self.jet['t0_station_n'] if self.jet else self.booster.thrust_max),
                                  booster_engine=(self.jet['kind'] if self.jet else 'edf'),
                                  drs_deg=(math.degrees(self.stab_te_up) if self.p6 else None),
-                                 booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg']),
+                                 booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg'] + math.degrees(self.tvc[0])),
+                                 **({'booster_vector_yaw_deg': math.degrees(self.tvc[1]), 'rudder_deg': math.degrees(self.rudder),
+                                     'steer_deg': [math.degrees(self.joint(f'pod_{k}_steer')[0]) if f'pod_{k}_steer' in self.jid else 0.0 for k in PODS]} if self.eff else {}),
                                  fan_rpm_max=float(self.fan.omega_max * 60 / (2 * math.pi))),
                     mass=mp, propulsors=[dict(pod=k, cmd_n=(self.alloc.get('thrust') or [0] * 4)[i], **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.fan_state[i].items()},
                                               motor_torque_nm=float(self.motor_torque[i])) for i, k in enumerate(PODS)],
