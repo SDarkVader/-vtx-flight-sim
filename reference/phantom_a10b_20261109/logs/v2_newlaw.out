@@ -1,0 +1,14 @@
+newlaw config ef5c82cc initial pitch 4.0
+  t+ 0.0 u   94.8 z    +0.0 pitch  +4.00 alpha  +4.00 roll   +0.0 beta  -0.0 hdg    +0.0 coll 0.03 dem [0.0, 0.0, -0.0] fanT [278, 278, 278, 278] bus  192 kW unmet 0
+  t+ 0.5 u   92.4 z    +0.2 pitch  +1.34 alpha  +1.06 roll   +0.0 beta  -0.1 hdg    +0.1 coll 0.03 dem [-0.0, 0.9, 0.01] fanT [417, 417, 54, 55] bus  288 kW unmet 0
+  t+ 1.0 u   89.6 z    +0.3 pitch  -0.47 alpha  -0.31 roll   -0.0 beta  -0.2 hdg    +0.2 coll 0.12 dem [0.0, 0.78, 0.02] fanT [1630, 1619, 0, 0] bus  117 kW unmet 0
+  t+ 2.0 u   81.7 z    +0.1 pitch  +3.17 alpha  +2.97 roll   -0.1 beta  -0.5 hdg    +0.6 coll 0.19 dem [0.0, 0.21, 0.05] fanT [1357, 1331, 1078, 1084] bus  227 kW unmet 0
+  t+ 4.0 u   66.0 z    +0.8 pitch  +3.43 alpha  +3.17 roll   -0.3 beta  -1.8 hdg    +2.0 coll 0.35 dem [0.01, 0.11, 0.12] fanT [2251, 2149, 2272, 2327] bus  528 kW unmet 0
+  t+ 6.0 u   51.1 z    +1.2 pitch  +3.71 alpha  +3.61 roll   -0.3 beta  -1.9 hdg    +2.3 coll 0.49 dem [0.01, 0.05, 0.06] fanT [3019, 2941, 3364, 3408] bus  861 kW unmet 0
+  t+ 8.0 u   38.5 z    +1.2 pitch  +3.70 alpha  +3.13 roll  +14.9 beta  -3.9 hdg    +1.5 coll 0.60 dem [-0.08, 0.03, 0.1] fanT [3588, 3671, 4052, 4369] bus 1167 kW unmet 0
+  t+10.0 u   28.4 z    +0.7 pitch  +4.05 alpha  +3.15 roll  +11.7 beta  -6.8 hdg    -2.3 coll 0.67 dem [0.0, -0.01, 0.04] fanT [4055, 3996, 4722, 4772] bus 1364 kW unmet 0
+  t+15.0 u   11.7 z    +0.3 pitch  +4.18 alpha  -2.94 roll  +10.7 beta -33.1 hdg    -4.2 coll 0.72 dem [0.03, -0.0, 0.06] fanT [4381, 4243, 5068, 5088] bus 1315 kW unmet 0
+  t+20.0 u    3.1 z    +0.8 pitch  +4.09 alpha -28.79 roll  +10.4 beta -72.7 hdg    -1.6 coll 0.71 dem [0.03, -0.0, 0.05] fanT [4334, 4193, 5020, 5015] bus 1304 kW unmet 0
+  t+25.0 u   -0.6 z    +1.1 pitch  +4.13 alpha -73.69 roll  +10.3 beta -86.8 hdg    -3.7 coll 0.70 dem [0.04, -0.0, 0.03] fanT [4284, 4164, 4993, 4958] bus 1292 kW unmet 0
+  t+30.0 u   -2.0 z    +1.2 pitch  +4.00 alpha -47.42 roll  +10.2 beta -79.9 hdg    -8.9 coll 0.70 dem [0.04, -0.0, 0.03] fanT [4282, 4162, 4989, 4944] bus 1291 kW unmet 0
+  end t+37.0s: turn at t+7.0s; peak decel 0.81 g; pitch range -0.8..+4.3; |beta| max 90.0; z range +0.0..+1.3

@@ -1,0 +1,2 @@
+p8_buf05_hull_susp mass 1897.5 x_cg -0.365 config 021e8c53
+{"tag": "p8_buf05_hull_susp", "config": "021e8c53", "x_cg": -0.365, "rotation_pitch_gt_1deg": [23.7, 80.9], "wheels_off": [25.1, 27.3, 1245], "max_pitch": 15.16, "min_pitch": -67.7, "max_z": 10.991, "crashed": false, "events": [], "end": {"t": 25.8, "u": 14.3, "pitch": -67.7, "z": 10.991, "sup": 0, "a_w": -66.0, "q": 156.3, "dem": 1.0, "lift": -40835, "hull": -4593, "Nf": 0, "Nr": 0, "susp": [-0.082, -0.091], "crashed": false, "x": 1251, "beta": 9.14, "roll": -2.6}}

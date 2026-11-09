@@ -1,0 +1,2 @@
+asflown_hull_susp mass 1897.5 x_cg -0.152 config c68cd8ff
+{"tag": "asflown_hull_susp", "config": "c68cd8ff", "x_cg": -0.152, "rotation_pitch_gt_1deg": [43.2, 105.8], "wheels_off": null, "max_pitch": 61.32, "min_pitch": -0.04, "max_z": 2.811, "crashed": false, "events": [], "end": {"t": 48.2, "u": 57.4, "pitch": 61.32, "z": 2.811, "sup": 0, "a_w": 57.0, "q": -217.7, "dem": 0.43, "lift": 111715, "hull": 23482, "Nf": 0, "Nr": 0, "susp": [-0.121, -0.112], "crashed": false, "x": 3523, "beta": -3.22, "roll": -1.8}}

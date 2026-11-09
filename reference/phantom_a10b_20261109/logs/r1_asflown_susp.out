@@ -1,0 +1,2 @@
+asflown_susp mass 1897.5 x_cg -0.152 config f800491c
+{"tag": "asflown_susp", "config": "f800491c", "x_cg": -0.152, "rotation_pitch_gt_1deg": null, "wheels_off": null, "max_pitch": 0.82, "min_pitch": -0.03, "max_z": -0.011, "crashed": false, "events": [], "end": {"t": 82.7, "u": 113.9, "pitch": 0.82, "z": -0.012, "sup": 3, "a_w": 0.8, "q": -0.1, "dem": 1.0, "lift": 7894, "hull": null, "Nf": 7629, "Nr": 8809, "susp": [-0.076, -0.031], "crashed": false, "x": 7401, "beta": -0.05, "roll": 0.4}}

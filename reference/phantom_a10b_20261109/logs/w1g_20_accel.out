@@ -1,0 +1,1 @@
+{"deploy_commanded_at": [4.66, 20.1], "steps": [], "peak_q_in_transit_pa": 0.0, "at_speed": 0.0, "q_limit_pa": 600, "locked": false, "interlock_events": [{"event": "wing_deploy_inhibited_q", "t_s": 4.67000000000003, "q_pa": 247.4445047688799}], "flags": ["deploy_inhibited_q"]}

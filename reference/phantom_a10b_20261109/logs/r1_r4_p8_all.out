@@ -1,0 +1,2 @@
+r4_p8_all mass 1897.5 x_cg -0.152 config dbbbf17d
+{"tag": "r4_p8_all", "config": "dbbbf17d", "x_cg": -0.152, "rotation_pitch_gt_1deg": null, "wheels_off": null, "max_pitch": 0.37, "min_pitch": -0.58, "max_z": 0.021, "crashed": false, "events": [], "end": {"t": 91.7, "u": 96.3, "pitch": -0.21, "z": 0.021, "sup": 3, "a_w": 6.8, "q": 0.0, "dem": 1.0, "lift": 14618, "hull": -192, "susp_all": [-0.073, -0.075, -0.084, -0.086], "spin": [175, 175], "Nf": 2361, "Nr": 1823, "susp": [-0.073, -0.084], "crashed": false, "x": 7403, "beta": -0.01, "roll": -0.0}}

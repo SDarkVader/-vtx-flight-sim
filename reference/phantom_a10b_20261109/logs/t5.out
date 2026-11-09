@@ -1,0 +1,48 @@
+samples 328 | samples with non-tyre ground contact 0
+t 25.75 u  85.0 pitch -0.00 z-0.058 aero_up 11814 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1642, 'tyre_FR': 1511, 'tyre_RL': 1817, 'tyre_RR': 1797}
+t 26.15 u  85.7 pitch -0.00 z-0.058 aero_up 12000 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1562, 'tyre_FR': 1515, 'tyre_RL': 1780, 'tyre_RR': 1727}
+t 26.55 u  86.3 pitch -0.00 z-0.058 aero_up 12182 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1559, 'tyre_FR': 1439, 'tyre_RL': 1725, 'tyre_RR': 1670}
+t 26.95 u  87.0 pitch  0.00 z-0.058 aero_up 12362 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1595, 'tyre_FR': 1366, 'tyre_RL': 1603, 'tyre_RR': 1690}
+t 27.35 u  87.6 pitch -0.00 z-0.058 aero_up 12538 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1478, 'tyre_FR': 1378, 'tyre_RL': 1605, 'tyre_RR': 1566}
+t 27.75 u  88.2 pitch -0.00 z-0.058 aero_up 12711 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1352, 'tyre_FR': 1445, 'tyre_RL': 1671, 'tyre_RR': 1428}
+t 28.15 u  88.8 pitch -0.00 z-0.058 aero_up 12879 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1431, 'tyre_FR': 1300, 'tyre_RL': 1474, 'tyre_RR': 1498}
+t 28.55 u  89.4 pitch -0.00 z-0.058 aero_up 13045 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1413, 'tyre_FR': 1250, 'tyre_RL': 1400, 'tyre_RR': 1469}
+t 28.95 u  89.9 pitch -0.00 z-0.058 aero_up 13209 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1275, 'tyre_FR': 1333, 'tyre_RL': 1471, 'tyre_RR': 1295}
+t 29.35 u  90.5 pitch -0.00 z-0.058 aero_up 13370 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1269, 'tyre_FR': 1261, 'tyre_RL': 1362, 'tyre_RR': 1310}
+t 29.75 u  91.0 pitch -0.00 z-0.058 aero_up 13526 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1116, 'tyre_FR': 1336, 'tyre_RL': 1420, 'tyre_RR': 1137}
+t 30.15 u  91.5 pitch -0.00 z-0.058 aero_up 13680 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1126, 'tyre_FR': 1293, 'tyre_RL': 1405, 'tyre_RR': 1084}
+t 30.55 u  92.0 pitch -0.00 z-0.058 aero_up 13830 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1154, 'tyre_FR': 1207, 'tyre_RL': 1293, 'tyre_RR': 1097}
+t 30.95 u  92.5 pitch -0.00 z-0.058 aero_up 13977 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1176, 'tyre_FR': 1126, 'tyre_RL': 1201, 'tyre_RR': 1100}
+t 31.35 u  93.0 pitch -0.00 z-0.058 aero_up 14121 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1155, 'tyre_FR': 1086, 'tyre_RL': 1129, 'tyre_RR': 1088}
+t 31.75 u  93.4 pitch -0.00 z-0.058 aero_up 14256 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1207, 'tyre_FR': 1661, 'tyre_RL': 1299}
+t 32.15 u  93.8 pitch -0.00 z-0.058 aero_up 14375 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 1556, 'tyre_FR': 1837, 'tyre_RL': 1723}
+t 32.55 u  94.2 pitch  0.00 z-0.058 aero_up 14484 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 2420, 'tyre_RL': 2453}
+t 32.95 u  94.4 pitch -0.01 z-0.058 aero_up 14570 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 33.35 u  94.6 pitch -0.01 z-0.057 aero_up 14596 W18607 boost_up    0 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 7001, 'tyre_RL': 10423}
+t 33.75 u  94.5 pitch  0.14 z-0.054 aero_up 14777 W18607 boost_up    7 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.001), np.float64(-0.0)] contacts {'tyre_RL': 21100}
+t 34.15 u  94.5 pitch -0.07 z-0.055 aero_up 14514 W18607 boost_up   -4 fans[0, 0, 0, 0] legs[np.float64(-0.001), np.float64(-0.001), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FR': 10855}
+t 34.55 u  94.6 pitch -0.06 z-0.043 aero_up 14217 W18607 boost_up   -3 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.001), np.float64(-0.001)] contacts {}
+t 34.95 u  94.8 pitch  0.34 z-0.049 aero_up 15401 W18607 boost_up   17 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.001)] contacts {'tyre_RR': 18152}
+t 35.35 u  95.1 pitch -0.70 z-0.032 aero_up 14078 W18607 boost_up  -35 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 35.75 u  95.6 pitch -1.45 z-0.011 aero_up 12809 W18607 boost_up  -72 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 36.15 u  95.8 pitch -0.92 z-0.015 aero_up 13488 W18607 boost_up  -46 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 36.55 u  96.3 pitch  0.22 z-0.018 aero_up 15222 W18607 boost_up   11 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 36.95 u  95.8 pitch  0.25 z-0.003 aero_up 15491 W18607 boost_up   12 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 37.35 u  96.0 pitch -0.02 z-0.018 aero_up 15079 W18607 boost_up   -1 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 37.75 u  96.1 pitch  0.07 z-0.025 aero_up 14980 W18607 boost_up    4 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 38.15 u  94.8 pitch -0.13 z-0.056 aero_up 14808 W18607 boost_up   -6 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 54721, 'tyre_FR': 31490}
+t 38.55 u  94.3 pitch -0.72 z 0.009 aero_up 13324 W18607 boost_up  -35 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 38.95 u  93.7 pitch  1.05 z 0.098 aero_up 16036 W18607 boost_up   52 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 39.35 u  92.4 pitch -0.54 z 0.231 aero_up 13850 W18607 boost_up  -27 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 39.75 u  94.0 pitch -1.31 z 0.023 aero_up 13158 W18607 boost_up  -63 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 40.15 u  96.1 pitch -2.55 z 0.127 aero_up 10965 W18607 boost_up -123 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 40.55 u  94.5 pitch  0.82 z 0.045 aero_up 14769 W18607 boost_up   40 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.001), np.float64(-0.001), np.float64(-0.001)] contacts {}
+t 40.95 u  87.3 pitch  0.63 z 0.017 aero_up 13376 W18607 boost_up   32 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 41.95 u  90.7 pitch  0.56 z-0.020 aero_up 14190 W18607 boost_up   28 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.001), np.float64(-0.001), np.float64(-0.002)] contacts {'tyre_RL': 57466}
+t 42.35 u  94.4 pitch -2.07 z 0.151 aero_up 10055 W18607 boost_up -101 fans[0, 0, 0, 0] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {'tyre_FL': 41438}
+t 42.45 u  92.3 pitch  0.20 z 0.162 aero_up 10057 W18607 boost_up   10 fans[0, 0, 0, 1] legs[np.float64(-0.001), np.float64(0.0), np.float64(-0.002), np.float64(-0.001)] contacts {}
+t 42.50 u  91.2 pitch -0.29 z 0.199 aero_up  9201 W18607 boost_up  -15 fans[0, 0, 0, 1] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 42.55 u  89.9 pitch -0.70 z 0.226 aero_up  8305 W18607 boost_up  -35 fans[0, 0, 0, 1] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 42.60 u  88.6 pitch -1.03 z 0.239 aero_up  7315 W18607 boost_up  -52 fans[0, 0, 0, 1] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 42.65 u  87.2 pitch -1.26 z 0.239 aero_up  6221 W18607 boost_up  -65 fans[0, 0, 0, 1] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}
+t 42.70 u  85.7 pitch -1.40 z 0.223 aero_up  5054 W18607 boost_up  -72 fans[0, 0, 0, 1] legs[np.float64(-0.0), np.float64(-0.0), np.float64(-0.0), np.float64(-0.0)] contacts {}

@@ -1,0 +1,52 @@
+<!doctype html><html><head><meta charset="utf-8"><title>A10-B shots</title>
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/"}}</script>
+<style>
+body{margin:0;background:#8fb3d9;font-family:Inter,system-ui,sans-serif;overflow:hidden}
+#c{display:block;width:1600px;height:900px}
+#panel{position:absolute;right:18px;top:18px;width:430px;background:rgba(8,12,18,.86);color:#e9eef4;padding:14px 18px 12px;border-radius:12px;font-size:13.5px;line-height:1.42;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+#panel h1{font-size:18px;margin:0 0 2px;color:#fff}#panel .sub{color:#f3c34f;font-size:12.5px;margin-bottom:9px}
+#panel table{width:100%;border-collapse:collapse}#panel td{padding:1.5px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+#panel td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:#bfe3ff}
+#brand{position:absolute;left:18px;bottom:14px;color:#fff;font-size:13px;text-shadow:0 1px 3px #000}
+#tag{position:absolute;left:18px;top:18px;background:rgba(8,12,18,.78);color:#fff;padding:7px 12px;border-radius:8px;font-size:13px}
+</style></head><body><canvas id="c" width="1600" height="900"></canvas><div id="tag"></div><div id="panel"></div><div id="brand"></div>
+<script type="module">
+import * as THREE from 'three'; import {GLTFLoader} from 'three/addons/GLTFLoader.js';
+import {attachPhantom, updatePhantom} from '/vtx-env/phantom-look.js?v=4';
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setSize(1600,900,false);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene();scene.userData.quality='high';scene.background=new THREE.Color('#9cc0e4');scene.fog=new THREE.Fog('#b9d2ea',250,2600);
+const camera=new THREE.PerspectiveCamera(40,16/9,.1,8000);camera.up.set(0,0,1);
+scene.add(new THREE.HemisphereLight('#dfefff','#5d6b52',1.15));const sun=new THREE.DirectionalLight('#fff4e0',2.4);sun.position.set(-60,-40,90);scene.add(sun);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(20000,20000),new THREE.MeshStandardMaterial({color:'#6f8a5a',roughness:.95}));scene.add(ground);
+const strip=new THREE.Mesh(new THREE.PlaneGeometry(9000,40),new THREE.MeshStandardMaterial({color:'#3b3f45',roughness:.9}));strip.position.set(500,0,.02);scene.add(strip);
+for(let x=-4000;x<5000;x+=30){const m=new THREE.Mesh(new THREE.PlaneGeometry(12,.5),new THREE.MeshBasicMaterial({color:'#e8e8e8'}));m.position.set(x,0,.03);scene.add(m);}
+const grid=new THREE.GridHelper(20000,400,'#5f7a4c','#6a8456');grid.rotation.x=Math.PI/2;grid.position.z=.01;scene.add(grid);
+let model=null,rig=null;const bodyNodes={};
+window.loadModel=async(url)=>{const g=await new GLTFLoader().loadAsync(url);model=g.scene;scene.add(model);
+  model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh&&n.material)n.material.side=THREE.DoubleSide;});
+  for(const name of ['airframe']){const n=model.getObjectByName(name);if(n)bodyNodes[name]=n;}
+  rig=attachPhantom(model);return Object.keys(bodyNodes);};
+window.renderFrame=(frame,view)=>{const truth=frame.snap;
+  for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);}
+  if(!bodyNodes.airframe){const p=truth.body_poses.airframe;model.position.set(...p.position);const a=p.quaternion_wxyz;model.quaternion.set(a[1],a[2],a[3],a[0]);}
+  // settle the rig's rate-limited visuals (booster glow, cowls, DRS) to this state
+  const t=truth.t_s;for(let i=0;i<40;i++)updatePhantom(rig,{...truth,phantom:truth.phantom,boosters:truth.boosters,command:truth.command,t_s:t-2+i*0.05,body_poses:truth.body_poses});
+  const p=new THREE.Vector3(...truth.body_poses.airframe.position);const a=truth.body_poses.airframe.quaternion_wxyz;
+  const yaw=Math.atan2(2*(a[0]*a[3]+a[1]*a[2]),1-2*(a[2]*a[2]+a[3]*a[3]));
+  const off=new THREE.Vector3(...view.offset).applyAxisAngle(new THREE.Vector3(0,0,1),view.followYaw?yaw:0);
+  camera.position.copy(p).add(off);camera.fov=view.fov||40;camera.updateProjectionMatrix();camera.lookAt(p.clone().add(new THREE.Vector3(0,0,view.lookZ??0.5)));
+  const d=frame.data;const rows=[
+   ['Speed',`${d.speed_m_s} m/s (${d.speed_kmh} km/h)`],['Altitude above start',`${d.altitude_m} m`],['Pitch / bank / heading',`${d.pitch_deg}° / ${d.bank_deg}° / ${d.heading_deg}°`],
+   ['Angle of attack / sideslip',d.aoa_deg==null?'—':`${d.aoa_deg}° / ${d.sideslip_deg}°`],['Dynamic pressure',`${d.dynamic_pressure_pa} Pa`],['Wing state',d.wing_state],
+   ['Pod tilt (FL FR RL RR)',d.pod_tilt_deg.join(' / ')+'°'],['Fan thrust (N)',d.fan_thrust_n.join(' / ')],['Booster thrust (N)',d.booster_thrust_n.join(' / ')],
+   ['Booster TVC pitch / yaw',`${d.tvc_deg[0]}° / ${d.tvc_deg[1]}°`],['Rudder / front steer',`${d.rudder_deg}° / ${d.steer_deg}°`],['Pitch demand',d.pitch_demand],
+   ['Suspension travel (m)',d.suspension_m.join(' / ')],['Tyres on ground',d.tyres_on_ground],['Electrical power / buffer SoC',`${d.bus_kw} kW / ${(d.buffer_soc*100).toFixed(1)} %`],
+   ['Mass',`${d.mass_kg} kg`],['Sim time',`${frame.t} s`]];
+  document.getElementById('panel').innerHTML=`<h1>${frame.label}</h1><div class="sub">${frame.note}</div><table>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+  document.getElementById('tag').textContent='VTX Phantom FX-A A10-B · physics plant (MuJoCo) · config '+(window.CONFIG||'');
+  document.getElementById('brand').textContent='Rendered from the plant state with the game\'s A10 visual model and rig (public/vtx-env/phantom-look.js)';
+  renderer.render(scene,camera);return true;};
+window.ready=true;
+</script></body></html>
