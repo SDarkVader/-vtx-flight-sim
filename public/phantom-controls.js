@@ -63,7 +63,7 @@ export function createPhantomPanel({api,toast}){
     update(v){if(!engaged&&v.observation){const o=v.observation;if(Array.isArray(o.pod_tilt_deg)){vtol=o.pod_tilt_deg[0]>45;el.querySelector('#ph-gear').textContent='Pods / wheels: '+(vtol?'90°':'0°');}if(Array.isArray(o.leg_extension_m)){legsExtended=o.leg_extension_m[0]>.26;el.querySelector('#ph-legs').textContent='Legs: '+(legsExtended?'extended':'retracted');}}if(engaged&&engagedRun===undefined)engagedRun=v.run_id;if(engaged&&(!v.active||v.authority!=='manual'||v.run_id!==engagedRun))disengage();lastView=v;const o=v.observation||{},t=v.rendering_truth||{};
       for(const control of el.querySelectorAll('input,button,select'))control.disabled=!v.active;
       const tb=el.querySelector('#ph-take');if(tb)tb.textContent=engaged?'Release control':'Take control';
-      el.querySelector('#ph-state').textContent=[!v.active?'Inspection preview: start a mission to enable Phantom controls':engaged?'PANEL ENGAGED: sending manual commands':'panel idle: sends nothing',`t ${o.t_s?.toFixed?.(2)} s · ${v.time_scale}× · lease ${o.lease_remaining_s} s`,
+      el.querySelector('#ph-state').textContent=[!v.active?'Inspection preview: start a mission to enable Phantom controls':engaged?'PANEL ENGAGED: sending manual commands':'panel idle: sends nothing',`t ${o.t_s?.toFixed?.(2)} s · ${v.time_scale}× · commands held`,
         `variant ${o.configuration?.airframe_variant} ${o.configuration?.load_state||''}`,`radar ${JSON.stringify(o.radar_altitude_m??o.radar_clearance_m)}`,
         `wing ${JSON.stringify(t.phantom?.wing_state)}`,`lamps ${(o.warning_lamps||[]).join(' ')}`].join('\n');},
   };

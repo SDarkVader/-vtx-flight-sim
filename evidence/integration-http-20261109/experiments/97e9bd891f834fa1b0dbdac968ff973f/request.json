@@ -1,0 +1,13 @@
+{
+  "airframe_variant": "phantom-fx",
+  "start_configuration": "road",
+  "p6_enabled": false,
+  "experimental_overrides": {},
+  "departure": [
+    0.0,
+    0.0
+  ],
+  "duration_s": 0.3,
+  "max_attitude_deg": null,
+  "schedule": []
+}

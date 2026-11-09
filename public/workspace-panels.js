@@ -33,6 +33,11 @@
  link.href = '/dashboard/';
  link.textContent = 'Flight test dashboard';
  bar.appendChild(link);
+ const experiments = document.createElement('a');
+ experiments.className = 'workspace-dashboard-link';
+ experiments.href = '/experiments/';
+ experiments.textContent = 'Physics experiments';
+ bar.appendChild(experiments);
  document.querySelector('header').appendChild(bar);
  document.getElementById('models').addEventListener('click', () => {
    if (!main.classList.contains('mission-open')) bar.querySelector('button').click();

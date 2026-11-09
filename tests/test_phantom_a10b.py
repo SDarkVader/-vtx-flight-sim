@@ -19,9 +19,9 @@ def test_a10b_is_the_default_phantom_and_a10a_stays_reproducible():
     b = Params('phantom-a10b'); a = Params('phantom-fx')
     assert b.variant_info['release_stage'] == 'current_prototype' and a.variant_info['release_stage'] == 'previous_prototype'
     # A10-A as flown (66 of the 72 register runs) and its P6-off sibling keep their configuration identity
-    assert Params('phantom-fx', P6).config_sha256.startswith('70089cca')
-    assert a.config_sha256.startswith('b835295b')
-    assert b.config_sha256 != Params('phantom-fx', P6).config_sha256
+    assert Params('phantom-fx', P6).config_sha256 == '70089ccace22e4ce1cfd28104654257fe4d03771c4f6b1faa3c89fce253247dd'
+    assert a.config_sha256 == 'b835295b7b806fcb785f01a8776b6715d73790f48ac5134cb8d594e6d389ebde'
+    assert b.config_sha256 == '3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01'
 
 
 def test_a10b_composition():
@@ -138,3 +138,22 @@ def test_live_factory_preserves_a10b_fingerprint_and_road_start():
     aircraft = make_aircraft(TestWorld(), request)
     assert aircraft.P.config_sha256 == '3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01'
     assert abs(aircraft.joint('canard_left_fold')[0]) == pytest.approx(math.pi / 2)
+
+
+@pytest.mark.parametrize(('variant', 'option', 'expected'), [
+    ('phantom-fx', True, '70089ccace22e4ce1cfd28104654257fe4d03771c4f6b1faa3c89fce253247dd'),
+    ('phantom-fx', False, 'b835295b7b806fcb785f01a8776b6715d73790f48ac5134cb8d594e6d389ebde'),
+    ('phantom-a10b', None, '3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01'),
+])
+def test_live_factory_preserves_selected_configuration(variant, option, expected):
+    from vtx.live_server import Mission
+    from vtx.phantom.live import make_aircraft
+    aircraft = make_aircraft(TestWorld(), Mission(airframe_variant=variant, phantom={'p6_enabled': option}))
+    assert aircraft.P.config_sha256 == expected
+
+
+def test_a10b_cannot_silently_disable_its_p6():
+    from vtx.live_server import Mission
+    from vtx.phantom.live import make_aircraft
+    with pytest.raises(ValueError, match='variant includes P6'):
+        make_aircraft(TestWorld(), Mission(airframe_variant='phantom-a10b', phantom={'p6_enabled': False}))

@@ -12,7 +12,8 @@ from datetime import datetime, timezone
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
-from .params import VARIANTS
+from .params import VARIANTS, Params
+from .experiment_config import build_overrides
 from .plant import PhantomAircraft
 from .ledger import config_table
 
@@ -28,6 +29,8 @@ class PhantomOptions(BaseModel):
     load_state: Literal['nominal', 'FX-A', 'FX-C'] | None = None
     fuel_kg: float | None = Field(default=None, ge=0, le=200)
     start_configuration: Literal['vtol', 'road'] = 'vtol'
+    p6_enabled: bool | None = None  # explicit historical A10-A choice; None keeps the live default
+    experimental_overrides: dict[str, object] | None = None
     buffer_soc: float | None = Field(default=None, ge=0.1, le=1)
     engines_running: bool = True
     wind_world_m_s: list[float] | None = None
@@ -46,11 +49,21 @@ def make_aircraft(world, request, *, enable_a10_surfaces=True):
     # explicitly (flight campaign D-2). Otherwise: load-state fuel, else full tanks.
     explicit = 'fuel_kg' in request.model_fields_set
     fuel = o.fuel_kg if o.fuel_kg is not None else (None if o.load_state in ('FX-A', 'FX-C') or not explicit else request.fuel_kg)
+    # Do not alter a variant that already owns P6. Explicit historical P6-off is
+    # supported only for a variant whose own parameter tree leaves it disabled.
+    base_p6 = Params(request.airframe_variant)['proposals.p6_drs_stabilator'] >= 0.5
+    if o.p6_enabled is False and base_p6:
+        raise ValueError('This aircraft variant includes P6; select an A10-A variant for a P6-off run')
+    if o.p6_enabled is True and request.airframe_variant.endswith('-a9'):
+        raise ValueError('P6 is not offered for the A9 variant')
+    force_p6 = (enable_a10_surfaces and o.p6_enabled is not False
+                and not request.airframe_variant.endswith('-a9') and not base_p6)
+    p6_override = {'proposals': {'p6_drs_stabilator': {'v': 1.0}}} if force_p6 else None
+    overrides = build_overrides(request.airframe_variant, p6_override, o.experimental_overrides)
     aircraft = PhantomAircraft(world, request.airframe_variant, fuel_kg=fuel, occupants=o.occupants, start_configuration=o.start_configuration,
                            engines_running=o.engines_running, buffer_soc=o.buffer_soc, wind=o.wind_world_m_s,
                            load_state=None if o.load_state == 'nominal' else o.load_state,
-                           overrides=({'proposals': {'p6_drs_stabilator': {'v': 1.0}}}
-                                      if enable_a10_surfaces and request.airframe_variant not in ('phantom-a10b', 'phantom-a9', 'phantom-fx-a9') else None))
+                           overrides=overrides)
     if enable_a10_surfaces and o.start_configuration != 'road' and not request.airframe_variant.endswith('-a9'):
         aircraft.set_command({'canard_fold': 'deployed'})
     return aircraft
@@ -59,7 +72,8 @@ def make_aircraft(world, request, *, enable_a10_surfaces=True):
 def after_start(lab, request):
     p = lab.aircraft
     (lab.log_path / 'phantom_parameters.json').write_text(json.dumps(p.P.snapshot(), indent=1))
-    led = dict(components=p.L.records(), configurations=config_table(p.L), live_mass_kg=float(sum(p.model.body_mass)))
+    led = dict(components=p.L.records(), configurations=config_table(p.L),
+               live_mass_kg=float(sum(p.model.body_mass)), actual_start_mass_properties=p.mass_properties())
     (lab.log_path / 'phantom_ledger.json').write_text(json.dumps(led, indent=1))
     p.step_log = gzip.open(lab.log_path / 'phantom_steps.csv.gz', 'wt')
     lab.phantom_cg_gate = None

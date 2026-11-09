@@ -1,0 +1,43 @@
+{
+  "live_phantom_run": "20261109T161203-2b0457",
+  "live_config": "3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01",
+  "live_time_before": 0.103,
+  "live_time_after": 0.977,
+  "manual_sequence": 1,
+  "manual_action_applied": true,
+  "wrong_schema_status": 409,
+  "preview_while_active_status": 409,
+  "experiment_id": "97e9bd891f834fa1b0dbdac968ff973f",
+  "a10a_p6_off_config": "b835295b7b806fcb785f01a8776b6715d73790f48ac5134cb8d594e6d389ebde",
+  "experiment_outcome": "no takeoff",
+  "r6_release": {
+    "expected": {
+      "airframe_revision": "P0-V4A-assembly-r6",
+      "airframe_variant": "r6",
+      "physics_revision": "audit-fixes-20261103-r3",
+      "render_asset": "/assets/airframe-r6.glb"
+    },
+    "loaded": {
+      "airframe_revision": "P0-V4A-assembly-r6",
+      "airframe_variant": "r6",
+      "physics_revision": "audit-fixes-20261103-r3",
+      "render_asset": "/assets/airframe-r6.glb"
+    },
+    "matches": true,
+    "enforced": false,
+    "selection_allowed": true,
+    "supported_variants": [
+      "r6",
+      "r6_variator",
+      "light",
+      "baseline",
+      "phantom-a10b",
+      "phantom-fx",
+      "phantom",
+      "phantom-a9",
+      "phantom-fx-a9"
+    ]
+  },
+  "runtime_sha256": "466b258569b0401b8ac6817021df14f3a00f7215fe710949706727f36a0f3575",
+  "experiment_page_http": 200
+}

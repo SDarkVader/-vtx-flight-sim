@@ -1,0 +1,83 @@
+{
+  "run_id": "20261109T161224-ff8d20",
+  "mission": {
+    "departure": [
+      0.0,
+      0.0
+    ],
+    "destination": [
+      -50.0,
+      20.0
+    ],
+    "departure_z_m": 0.0,
+    "destination_z_m": 0.0,
+    "destination_landing_valid": true,
+    "destination_advisory": "Six-foot support, swept footprint and local vertical approach column are clear",
+    "landing_requested": false,
+    "environment": "stage1-extended-airfield-recovery",
+    "environment_version": "4",
+    "label": "isolated AI authority integration check",
+    "ignore_scenery_collisions": false,
+    "landing_precision_m": null
+  },
+  "operator": "colin",
+  "request": {
+    "departure": [
+      0.0,
+      0.0
+    ],
+    "destination": [
+      -50.0,
+      20.0
+    ],
+    "authority": "colin",
+    "time_scale": 1.0,
+    "stability_assist": 0.0,
+    "reference_rpm": 1200.0,
+    "gear_variant": "critical-damping-proposal",
+    "airframe_variant": "phantom-a10b",
+    "fuel_kg": 10.0,
+    "engine_power_limit_kw": 300.0,
+    "atmosphere_model": "constant",
+    "wind_world_mps": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ignore_scenery_collisions": false,
+    "landing_precision_m": null,
+    "label": "isolated AI authority integration check",
+    "landing_requested": false,
+    "phantom": {
+      "occupants": null,
+      "load_state": null,
+      "fuel_kg": null,
+      "start_configuration": "road",
+      "p6_enabled": null,
+      "experimental_overrides": null,
+      "buffer_soc": null,
+      "engines_running": true,
+      "wind_world_m_s": null,
+      "policy_version": null,
+      "card_id": null,
+      "attempt": null
+    },
+    "fuel_kg_explicit": false
+  },
+  "airframe": {
+    "revision": "phantom-a10b",
+    "airframe_variant": "phantom-a10b",
+    "render_asset": "/assets/phantom-a10b-visual.glb",
+    "model_xml_sha256": "8ddcb5f0f217b957fa316a0f50a0c10273a39c9304dddae6aefd8450d2e28329",
+    "parameter_file_sha256": "436f8138a2f0e688b660bf9bae06cb40c865b88ea963cf8f1c0b72ae0e2277e8",
+    "config_sha256": "3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01",
+    "wing_cassette_revision": "A10",
+    "ledger_mass_kg": 1933.0851267899993
+  },
+  "software_commit": "a058c94ba346d7d48a396a75752ab1a0885f4f4f",
+  "runtime_source_sha256": "466b258569b0401b8ac6817021df14f3a00f7215fe710949706727f36a0f3575",
+  "runtime_hash_scheme": "vtx-python-tree-at-import-v1",
+  "learning_checkpoint_sha256": "8cf3c7a036d40850fcaf14c7b520f0f2c822f67aa20f090aaf441488961f587f",
+  "clocks": "400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale",
+  "controls": "20 ms simulated transport; Phantom commands held until changed"
+}

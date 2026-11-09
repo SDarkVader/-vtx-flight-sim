@@ -1,0 +1,6 @@
+                                 fan_thrust_max_n=float(self.fan.thrust_max),
+                                 booster_engine=(self.jet['kind'] if self.jet else 'edf'),
+                                 drs_deg=(math.degrees(self.stab_te_up) if self.p6 else None),
+                                 booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg'] + math.degrees(self.tvc[0])),
+                                 **({'booster_vector_yaw_deg': math.degrees(self.tvc[1]), 'rudder_deg': math.degrees(self.rudder),
+                                     'steer_deg': [math.degrees(self.joint(f'pod_{k}_steer')[0]) if f'pod_{k}_steer' in self.jid else 0.0 for k in PODS]} if self.eff else {}),

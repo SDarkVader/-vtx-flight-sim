@@ -38,6 +38,24 @@ from pydantic import ValidationError
 from .release import EXPECTED_RELEASE, actual_release, assert_expected_release
 from .pilot_api_recorder import get_recorder, record_decision, openai_transport, close_recorders
 
+def runtime_source_sha256(source_root=None):
+    """Identify the actual Python runtime, including the nested Phantom plant."""
+    root = Path(source_root) if source_root is not None else Path(__file__).resolve().parent
+    digest = hashlib.sha256()
+    for path in sorted(root.rglob('*.py'), key=lambda p: p.relative_to(root).as_posix()):
+        relative = path.relative_to(root).as_posix().encode('utf-8')
+        contents = path.read_bytes()
+        digest.update(len(relative).to_bytes(4, 'big'))
+        digest.update(relative)
+        digest.update(len(contents).to_bytes(8, 'big'))
+        digest.update(contents)
+    return digest.hexdigest()
+
+
+# Captured at import, before operators can change files under a running server.
+RUNTIME_SOURCE_SHA256 = runtime_source_sha256()
+
+
 class Action(BaseModel):
     model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
     authority:str
@@ -162,15 +180,15 @@ def foot_clearance_m(p):
     return max(0.,(dist if dist>=0 else low+.05)-.05)
 
 class Laboratory:
-    def __init__(self):
+    def __init__(self, data_root=None):
         self.world=TestWorld();self.flight_world=self.world;self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
         self.mission=None;self.objective=None;self.pilot_owner=None;self.pending_pilot=None;self.pilot_epoch=0;self.fallback_controller=None;self.fallback_status=None;self.action_log=[];self.action_sequence=0;self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False;self.landing_recorded=False;self.last_landing=None
-        self.error=None;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
+        self.error=None;self.recovery_notice=None;self.preview_generation=0;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
         self.retry_hint=None
-        self.data_root=Path(os.environ.get('VTX_DATA_ROOT',str(ROOT))).resolve()
+        self.data_root=Path(data_root if data_root is not None else os.environ.get('VTX_DATA_ROOT',str(ROOT))).resolve()
         self.checkpoint_path=self.data_root/'pilot/live-flight-checkpoint.json'
         self.last_checkpoint_t=-1.
         self.memory_path=self.data_root/'pilot/colin-memory.json'
@@ -216,7 +234,7 @@ class Laboratory:
             return
         d=p.data
         if getattr(p,'is_phantom',False):
-            state=dict(schema='phantom-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback_status=self.fallback_status,authority=self.authority,
+            state=dict(schema='phantom-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],config_sha256=p.P.config_sha256,runtime_source_sha256=RUNTIME_SOURCE_SHA256,mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback_status=self.fallback_status,authority=self.authority,
                        time_scale=self.time_scale,paused=self.paused,plant=p.checkpoint_state(),
                        session=dict(action_log=self.action_log,action_sequence=self.action_sequence,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
                                     lease_expired=self.lease_expired,obs_id=self.obs_id,settled_s=self.settled_s,left_ground=self.left_ground,
@@ -224,7 +242,7 @@ class Laboratory:
                                     last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state,
                                     phantom_cg_gate=getattr(self,'phantom_cg_gate',None)))
             return self._write_checkpoint(state)
-        state=dict(schema=1,run_id=self.run_id,
+        state=dict(schema=1,run_id=self.run_id, runtime_source_sha256=RUNTIME_SOURCE_SHA256,
                    model_xml_sha256=p.provenance['model_xml_sha256'],
                    mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,
                    fallback_status=self.fallback_status,fallback_controller=self.fallback_controller.snapshot() if self.fallback_controller else None,authority=self.authority,
@@ -281,6 +299,11 @@ class Laboratory:
             return False
         try:
             state=json.loads(path.read_text(encoding='utf-8'))
+            saved_source=state.get('runtime_source_sha256')
+            if saved_source and saved_source != RUNTIME_SOURCE_SHA256:
+                raise ValueError('Checkpoint runtime source differs from the running software')
+            if not saved_source:
+                self.recovery_notice='Legacy checkpoint has no runtime source fingerprint; source equivalence is unverified.'
             if state['schema']=='phantom-1':
                 return self._restore_phantom(state)
             if state['schema']!=1:
@@ -400,10 +423,22 @@ class Laboratory:
         if saved.pop('fuel_kg_explicit',True) is False:saved.pop('fuel_kg',None)
         request=Mission(**saved)
         flight_world=self.world_for(request.ignore_scenery_collisions)
-        candidate=phantom_live.make_aircraft(flight_world,request,enable_a10_surfaces=False)
-        if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:
-            candidate=phantom_live.make_aircraft(flight_world,request,enable_a10_surfaces=True)
-        if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:raise ValueError('Checkpoint model differs from current physics model')
+        expected_config=state.get('config_sha256') or metadata.get('airframe',{}).get('config_sha256')
+        if not expected_config:
+            snapshot=evidence/'phantom_parameters.json'
+            if snapshot.exists():
+                expected_config=json.loads(snapshot.read_text(encoding='utf-8')).get('config_sha256')
+        if not expected_config:
+            raise ValueError('Checkpoint has no Phantom configuration fingerprint')
+        candidate=None
+        for enable_surfaces in (False, True):
+            attempt=phantom_live.make_aircraft(flight_world,request,enable_a10_surfaces=enable_surfaces)
+            if (attempt.provenance['model_xml_sha256']==state['model_xml_sha256'] and
+                    attempt.P.config_sha256==expected_config):
+                candidate=attempt
+                break
+        if candidate is None:
+            raise ValueError('Checkpoint model or Phantom configuration differs from current physics')
         candidate.restore_state(state['plant'])
         session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']
         self.aircraft=candidate;self.flight_world=flight_world;self.run_id=run_id;self.log_path=evidence
@@ -503,6 +538,7 @@ class Laboratory:
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         flight_world=self.world_for(request.ignore_scenery_collisions)
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
+        self.preview_generation+=1
         departure_check=flight_world.validate(MapPoint(*request.departure),'departure')
         if not departure_check.valid:raise ValueError('INVALID_DEPARTURE: '+departure_check.reason)
         target=MapPoint(*request.destination)
@@ -545,10 +581,10 @@ class Laboratory:
             commit=pin.read_text().strip() if pin.exists() else 'UNKNOWN_BUILD_COMMIT'
         meta=dict(run_id=self.run_id,mission=self.mission,operator=request.authority,request=mission_dump(request),
                   airframe=self.aircraft.provenance,software_commit=commit,
-                  runtime_source_sha256=hashlib.sha256(b''.join(p.read_bytes() for p in sorted((ROOT/'src/vtx').glob('*.py')))).hexdigest(),
+                  runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
-                  controls='20 ms simulated transport, held targets; 5 simulated seconds lease then feather collective while engine remains available; experimental rate damping is shadow-only')
+                  controls=('20 ms simulated transport; Phantom commands held until changed' if getattr(self.aircraft,'is_phantom',False) else '20 ms simulated transport; 5 simulated seconds lease then feather collective while engine remains available; experimental rate damping is shadow-only'))
         (self.log_path/'metadata.json').write_text(json.dumps(meta,indent=2))
         (self.log_path/'model.xml').write_text(self.aircraft.xml)
         (self.log_path/'pilot-before.json').write_bytes(self.memory_path.read_bytes())
@@ -783,7 +819,8 @@ class Laboratory:
 
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
-                    active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,landing_assessment=self.last_landing,
+                    runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
+                    active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,recovery_notice=self.recovery_notice,landing_assessment=self.last_landing,
                     clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
                     rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,objective=self.objective,
                     pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback=self.fallback_status,
@@ -930,6 +967,8 @@ async def model_preview(request:dict):
     else:
         verdict=lab.world.validate(point,'departure')
         if not verdict.valid:raise HTTPException(422,verdict.reason)
+    lab.preview_generation+=1
+    generation=lab.preview_generation
     def build():
         if phantom_live.is_phantom_variant(selection.airframe_variant):
             aircraft=phantom_live.make_aircraft(lab.world,selection)
@@ -941,7 +980,8 @@ async def model_preview(request:dict):
         aircraft.spawn(*selection.departure,lab.world.surface_z(*selection.departure))
         return aircraft
     aircraft=await asyncio.to_thread(build)
-    if lab.active:raise HTTPException(409,'A sortie started while the inspection model was loading')
+    if lab.active or generation!=lab.preview_generation:
+        raise HTTPException(409,'The flight or model selection changed while the inspection model was loading')
     lab.aircraft=aircraft;lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
     lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
     return lab.view()
@@ -1239,5 +1279,8 @@ async def stream(ws:WebSocket):
             # Paused/inspection states do not need 20 full snapshots per second.
             await ws.send_json(lab.view());await asyncio.sleep(.25 if lab.paused or not lab.active else .1)
     except (WebSocketDisconnect,RuntimeError):pass
+from .experiments import install_experiment_routes
+install_experiment_routes(app, get_lab, Laboratory, Mission, parse_action, DT)
+
 app.mount('/evidence',StaticFiles(directory=ROOT/'evidence'),name='evidence')
 app.mount('/',StaticFiles(directory=ROOT/'public',html=True),name='frontend')
