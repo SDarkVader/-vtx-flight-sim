@@ -99,7 +99,7 @@ export function attachPhantom(model) {
   return rig;
 }
 
-const tmp = new THREE.Quaternion();
+const tmp = new THREE.Quaternion(); const ZUP = new THREE.Vector3(0, 0, 1);
 export function updatePhantom(rig, truth) {
   if (!rig || !truth) return;
   const q = truth.phantom?.joints;
@@ -108,6 +108,9 @@ export function updatePhantom(rig, truth) {
       const v = q[j.name]; if (v === undefined) continue; const d = v - j.q0;
       if (j.type === 'slide') { j.node.position.copy(j.pos).addScaledVector(j.axis, d); }
       else { tmp.setFromAxisAngle(j.axis, d); j.node.quaternion.copy(tmp).multiply(j.quat); }
+      // A10-B steer-by-wire: the front wheel pods turn about the vertical (parent z) by the plant's steer joint
+      const steer = q[`${j.name}_steer`];
+      if (steer !== undefined && /^pod_F[LR]$/.test(j.name)) { tmp.setFromAxisAngle(ZUP, steer); j.node.quaternion.premultiply(tmp); }
     }
   }
   // time step and ground speed from the plant's own clock and airframe pose

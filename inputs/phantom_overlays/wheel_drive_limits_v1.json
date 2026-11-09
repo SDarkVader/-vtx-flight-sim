@@ -1,0 +1,23 @@
+{
+ "_note": "Opt-in overlay. Wheel drive limits missing from the base plant: the hub motor's rated power (pods.hub_motor_power_w, present in the parameter file but unused) caps torque at P/omega, and a slip limiter (traction control) fades the drive torque between one and two times the slip limit. Without it an unloaded wheel under full drive overspins (452 rad/s seen at 82 m/s) and its touchdown produces an impulsive contact force.",
+ "drive": {
+  "limits_enabled": {
+   "v": 1.0,
+   "u": "-",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "wheel drive limits overlay switch (1 = on)"
+  },
+  "traction_slip_max": {
+   "v": 0.15,
+   "u": "-",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "slip ratio (omega r - v) / v at which traction control starts cutting drive torque; zero torque at 2x (road EV traction-control range ~0.1-0.2)"
+  },
+  "slip_reference_speed_min_m_s": {
+   "v": 2.0,
+   "u": "m/s",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "floor on the reference speed in the slip ratio so launch from rest is not cut"
+  }
+ }
+}
