@@ -17,6 +17,13 @@ input[type=range] { accent-color:#d4f66a; }
 main { display:block; min-height:0; height:calc(100vh - 165px); overflow:hidden; }
 #viewport { width:100%; height:100%; }
 main > aside.mission-panel, main > aside.controls-panel { display:none; position:absolute; z-index:7; top:0; bottom:0; width:min(340px,45vw); height:auto; overflow-y:auto; box-shadow:0 8px 25px #0008; }
+main > aside.mission-panel { width:min(520px,48vw); }
+/* Keep the map proportional to its canvas so its labels and click targets grow together. */
+.mission-panel #map { width:100%; height:auto; aspect-ratio:540 / 430; }
+.mission-panel .map-key, .mission-panel .map-tools button { font-size:11px; }
+.mission-panel .map-tools button { min-height:40px; }
+.mission-panel .control-label, .mission-panel .coordinates label { font-size:10px; }
+.mission-panel .coordinates input, .mission-panel .control-label select { font-size:12px; }
 main.mission-open > aside.mission-panel { display:block; left:0; }
 main.controls-open > aside.controls-panel { display:block; right:0; }
 @media(max-width:800px) {
@@ -25,6 +32,7 @@ main.controls-open > aside.controls-panel { display:block; right:0; }
  main { display:block; height:65vh; min-height:360px; }
  #viewport { width:100%; height:100%; min-height:0; }
  main > aside.mission-panel, main > aside.controls-panel { width:min(340px,86vw); height:auto; overflow-y:auto; }
+ main > aside.mission-panel { width:min(520px,96vw); }
  main.mission-open.controls-open > aside.mission-panel { top:0; bottom:50%; }
  main.mission-open.controls-open > aside.controls-panel { top:50%; bottom:0; }
 }
