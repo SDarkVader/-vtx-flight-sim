@@ -737,9 +737,35 @@ async def pilot_openai_decision(prompt:PilotPrompt):
 async def release_identity():
     loaded=actual_release(lab.aircraft.provenance)
     return dict(expected=EXPECTED_RELEASE,loaded=loaded,matches=(loaded==EXPECTED_RELEASE),
-                enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1')
+                enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1',
+                selection_allowed=os.environ.get('VTX_ENFORCE_RELEASE')!='1',
+                supported_variants=['r6','r6_variator','light','baseline','phantom-fx','phantom','phantom-a9','phantom-fx-a9'])
 @app.get('/api/view')
 async def view():return lab.view()
+@app.post('/api/model-preview')
+async def model_preview(request:dict):
+    """Switch the idle inspection aircraft without creating a flight record."""
+    if lab.active:raise HTTPException(409,'End and retain the current sortie before choosing another vehicle')
+    if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before changing vehicles')
+    if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.get('airframe_variant')!='r6':
+        raise HTTPException(409,'This cockpit is pinned to R6')
+    try:selection=Mission(airframe_variant=request.get('airframe_variant'))
+    except ValidationError as e:raise HTTPException(422,str(e))
+    def build():
+        if phantom_live.is_phantom_variant(selection.airframe_variant):
+            aircraft=phantom_live.make_aircraft(lab.world,selection)
+        else:
+            aircraft=Aircraft(lab.world,selection.gear_variant,selection.reference_rpm,
+                              fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
+                              engine_power_limit_kw=selection.engine_power_limit_kw,
+                              atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
+        aircraft.spawn(0,0,lab.world.surface_z(0,0))
+        return aircraft
+    aircraft=await asyncio.to_thread(build)
+    if lab.active:raise HTTPException(409,'A sortie started while the inspection model was loading')
+    lab.aircraft=aircraft;lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
+    lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
+    return lab.view()
 @app.get('/api/validate')
 async def validate(x:float,y:float,variant:str|None=None):
     from dataclasses import asdict
