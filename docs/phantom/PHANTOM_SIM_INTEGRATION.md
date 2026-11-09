@@ -1,4 +1,4 @@
-# Phantom in the VTX simulator (opt-in variants `phantom`, `phantom-fx`)
+# Phantom in the VTX simulator (opt-in variants `phantom-fx`, `phantom`, `phantom-a9`, `phantom-fx-a9`)
 
 Status: TEST_PLAN Phases 0-1 plus the Phase 2 low-speed aero subset.
 
@@ -13,9 +13,20 @@ Any other label is rejected. These are **not validated aircraft performance figu
 
 ## Variants
 
+The wing cassette is chosen by `geometry_sources.wing_cassette_revision`. The base is **A10**, the corrected split-level cassette (both wings at one height, stroke 1.205 m). A variant may `inherits` another and overlay only what differs.
+
+| Variant | Inherits | Cassette | Release stage | Airframe list label |
+|---|---|---|---|---|
+| `phantom-fx` | | A10 | `current_prototype` | Phantom FX-A A10 · CURRENT PROTOTYPE |
+| `phantom` | | A10 | `as_drawn_reference` | Phantom A10 · as drawn reference |
+| `phantom-a9` | `phantom` | A9 | `earlier_version` | Phantom A9 · EARLIER VERSION · as drawn |
+| `phantom-fx-a9` | `phantom-fx` | A9 | `earlier_version` | Phantom FX-A A9 · EARLIER VERSION |
+
+Flights before this change, including the whole 2026-11-03 campaign, used the A9 cassette under the old names `phantom`/`phantom-fx`; each run's `phantom_parameters.json` records `wing_cassette_revision: "A9"`. The A10 adds 9.01 kg to each variant.
+
 ### `phantom`
 
-The A9 as drawn:
+As drawn (A10 cassette; `phantom-a9` for the A9 cassette):
 - 0.49 m fans inside 0.72 m wheels;
 - 2 x 600 kW turbogenerators;
 - CG taken from the ledger.
@@ -57,7 +68,7 @@ The MuJoCo 3.17 model uses the CAD frame: X forward, +Y = physical left, Z up. I
 Joints:
 - pod tilt (hinge with an electromechanical actuator), fan spin, wheel spin;
 - leg screw slide with an oleo;
-- A9 wing slides, lock pins, flaps, ailerons, canards and hatches;
+- wing slides, lock pins, flaps, ailerons, canards and hatches of the selected cassette (joint names, ranges and stroke read from its handover JSON);
 - wing-lock equality constraint;
 - booster rotors.
 
@@ -119,7 +130,7 @@ Lease failsafe after 5 s of sim time without an accepted action:
 - no rescue.
 
 ### `live.py` and `live_server.py` (additive)
-- `Mission.airframe_variant` accepts `phantom` and `phantom-fx`, with an optional `phantom` options block. Legacy metadata stays byte-identical when that block is unset.
+- `Mission.airframe_variant` accepts `phantom`, `phantom-fx`, `phantom-a9` and `phantom-fx-a9`, with an optional `phantom` options block. Legacy metadata stays byte-identical when that block is unset.
 - `/api/action` dispatches on `schema`. A schema/airframe mismatch returns 409; validation errors keep the `body` location.
 - `/api/validate?variant=phantom` uses the Phantom footprint.
 - Checkpoints use schema `phantom-1`.
@@ -128,10 +139,10 @@ Lease failsafe after 5 s of sim time without an accepted action:
 - Run-folder evidence: `phantom_parameters.json`, `phantom_ledger.json`, `phantom_steps.csv.gz`, `crash_ring.npz`.
 
 ### Browser
-- `public/assets/phantom-a9.glb`, built by `tools/phantom/export_phantom_glb.py`: frame 1, Z-up, no animations, joint extras.
+- `public/assets/phantom-a10.glb` and `public/assets/phantom-a9.glb`, built by `tools/phantom/export_phantom_glb.py --revision A10|A9`: frame 1, Z-up, no animations, joint extras. The plant's `provenance.render_asset` picks the file for the selected cassette.
 - `public/vtx-env/phantom-look.js` drives the joints from `rendering_truth.phantom.joints`.
 - `public/phantom-controls.js` is the operator panel.
-- `public/app.js` has about 5 one-line hooks; `index.html` has 2 new `<option>`s.
+- `public/app.js` has about 5 one-line hooks; `index.html` has 4 Phantom `<option>`s.
 
 ## CG table
 
@@ -182,7 +193,7 @@ PY=C:/Users/steve/Documents/Github/-vtx-flight-sim/.venv/Scripts/python.exe
 PYTHONPATH=src $PY -m vtx.phantom.ledger
 PYTHONPATH=src $PY tools/phantom/phantom_bench.py          # about 65 s
 PYTHONPATH=src $PY tools/phantom/phantom_feasibility.py
-PYTHONPATH=src $PY tools/phantom/export_phantom_glb.py     # Blender -b, never saves
+PYTHONPATH=src $PY tools/phantom/export_phantom_glb.py --revision A10   # or A9; Blender -b, never saves
 PYTHONPATH=src $PY -m pytest -q tests && git checkout evidence/flights/
 VTX_DATA_ROOT=<scratch dir> PYTHONPATH=src $PY -m uvicorn vtx.live_server:app --host 127.0.0.1 --port 8766
 ```
@@ -217,8 +228,8 @@ CLI helpers (default host 127.0.0.1:8766):
 - No structural or aeroelastic model.
 - Fan/booster interaction is not modelled.
 - Wingborne flight is pitch-unstable, so canard augmentation is required. Only the low-speed FBW subset is implemented.
-- The GLB shows A9 geometry, not the FX-A wheels and fans.
+- The GLBs show the drawn wheels and fans, not the FX-A wheels and fans.
 - The leg actuator is a position servo, which droops about 2 cm under the fx load.
 - The N2 option is not active.
-- An A10 swap needs `a10_handover.json` registered under `geometry_sources.revisions`.
+- The A10 cassette has only been tested on the ground (deploy, lock, stow); no A10 flight has been flown yet.
 - The cockpit camera's `cabin` pose is a render-only seat offset.
