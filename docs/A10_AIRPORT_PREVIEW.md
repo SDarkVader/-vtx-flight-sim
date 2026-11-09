@@ -1,0 +1,9 @@
+# Phantom FX-A A10 airport preview
+
+This branch is based on GitHub main `6da5c35` and uses the existing `phantom-fx` variant. Its parameter file identifies the A10 cassette and its renderer uses `public/assets/phantom-a10.glb`. The A10's mass, propulsion, actuation, contacts, control laws and Colin interface have not been changed. The flight campaign in `docs/phantom/PHANTOM_FLIGHT_TEST_20261103.md` used the earlier A9 cassette, not A10; its reported performance is not A10 validation.
+
+The physics world is X east, Y north, Z up, in metres, within a ±500 m heightfield. Phantom's body frame has X forward and Y left. Portions of the visual airport extend outside the physics heightfield. Visual markings do not add collisions. The validator checks a local vertical approach column, not a full route. The selected 12 m radius shuttle loop was checked at 24 samples against the existing local obstacle validator.
+
+The circular route and ground vehicle integrator extend the existing visual `traffic-path.js` sampler. They expose world-space position, elevation, heading and curvature, limit speed and lateral acceleration, and bound acceleration and braking. The kinematic demo declares and validates a body envelope and CG offset; it does not model load transfer, full swept collision, or collision avoidance. It does not command or reposition the aircraft.
+
+The cockpit eye adjustment and HUD are display-only. The forward direction uses the Phantom X-forward body frame. The approximate eye offset is a viewing adjustment, not a measured design change. The HUD values come from the existing sensor packet. Cockpit visibility, clipping, readability and Android performance require further browser/device verification. In the isolated preview, `POST /api/operator` set the Phantom state paused but returned HTTP 500 because the existing handler references a missing `_bench_apply_experimental_assist` attribute; no physics or server code was changed in this branch.

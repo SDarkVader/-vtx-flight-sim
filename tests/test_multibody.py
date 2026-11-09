@@ -186,7 +186,7 @@ def test_arbitrary_world_support_including_roofs(point):
     w=TestWorld();answer=w.validate(MapPoint(*point),'departure')
     assert answer.valid,answer.reason
 
-@pytest.mark.parametrize('point',[(115.,115.),(63.,45.),(600.,0.),(-265.,30.)])
+@pytest.mark.parametrize('point',[(115.,115.),(63.,45.),(4100.,0.),(-265.,30.)])
 def test_world_refuses_invalid_support_or_obstacle(point):
     w=TestWorld();answer=w.validate(MapPoint(*point),'destination')
     assert not answer.valid

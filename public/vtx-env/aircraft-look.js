@@ -38,8 +38,11 @@ function paintDuct(geo) {
   if (geo.userData.ductPainted) return;
   geo.userData.ductPainted = true;
   const p = geo.attributes.position, n = geo.attributes.normal, cols = new Float32Array(p.count * 3), c = new THREE.Color();
+  geo.computeBoundingBox();
+  const cx = (geo.boundingBox.min.x + geo.boundingBox.max.x) * .5;
+  const cy = (geo.boundingBox.min.y + geo.boundingBox.max.y) * .5;
   for (let i = 0; i < p.count; i++) {
-    const out = n.getX(i) * p.getX(i) + n.getY(i) * p.getY(i);
+    const out = n.getX(i) * (p.getX(i) - cx) + n.getY(i) * (p.getY(i) - cy);
     const t = THREE.MathUtils.smoothstep(out, -.06, .14);
     c.copy(CARBON).lerp(PEARL, t);
     cols.set([c.r, c.g, c.b], i * 3);
@@ -47,7 +50,7 @@ function paintDuct(geo) {
   geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
 }
 
-export function enhanceAircraft(root, envTexture) {
+export function enhanceAircraft(root, envTexture, {phantom = false} = {}) {
   const cache = new Map(), replaced = new Set(), fx = { rotorDiscs: [], strobes: [], landingLights: [] };
   const make = (key, fn) => { if (!cache.has(key)) cache.set(key, fn()); return cache.get(key); };
   const phys = (o) => new THREE.MeshPhysicalMaterial({ side: THREE.DoubleSide, envMap: envTexture, ...o });
@@ -140,6 +143,7 @@ export function enhanceAircraft(root, envTexture) {
 
   const sub = (b) => root.getObjectByName(b);
   const checker = checkerTexture();
+  const checkerMaterial = new THREE.MeshStandardMaterial({ map: checker, roughness: .5, metalness: .1 });
 
   // ---- Nacelle detailing & Livery (attached to nacelles and rotors) -----------
   for (let i = 1; i <= 4; i++) {
@@ -147,20 +151,30 @@ export function enhanceAircraft(root, envTexture) {
     if (!nac) continue;
 
     // Glowing cyan aerodynamic lip ring
-    const accent = new THREE.Mesh(
-      new THREE.TorusGeometry(1.215, .016, 8, 96),
-      new THREE.MeshStandardMaterial({ color: '#04282f', emissive: CYAN, emissiveIntensity: 3.5 })
-    );
-    accent.position.z = .27; accent.name = 'vtx-accent-ring'; accent.userData.pitch_axis = 'decor';
-    nac.add(accent);
+    if (!nac.getObjectByName(`Phase2_Duct_Lip_Glow_F${i}`)) {
+      const accent = new THREE.Mesh(
+        new THREE.TorusGeometry(1.215, .016, 8, 96),
+        new THREE.MeshStandardMaterial({ color: '#04282f', emissive: CYAN, emissiveIntensity: 3.5 })
+      );
+      accent.position.z = .27; accent.name = 'vtx-accent-ring'; accent.userData.pitch_axis = 'decor';
+      nac.add(accent);
+    }
 
     // Yellow and black taxi checkerboard livery band
-    const band = new THREE.Mesh(
-      new THREE.TorusGeometry(1.2, .03, 6, 96),
-      new THREE.MeshStandardMaterial({ map: checker, roughness: .5, metalness: .1 })
-    );
-    band.position.z = .15; band.name = 'vtx-livery-band'; band.userData.pitch_axis = 'decor';
-    nac.add(band);
+    const sourceBand = nac.getObjectByName(`Phase2_Duct_Livery_Band_F${i}`);
+    if (sourceBand?.isMesh) {
+      sourceBand.material = checkerMaterial;
+      // The supplied band is at the upper lip; the reference images place it
+      // along the lower outer rim. This is a render-only livery adjustment.
+      if (!sourceBand.userData.referenceBandPositioned) {
+        sourceBand.position.z -= .335;
+        sourceBand.userData.referenceBandPositioned = true;
+      }
+    } else {
+      const band = new THREE.Mesh(new THREE.TorusGeometry(1.2, .03, 6, 96), checkerMaterial);
+      band.position.z = .15; band.name = 'vtx-livery-band'; band.userData.pitch_axis = 'decor';
+      nac.add(band);
+    }
 
     // Rivet / fastener ring along the outer duct flange
     const rivetRing = new THREE.Mesh(
@@ -323,7 +337,7 @@ export function enhanceAircraft(root, envTexture) {
   if (sub('nacelle1')) lamp(sub('nacelle1'), '#ff2211', 1.23, 0, .3);
   if (sub('nacelle3')) lamp(sub('nacelle3'), '#11ff44', -1.23, 0, .3);
   if (sub('nacelle2')) fx.strobes.push(lamp(sub('nacelle2'), '#ffffff', 0, 1.23, .3, .09));
-  if (sub('airframe')) fx.strobes.push(lamp(sub('airframe'), '#ff2211', 0, 0, .08, .09)); // belly beacon
+  if (!phantom && sub('airframe')) fx.strobes.push(lamp(sub('airframe'), '#ff2211', 0, 0, .08, .09)); // belly beacon
 
   // Cyan glowing inner duct aerodynamic rings (matching VTX specification diagram)
   const ductRingMat = new THREE.MeshStandardMaterial({

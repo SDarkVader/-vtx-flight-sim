@@ -4,6 +4,94 @@ from pydantic import ValidationError
 from fastapi import HTTPException
 import pytest
 
+@pytest.mark.parametrize('variant',['r6','phantom-fx'])
+def test_scenery_collision_option_keeps_ground_and_restores(tmp_path,monkeypatch,variant):
+    import mujoco as mj
+    import vtx.live_server as server
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path))
+    lab=Laboratory()
+    run=lab.start(Mission(airframe_variant=variant,ignore_scenery_collisions=True))['run_id']
+    model=lab.aircraft.model
+    assert mj.mj_name2id(model,mj.mjtObj.mjOBJ_GEOM,'terrain')>=0
+    assert all(mj.mj_name2id(model,mj.mjtObj.mjOBJ_GEOM,o['id'])<0 for o in lab.world.obstacles)
+    assert lab.view()['mission']['ignore_scenery_collisions'] is True
+    lab.checkpoint(force=True)
+    if getattr(lab.aircraft,'is_phantom',False):lab.aircraft.step_log.close()
+    lab.audit_file.close();lab.audit_file=None
+    restored=Laboratory()
+    assert restored.active and restored.run_id==run
+    assert restored.flight_world.obstacles==[]
+    assert mj.mj_name2id(restored.aircraft.model,mj.mjtObj.mjOBJ_GEOM,'terrain')>=0
+    restored.stop('Collision option test complete')
+
+def test_r6_stream_reconnect_resumes_existing_flight(tmp_path, monkeypatch):
+    import asyncio
+    import vtx.live_server as server
+
+    monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
+    lab = Laboratory()
+    monkeypatch.setattr(server, 'lab', lab)
+    run_id = lab.start(Mission())['run_id']
+
+    class OneFrameSocket:
+        headers = {}
+        cookies = {}
+        def __init__(self): self.frame = None
+        async def accept(self): pass
+        async def send_json(self, frame):
+            if self.frame is not None: raise RuntimeError('disconnected')
+            self.frame = frame
+
+    async def exercise():
+        clock = asyncio.create_task(server.physical_clock())
+        try:
+            first = OneFrameSocket()
+            await server.stream(first)
+            await asyncio.sleep(.15)
+            second = OneFrameSocket()
+            await server.stream(second)
+            return first.frame, second.frame
+        finally:
+            clock.cancel()
+            lab.stop('Reconnect test complete')
+
+    before, after = asyncio.run(exercise())
+    assert before['run_id'] == after['run_id'] == run_id
+    assert after['active'] and after['mission'] == before['mission']
+    assert after['observation']['t_s'] > before['observation']['t_s']
+
+def test_pilot_handover_preserves_run_goal_and_rejects_old_pilot(tmp_path,monkeypatch):
+    import asyncio
+    import vtx.live_server as server
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path))
+    lab=Laboratory();monkeypatch.setattr(server,'lab',lab)
+    run=lab.start(Mission(authority='colin'))['run_id']
+    goal=asyncio.run(server.set_objective({'text':'Hold here'}))
+    first=asyncio.run(server.pilot_handover({'run_id':lab.run_id,'pilot_id':'pilot-a','expected_epoch':0}))
+    def action(pilot,epoch):
+        return Action(authority='colin',pilot_id=pilot,pilot_epoch=epoch,pilot_run_id=run,
+            observation_id=lab.sensor_observation()['observation_id'],engine=.4,
+            collective_deg=[3]*4,tilt_deg=[[0,0]]*4,reason='Hold')
+    lab.accept_action(action('pilot-a',first['pilot_epoch']))
+    second=asyncio.run(server.pilot_handover({'run_id':lab.run_id,'pilot_id':'pilot-b','expected_epoch':first['pilot_epoch']}))
+    assert second['run_id']==run and second['objective']==goal
+    assert lab.action_log[-1]['cancelled']
+    with pytest.raises(HTTPException):lab.accept_action(action('pilot-a',first['pilot_epoch']))
+    with pytest.raises(HTTPException):lab.accept_action(action('pilot-b',second['pilot_epoch']).model_copy(update={'pilot_run_id':'old-run'}))
+    assert lab.accept_action(action('pilot-b',second['pilot_epoch']))['accepted']
+    asyncio.run(server.operator({'authority':'manual'}))
+    asyncio.run(server.operator({'authority':'colin'}))
+    with pytest.raises(HTTPException):lab.accept_action(action('pilot-b',second['pilot_epoch']))
+    with pytest.raises(HTTPException):
+        lab.accept_action(Action(authority='colin',observation_id=lab.sensor_observation()['observation_id'],
+            engine=.4,collective_deg=[3]*4,tilt_deg=[[0,0]]*4,reason='Old client'))
+    third=asyncio.run(server.pilot_handover({'run_id':lab.run_id,'pilot_id':'pilot-b','expected_epoch':lab.pilot_epoch}))
+    lab.checkpoint(force=True);lab.audit_file.close();lab.audit_file=None
+    recovered=Laboratory()
+    assert recovered.pilot_owner=='pilot-b' and recovered.pilot_epoch==third['pilot_epoch']
+    assert recovered.objective==goal and recovered.run_id==run
+    recovered.stop('Handover test complete')
+
 @pytest.mark.parametrize('compressed',[False,True])
 def test_replay_is_bounded_and_preserves_endpoints(tmp_path,compressed):
     import gzip,json
@@ -41,6 +129,61 @@ def test_control_authority_and_observation_boundary():
     accepted=lab.accept_action(Action(authority='colin',observation_id=obs['observation_id'],**cmd))
     assert accepted['accepted'] and accepted['apply_t_s']==pytest.approx(.02)
     assert not {'qpos','qvel','forces','cg','inertia','contact_manifold'}&obs.keys()
+
+def test_long_running_action_history_keeps_sequence_and_full_audit(tmp_path,monkeypatch):
+    import json
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path))
+    lab=Laboratory();run=lab.start(Mission())['run_id']
+    for index in range(80):
+        ack=lab.accept_action(Action(authority='manual',engine=0,collective_deg=[0]*4,
+            tilt_deg=[[0,0]]*4,reason='Persistent test'))
+        assert ack['sequence']==index+1
+        for _ in range(10):lab.integrate()
+    assert lab.action_sequence==80 and len(lab.action_log)<65
+    assert all(row['applied'] for row in lab.action_log)
+    lab.checkpoint(force=True)
+    checkpoint=json.loads(lab.checkpoint_path.read_text())
+    assert checkpoint['session']['action_sequence']==80
+    assert len(checkpoint['session']['action_log'])<65
+    summary=lab.stop('Persistent history test complete')
+    assert summary['decisions']==80
+    events=(tmp_path/'evidence'/'flights'/run/'events.jsonl').read_text().splitlines()
+    assert sum(json.loads(line)['kind']=='pilot_decision' for line in events)==80
+
+def test_command_lease_expires_after_pilot_delay(tmp_path,monkeypatch):
+    import vtx.live_server as server
+    monkeypatch.setattr(server,'ROOT',tmp_path)
+    lab=Laboratory()
+    lab.start(Mission())
+    obs=lab.sensor_observation()
+    lab.aircraft.data.time=1.2
+    lab.accept_action(Action(authority='manual',observation_id=obs['observation_id'],
+                             engine=.4,collective_deg=[3]*4,tilt_deg=[[0,0]]*4,reason='Hold test'))
+    lab.aircraft.data.time=1.25
+    lab.integrate()
+    assert lab.aircraft.command['collective_deg']==[3]*4
+    lab.aircraft.data.time=6.3
+    lab.integrate()
+    assert lab.aircraft.command['collective_deg']==[0]*4
+    assert lab.lease_expired
+    lab.stop('End command hold check')
+
+def test_destination_changes_without_sortie_reset(tmp_path,monkeypatch):
+    import asyncio
+    import vtx.live_server as server
+    monkeypatch.setattr(server,'ROOT',tmp_path)
+    lab=Laboratory()
+    monkeypatch.setattr(server,'lab',lab)
+    lab.start(Mission())
+    run=lab.run_id
+    with pytest.raises(HTTPException):
+        asyncio.run(server.destination({'run_id':'stale','destination':[-40,25]}))
+    assert lab.run_id==run
+    result=asyncio.run(server.destination({'run_id':run,'destination':[-40,25]}))
+    assert result['destination']==[-40,25]
+    assert lab.run_id==run and lab.active
+    assert lab.mission['destination']==[-40,25]
+    lab.stop('End retarget check')
 
 def test_queued_actions_are_not_lost_and_old_authority_cannot_apply():
     lab=Laboratory();lab.active=True;lab.authority='manual';lab.mission={'destination':[100,100]}
@@ -120,27 +263,28 @@ def test_retry_preserves_or_explicitly_changes_fuel(tmp_path,monkeypatch):
 def test_retry_archives_crash_and_preserves_learning(tmp_path,monkeypatch):
     import vtx.live_server as server
     import json,hashlib
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path))
     monkeypatch.setattr(server,'ROOT',tmp_path)
     lab=Laboratory()
     # Keep the original 60 kg drop fixture: the lighter 10 kg case can settle
     # without a body strike, which must not be relabelled a crash for this test.
     started=lab.start(Mission(departure=[13.7,-28.4],destination=[-45,18],authority='manual',fuel_kg=60.))
     lab.aircraft.spawn(13.7,-28.4,4)
+    memory_hash=hashlib.sha256(lab.memory_path.read_bytes()).hexdigest()
+    first=started['run_id']
     for _ in range(3000):
         lab.integrate()
-        if lab.aircraft.crashed:break
-    assert lab.aircraft.crashed
-    memory_hash=hashlib.sha256(lab.memory_path.read_bytes()).hexdigest()
-    first=started['run_id'];new=lab.retry({'authority':'manual','airframe_variant':'light'})
+        if not lab.active: break
+    assert not lab.active and lab.run_id==first
     old_dir=tmp_path/'evidence/flights'/first
     assert json.loads((old_dir/'summary.json').read_text())['outcome']=='collision'
-    assert new['run_id']!=first
+    assert hashlib.sha256(lab.memory_path.read_bytes()).hexdigest()==memory_hash
+    new=lab.retry({'authority':'manual'})
+    assert new['run_id']!=first and lab.active
     assert lab.mission['departure']==[13.7,-28.4]
     assert not lab.aircraft.crashed and lab.aircraft.data.time==0
-    assert hashlib.sha256(lab.memory_path.read_bytes()).hexdigest()==memory_hash
     rows=[json.loads(l) for l in (lab.log_path/'events.jsonl').read_text().splitlines()]
     assert next(r for r in rows if r['kind']=='retry_lineage')['payload']['previous_run_id']==first
-    with pytest.raises(HTTPException):lab.retry({'authority':'manual'})
     lab.stop('End isolated retry integration check')
     assert lab.sensor_observation()['active'] is False
 
@@ -179,3 +323,18 @@ def test_cabin_level_target_stays_upright_with_combined_attitude_and_yaw():
             joints=cabin_level_target(air,np.radians(yaw))
             cabin=air*Rotation.from_euler('XYZ',joints)
             np.testing.assert_allclose(cabin.apply([0,0,1]),[0,0,1],atol=1e-10)
+
+@pytest.mark.parametrize('variant',['r6','phantom-fx'])
+def test_command_bound_to_previous_run_is_rejected(tmp_path,monkeypatch,variant):
+    monkeypatch.setenv('VTX_DATA_ROOT',str(tmp_path));lab=Laboratory();run=lab.start(Mission(airframe_variant=variant))['run_id']
+    try:
+        if variant=='r6':
+            command=Action(authority='manual',expected_run_id='older-run',reason='Old command',engine=.2,collective_deg=[0]*4,tilt_deg=[[0,0]]*4)
+        else:
+            from vtx.phantom.controls import PhantomAction
+            command=PhantomAction(schema='phantom-fbw-1',authority='manual',expected_run_id='older-run',reason='Old command',collective=.2)
+        with pytest.raises(HTTPException) as error:lab.accept_action(command)
+        assert error.value.status_code==409 and lab.run_id==run and not lab.action_log
+        command.expected_run_id=run
+        assert lab.accept_action(command)['accepted']
+    finally:lab.stop('Run-bound control test complete')

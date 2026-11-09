@@ -57,12 +57,12 @@ async function openSelector(showWhenActive = true) {
   }
 }
 
-document.getElementById('models').addEventListener('click', () => openSelector(true));
+document.getElementById('models').addEventListener('click', () => { document.getElementById('airframe').focus(); document.getElementById('airframe').scrollIntoView({block:'center',behavior:'smooth'}); });
 document.getElementById('model-choice-cancel').addEventListener('click', () => dialog.close());
 async function applyPreview(variant) {
   const response = await fetch('/api/model-preview', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ airframe_variant: variant }),
+    body: JSON.stringify({ airframe_variant: variant, start_configuration: document.getElementById('phantom-start').value, departure: document.getElementById('dep').value.split(',').map(Number) }),
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.detail || `HTTP ${response.status}`);
@@ -94,22 +94,24 @@ airframe.addEventListener('change', async () => {
   } catch (error) {
     airframe.value = loadedVariant;
     status.textContent = error.message;
-    openSelector(true);
+    status.textContent = error.message;
   }
 });
-// Phantom first: when the server idles on its boot aircraft (R6) and nothing was chosen in this session, load the
-// default Phantom (A10-B) for inspection. A release-pinned R6 cockpit refuses the switch (409) and the page leaves it.
-const PHANTOM_DEFAULT = 'phantom-a10b';
-function chosenThisSession() { try { return sessionStorage.getItem('vtx-model-chosen') === '1'; } catch { return false; } }
-function markChosen() { try { sessionStorage.setItem('vtx-model-chosen', '1'); } catch { /* storage unavailable */ } }
-confirm.addEventListener('click', markChosen);
-airframe.addEventListener('change', markChosen);
-async function phantomFirst() {
-  try {
-    const view = await (await fetch('/api/view', { cache: 'no-store' })).json();
-    const actual = view.observation?.configuration?.airframe_variant;
-    if (!view.active && actual === 'r6' && !chosenThisSession()) await applyPreview(PHANTOM_DEFAULT);
-  } catch { /* pinned to R6 or server busy: keep the server's aircraft */ }
-  openSelector(false);
-}
-phantomFirst();
+// The existing LOWER FRAME selector is the sole vehicle selector.
+
+
+// Keep idle inspection in the selected physical starting configuration.
+document.getElementById('phantom-start').addEventListener('change', async () => {
+  if (!airframe.value.startsWith('phantom') || airframe.disabled) return;
+  const selector = document.getElementById('phantom-start');
+  selector.disabled = true;
+  try { await applyPreview(airframe.value); }
+  catch (error) { status.textContent = error.message; }
+  finally { selector.disabled = false; }
+});
+
+document.addEventListener('vtx-preview-start', async () => {
+  if (airframe.disabled) return;
+  try { await applyPreview(airframe.value); }
+  catch (error) { document.getElementById('validation').textContent = error.message; }
+});

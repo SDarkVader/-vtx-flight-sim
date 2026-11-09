@@ -18,9 +18,9 @@ const view={active:true,paused:false,authority:'manual',run_id:'r1'};
 test('an open panel that the operator never touched sends nothing',()=>{
   for(let beat=0;beat<50;beat++)assert.equal(heartbeatDue({engaged:false,pending:false,view,dirty:true,beat,engagedRun:'r1'}),false);
 });
-test('an engaged panel heartbeats only for its own run and manual authority',()=>{
+test('an engaged panel sends changes only for its own run and manual authority',()=>{
   assert.equal(heartbeatDue({engaged:true,pending:false,view,dirty:true,beat:1,engagedRun:'r1'}),true);
-  assert.equal(heartbeatDue({engaged:true,pending:false,view,dirty:false,beat:10,engagedRun:'r1'}),true);
+  assert.equal(heartbeatDue({engaged:true,pending:false,view,dirty:false,beat:10,engagedRun:'r1'}),false);
   assert.equal(heartbeatDue({engaged:true,pending:false,view,dirty:false,beat:3,engagedRun:'r1'}),false);
   assert.equal(heartbeatDue({engaged:true,pending:false,view:{...view,run_id:'r2'},dirty:true,beat:1,engagedRun:'r1'}),false);
   assert.equal(heartbeatDue({engaged:true,pending:false,view:{...view,authority:'colin'},dirty:true,beat:1,engagedRun:'r1'}),false);

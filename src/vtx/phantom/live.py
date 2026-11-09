@@ -40,15 +40,20 @@ def is_phantom_variant(v):
     return v in VARIANTS
 
 
-def make_aircraft(world, request):
+def make_aircraft(world, request, *, enable_a10_surfaces=True):
     o = request.phantom or PhantomOptions()
     # Mission.fuel_kg defaults to the four-fan 10 kg; it is Phantom fuel only when the operator set it
     # explicitly (flight campaign D-2). Otherwise: load-state fuel, else full tanks.
     explicit = 'fuel_kg' in request.model_fields_set
     fuel = o.fuel_kg if o.fuel_kg is not None else (None if o.load_state in ('FX-A', 'FX-C') or not explicit else request.fuel_kg)
-    return PhantomAircraft(world, request.airframe_variant, fuel_kg=fuel, occupants=o.occupants, start_configuration=o.start_configuration,
+    aircraft = PhantomAircraft(world, request.airframe_variant, fuel_kg=fuel, occupants=o.occupants, start_configuration=o.start_configuration,
                            engines_running=o.engines_running, buffer_soc=o.buffer_soc, wind=o.wind_world_m_s,
-                           load_state=None if o.load_state == 'nominal' else o.load_state)
+                           load_state=None if o.load_state == 'nominal' else o.load_state,
+                           overrides=({'proposals': {'p6_drs_stabilator': {'v': 1.0}}}
+                                      if enable_a10_surfaces and request.airframe_variant not in ('phantom-a10b', 'phantom-a9', 'phantom-fx-a9') else None))
+    if enable_a10_surfaces and o.start_configuration != 'road' and not request.airframe_variant.endswith('-a9'):
+        aircraft.set_command({'canard_fold': 'deployed'})
+    return aircraft
 
 
 def after_start(lab, request):
@@ -126,15 +131,12 @@ def gear_weight_fraction(p):
 def sensor_observation(lab):
     p = lab.aircraft; d = p.data
     obs = p.sensor_observation(lab.sensor_rng)
-    lease_rem = max(0.0, LEASE_S - (float(d.time) - lab.last_command_time))
     obs.update(observation_id=lab.obs_id, t_s=round(float(d.time), 3), wall_utc=datetime.now(timezone.utc).isoformat(),
-               lease_remaining_s=round(lease_rem, 3), scheduler_backlog_s=round(lab.clock_lag_s, 3), time_scale=lab.time_scale,
+               command_mode='hold_until_changed', scheduler_backlog_s=round(lab.clock_lag_s, 3), time_scale=lab.time_scale,
                action_schema='phantom-fbw-1', mission=lab.mission, authority=lab.authority, active=lab.active, paused=lab.paused,
                configuration=dict(airframe_variant=p.variant, airframe_revision=p.provenance['revision'], config_sha256=p.P.config_sha256,
                                   load_state=p.load_state, occupants=p.L.occupants, initial_fuel_kg=float(p.fuel_initial.sum())),
                sensor_status='Provisional modelled sensors: GNSS, baro, radar altimeter (ray along gravity), AHRS, body-axis gyro, fan rpm, pod/leg/surface position, power, fuel; no truth forces')
-    if lab.lease_expired:
-        obs['warning_lamps'] = obs['warning_lamps'] + ['COMMAND_LEASE_EXPIRED']
     return obs
 
 
@@ -142,7 +144,7 @@ def accept_timing(lab, row):
     d = lab.aircraft.data; obs = row.get('observation') or {}
     row['timing'] = dict(observation_sim_t_s=obs.get('t_s'), observation_wall_utc=obs.get('wall_utc'), accept_wall_utc=datetime.now(timezone.utc).isoformat(),
                          accept_sim_t_s=float(d.time), apply_sim_t_s=row['apply_t_s'], observation_age_s=(float(d.time) - obs['t_s']) if obs else None,
-                         lease_remaining_s=max(0.0, LEASE_S - (float(d.time) - lab.last_command_time)), scheduler_backlog_s=lab.clock_lag_s,
+                         command_mode='hold_until_changed', scheduler_backlog_s=lab.clock_lag_s,
                          time_scale=lab.time_scale)
 
 
@@ -164,10 +166,6 @@ def integrate(lab):
         for e in p.fcc.pti.log:
             if not e.get('_logged'):
                 e['_logged'] = True; lab.log('pti_event', {k: v for k, v in e.items() if k != '_logged'})
-    if p.data.time - lab.last_command_time > LEASE_S and not lab.lease_expired:
-        p.lease_failsafe(); lab.lease_expired = True
-        lab.log('command_lease_expired', dict(event='ABORT', behavior='collective 0, boosters 0, wheel drive 0, brakes on; all other targets held; no flight rescue'))
-        p.dump_ring(lab.log_path / 'lease_abort_ring.npz')
     was_crashed = p.crashed; nev = len(p.events)
     p.step()
     for e in p.events[nev:]:
@@ -185,22 +183,12 @@ def integrate(lab):
         lab.checkpoint()
         maybe_evaluate_cg_gate(lab)
         support = p.support_count()
-        if support == 0 and p.data.time > 1:
-            lab.left_ground = True
-        dest = np.array(lab.mission['destination'])
         speed = float(np.linalg.norm(p.data.qvel[:3]))
         level = float(p.R()[2, 2]) > .98
-        near = float(np.linalg.norm(p.data.qpos[:2] - dest)) < 2.
-        home = float(np.linalg.norm(p.data.qpos[:2] - np.array(lab.mission['departure']))) < 2.
-        # A landing needs the weight on the gear, not just touching feet (D-8).
+        # Distinguish gear-supported settling from touch while the fans carry the load.
         loaded = gear_weight_fraction(p) >= LANDED_GEAR_LOAD_FRACTION
-        if lab.left_ground and support >= 3 and (near or home) and loaded and level and speed < .15 and not p.crashed:
-            lab.settled_s += .05
-        else:
-            lab.settled_s = 0.
-        if lab.settled_s >= 2:
-            lab.phantom_landing_site = 'destination' if near else 'departure'
-            lab.stop('supported stationary landing at ' + lab.phantom_landing_site)
+        lab.update_landing_evidence(support=support,level=level,speed=speed,loaded=loaded)
+
 
 
 def checkpoint_plant(p):

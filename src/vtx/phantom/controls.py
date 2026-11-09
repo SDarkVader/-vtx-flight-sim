@@ -53,6 +53,10 @@ class PhantomAction(BaseModel):
     schema_: Literal['phantom-fbw-1'] = Field(alias='schema')
     authority: str
     observation_id: int | None = None
+    pilot_id: str | None = None
+    pilot_epoch: int | None = None
+    pilot_run_id: str | None = None
+    expected_run_id: str | None = None
     reason: str = Field(min_length=3, max_length=2000)
     engine: float | None = Field(default=None, ge=0, le=1)
     collective: float | None = Field(default=None, ge=0, le=1)

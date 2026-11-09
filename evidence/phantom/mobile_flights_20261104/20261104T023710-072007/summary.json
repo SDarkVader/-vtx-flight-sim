@@ -1,0 +1,53 @@
+{
+  "run_id": "20261104T023710-072007",
+  "source": "retained Vercel Sandbox vtx-flight-lab snapshot",
+  "raw_events_sha256": "e996461be871fff47ec44d9392c9a8928bdb05e85acc93b65fc460d62d1d859b",
+  "raw_events_bytes": 57704813,
+  "variant": "phantom-fx",
+  "load_state": "FX-A",
+  "max_barometric_altitude_m": 74.96,
+  "max_barometric_altitude_t_s": 109.07,
+  "touchdowns": [
+    {
+      "t_s": 122.1525,
+      "sink_rate_m_s": 33.73420454480601,
+      "supports": [
+        "foot_FL",
+        "foot_FR"
+      ]
+    }
+  ],
+  "collisions": [
+    {
+      "t_s": 122.1625,
+      "force_n": 802258.4608214766
+    }
+  ],
+  "pilot_decisions": {
+    "manual": 0,
+    "colin": 1080
+  },
+  "warnings_seen": [
+    "COMMAND_LEASE_EXPIRED",
+    "HARD_LANDING",
+    "IMPACT",
+    "POWER_LIMITED"
+  ],
+  "last_observation": {
+    "t_s": 175.955,
+    "baro_m": 0.17,
+    "weight_on_wheels": true,
+    "velocity_world_m_s": [
+      -0.007,
+      0.006,
+      -0.002
+    ],
+    "warning_lamps": [
+      "IMPACT",
+      "HARD_LANDING",
+      "COMMAND_LEASE_EXPIRED"
+    ]
+  },
+  "formal_server_summary_present": false,
+  "formal_server_outcome": null
+}

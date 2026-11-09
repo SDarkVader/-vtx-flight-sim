@@ -16,3 +16,6 @@ tools/pilot_controls.json.bak
 
 # Research branch: Phantom A8 source, A9 revision and render evidence are tracked here (SHA-256 pins in assets/derived/phantom-a9-SHA256.txt)
 *.blend1
+
+# Isolated integration runtime evidence stays local.
+integration-test-data-*/

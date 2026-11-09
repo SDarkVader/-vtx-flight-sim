@@ -129,3 +129,12 @@ def test_steering_stays_centred_in_vtol_and_locks_for_takeoff():
         r.step()
     assert r.wing_state['left'] != 'stowed'
     assert abs(math.degrees(r.joint('pod_FL_steer')[0])) <= r.P['effectors.steering.takeoff_lock_deg'] + 0.3
+
+
+def test_live_factory_preserves_a10b_fingerprint_and_road_start():
+    from vtx.live_server import Mission
+    from vtx.phantom.live import make_aircraft
+    request = Mission(airframe_variant='phantom-a10b', phantom={'start_configuration': 'road'})
+    aircraft = make_aircraft(TestWorld(), request)
+    assert aircraft.P.config_sha256 == '3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01'
+    assert abs(aircraft.joint('canard_left_fold')[0]) == pytest.approx(math.pi / 2)

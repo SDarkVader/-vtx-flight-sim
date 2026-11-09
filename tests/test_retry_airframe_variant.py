@@ -9,6 +9,7 @@ import vtx.live_server as server
 
 
 def test_r6_retry_preserves_variant_and_all_flight_configuration(tmp_path, monkeypatch):
+    monkeypatch.setenv("VTX_DATA_ROOT", str(tmp_path))
     monkeypatch.setattr(server, "ROOT", tmp_path)
     lab = Laboratory()
     original = Mission(
@@ -44,6 +45,7 @@ def test_r6_retry_preserves_variant_and_all_flight_configuration(tmp_path, monke
 
 
 def test_legacy_retry_without_variant_defaults_light(tmp_path, monkeypatch):
+    monkeypatch.setenv("VTX_DATA_ROOT", str(tmp_path))
     monkeypatch.setattr(server, "ROOT", tmp_path)
     lab = Laboratory()
     lab.start(Mission(departure=[13.7, -28.4], destination=[-45, 18]))

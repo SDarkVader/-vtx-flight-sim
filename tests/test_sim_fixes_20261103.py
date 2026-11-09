@@ -199,9 +199,10 @@ def test_cg_gate_evaluated_after_settling_and_landing_needs_weight_on_gear(tmp_p
     assert lab.active
     monkeypatch.undo()
     monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
-    while lab.active and lab.aircraft.data.time < t0 + 5:
+    while lab.aircraft.data.time < t0 + 5:
         lab.integrate()
-    assert not lab.active
+    assert lab.active and lab.last_landing['physical'] == 'supported_stable'
+    lab.stop('End landing assessment test')
     s = json.loads((lab.log_path / 'summary.json').read_text())
     assert s['outcome'] == 'landed_at_departure' and s['phantom']['cg_gate']['status'] in ('GO', 'NO_GO')
 
@@ -212,19 +213,23 @@ def test_touchdown_is_debounced_and_step_log_is_readable_mid_run(tmp_path, monke
     obs = lab.sensor_observation()
     ref = obs['radar_altimeter_ground_reference_m']
     assert ref is not None and obs['radar_altimeter_m'] == pytest.approx(ref, abs=.1)
-    while p.data.time < 1.2:
+    while p.data.time < 1.2 and lab.active:
         lab.integrate()
+    assert lab.active, 'Aircraft crashed before settling'
     raw = (lab.log_path / 'phantom_steps.csv.gz').read_bytes()
     text = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(raw).decode()
     assert text.count('\n') >= 50
     # drop from 0.6 m: exactly one touchdown with a positive sink rate
     p.data.qpos[2] += .6; p.data.qvel[:] = 0; p.airborne = True; mj.mj_forward(p.model, p.data)
     n0 = len(p.events)
-    while p.data.time < 4.5:
+    while p.data.time < 4.5 and lab.active:
         lab.integrate()
     td = [e for e in p.events[n0:] if e['event'] == 'touchdown']
     assert len(td) == 1 and td[0]['sink_rate_m_s'] > 0
-    lab.stop('end')
+    if lab.active:
+        lab.stop('end')
+    else:
+        assert (lab.log_path / 'crash_ring.npz').exists()
 
 
 def test_gear_weight_fraction_is_low_when_fans_carry_the_weight():

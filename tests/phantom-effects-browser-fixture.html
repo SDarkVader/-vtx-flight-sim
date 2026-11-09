@@ -1,0 +1,27 @@
+<!DOCTYPE html><html><head><style>body{margin:0;background:#151d27;color:white}pre{position:absolute;z-index:2}</style><script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script></head><body><pre id="result">pending</pre><script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from '/vendor/GLTFLoader.js';
+import {attachPhantom,updatePhantom,detachPhantomEffects} from '/vtx-env/phantom-look.js?v=test2';
+const output=document.querySelector('#result');
+try {
+ const gltf=await new Promise((resolve,reject)=>new GLTFLoader().load('/assets/phantom-a10-blendstra-81c823e2.glb',resolve,undefined,reject));
+ const scene=new THREE.Scene();scene.background=new THREE.Color('#1a2838');scene.add(gltf.scene);
+ const camera=new THREE.PerspectiveCamera(38,1000/700,.1,100);camera.position.set(-9,5,8);camera.lookAt(0,.4,0);
+ scene.add(new THREE.HemisphereLight(0xd8ecff,0x223344,2));
+ const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(-2,8,4);scene.add(light);
+ const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(1000,700);renderer.setPixelRatio(1);document.body.appendChild(renderer.domElement);
+ const rig=attachPhantom(gltf.scene);
+ const q={}; for(const p of ['FL','FR','RL','RR']) q['pod_'+p+'_wheel']=1;
+ const truth={t_s:1, phantom:{joints:q,fan_thrust_max_n:100,booster_thrust_max_n:100,fan_rpm_max:100,fan_rpm:[50,50,50,50]},propulsors:['FL','FR','RL','RR'].map(pod=>({pod,thrust_n:80})),boosters:[{thrust_n:80},{thrust_n:100}]};
+ updatePhantom(rig,truth,false,[.5,.5,.5,.5]);
+ gltf.scene.position.x=.2; truth.t_s=1.1;updatePhantom(rig,truth,false,[.5,.5,.5,.5]);
+ const checks={wheels:rig.wheels.length,pods:rig.podJets.length,boosters:Object.keys(rig.boosters).length,
+ rotating:rig.wheels.every(w=>Math.abs(w.node.quaternion.z)>0.4), podGlow:rig.podJets.every(x=>x.glow.visible&&x.core.visible),boosterGlow:Object.values(rig.boosters).every(x=>x.plume.visible&&x.core.visible),movingParts:rig.wheels.every(w=>w.node.children.length>=3),trails:rig.trails.length===6&&rig.trails.every(x=>x.samples.length===2&&x.line.visible)};
+ renderer.render(scene,camera);
+ truth.propulsors.forEach(f=>f.thrust_n=0);truth.boosters.forEach(f=>f.thrust_n=0);updatePhantom(rig,truth);
+ checks.zeroHidden=rig.podJets.every(x=>!x.glow.visible&&!x.core.visible)&&Object.values(rig.boosters).every(x=>!x.plume.visible&&!x.core.visible);
+ const root=rig.trailRoot;detachPhantomEffects(rig);checks.cleanup=!root.parent&&rig.trails.length===0;
+ output.textContent=JSON.stringify(checks);
+ if(checks.wheels!==4||checks.pods!==4||checks.boosters!==2||Object.values(checks).some(x=>x===false)) output.textContent='FAIL '+output.textContent;
+} catch(e){output.textContent='FAIL '+e.stack;}
+</script></body></html>

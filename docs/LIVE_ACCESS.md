@@ -33,13 +33,13 @@ validation does not guarantee an obstacle-free route.
 
 The displayed clock scale applies to the independent physics clock. 0.01× and
 0.02× accommodate Colin's reasoning latency; 0.05×, 0.1× and 1× are also
-available. All changes are explicit and logged. A
-5-simulated-second command lease feathers/ idles if inputs cease. That event is
-logged and may cause a crash. Explicit Pause freezes physics and is logged.
+available. All changes are explicit and logged. The last accepted command
+remains in effect until the operator or pilot changes it, authority transfers,
+or the flight test ends. Explicit Pause freezes physics and is logged.
 
-**Retry · manual** and **Retry · Colin** appear after a crash or completed
-sortie. Retry archives an active crash, preserves the pilot checkpoint and
-starts a fresh aircraft at the retained mission A, with the same B. The lower
+**Retry · manual** and **Retry · Colin** start another attempt from the retained
+departure and destination. Starting a new mission or retrying an active test
+retains its evidence before spawning the next aircraft. The lower
 frame selector chooses the full R4 or experimental R5 variant for a fresh sortie;
 an active aircraft cannot be lightened by changing a menu.
 

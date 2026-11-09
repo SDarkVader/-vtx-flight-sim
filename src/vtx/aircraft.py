@@ -282,7 +282,7 @@ class Aircraft:
             render_asset='/assets/airframe-r4.glb'
         elif airframe_variant in ('r6','r6_variator'):
             ledger_path=LEDGER_R6_PATH
-            render_asset='/assets/airframe-r6.glb'
+            render_asset='/assets/airframe-r6-blendstra-rig.glb'
         else:
             ledger_path=LEDGER_PATH
             render_asset='/assets/airframe-live.glb'
