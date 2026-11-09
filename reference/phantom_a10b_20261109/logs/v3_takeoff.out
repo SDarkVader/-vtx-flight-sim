@@ -1,0 +1,18 @@
+takeoff config 91fb9fb8 mass 1933.1
+  liftoff (33.9, 86.64, 1905) | max height 0.1 | pitch range -0.37 0.4 | end {'u': 75.73, 'pitch': 0.08, 'z': -0.01, 'sup': 4, 'dem': [0.0, 1.0, 0.13], 'tvc': [-19.8, 2.6]}
+  wings locked at (5.85, 25.15)
+   t+  0.0 u    0.0 z    +0.0 pitch   +0.0 alpha  +79.8 roll   +0.0 beta -26.6 hdg    +0.0 sup 0 dem [0.0, -0.0, 0.0] tvc [0.0, 0.0] rud  +0.0 fanT [0, 0, 0, 0] bus 24
+   t+  4.5 u   19.6 z    +0.0 pitch   +0.4 alpha   +0.4 roll   -0.0 beta  +0.0 hdg    +0.0 sup 4 dem [0.0, -0.01, -0.0] tvc [0.2, -0.1] rud  -0.1 fanT [0, 0, 0, 0] bus 746
+   t+  9.1 u   38.3 z    +0.0 pitch   +0.2 alpha   +0.2 roll   -0.0 beta  +0.0 hdg    +0.0 sup 4 dem [0.0, -0.02, -0.0] tvc [0.3, -0.1] rud  -0.1 fanT [0, 0, 0, 0] bus 799
+   t+ 13.7 u   54.5 z    +0.0 pitch   -0.0 alpha   -0.0 roll   -0.0 beta  -0.0 hdg    +0.1 sup 3 dem [0.0, 0.0, 0.0] tvc [-0.1, 0.1] rud  +0.1 fanT [0, 0, 0, 0] bus 844
+   t+ 18.2 u   67.2 z    +0.0 pitch   -0.3 alpha   -0.3 roll   -0.0 beta  -0.0 hdg    +0.1 sup 4 dem [0.0, 0.07, -0.0] tvc [-1.3, -0.1] rud  -0.1 fanT [0, 0, 0, 0] bus 818
+   t+ 22.8 u   75.5 z    +0.1 pitch   +0.0 alpha   +0.0 roll   -0.0 beta  -0.0 hdg    +0.3 sup 4 dem [-0.01, 1.0, -0.0] tvc [-20.0, -0.0] rud  -0.1 fanT [0, 0, 0, 0] bus 799
+   t+ 27.3 u   81.2 z    +0.1 pitch   +0.3 alpha   +0.3 roll   -0.0 beta  -0.0 hdg    +0.5 sup 3 dem [-0.02, 0.98, 0.01] tvc [-19.6, 0.1] rud  +0.2 fanT [0, 0, 0, 0] bus 786
+   t+ 31.9 u   85.2 z    +0.1 pitch   +0.3 alpha   +0.3 roll   -0.2 beta  -0.1 hdg    +0.6 sup 3 dem [-0.0, 0.99, 0.1] tvc [-19.8, 2.1] rud  +2.6 fanT [0, 0, 0, 0] bus 777
+   t+ 36.4 u   84.9 z    +0.1 pitch   +0.0 alpha   +0.0 roll   +0.3 beta  +0.0 hdg    +0.8 sup 4 dem [-0.0, 1.0, -0.1] tvc [-19.9, -2.0] rud  -2.5 fanT [0, 0, 0, 0] bus 510
+   t+ 41.0 u   82.2 z    +0.1 pitch   +0.0 alpha   +0.0 roll   -0.2 beta  +0.1 hdg    +1.0 sup 4 dem [0.05, 1.0, 0.02] tvc [-20.0, 0.3] rud  +0.4 fanT [0, 0, 0, 0] bus 517
+   t+ 45.5 u   80.2 z    +0.0 pitch   +0.1 alpha   +0.1 roll   -0.2 beta  -0.1 hdg    +1.7 sup 4 dem [-0.04, 1.0, 0.13] tvc [-19.8, 2.6] rud  +3.3 fanT [0, 0, 0, 0] bus 522
+   t+ 50.0 u   78.7 z    +0.0 pitch   +0.1 alpha   +0.1 roll   +0.4 beta  -0.0 hdg    +2.2 sup 4 dem [-0.04, 1.0, -0.1] tvc [-19.9, -2.0] rud  -2.5 fanT [0, 0, 0, 0] bus 525
+   t+ 54.6 u   77.5 z    +0.0 pitch   +0.1 alpha   +0.1 roll   +0.0 beta  +0.2 hdg    +2.2 sup 4 dem [0.06, 1.0, -0.09] tvc [-19.9, -1.9] rud  -2.3 fanT [0, 0, 0, 0] bus 529
+   t+ 59.1 u   76.5 z    +0.0 pitch   +0.1 alpha   +0.1 roll   -0.4 beta  -0.0 hdg    +2.8 sup 4 dem [-0.01, 1.0, 0.13] tvc [-19.8, 2.6] rud  +3.3 fanT [0, 0, 0, 0] bus 530
+   t+ 63.7 u   75.8 z    +0.0 pitch   +0.1 alpha   +0.1 roll   +0.2 beta  -0.1 hdg    +3.4 sup 2 dem [-0.06, 1.0, -0.01] tvc [-20.0, -0.2] rud  +0.0 fanT [0, 0, 0, 0] bus 532
