@@ -9,6 +9,7 @@ export function heartbeatDue({engaged,pending,view,dirty,beat,engagedRun}){
   return dirty;
 }
 import {parseUtterance,statusReadback,createSpeech,speak} from './voice-pilot.js?v=1';
+import {cockpitTelemetry} from './cockpit-telemetry.js?v=1';
 const FIELDS=[['collective',0,1,0.01,0],['vertical_speed_m_s',-3,3,0.1,0],['pitch',-1,1,0.02,0],['roll',-1,1,0.02,0],['yaw',-1,1,0.02,0],['engine',0,1,0.05,1]];
 export function createPhantomPanel({api,toast}){
   let dirty=false,beat=0,pending=false,lastView=null,engaged=false,engagedRun,voiceReason=null,pendingVoice=null; let vtol=true,legsExtended=true,brakes=true,wing=false,can=false;
@@ -64,7 +65,7 @@ export function createPhantomPanel({api,toast}){
       for(const control of el.querySelectorAll('input,button,select'))control.disabled=!v.active;
       const tb=el.querySelector('#ph-take');if(tb)tb.textContent=engaged?'Release control':'Take control';
       el.querySelector('#ph-state').textContent=[!v.active?'Inspection preview: start a mission to enable Phantom controls':engaged?'PANEL ENGAGED: sending manual commands':'panel idle: sends nothing',`t ${o.t_s?.toFixed?.(2)} s · ${v.time_scale}× · commands held`,
-        `variant ${o.configuration?.airframe_variant} ${o.configuration?.load_state||''}`,`radar ${JSON.stringify(o.radar_altitude_m??o.radar_clearance_m)}`,
+        `variant ${o.configuration?.airframe_variant} ${o.configuration?.load_state||''}`,`radar clearance ${cockpitTelemetry(o).altitude} m`,
         `wing ${JSON.stringify(t.phantom?.wing_state)}`,`lamps ${(o.warning_lamps||[]).join(' ')}`].join('\n');},
   };
 }

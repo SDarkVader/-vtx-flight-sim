@@ -30,3 +30,13 @@ def test_dashboard_proxy_rejects_oversized_write(monkeypatch):
     monkeypatch.setattr(dashboard_site, "_transfer", never)
     response = asyncio.run(dashboard_site.dashboard_data(make_request("PUT", b"x" * 1600001)))
     assert response.status_code == 413
+
+def test_default_does_not_replace_existing_workspace(tmp_path):
+    assert dashboard_site._new_workspace(tmp_path)
+    for name in ('pilot/colin-memory.json', 'pilot/live-flight-checkpoint.json',
+                 'evidence/flights', 'experiments'):
+        root = tmp_path / name
+        root.parent.mkdir(parents=True, exist_ok=True)
+        root.touch()
+        assert not dashboard_site._new_workspace(tmp_path)
+        root.unlink()

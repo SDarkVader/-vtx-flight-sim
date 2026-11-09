@@ -7,6 +7,7 @@ import {zoomDistance} from './camera-zoom.js?v=1';
 import {rotorVisualOffset} from './rotor-visual.js?v=1';
 import {physicalCameraTarget} from './physical-camera-target.js?v=1';
 import {cockpitAxes,cockpitHorizon} from './cockpit-axes.js?v=1';
+import {cockpitTelemetry} from './cockpit-telemetry.js?v=1';
 import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=4';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
 import {buildSky} from './vtx-env/sky.js?v=1';
@@ -28,7 +29,7 @@ import {createAirportOperations} from './vtx-env/airport-operations.js?v=1';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
 import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
-import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261107-thrust-wheel-1';import {createPhantomPanel} from './phantom-controls.js?v=2';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
+import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261107-thrust-wheel-1';import {createPhantomPanel} from './phantom-controls.js?v=3';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
 const phantomMissionNote=document.createElement('p');
@@ -639,6 +640,13 @@ function updateEngineering(){
  $('engineering-content').textContent=JSON.stringify({live:{simulation_time_s:o.t_s,observation_id:o.observation_id,clock_scale:last.time_scale,active:last.active,paused:last.paused,authority:last.authority,command_warnings:o.warning_lamps,rotor_rpm:o.rotor_rpm,shaft_torque_nm:o.shaft_torque_nm,shaft_power_kw:o.engine_shaft_kw,collective_deg:o.collective_feedback_deg,fan_tilt_deg:o.tilt_feedback_deg,cabin_gimbal_deg:o.cabin_feedback_deg,attitude_deg:o.attitude_xyz_deg,angular_rate_world_deg_s:o.gyro_world_deg_s,angular_rate_body_deg_s:o.gyro_body_deg_s,velocity_world_m_s:o.gnss_velocity_mps,velocity_body_m_s:o.velocity_body_mps,clearance_m:o.radar_clearance_m,fuel_kg:o.fuel_kg,scheduler_backlog_s:o.scheduler_backlog_s},engineering:{revision:t.provenance.revision,physics_revision:t.provenance.physics_revision,runtime_source_sha256:last.runtime_source_sha256,status:t.provenance.status,mass:t.mass,power:t.power,energy:t.energy,flags:t.flags,contact_events:t.events,hypotheses:t.provenance.hypotheses}},null,2);
 }
 function updateView(v){
+ if(!rideEnabled && v.observation){
+  const instruments=cockpitTelemetry(v.observation);
+  $('cockpit-alt').textContent=instruments.altitude;
+  $('cockpit-vs').textContent=instruments.verticalSpeed;
+  $('cockpit-speed').textContent=instruments.speed;
+  $('cockpit-fuel').textContent=instruments.fuel;
+ }
  const nextAsset=visualAsset(v.rendering_truth?.provenance?.render_asset);
  if(model && nextAsset && loadedAsset!==nextAsset){model.visible=false;modelReady=false;renderer.clear();}
  last=v;latestTruthReceivedMs=performance.now();panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
