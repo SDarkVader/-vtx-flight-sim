@@ -9,3 +9,9 @@ Tested 2026-11-09 against the separate integration runtime at `127.0.0.1:18909`,
 - The attached archive preserves the A10-A sortie and concurrent A10-B experiment. Browser screenshots were inspected but no standalone screenshot file was retained. A10-B remains selected in the isolated cockpit, with no sortie active; this does not change the build's R6 default on a clean start.
 
 A subsequent browser capture was saved as `r6-full-preview-20261109-2027.jpg` (1440 × 900 viewport); `r6-preview-20261109-2025.jpg` is an earlier partially obscured view. Both are screenshots of the isolated runtime's R6 preview, not images of an actual sortie.
+
+## A10-B cockpit telemetry reproduction — 20:31 UTC
+
+On the isolated runtime, selected A10-B, started manual sortie `20261109T203139-f91151`, opened cockpit and controls, then ended the run without takeoff. `a10b-telemetry-defect-20261109-2031.jpg` captures the active run: the main telemetry at the bottom shows values, while the cockpit overlay shows dashes and the Phantom panel shows `radar undefined`. `a10b-telemetry-run-20261109-2031.zip` retains the run evidence.
+
+Code inspection explains the mismatch: the Phantom observation exposes `radar_altimeter_m` and `radar_altimeter_ground_reference_m`, while `public/phantom-controls.js` displays `radar_altitude_m` or `radar_clearance_m`. The main Phantom telemetry already calculates clearance from the available altimeter and reference fields. In `public/app.js`, cockpit instrument elements are updated in the `ridePose` block for scripted rides, not in the live Phantom update branch. This is a UI data-binding finding; no physics, runtime configuration, or aircraft model was changed.
