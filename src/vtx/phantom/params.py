@@ -7,12 +7,20 @@ ROOT = Path(__file__).resolve().parents[3]
 PARAMETER_FILE = ROOT / 'inputs/phantom_parameters_v1.json'
 MANIFEST_FILE = ROOT / 'inputs/phantom_simulation_manifest_v0.json'
 LABELS = {'MEASURED-K', 'DERIVED', 'SYNTHETIC_UNVALIDATED', 'MANUFACTURER', 'REGULATORY_REFERENCE'}
-VARIANTS = ('phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')   # phantom/phantom-fx = A10 (main); -a9 = earlier version
+VARIANTS = ('phantom-a10b', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')   # phantom-a10b = A10-B (current default); phantom-fx = A10-A; -a9 = earlier
+DEFAULT_VARIANT = 'phantom-a10b'
 CASSETTE_REVISIONS = ('A9', 'A10')
+
+
+OVERLAY_DIR = ROOT / 'inputs/phantom_overlays'
 
 
 class PhantomConfigError(ValueError):
     pass
+
+
+def _strip(d):
+    return {k: (_strip(v) if isinstance(v, dict) else v) for k, v in d.items() if not k.startswith('_')}
 
 
 def _merge(a, b):
@@ -48,6 +56,8 @@ class Params:
             chain.insert(0, raw['variants'][v]); v = raw['variants'][v].get('inherits')
         self.tree = copy.deepcopy(raw['base'])
         for entry in chain:
+            for name in entry.get('overlay_files', []):      # opt-in overlays named by a variant (inputs/phantom_overlays)
+                _merge(self.tree, _strip(json.loads((OVERLAY_DIR / f'{name}.json').read_text())))
             _merge(self.tree, entry.get('overlay', {}))
         if overrides:
             _merge(self.tree, overrides)
@@ -78,6 +88,13 @@ class Params:
     def __getitem__(self, key):
         n = self.node(key)
         return n['v'] if isinstance(n, dict) and 'v' in n else n
+
+    def get(self, key, default=None):
+        """Value of an optional parameter (e.g. one supplied only by an overlay); default when absent."""
+        try:
+            return self[key]
+        except (KeyError, TypeError):
+            return default
 
     def label(self, key):
         return self.node(key)['l']

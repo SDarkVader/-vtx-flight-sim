@@ -1,0 +1,4 @@
+        render_asset = ('/assets/phantom-a10b-visual.glb' if variant == 'phantom-a10b'
+                        else '/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10'
+                        else f'/assets/phantom-{P.cassette_revision.lower()}.glb')
+        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=render_asset,

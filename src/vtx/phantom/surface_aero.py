@@ -80,6 +80,14 @@ class SurfaceAero:
         g = P.geometry['projected_areas']
         self.body_cda = np.array([g['frontal_m2'] * P['aero.body_cd_frontal'], g['side_m2'] * P['aero.body_cd_side'], g['plan_m2'] * P['aero.body_cd_plan']])
         self.body_centre = np.array(P['aero.body_centre_m'])
+        # optional hull lift / Munk term (overlay hull_lift_v1): forebody normal force N = q K sin(a) cos(a) at its centre of
+        # pressure, written bilinearly as 0.5 rho K (-v_n) v_x so it is exact for any direction and vanishes at 0 and 90 deg.
+        self.rudder_tau = P.get('effectors.rudder.tau', 0.0) if P.get('effectors.enabled', 0.0) > 0.5 else 0.0
+        self.hull = None
+        if P.get('aero.hull_lift.enabled', 0.0) > 0.5:
+            z = P['aero.hull_lift.z_cp_m']
+            self.hull = dict(k_pitch=P['aero.hull_lift.k_pitch_m2'], cp_pitch=np.array([P['aero.hull_lift.x_cp_pitch_m'], 0.0, z]),
+                             k_yaw=P['aero.hull_lift.k_yaw_m2'], cp_yaw=np.array([P['aero.hull_lift.x_cp_yaw_m'], 0.0, z]))
 
     def compute(self, v_body, w_body, wind_body, state):
         """state: wing_frac{left,right}, wing_locked{..}, flap{..} aileron{..} rad, canard_pitch{..} rad, canard_deployed{..}.
@@ -131,8 +139,30 @@ class SurfaceAero:
                     F += fs; Mo += np.cross(st['pos'], fs)
                     hinge[f'{cs}_{s.side}'] = qa * st['cs_area'] * st['cs_chord'] * (st['ch'][0] * alpha + st['ch'][1] * d)
                     out.append(dict(name=f'{cs}_{s.side}', locked=True, delta_deg=math.degrees(d), dcl=dcl, force_n=fs.tolist()))
+        rud = state.get('rudder', 0.0)
+        if self.rudder_tau and rud:
+            # control_effectors overlay: rudders on both fins; side-force increment (+ rudder -> +y) at each fin AC,
+            # effectiveness tau on the fin lift slope, increment capped at the fin stall incidence
+            for s in self.surfaces:
+                if s.kind != 'fin':
+                    continue
+                va = air(s.ac); qf = 0.5 * self.rho * float(va @ va)
+                da = float(np.clip(self.rudder_tau * rud, -s.alpha_stall, s.alpha_stall))
+                fr = np.array([0.0, qf * s.area * s.cla * da, 0.0])
+                F += fr; Mo += np.cross(s.ac, fr)
+                out.append(dict(name=f'rudder_{s.side}', delta_deg=math.degrees(rud), force_n=fr.tolist()))
         vb = air(self.body_centre)
         fb = -0.5 * self.rho * np.abs(vb) * vb * self.body_cda
         F += fb; Mo += np.cross(self.body_centre, fb)
-        out.append(dict(name='body', force_n=fb.tolist(), cda_m2=self.body_cda.tolist(), munk_moment='not modelled'))
+        out.append(dict(name='body', force_n=fb.tolist(), cda_m2=self.body_cda.tolist(),
+                        munk_moment='hull_lift overlay' if self.hull else 'not modelled'))
+        if self.hull:
+            h = self.hull; hr = 0.5 * self.rho
+            vp = air(h['cp_pitch']); vy = air(h['cp_yaw'])
+            fz = np.array([0.0, 0.0, hr * h['k_pitch'] * (-vp[2]) * max(vp[0], 0.0)])     # forebody lift (reverse flow: none)
+            fy = np.array([0.0, hr * h['k_yaw'] * (-vy[1]) * max(vy[0], 0.0), 0.0])       # side profile, sideslip
+            m_o = np.cross(h['cp_pitch'], fz) + np.cross(h['cp_yaw'], fy)
+            F += fz + fy; Mo += m_o
+            out.append(dict(name='hull_lift', force_n=(fz + fy).tolist(), pitch_force_n=float(fz[2]), side_force_n=float(fy[1]),
+                            moment_about_origin_nm=m_o.tolist()))
         return dict(force_body=F, moment_body=Mo, surfaces=out, hinge_moments=hinge)

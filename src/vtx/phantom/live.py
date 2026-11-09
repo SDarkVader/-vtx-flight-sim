@@ -13,6 +13,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 from .params import VARIANTS
+from .params import Params
 from .plant import PhantomAircraft
 from .ledger import config_table
 
@@ -46,11 +47,14 @@ def make_aircraft(world, request, *, enable_a10_surfaces=True):
     # explicitly (flight campaign D-2). Otherwise: load-state fuel, else full tanks.
     explicit = 'fuel_kg' in request.model_fields_set
     fuel = o.fuel_kg if o.fuel_kg is not None else (None if o.load_state in ('FX-A', 'FX-C') or not explicit else request.fuel_kg)
+    # A10 surfaces: force P6 on only where the variant does not already carry it, so a variant that defines P6
+    # itself (phantom-a10b) keeps its own configuration identity.
+    force_p6 = (enable_a10_surfaces and not request.airframe_variant.endswith('-a9')
+                and Params(request.airframe_variant)['proposals.p6_drs_stabilator'] < 0.5)
     aircraft = PhantomAircraft(world, request.airframe_variant, fuel_kg=fuel, occupants=o.occupants, start_configuration=o.start_configuration,
                            engines_running=o.engines_running, buffer_soc=o.buffer_soc, wind=o.wind_world_m_s,
                            load_state=None if o.load_state == 'nominal' else o.load_state,
-                           overrides=({'proposals': {'p6_drs_stabilator': {'v': 1.0}}}
-                                      if enable_a10_surfaces and not request.airframe_variant.endswith('-a9') else None))
+                           overrides=({'proposals': {'p6_drs_stabilator': {'v': 1.0}}} if force_p6 else None))
     if enable_a10_surfaces and not request.airframe_variant.endswith('-a9'):
         aircraft.set_command({'canard_fold': 'deployed'})
     return aircraft

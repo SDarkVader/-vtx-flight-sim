@@ -15,7 +15,7 @@ Any other label is rejected. These are **not validated aircraft performance figu
 
 ### `phantom`
 
-The A9 as drawn:
+The A10 as drawn (the A9 is kept as `phantom-a9` and `phantom-fx-a9` for comparison):
 - 0.49 m fans inside 0.72 m wheels;
 - 2 x 600 kW turbogenerators;
 - CG taken from the ledger.
@@ -126,7 +126,8 @@ or explicit end of the flight test. There is no command expiry timer.
 - Run-folder evidence: `phantom_parameters.json`, `phantom_ledger.json`, `phantom_steps.csv.gz`, `crash_ring.npz`.
 
 ### Browser
-- `public/assets/phantom-a9.glb`, built by `tools/phantom/export_phantom_glb.py`: frame 1, Z-up, no animations, joint extras.
+- `public/assets/phantom-a10.glb` (and `phantom-a9.glb` for the A9 variants), built by `tools/phantom/export_phantom_glb.py`: frame 1, Z-up, no animations, joint extras.
+- `public/assets/phantom-a10-visual.glb`: the render-only refinement of the A10 export, loaded by default (`?cad=1` loads the raw export). Built by `tools/phantom/refine_phantom_visual.py`; see `A10_VISUAL_PASS.md`.
 - `public/vtx-env/phantom-look.js` drives the joints from `rendering_truth.phantom.joints`.
 - `public/phantom-controls.js` is the operator panel.
 - `public/app.js` has about 5 one-line hooks; `index.html` has 2 new `<option>`s.
@@ -137,9 +138,11 @@ Base configuration: VTOL, wings stowed, canards folded, full fuel, 2 occupants. 
 
 | Variant / load | Mass (kg) | CG x (m) | Front / rear pod share, each |
 |---|---|---|---|
-| phantom | 1897.1 (+597 vs the notional 1,300) | -0.734 | 0.137 / 0.363 |
-| phantom-fx, FX-A | 1888.5 | -0.151 | 0.230 / 0.270 |
-| phantom-fx, FX-C | 1734.5 | -0.156 | about 0.23 / 0.27 |
+| phantom | 1906.1 (+606 vs the notional 1,300) | -0.732 | 0.137 / 0.363 |
+| phantom-fx, FX-A | 1897.5 | -0.152 | 0.230 / 0.270 |
+| phantom-fx, FX-C | 1743.5 | -0.157 | about 0.23 / 0.27 |
+
+These are the A10 cassette ledger. The A9 variants are 9.0 kg lighter (1897.1, 1888.5 and 1734.5 kg for the same three rows).
 
 Full tables:
 - `evidence/phantom/phantom_mass_ledger.json`

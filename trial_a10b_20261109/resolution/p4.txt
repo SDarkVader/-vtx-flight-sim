@@ -1,0 +1,7 @@
+        va = vb - self.R().T @ self.wind                     # air data (used by the wing-borne law only)
+        sensed.update(qdyn=0.5 * P['atmosphere.density_kg_m3'] * float(va @ va), beta=math.atan2(float(va[1]), max(abs(float(va[0])), 1.0)))
+        # Compute the controller's balance from the measured joint positions
+        # and current fuel, rather than the ledger's default parked geometry.
+        joint_positions = {name: float(self.joint(name)[0])
+                           for name in self.L.bodies if name in self.jid}
+        led = self.L.mass_properties(joint_positions, fuel_kg=list(self.fuel))

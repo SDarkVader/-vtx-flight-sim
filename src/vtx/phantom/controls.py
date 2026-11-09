@@ -143,6 +143,14 @@ class FlightControl:
         self.last = {}
         self.pod_x = {k: (P['pods.hinge_x_front_m'] if FRONT[k] else P['pods.hinge_x_rear_m']) for k in PODS}
 
+    def wingborne_blend(self, sensed):
+        """0 (hover gains) -> 1 (wing-borne gains) with dynamic pressure; 0 unless the control_effectors overlay is on."""
+        P = self.P
+        if P.get('fbw_wingborne.enabled', 0.0) <= 0.5:
+            return 0.0
+        q0, q1 = P['fbw_wingborne.q_blend_pa']
+        return float(np.clip((sensed.get('qdyn', 0.0) - q0) / (q1 - q0), 0.0, 1.0))
+
     def apply(self, action: dict, t):
         for k in COMMAND_FIELDS:
             if action.get(k) is not None:
@@ -173,12 +181,21 @@ class FlightControl:
             if mode == 'rate_damping':
                 aug = -np.array(kd) * rates
         else:
-            phi_c = stick['roll'] * math.radians(P['fbw.attitude_bank_max_deg'])
+            s_wb = self.wingborne_blend(sensed)
+            bank_max = P['fbw.attitude_bank_max_deg'] + (s_wb * (P['fbw_wingborne.bank_max_deg'] - P['fbw.attitude_bank_max_deg']) if s_wb > 0 else 0.0)
+            phi_c = stick['roll'] * math.radians(bank_max)
             th_c = stick['pitch'] * math.radians(P['fbw.attitude_pitch_max_deg'])
             r_c = stick['yaw'] * math.radians(P['fbw.yaw_rate_max_deg_s'])
-            aug[0] = ka[0] * (phi_c - sensed['roll']) - kd[0] * rates[0]
-            aug[1] = ka[1] * (th_c - sensed['pitch_up']) - kd[1] * rates[1]
-            aug[2] = kd[2] * 2 * (r_c - rates[2])
+            ka_ = list(ka); kd_ = list(kd)
+            if s_wb > 0:   # wing-borne law (control_effectors overlay): gains scheduled on dynamic pressure
+                W = P['fbw_wingborne.attitude_gain']; Wd = P['fbw_wingborne.rate_gain_s']
+                ka_ = [ka[i] + s_wb * (W[i] - ka[i]) for i in range(2)]
+                kd_ = [kd[i] + s_wb * (Wd[i] - kd[i]) for i in range(3)]
+            aug[0] = ka_[0] * (phi_c - sensed['roll']) - kd_[0] * rates[0]
+            aug[1] = ka_[1] * (th_c - sensed['pitch_up']) - kd_[1] * rates[1]
+            aug[2] = kd_[2] * 2 * (r_c - rates[2])
+            if s_wb > 0:   # sideslip feedback: nose toward the relative wind (+beta = moving left -> nose left)
+                aug[2] -= s_wb * P['fbw_wingborne.beta_gain_per_rad'] * sensed.get('beta', 0.0)
         aa = P['fbw.augmentation_authority_fraction'] / P['fbw.moment_authority_fraction']
         aug = np.clip(aug, -aa if mode in ('off', 'rate_damping') else -1, aa if mode in ('off', 'rate_damping') else 1)
         demand = np.clip(pil + aug, -1, 1)

@@ -31,6 +31,10 @@
    "date": "2026-11-03",
    "change": "A10 corrected wing cassette is now the main Phantom configuration: phantom and phantom-fx use A10. The A9 cassette stays selectable as the earlier version (phantom-a9, phantom-fx-a9). Flights before this change (incl. the 2026-11-03 campaign) were flown with A9; their recorded parameters say so. phantom-fx (FX-A A10) is the current prototype.",
    "basis": "owner direction 2026-11-03: A10 is the main second vehicle; keep A9 explicitly as the earlier version"
+  },
+  {
+   "date": "2026-11-09",
+   "change": "Added phantom-a10b (A10-B, current default Phantom) = phantom-fx + P6 + P8 7 deg + overlays hull_lift_v1, road_suspension_v1, wheel_drive_limits_v1, control_effectors_v1. phantom-fx relabelled A10-A (previous prototype); its parameter tree and config SHA are unchanged."
   }
  ],
  "base": {
@@ -1649,15 +1653,52 @@
   }
  },
  "variants": {
+  "phantom-a10b": {
+   "inherits": "phantom-fx",
+   "release_stage": "current_prototype",
+   "description": "A10-B: CURRENT PROTOTYPE and default Phantom (Phantom FX-A A10-B). A10-A (phantom-fx + P6 stabilator) with the model fixes found in the 9 Nov take-off and flight investigation: hull lift / Munk term, road suspension, wheel-drive power and slip limits, 7 deg wing incidence (P8), and calibrated control effectors: front steer-by-wire (ZF AKC-class 11 kN), fin rudders, booster thrust vectoring and Moog Model 965 actuators, wing-borne flight-control law, wing deployment guard. See docs/phantom/PHANTOM_A10B_MODEL.md.",
+   "design_proposals": [
+    "P6 DRS stabilator",
+    "P8 wing incidence 7 deg",
+    "road suspension 1.6 Hz / 0.35",
+    "front steer-by-wire",
+    "fin rudders",
+    "booster thrust vectoring +/-20 deg",
+    "wing-borne control law",
+    "wing deployment guard (transit q limit 600 Pa)"
+   ],
+   "overlay_files": [
+    "hull_lift_v1",
+    "road_suspension_v1",
+    "wheel_drive_limits_v1",
+    "control_effectors_v1"
+   ],
+   "overlay": {
+    "proposals": {
+     "p6_drs_stabilator": {
+      "v": 1.0,
+      "u": "-",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "A10-B: P6 stabilator on (as flown in A10-A)"
+     },
+     "p8_wing_incidence_deg": {
+      "v": 7.0,
+      "u": "deg",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "A10-B: wing incidence 7 deg (owner direction 9 Nov; T3/T4: rotation possible near 94 m/s)"
+     }
+    }
+   }
+  },
   "phantom": {
    "description": "As drawn: two 600 kW turbogenerators, ~12 kWh buffer in the centre floor bay, avionics under the console, fuel cells in the under-sleeve bay, A8-size wheel fans. Main Phantom configuration: A10 corrected (level) wing cassette.",
    "design_proposals": [],
    "release_stage": "as_drawn_reference"
   },
   "phantom-fx": {
-   "description": "CURRENT PROTOTYPE (Phantom FX-A A10). FX-A feasibility design point (research s9, owner direction 2026-11-03): ~1,915 kg, \u00d81.10 m fan-wheels with \u00d80.90 m fans (2.36 m2 total), FM 0.90 with deployable 10 deg diffuser, TG900-TO (900 kW_e <=5 min, 600 kW_e cont), 311 kg Amprius-class buffer in the nose at x 1.80, avionics x 1.70, fuel in the tub centre bay at x -0.06, mass-reduction set R. Pod pivots moved to y +/-1.25 to clear the sill in VTOL pose. Every change is a DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED. Main Phantom configuration: A10 corrected (level) wing cassette.",
+   "description": "A10-A: PREVIOUS PROTOTYPE (Phantom FX-A A10; flown 4-7 Nov 2026 as config 70089cca with the P6 stabilator, 66 of 72 register runs). FX-A feasibility design point (research s9, owner direction 2026-11-03): ~1,915 kg, Ø1.10 m fan-wheels with Ø0.90 m fans (2.36 m2 total), FM 0.90 with deployable 10 deg diffuser, TG900-TO (900 kW_e <=5 min, 600 kW_e cont), 311 kg Amprius-class buffer in the nose at x 1.80, avionics x 1.70, fuel in the tub centre bay at x -0.06, mass-reduction set R. Pod pivots moved to y +/-1.25 to clear the sill in VTOL pose. Every change is a DESIGN PROPOSAL, SYNTHETIC_UNVALIDATED. Main Phantom configuration: A10 corrected (level) wing cassette.",
    "design_proposals": [
-    "\u00d81.10 m fan-wheels, \u00d80.90 m fans, 2.36 m2 total disk (appearance cost: largest; fenders redrawn)",
+    "Ø1.10 m fan-wheels, Ø0.90 m fans, 2.36 m2 total disk (appearance cost: largest; fenders redrawn)",
     "Pod pivots y +/-1.04 -> +/-1.25 (packaging: clear the body sill in VTOL pose)",
     "Deployable 10 deg diffuser skirt, FM_open 0.80 -> 0.90",
     "TG900-TO single turbogenerator (900 kW_e <=5 min, 600 kW_e cont); induction area ~2x A9",
@@ -1716,13 +1757,13 @@
       "v": 1.25,
       "u": "m",
       "l": "SYNTHETIC_UNVALIDATED",
-      "s": "packaging: pivots outboard to clear the sill with \u00d81.1 m pods"
+      "s": "packaging: pivots outboard to clear the sill with Ø1.1 m pods"
      },
      "hinge_z_m": {
       "v": 0.61,
       "u": "m",
       "l": "SYNTHETIC_UNVALIDATED",
-      "s": "wheel centre for \u00d81.10 m wheel, 0.06 m road clearance kept"
+      "s": "wheel centre for Ø1.10 m wheel, 0.06 m road clearance kept"
      },
      "tyre_radius_m": {
       "v": 0.55,
@@ -1764,7 +1805,7 @@
       "v": 0.6,
       "u": "kg m^2",
       "l": "SYNTHETIC_UNVALIDATED",
-      "s": "scaled for \u00d80.90 m rotor"
+      "s": "scaled for Ø0.90 m rotor"
      },
      "rotor_mass_kg": {
       "v": 7.0,
@@ -1973,7 +2014,7 @@
      }
     }
    },
-   "release_stage": "current_prototype"
+   "release_stage": "previous_prototype"
   },
   "phantom-a9": {
    "inherits": "phantom",

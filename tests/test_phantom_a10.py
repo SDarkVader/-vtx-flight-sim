@@ -74,12 +74,14 @@ def test_a10_wings_deploy_lock_and_stow_on_the_ground():
 def test_live_server_and_mission_panel_offer_a10_main_and_a9_earlier():
     from vtx.live_server import Mission
     from vtx.phantom.live import is_phantom_variant
-    for v in ('phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9'):
+    for v in ('phantom-a10b', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9'):
         assert v in VARIANTS and is_phantom_variant(v)
         assert Mission.airframe(v) == v
     html = (ROOT / 'public/index.html').read_text(encoding='utf-8')
-    assert 'value="phantom-fx"' in html and 'value="phantom"' in html
-    assert Params('phantom-fx').variant_info['release_stage'] == 'current_prototype'
+    assert '<option value="phantom-a10b" selected>Phantom FX-A A10-B · CURRENT PROTOTYPE' in html and '<option value="phantom">Phantom A10 ·' in html
+    assert '<option value="phantom-fx">Phantom FX-A A10-A · previous prototype' in html
+    assert Params('phantom-a10b').variant_info['release_stage'] == 'current_prototype'
+    assert Params('phantom-fx').variant_info['release_stage'] == 'previous_prototype'
     assert html.count('A9 · EARLIER VERSION') == 2
     raw = json.loads((ROOT / 'inputs/phantom_parameters_v1.json').read_text())
     assert raw['base']['geometry_sources']['wing_cassette_revision'] == 'A10'

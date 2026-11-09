@@ -40,6 +40,7 @@ async def _dashboard_lifespan(application):
         from vtx.live_server import get_lab, model_preview
         lab = get_lab()
         if not lab.active and not lab.run_id and not lab.recovery_blocked:
-            await model_preview({'airframe_variant':'phantom-fx', 'start_configuration':'road', 'departure':[-700,0]})
+            from vtx.phantom.params import DEFAULT_VARIANT
+            await model_preview({'airframe_variant':DEFAULT_VARIANT, 'start_configuration':'road', 'departure':[-700,0]})
         yield
 app.router.lifespan_context = _dashboard_lifespan

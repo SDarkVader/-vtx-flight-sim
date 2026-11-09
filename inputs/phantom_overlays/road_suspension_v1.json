@@ -1,0 +1,32 @@
+{
+ "_note": "Opt-in overlay (merge as Params overrides). Road suspension: a slide joint between each pod and its wheel, along the pod z axis (vertical in road stance). Spring rate, damping and preload are sized per corner from the ledger's static load so the design ride height is unchanged. Design proposal, not a measured part.",
+ "suspension": {
+  "enabled": {
+   "v": 1.0,
+   "u": "-",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "road suspension overlay switch (1 = on)"
+  },
+  "ride_frequency_hz": {
+   "v": 1.6,
+   "u": "Hz",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "sprung-mass bounce frequency, spring only (road sports-car range ~1.4-2.0 Hz; design choice)"
+  },
+  "damping_ratio": {
+   "v": 0.35,
+   "u": "-",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "linear damper, fraction of critical on the corner sprung mass (design choice)"
+  },
+  "travel_m": {
+   "v": [
+    -0.12,
+    0.08
+   ],
+   "u": "m",
+   "l": "SYNTHETIC_UNVALIDATED",
+   "s": "droop (wheel down, negative) / bump (wheel up) from design ride height; droop exceeds static sag so the tyre follows the road to zero load"
+  }
+ }
+}

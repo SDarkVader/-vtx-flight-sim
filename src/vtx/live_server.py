@@ -120,7 +120,7 @@ class Mission(BaseModel):
     @field_validator('airframe_variant')
     @classmethod
     def airframe(cls,v):
-        if v not in ['baseline','light','r6','r6_variator','phantom','phantom-fx','phantom-a9','phantom-fx-a9']:raise ValueError('Unknown airframe revision')
+        if v not in ['baseline','light','r6','r6_variator','phantom-a10b','phantom','phantom-fx','phantom-a9','phantom-fx-a9']:raise ValueError('Unknown airframe revision')
         return v
 
 
@@ -906,7 +906,7 @@ async def release_identity():
     return dict(expected=EXPECTED_RELEASE,loaded=loaded,matches=(loaded==EXPECTED_RELEASE),
                 enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1',
                 selection_allowed=os.environ.get('VTX_ENFORCE_RELEASE')!='1',
-                supported_variants=['r6','r6_variator','light','baseline','phantom-fx','phantom','phantom-a9','phantom-fx-a9'])
+                supported_variants=['r6','r6_variator','light','baseline','phantom-a10b','phantom-fx','phantom','phantom-a9','phantom-fx-a9'])
 @app.get('/api/view')
 async def view():return lab.view()
 @app.post('/api/model-preview')
