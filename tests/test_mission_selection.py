@@ -88,7 +88,7 @@ def test_vtx_district_buildings_are_physical_and_default_endpoints_are_valid():
     from vtx.aircraft import Aircraft
     from vtx.mission_selection import MapPoint
     world=TestWorld()
-    assert world.version=='2'
+    assert world.version=='4'
     assert world.validate(MapPoint(0,0),'departure').valid
     assert world.validate(MapPoint(-50,20),'destination').valid
     model=Aircraft(world=world).model

@@ -1,0 +1,10 @@
+{
+  "run_id": "20261109T161224-ff8d20",
+  "variant": "phantom-a10b",
+  "pilot_id": "integration-test-pilot",
+  "pilot_epoch": 1,
+  "accepted_sequence": 1,
+  "control_applied": true,
+  "stale_epoch_status": 409,
+  "runtime_sha256": "466b258569b0401b8ac6817021df14f3a00f7215fe710949706727f36a0f3575"
+}

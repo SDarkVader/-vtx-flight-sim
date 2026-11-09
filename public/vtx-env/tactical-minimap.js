@@ -19,9 +19,10 @@ export class TacticalMinimap {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.isLarge = isLarge;
-    this.zoom = 0.88;
-    this.center = [20, 110]; // centered to capture both runways and northern facilities
-    this.tacticalMode = false; // toggle between full valley (0.88x) and airfield tactical (2.4x)
+    this.zoom = 0.5;
+    this.worldHalf = 500;
+    this.center = [0, 100]; // centered to capture both runways and northern facilities
+    this.tacticalMode = false; // false: airport, true: whole world
     this.dragStart = null;
     this.isDragging = false;
     
@@ -34,8 +35,8 @@ export class TacticalMinimap {
     // Double click to toggle tactical zoom
     c.addEventListener('dblclick', (e) => {
       this.tacticalMode = !this.tacticalMode;
-      this.zoom = this.tacticalMode ? 2.4 : 0.88;
-      this.center = this.tacticalMode ? [0, 40] : [20, 110];
+      this.zoom = this.tacticalMode ? 1000 / (this.worldHalf * 2 * Math.max(1, c.width / c.height)) : 0.5;
+      this.center = this.tacticalMode ? [0, 0] : [0, 100];
       backgroundCache.delete(c);
       e.preventDefault();
     });
@@ -55,14 +56,15 @@ export class TacticalMinimap {
       if (e.touches.length === 1 && this.isDragging && this.dragStart) {
         const dx = e.touches[0].clientX - this.dragStart[0];
         const dy = e.touches[0].clientY - this.dragStart[1];
-        const span = (1000) / this.zoom;
-        this.center[0] = this.dragStart[2] - (dx / c.width) * span;
-        this.center[1] = this.dragStart[3] + (dy / c.height) * span;
+        const span = 1000 / this.zoom;
+        const rect = c.getBoundingClientRect();
+        this.center[0] = this.dragStart[2] - (dx / rect.width) * span;
+        this.center[1] = this.dragStart[3] + (dy / rect.height) * span * c.height / c.width;
         backgroundCache.delete(c);
       } else if (e.touches.length === 2 && touchDist > 0) {
         const newDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         const scale = newDist / touchDist;
-        this.zoom = Math.max(0.6, Math.min(6.0, this.zoom * scale));
+        this.zoom = Math.max(0.05, Math.min(6.0, this.zoom * scale));
         touchDist = newDist;
         backgroundCache.delete(c);
       }
@@ -73,15 +75,16 @@ export class TacticalMinimap {
 
   getProjection(worldHalf = 500) {
     const w = this.canvas.width, h = this.canvas.height;
-    const span = (worldHalf * 2) / this.zoom;
+    const span = 1000 / this.zoom;
+    const spanY = span * h / w;
     const cx = this.center[0], cy = this.center[1];
     return {
       w, h,
       px: x => ((x - cx) / span + 0.5) * w,
-      py: y => (0.5 - (y - cy) / span) * h,
+      py: y => (0.5 - (y - cy) / spanY) * h,
       scaleM: m => (m / span) * w,
       unpx: sx => (sx / w - 0.5) * span + cx,
-      unpy: sy => (0.5 - sy / h) * span + cy
+      unpy: sy => (0.5 - sy / h) * spanY + cy
     };
   }
 
@@ -120,12 +123,15 @@ export class TacticalMinimap {
       g.strokeRect(px(x - half_x), py(y + half_y), scaleM(half_x * 2), scaleM(half_y * 2));
     }
 
-    // 3. Grid coordinates (every 200m)
+    // Grid covers the visible extent; spacing expands for the world view.
+    const spacing = this.zoom < 0.3 ? 1000 : 200;
     g.strokeStyle = 'rgba(150, 195, 180, 0.12)'; g.lineWidth = 1;
-    for (let x = -600; x <= 800; x += 200) {
+    const xmin = proj.unpx(0), xmax = proj.unpx(w);
+    const ymin = proj.unpy(h), ymax = proj.unpy(0);
+    for (let x = Math.ceil(xmin / spacing) * spacing; x <= xmax; x += spacing) {
       g.beginPath(); g.moveTo(px(x), 0); g.lineTo(px(x), h); g.stroke();
     }
-    for (let y = -400; y <= 800; y += 200) {
+    for (let y = Math.ceil(ymin / spacing) * spacing; y <= ymax; y += spacing) {
       g.beginPath(); g.moveTo(0, py(y)); g.lineTo(w, py(y)); g.stroke();
     }
 
@@ -157,20 +163,20 @@ export class TacticalMinimap {
     // Runway 08/26 (Primary: 1432m x 30m)
     g.save();
     g.fillStyle = '#22252a';
-    g.fillRect(px(-716), py(15), scaleM(1432), scaleM(30));
+    g.fillRect(px(-716), py(15), scaleM(4616), scaleM(30));
     g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = Math.max(1, scaleM(0.8));
     g.setLineDash([scaleM(14), scaleM(16)]);
-    g.beginPath(); g.moveTo(px(-690), py(0)); g.lineTo(px(690), py(0)); g.stroke();
+    g.beginPath(); g.moveTo(px(-690), py(0)); g.lineTo(px(3874), py(0)); g.stroke();
     g.setLineDash([]);
     // Heading numbers '08' and '26'
     g.fillStyle = '#ffffff';
     g.font = `bold ${Math.max(8, Math.round(scaleM(14)))}px "Arial Black", sans-serif`;
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText('08', px(-660), py(0));
-    g.fillText('26', px(660), py(0));
+    g.fillText('26', px(3844), py(0));
     // Threshold green/red markers
     g.fillStyle = '#22e055'; g.fillRect(px(-716), py(15), scaleM(3), scaleM(30));
-    g.fillStyle = '#ff2211'; g.fillRect(px(713), py(15), scaleM(3), scaleM(30));
+    g.fillStyle = '#ff2211'; g.fillRect(px(3897), py(15), scaleM(3), scaleM(30));
     g.restore();
 
     // Runway 03/21 (Secondary: 980m x 23m, 55 deg)
@@ -325,6 +331,7 @@ export class TacticalMinimap {
 
   render(world, { last, track, departure, destination }) {
     if (!world) return;
+    this.worldHalf = world.half_m;
     const proj = this.getProjection(world.half_m);
     const { px, py, scaleM, w, h } = proj;
 
@@ -445,7 +452,7 @@ export class TacticalMinimap {
       this.ctx.fillStyle = this.tacticalMode ? '#f5b800' : 'rgba(235, 240, 245, 0.7)';
       this.ctx.font = 'bold 10px system-ui';
       this.ctx.textAlign = 'right';
-      this.ctx.fillText(this.tacticalMode ? 'AIRFIELD TACTICAL (2.6×)' : 'VALLEY WIDE (1.0×)', w - 10, 18);
+      this.ctx.fillText(this.tacticalMode ? 'WORLD' : 'AIRPORT', w - 10, 18);
       this.ctx.fillStyle = 'rgba(255,255,255,0.45)';
       this.ctx.fillText('DBL-CLICK / PINCH ZOOM', w - 10, 32);
     }

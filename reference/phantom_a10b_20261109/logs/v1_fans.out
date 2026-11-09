@@ -1,0 +1,3 @@
+== fans: duration 1.1 s, turn started at 1.1 s, end reason pitch -62.9 roll 0.13
+  t+   0 u   95.0 z    -0.0 pitch   +0.0 alpha   +0.0 roll   -0.0 beta   -0.0 hdg    +0.0 coll 0.25 fanT [1163, 1163, 1163, 1163] ram [3018, 3018, 3018, 3018] bus 579 kW soc 0.902 unmet 0
+  peak decel 3.55 g; max |beta| 0.2 deg; max |pitch| 62.9 deg; min z -3.2 m

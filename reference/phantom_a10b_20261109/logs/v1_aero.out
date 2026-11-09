@@ -1,0 +1,3 @@
+== aero: duration 0.9 s, turn started at -9.0 s, end reason pitch -60.08 roll 0.22
+  t+   0 u   95.0 z    +0.0 pitch   +0.0 alpha   -0.0 roll   -0.0 beta   -0.0 hdg    +0.0 coll 0.00 fanT [0, 0, 0, 0] ram [0, 0, 0, 0] bus 24 kW soc 0.902 unmet 0
+  peak decel 0.00 g; max |beta| 0.2 deg; max |pitch| 60.1 deg; min z -4.5 m

@@ -1,0 +1,2 @@
+r4_p8_drive_only mass 1897.5 x_cg -0.152 config d3e8df8c
+{"tag": "r4_p8_drive_only", "config": "d3e8df8c", "x_cg": -0.152, "rotation_pitch_gt_1deg": null, "wheels_off": null, "max_pitch": 0.0, "min_pitch": -0.02, "max_z": -0.058, "crashed": false, "events": [], "end": {"t": 91.8, "u": 96.0, "pitch": -0.0, "z": -0.058, "sup": 4, "a_w": 7.0, "q": -0.0, "dem": 1.0, "lift": 15067, "hull": null, "susp_all": null, "spin": [174, 174], "Nf": 2155, "Nr": 1318, "susp": null, "crashed": false, "x": 7401, "beta": -0.0, "roll": -0.0}}

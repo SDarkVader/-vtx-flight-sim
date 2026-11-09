@@ -1,0 +1,5 @@
+oldlaw config dbbbf17d initial pitch 4.0
+  t+ 0.0 u   94.8 z    +0.0 pitch  +4.00 alpha  +4.00 roll   +0.0 beta  -0.0 hdg    +0.0 coll 0.03 dem [0.0, 0.0, -0.0] fanT [278, 278, 278, 278] bus  192 kW unmet 0
+  t+ 0.5 u   92.2 z    +0.1 pitch  -0.67 alpha  -0.68 roll   +0.1 beta  -0.1 hdg    +0.1 coll 0.06 dem [-0.0, 0.18, 0.0] fanT [429, 431, 116, 118] bus   94 kW unmet 0
+  t+ 1.0 u   84.1 z    -0.7 pitch -19.81 alpha -17.10 roll   +0.0 beta  -0.1 hdg    +0.1 coll 0.54 dem [0.0, 0.77, 0.0] fanT [3285, 3284, 2156, 2157] bus 1147 kW unmet 0
+  end t+1.4s: turn at t+0.0s; peak decel 1.09 g; pitch range -61.1..+4.0; |beta| max 0.2; z range -3.6..+0.1

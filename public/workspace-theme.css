@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+:root { font-family:'DM Sans',sans-serif; --line:#293131; --muted:#89958f; --accent:#d4f66a; color:#eef2ed; background:#0d1112; }
+body, button, input, select, textarea { font-family:'DM Sans',sans-serif; }
+h1,h2,h3,.brand { font-family:'Space Grotesk',sans-serif; }
+body { height:100svh; display:flex; flex-direction:column; }
+header, footer { background:#101515; border-color:var(--line); flex:0 0 auto; }
+header { height:auto; min-height:75px; flex-wrap:wrap; gap:6px 16px; padding:10px 20px; }
+aside, dialog { background:#151b1b; border-color:var(--line); }
+button, select { background:#192020; border-color:#35403a; border-radius:3px; color:#dce4db; }
+button:hover { background:#29352a; }
+button.selected, .section-label, #phantom-panel b { color:#d4f66a; }
+input[type=range] { accent-color:#d4f66a; }
+.primary { background:#d4f66a; color:#13190c; border-color:#d4f66a; }
+.primary:hover { background:#e2fa9a; }
+.workspace-tabs, .workspace-pages { display:flex; gap:5px; margin-left:8px; flex-wrap:wrap; }
+.workspace-tabs button, .workspace-pages button { font-size:11px; white-space:nowrap; }
+.workspace-tabs button[aria-expanded=true] { color:#d4f66a; border-color:#d4f66a; }
+.workspace-pages button[aria-pressed=true] { color:#d4f66a; border-color:#d4f66a; }
+.workspace-dashboard-link{display:inline-flex;align-items:center;padding:9px 12px;border:1px solid #455149;color:#d4f66a;text-decoration:none;font-size:11px;white-space:nowrap}
+main { display:flex; flex:1 1 auto; min-height:0; height:auto; overflow:hidden; }
+.cockpit-workspace, .embedded-workspace { flex:1 1 0; min-width:0; min-height:0; height:100%; }
+.cockpit-workspace { position:relative; overflow:hidden; }
+.embedded-workspace { border-left:1px solid var(--line); }
+.embedded-workspace iframe { display:block; width:100%; height:100%; border:0; background:#101515; }
+main > [hidden] { display:none !important; }
+#viewport { width:100%; height:100%; }
+.cockpit-workspace > aside.mission-panel, .cockpit-workspace > aside.controls-panel, .cockpit-workspace > aside.airport-panel { display:none; position:absolute; z-index:7; top:0; bottom:0; width:min(340px,45%); height:auto; overflow-y:auto; box-shadow:0 8px 25px #0008; }
+.cockpit-workspace > aside.mission-panel { width:min(520px,48%); }
+/* Keep the map proportional to its canvas so its labels and click targets grow together. */
+.mission-panel #map { width:100%; height:auto; aspect-ratio:540 / 430; }
+.mission-panel .map-key, .mission-panel .map-tools button { font-size:11px; }
+.mission-panel .map-tools button { min-height:40px; }
+.mission-panel .control-label, .mission-panel .coordinates label { font-size:10px; }
+.mission-panel .coordinates input, .mission-panel .control-label select { font-size:12px; }
+.cockpit-workspace.mission-open > aside.mission-panel { display:block; left:0; }
+.cockpit-workspace.controls-open > aside.controls-panel { display:block; right:0; }
+.cockpit-workspace.airport-open > aside.airport-panel { display:block; right:0; }
+.cockpit-workspace.controls-open.airport-open > aside.controls-panel { bottom:50%; }
+.cockpit-workspace.controls-open.airport-open > aside.airport-panel { top:50%; }
+@media(max-width:800px) {
+ body { height:auto; min-height:100svh; }
+ header { height:auto; min-height:62px; flex-wrap:wrap; }
+ .workspace-tabs, .workspace-pages { margin-left:auto; flex-wrap:wrap; }
+ main { display:flex; flex:none; flex-direction:column; height:auto; min-height:0; overflow:visible; }
+ .cockpit-workspace, .embedded-workspace { flex:none; width:100%; height:auto; overflow:visible; }
+ .embedded-workspace { height:80svh; min-height:500px; border-left:0; border-top:1px solid var(--line); }
+ .cockpit-workspace { display:flex; flex-direction:column; }
+ #viewport { width:100%; height:56svh; min-height:320px; flex:0 0 auto; order:0; }
+ .cockpit-workspace > aside.mission-panel, .cockpit-workspace > aside.controls-panel, .cockpit-workspace > aside.airport-panel { position:relative; inset:auto; width:100%; height:auto; overflow:visible; box-shadow:none; }
+ .cockpit-workspace > aside.mission-panel { order:1; }
+ .cockpit-workspace > aside.controls-panel { order:2; }
+ .cockpit-workspace > aside.airport-panel { order:3; }
+ .cockpit-workspace.controls-open.airport-open > aside.controls-panel, .cockpit-workspace.controls-open.airport-open > aside.airport-panel { top:auto; bottom:auto; }
+}
+
+/* Keep the original cockpit actions visible at all screen sizes. */
+.header-actions { display:flex; flex-wrap:wrap; gap:5px; margin-left:auto; }
+.header-actions button { display:inline-flex; white-space:nowrap; font-size:11px; border:1px solid #35403a; padding:8px 9px; }
+@media(max-width:800px) { .header-actions { order:4; width:100%; flex-wrap:nowrap; overflow-x:auto; padding-bottom:3px; } .header-actions button { flex:0 0 auto; } }
+
+#ride-controls { display:flex; flex-direction:column; align-items:stretch; gap:10px; font-family:'DM Sans',sans-serif; color:#dce4db; }
+#ride-controls > label { display:grid; grid-template-columns:70px minmax(0,1fr); align-items:center; font-size:11px; }
+#ride-controls > label select { width:100% !important; max-width:none !important; }
+#ride-controls details[open] { display:block; }
+#ride-controls .airport-menu { position:static; width:100%; max-height:none; margin-top:8px; box-shadow:none; }
+#ride-controls select,#ride-controls button,#ride-controls summary { font-family:'DM Sans',sans-serif; background:#192020; border-color:#35403a; color:#dce4db; }
+.airport-menu { background:#151b1b; border-color:#455149; color:#dce4db; }

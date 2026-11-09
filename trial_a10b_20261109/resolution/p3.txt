@@ -1,0 +1,7 @@
+            if f'pod_{k}_susp' in self.jid:
+                self.set_q(f'pod_{k}_susp', 0.0)
+        # Retain the checkpoint road-start canard position.
+        if start == 'road':
+            for s in WING_SIDES:
+                self.set_q(f'canard_{s}_fold', WING_SIGN[s] * math.pi / 2)
+        self.targets = {n: float(self.joint(n)[0]) for n in self.jid if n != 'free' and not n.endswith(('_fan', '_wheel', '_rotor', '_oleo', '_susp'))}

@@ -1,0 +1,62 @@
+{
+  "run_id": "20261104T022405-070aa5",
+  "source": "retained Vercel Sandbox vtx-flight-lab snapshot",
+  "raw_events_sha256": "b0f7054f011a31bfad4bff405e3f50faa548effebed7f2230b976d4214b78010",
+  "raw_events_bytes": 11802967,
+  "variant": "phantom-fx",
+  "load_state": "FX-A",
+  "max_barometric_altitude_m": 17.2,
+  "max_barometric_altitude_t_s": 29.45,
+  "touchdowns": [
+    {
+      "t_s": 20.2625,
+      "sink_rate_m_s": 11.584697668697176,
+      "supports": [
+        "foot_FL",
+        "foot_FR",
+        "foot_RL",
+        "foot_RR"
+      ]
+    },
+    {
+      "t_s": 34.2525,
+      "sink_rate_m_s": 12.667665099469742,
+      "supports": [
+        "tyre_FL"
+      ]
+    }
+  ],
+  "collisions": [
+    {
+      "t_s": 20.2925,
+      "force_n": 731245.4649967127
+    }
+  ],
+  "pilot_decisions": {
+    "manual": 197,
+    "colin": 0
+  },
+  "warnings_seen": [
+    "COMMAND_LEASE_EXPIRED",
+    "HARD_LANDING",
+    "IMPACT",
+    "POWER_LIMITED"
+  ],
+  "last_observation": {
+    "t_s": 35.15,
+    "baro_m": 1.83,
+    "weight_on_wheels": false,
+    "velocity_world_m_s": [
+      1.278,
+      -6.458,
+      1.537
+    ],
+    "warning_lamps": [
+      "IMPACT",
+      "HARD_LANDING"
+    ]
+  },
+  "formal_server_summary_present": true,
+  "formal_server_outcome": "collision",
+  "formal_server_reason": "User requested retry after crash; failed sortie archived"
+}

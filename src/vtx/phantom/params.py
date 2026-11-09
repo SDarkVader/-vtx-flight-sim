@@ -48,7 +48,7 @@ class Params:
     def __init__(self, variant='phantom', overrides=None, path=PARAMETER_FILE):
         if variant not in VARIANTS:
             raise PhantomConfigError(f'unknown Phantom variant {variant!r}')
-        raw = json.loads(Path(path).read_text())
+        raw = json.loads(Path(path).read_text(encoding='utf-8'))
         self.file_sha256 = hashlib.sha256(Path(path).read_bytes()).hexdigest()
         self.variant = variant
         chain, v = [], variant
@@ -57,7 +57,7 @@ class Params:
         self.tree = copy.deepcopy(raw['base'])
         for entry in chain:
             for name in entry.get('overlay_files', []):      # opt-in overlays named by a variant (inputs/phantom_overlays)
-                _merge(self.tree, _strip(json.loads((OVERLAY_DIR / f'{name}.json').read_text())))
+                _merge(self.tree, _strip(json.loads((OVERLAY_DIR / f'{name}.json').read_text(encoding='utf-8'))))
             _merge(self.tree, entry.get('overlay', {}))
         if overrides:
             _merge(self.tree, overrides)

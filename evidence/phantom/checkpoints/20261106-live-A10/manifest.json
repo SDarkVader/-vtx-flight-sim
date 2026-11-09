@@ -1,0 +1,701 @@
+﻿{
+    "description":  "Non-disruptive source and live observation checkpoint; live_view is telemetry, not a resumable physics state",
+    "captured_utc":  "2026-11-06T13:03:29.6375659Z",
+    "source_path":  "C:\\Users\\steve\\Documents\\GitHub\\-vtx-flight-sim",
+    "source_head":  "d6818f4f82e5bd0ad0a6f5dd6efa951356cb0866",
+    "checkpoint_branch":  "checkpoint/phantom-a10-live-20261106",
+    "source_worktree_had_unmerged_index":  true,
+    "run_id":  "20261106T125337-b1e1a0",
+    "paused":  true,
+    "time_scale":  0.5,
+    "authority":  "manual",
+    "config_sha256":  "70089ccace22e4ce1cfd28104654257fe4d03771c4f6b1faa3c89fce253247dd",
+    "runtime_provenance":  {
+                               "revision":  "phantom-fx-a10",
+                               "airframe_variant":  "phantom-fx",
+                               "render_asset":  "/assets/phantom-a10-blendstra-81c823e2.glb",
+                               "model_xml_sha256":  "55e0c5083f695bdab19e62e82aa3f623316914776f4efe0780c266957d142394",
+                               "parameter_file_sha256":  "37020551406981f418069a3c7973a49da21b714ca23ec74aabf58d7f423e1a4e",
+                               "config_sha256":  "70089ccace22e4ce1cfd28104654257fe4d03771c4f6b1faa3c89fce253247dd",
+                               "wing_cassette_revision":  "A10",
+                               "ledger_mass_kg":  1897.4851307899992
+                           },
+    "included_file_count":  135,
+    "source_files":  [
+                         {
+                             "path":  "src/vtx/aero.py",
+                             "sha256":  "e2b9d17224c849c8ddcd227f7a61c924cb54ef49dfd86f316d937dfbcb89ab48",
+                             "bytes":  2977
+                         },
+                         {
+                             "path":  "src/vtx/aircraft.py",
+                             "sha256":  "7d3ce095beb0f566f7ed1c40140d00c3ad56beaae370c82a3435fa43152e2872",
+                             "bytes":  39300
+                         },
+                         {
+                             "path":  "src/vtx/atmosphere.py",
+                             "sha256":  "53de3c62046828ff034b336dd27562dbeec3b972953307f5b13d04beb2c38410",
+                             "bytes":  956
+                         },
+                         {
+                             "path":  "src/vtx/ducted_fan_screen.py",
+                             "sha256":  "19304e489688c8c22d2486127085b1077e8ca3e62ae5430f0966ed6a8286b436",
+                             "bytes":  1966
+                         },
+                         {
+                             "path":  "src/vtx/governor.py",
+                             "sha256":  "b7c6c3a68c8645d0d54ce19eeb1a3f9efd00f546b871f82e391312dfdf0e61e5",
+                             "bytes":  2519
+                         },
+                         {
+                             "path":  "src/vtx/live_server.py",
+                             "sha256":  "9b48e5cbff12dffc6bd296e0654be2b1f939fd580cc8baba33c84029c1773ef2",
+                             "bytes":  60700
+                         },
+                         {
+                             "path":  "src/vtx/mission_selection.py",
+                             "sha256":  "9e17dea1c58e33839b99673ab4831cb15e4551ee73d5edf9c33e245c0c823c24",
+                             "bytes":  2690
+                         },
+                         {
+                             "path":  "src/vtx/physics_model.py",
+                             "sha256":  "2e56abea8d3a88c51a5ac0990598d93a8d486c646e426c395e5bedb9eda21c13",
+                             "bytes":  11031
+                         },
+                         {
+                             "path":  "src/vtx/pilot_api_recorder.py",
+                             "sha256":  "d6ed4c9aa019bce415df79e24b3cd599783cad62067eb5abd9ba0221a4c758f3",
+                             "bytes":  6556
+                         },
+                         {
+                             "path":  "src/vtx/pilot_exchange.py",
+                             "sha256":  "2ce437df60f3a82c0fd18b02157343f486a88175144e5725feff6b3d267c1892",
+                             "bytes":  2983
+                         },
+                         {
+                             "path":  "src/vtx/release.py",
+                             "sha256":  "85a6755a4d5a7cf14c4cab40964f6fe78cf327d95a53faec7bbcc6d829ed234e",
+                             "bytes":  1093
+                         },
+                         {
+                             "path":  "src/vtx/training_assist.py",
+                             "sha256":  "9042ee6255279a1cb9675c6c4700eaf98d4317cee08d8d3b904ef9ff03f6d299",
+                             "bytes":  1408
+                         },
+                         {
+                             "path":  "src/vtx/urban_reference.py",
+                             "sha256":  "030a727543192383008e019df7c37fdfe5ee09ce8226f0353674c1aec40c871f",
+                             "bytes":  7951
+                         },
+                         {
+                             "path":  "src/vtx/world.py",
+                             "sha256":  "0539a105ab01dbe9c32520ccc54412a0baba6aa9ec53c23956ff13709f878c2e",
+                             "bytes":  5584
+                         },
+                         {
+                             "path":  "src/vtx/_rotation.py",
+                             "sha256":  "8b80319f0b4997806f9c0be0ed107a4cba46ff39e9ad3981df0caeebe9bd0591",
+                             "bytes":  2875
+                         },
+                         {
+                             "path":  "src/vtx/__init__.py",
+                             "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                             "bytes":  0
+                         },
+                         {
+                             "path":  "src/vtx/phantom/controls.py",
+                             "sha256":  "974ec21ae1296df226c982fb3bc2cd634990ec82353bcc2341a9f8ae9222b78d",
+                             "bytes":  13542
+                         },
+                         {
+                             "path":  "src/vtx/phantom/energy_bus.py",
+                             "sha256":  "4db3a1c4e06d499935f856f5a5323fc1ec64307293e39a82f1bc848670f2a975",
+                             "bytes":  9423
+                         },
+                         {
+                             "path":  "src/vtx/phantom/geometry.py",
+                             "sha256":  "8fa1f86df241f5a41bec45b0e30ac5c07751b3d7ec4223b4576801339a93475a",
+                             "bytes":  1824
+                         },
+                         {
+                             "path":  "src/vtx/phantom/ledger.py",
+                             "sha256":  "d00a4931a3454fc7f967853d37bf7a0ca02b5fce605aa414ebafdc3fdab5e8b8",
+                             "bytes":  22298
+                         },
+                         {
+                             "path":  "src/vtx/phantom/live.py",
+                             "sha256":  "6ebf701ebc7c77a8884d03471f03d2931feb55e7686dd496a19a6259fbbe9595",
+                             "bytes":  12453
+                         },
+                         {
+                             "path":  "src/vtx/phantom/mission.py",
+                             "sha256":  "115660a191015777d3728efb13c6dbfa0166bc69f0a2412084bfb5c8231b1f27",
+                             "bytes":  3576
+                         },
+                         {
+                             "path":  "src/vtx/phantom/params.py",
+                             "sha256":  "af2c6982c262c7e689919c614a5e54f3bde5a9ce7fada98697d502a67dcade09",
+                             "bytes":  5028
+                         },
+                         {
+                             "path":  "src/vtx/phantom/plant.py",
+                             "sha256":  "753bf9e3493280f463642831489b5aeaacfe1dda40629e1be26190c66b3e1230",
+                             "bytes":  51433
+                         },
+                         {
+                             "path":  "src/vtx/phantom/propulsion.py",
+                             "sha256":  "b05d6e387e0f6e2486d05ef1fd9af4862e3e29f1b049df929a664c9065f878f2",
+                             "bytes":  5373
+                         },
+                         {
+                             "path":  "src/vtx/phantom/surface_aero.py",
+                             "sha256":  "7458dcf1bc20f47760c9cf1bd758fec059b05f904483944964d55a554dbe6a2d",
+                             "bytes":  9689
+                         },
+                         {
+                             "path":  "src/vtx/phantom/__init__.py",
+                             "sha256":  "02149682adbb9a87336321476275bbc9471fed5aa55beceb9f42cd47ec8bd086",
+                             "bytes":  216
+                         },
+                         {
+                             "path":  "public/app.js",
+                             "sha256":  "5dda22d1a22f427b075ab91b4647581fee4388a9cc7e8f9b4c0ffa671c76cc58",
+                             "bytes":  47503
+                         },
+                         {
+                             "path":  "public/camera-zoom.js",
+                             "sha256":  "1f7ce63684001fa28fcccaad2e50cfced0bccabab4d6c96d24cb75485a02826b",
+                             "bytes":  325
+                         },
+                         {
+                             "path":  "public/cockpit-avionics.js",
+                             "sha256":  "b7b45127dd3d94405cda1641707b1a8d476409417025d16700c5e1b0e56d9ce0",
+                             "bytes":  1391
+                         },
+                         {
+                             "path":  "public/cockpit-axes.js",
+                             "sha256":  "d87a985c7ff0734536bc55557d755df562dd658795c49c5d85b965f83e6d2a36",
+                             "bytes":  1171
+                         },
+                         {
+                             "path":  "public/cockpit-visibility.js",
+                             "sha256":  "7c8967aeaff52abf1ea46fab01d76dd10f63fafd3b8b78e95596b153847f6dc8",
+                             "bytes":  1441
+                         },
+                         {
+                             "path":  "public/free-camera.js",
+                             "sha256":  "ced3bd292f072b0fc32f5dc003ae8e4c250a7d4f94eec91fa66c73180ac15373",
+                             "bytes":  15517
+                         },
+                         {
+                             "path":  "public/index.html",
+                             "sha256":  "2097812f05a7da21289de6f332ac2a59e62cd7895b7541c787caa97fcf90acea",
+                             "bytes":  15206
+                         },
+                         {
+                             "path":  "public/model-selector.js",
+                             "sha256":  "ff4805affe7a7099f48653bca6daa9d8cc45efd129cbfd607a2e38949b05f072",
+                             "bytes":  4126
+                         },
+                         {
+                             "path":  "public/phantom-controls.js",
+                             "sha256":  "9f068acba5c262ff45e352bf029e56e00c2ddac87bf7b1f5c4501e05bc14f923",
+                             "bytes":  7806
+                         },
+                         {
+                             "path":  "public/rotor-visual.js",
+                             "sha256":  "dcadba9b6f056be264d9438936a85a08e3f51747b568574d547f17892e1fbe46",
+                             "bytes":  470
+                         },
+                         {
+                             "path":  "public/style.css",
+                             "sha256":  "4fe2342269065a08b88a25c7c6602444ee614ca3f873bcdda790fd4c190a711f",
+                             "bytes":  15514
+                         },
+                         {
+                             "path":  "public/tilt-direction.js",
+                             "sha256":  "0801536c7c2641c4c5c3c380188290cfc9749ed4a0864ca51d72e28d5f493ddb",
+                             "bytes":  1154
+                         },
+                         {
+                             "path":  "public/voice-pilot.js",
+                             "sha256":  "2cca59fb785f9e6a465927b373eba523cb21926bcdc0852b85370da12e34618a",
+                             "bytes":  11785
+                         },
+                         {
+                             "path":  "public/assets/airframe-live.glb",
+                             "sha256":  "2fb1693d45dc629422082c9361cdc73eb40557095f275f8fe609a884b04320fc",
+                             "bytes":  12195580
+                         },
+                         {
+                             "path":  "public/assets/airframe-r4.glb",
+                             "sha256":  "ee21b57cb28941efa32acc7ba93982f31d4073d3fce14a39a9127b35c7bf34e2",
+                             "bytes":  12702148
+                         },
+                         {
+                             "path":  "public/assets/airframe-r6.glb",
+                             "sha256":  "8bd22777c41e193a523037396ba28e31acecee597500d1967d74f948152c0c95",
+                             "bytes":  10800800
+                         },
+                         {
+                             "path":  "public/assets/p0-v4.glb",
+                             "sha256":  "17c99a9d9b31b4075bf71d4d5575e2176e8e4d9f5afb3a923058e29311170727",
+                             "bytes":  10554920
+                         },
+                         {
+                             "path":  "public/assets/phantom-a10-blendstra-81c823e2.glb",
+                             "sha256":  "315fd09c2dc33d27c4954c3440a9eac4db9917c593eb289b637118e81844cfed",
+                             "bytes":  10477676
+                         },
+                         {
+                             "path":  "public/assets/phantom-a10-road-ready.glb",
+                             "sha256":  "f600a4ba8729260279243f65f0c454d14d28e91510bd454d2eae74a506890f97",
+                             "bytes":  10357268
+                         },
+                         {
+                             "path":  "public/assets/phantom-a10-road-stance.glb",
+                             "sha256":  "74067324bd44e2f77bcbe29e19b3eec7d64535441bacc707d4f7b966f1a8c25d",
+                             "bytes":  10357484
+                         },
+                         {
+                             "path":  "public/assets/phantom-a10-visual.glb",
+                             "sha256":  "8504ecafeb5487a165d4917a74506b0b0d903effc639dc079d67bc2d22cd8aca",
+                             "bytes":  10248572
+                         },
+                         {
+                             "path":  "public/assets/phantom-a10-wheels-down.glb",
+                             "sha256":  "3797e18e8168d660abd23205e1552cf1b16953de13165bb2b67c285c1f15086f",
+                             "bytes":  10248348
+                         },
+                         {
+                             "path":  "public/assets/phantom-a10-wheels-flat.glb",
+                             "sha256":  "7bab47dd5ca24879e95f47023ea71c13fef50a5362b03b956625e401126973d7",
+                             "bytes":  10357488
+                         },
+                         {
+                             "path":  "public/assets/phantom-a10.glb",
+                             "sha256":  "c0a3b8b1468ffa5fa1949be91f27f6d911a8fe8b51387f427a5db86d85f2b62f",
+                             "bytes":  2837644
+                         },
+                         {
+                             "path":  "public/assets/phantom-a9.glb",
+                             "sha256":  "8b3f15036cffb925cdd9e9f37fc465addc15be00b4f2eaa09d51ee98f9702b3d",
+                             "bytes":  2698704
+                         },
+                         {
+                             "path":  "public/assets/vtx-a10-blendstra-81c823e2.glb",
+                             "sha256":  "e9b923e9c1d3da64e284210c6eeade26f3cfad947687a7f907e69c44226c29e3",
+                             "bytes":  10466252
+                         },
+                         {
+                             "path":  "public/assets/company/1-68021.jpg",
+                             "sha256":  "2f1f9d4fa96f77aa9826105a06825fa27cafff830929dfc2479cc126a3f914c2",
+                             "bytes":  155099
+                         },
+                         {
+                             "path":  "public/assets/company/2-67362.jpg",
+                             "sha256":  "c6af6594bd15e5adafa20597c261bb7823f5f5629252df2ded6e83c9beb62a82",
+                             "bytes":  201370
+                         },
+                         {
+                             "path":  "public/assets/company/3-67194.jpg",
+                             "sha256":  "58634d14d24cc4dcde7208bf79eb3c393bab0462bf3636d2cd126eb38b9a545b",
+                             "bytes":  122788
+                         },
+                         {
+                             "path":  "public/assets/company/4-66709.jpg",
+                             "sha256":  "a803bc65d26c9c9f9852e65d8a813908fa5c98ac39d7414d76aae2388e7009d5",
+                             "bytes":  138771
+                         },
+                         {
+                             "path":  "public/assets/company/5-67766.jpg",
+                             "sha256":  "5571d9bd23dc874ca72c891c86f12ed0342f09da09f426c62b48798a8dbee634",
+                             "bytes":  170796
+                         },
+                         {
+                             "path":  "public/vendor/BufferGeometryUtils.js",
+                             "sha256":  "5beb9dc7e9248a32f7b5e8cc0dd5fd4054d227d8e19a3a98b4715f6d2784c4ef",
+                             "bytes":  33141
+                         },
+                         {
+                             "path":  "public/vendor/GLTFLoader.js",
+                             "sha256":  "956746f80fe2af1650a6c0b156ac619f2c66ab9fc697e1d81d3bce1e4654a5d0",
+                             "bytes":  114993
+                         },
+                         {
+                             "path":  "public/vendor/OrbitControls.js",
+                             "sha256":  "00021f896fee7accad035ada2b72abd9e12f21de349896576e8fd75d9542989e",
+                             "bytes":  33657
+                         },
+                         {
+                             "path":  "public/vendor/THREE-LICENSE.txt",
+                             "sha256":  "f57eb9202058667d12aebd854fe8a86d6feaeab51078180df5615bfdbd5cff05",
+                             "bytes":  1102
+                         },
+                         {
+                             "path":  "public/vendor/three.module.js",
+                             "sha256":  "da7f8aecb0b1e4a55e820cce5dc5a5a8eb13dc379758f215e8fb07937be7a6a3",
+                             "bytes":  1369252
+                         },
+                         {
+                             "path":  "public/vtx-env/aircraft-look.js",
+                             "sha256":  "2e119fd3b81c314e0d8b2d0127b76bcf17008a60e1b1025391a8c2e54867c61c",
+                             "bytes":  18615
+                         },
+                         {
+                             "path":  "public/vtx-env/airfield.js",
+                             "sha256":  "a48047556972ce6350e7946ac6087c316110ee1ff5044279bd72f1a1ee94fd28",
+                             "bytes":  28282
+                         },
+                         {
+                             "path":  "public/vtx-env/buildings.js",
+                             "sha256":  "924b2d4398d67b9000b2651a93be9cce1a0db1b72ce4f8804b97418450390563",
+                             "bytes":  34723
+                         },
+                         {
+                             "path":  "public/vtx-env/facade.js",
+                             "sha256":  "8e20eadad97c341177cb603e95044752c3ab4efcf95443721c88d1bd416d7f0f",
+                             "bytes":  14063
+                         },
+                         {
+                             "path":  "public/vtx-env/ground.js",
+                             "sha256":  "820d96b1c58fd658d2278fddca5fc39198fa7ecd5dc2b4378ea91c91f94f4780",
+                             "bytes":  12380
+                         },
+                         {
+                             "path":  "public/vtx-env/landscape.js",
+                             "sha256":  "0ef9985919d8e4c20ae1eb3217451130550a9371f2defe0ea76d0de7575d968f",
+                             "bytes":  11390
+                         },
+                         {
+                             "path":  "public/vtx-env/layout.js",
+                             "sha256":  "d95266c43ace10df740d4d2b63e5de3b38ffbededc8f4b1c01fa1afe2210f7a5",
+                             "bytes":  6438
+                         },
+                         {
+                             "path":  "public/vtx-env/light-pool.js",
+                             "sha256":  "ca4777d984cef8f97a5257800758c7e5f81111d5121bee80151a370362513314",
+                             "bytes":  2006
+                         },
+                         {
+                             "path":  "public/vtx-env/phantom-look.js",
+                             "sha256":  "9ab059c34fa48e938013ae7b968fe7be0184cc3b8500441624e412f87b93457e",
+                             "bytes":  9992
+                         },
+                         {
+                             "path":  "public/vtx-env/quality.js",
+                             "sha256":  "63aa011805f3950164cc3a9ada6fbab53968d25a6863959cb0b914de1607a2a4",
+                             "bytes":  2482
+                         },
+                         {
+                             "path":  "public/vtx-env/service-roads.js",
+                             "sha256":  "2056f4f29fbd0e328e158feec7aa51ee736a7cd5bd54584a65dfae1fd37010a3",
+                             "bytes":  33521
+                         },
+                         {
+                             "path":  "public/vtx-env/sky.js",
+                             "sha256":  "08d7e84eeec7342214a7786c0ed3d24f493e81200625a42ba0fb9e6402d38c2f",
+                             "bytes":  10001
+                         },
+                         {
+                             "path":  "public/vtx-env/tactical-minimap.js",
+                             "sha256":  "bcb3e46bb6e2d1a04e5f2145b16f38737680c1be06066e0c87cf4dc0a0701c13",
+                             "bytes":  19092
+                         },
+                         {
+                             "path":  "public/vtx-env/textures.js",
+                             "sha256":  "8e873a58408b6f7ede3c6d9aa5852018313d25fedb06f9e241cf0b33dc80947a",
+                             "bytes":  33385
+                         },
+                         {
+                             "path":  "public/vtx-env/traffic-path.js",
+                             "sha256":  "a321d8f3a12d8829b01e6c55d8f61b108cca7893ae9b34b137b38668bc5197d2",
+                             "bytes":  2584
+                         },
+                         {
+                             "path":  "public/vtx-env/vegetation.js",
+                             "sha256":  "0f47de044e99287c74877a5736ed001667a5654c4dcced63dab99468ce5bace2",
+                             "bytes":  7786
+                         },
+                         {
+                             "path":  "public/vtx-env/volcano-basement.js",
+                             "sha256":  "ab045ec65d635b43aab457ea272c9ba764137b1f6e9193f4c4e421a6e6ba6e3a",
+                             "bytes":  34498
+                         },
+                         {
+                             "path":  "public/vtx-env/world-dressing.js",
+                             "sha256":  "4e8df8a0b6b2b4eef21372339065197e5a0eaf6b23a6291a90ee3371bcecda23",
+                             "bytes":  8007
+                         },
+                         {
+                             "path":  "inputs/independent_rotor_screen_UNCALIBRATED.csv",
+                             "sha256":  "2669442d367b5b7a05b743bd40a21abdbc38ee7eb209633978b90f4db6ae1a90",
+                             "bytes":  2213
+                         },
+                         {
+                             "path":  "inputs/live_mechanism.json",
+                             "sha256":  "cafe5b1f1b3f00703917008871b4df175c19006d8ccb89178c74896cb6f71dad",
+                             "bytes":  455
+                         },
+                         {
+                             "path":  "inputs/phantom_a10_cg_changes_stage1.json",
+                             "sha256":  "6436dcb403bd049674bf2a784a00d73bc9736c1f6a1d1d707e83705d79525e86",
+                             "bytes":  109
+                         },
+                         {
+                             "path":  "inputs/phantom_parameters_v1.json",
+                             "sha256":  "37020551406981f418069a3c7973a49da21b714ca23ec74aabf58d7f423e1a4e",
+                             "bytes":  58453
+                         },
+                         {
+                             "path":  "inputs/phantom_simulation_manifest_v0.json",
+                             "sha256":  "30f01143e2bc78dd9ce95fe262e17907ab37b3fe5645123c4d4fdf224bbd7296",
+                             "bytes":  6939
+                         },
+                         {
+                             "path":  "inputs/vtx_calibration_required.json",
+                             "sha256":  "5999bd243b05f3f66e63a1c3bb11590b16462472438ce1fae760562b75dfcd56",
+                             "bytes":  693
+                         },
+                         {
+                             "path":  "scripts/launch_pc.py",
+                             "sha256":  "09f8eaf18c5fd102899912618668ab4939aab2dd815ac5116bbd2e9bf743c0ae",
+                             "bytes":  1810
+                         },
+                         {
+                             "path":  "scripts/pilot_station.py",
+                             "sha256":  "40f78121a47838b9a767ca3b69c69186059481a1b301b6d33872c7a9fac4cd14",
+                             "bytes":  3481
+                         },
+                         {
+                             "path":  "scripts/run_reference.py",
+                             "sha256":  "ca1513aad101ef6e4a72c507b5087a1067d354625bc9a17af9063312ac7a99b5",
+                             "bytes":  2163
+                         },
+                         {
+                             "path":  "tests/test_a10_cg_placement.py",
+                             "sha256":  "a036fb9f6aa5ab2779d67c6473d008d2a9ef25bf08e23230eb221afe3baba4ea",
+                             "bytes":  4082
+                         },
+                         {
+                             "path":  "tests/test_argon_calibration_loader.py",
+                             "sha256":  "395aeff90dc01d3f1b7d6d79cc6b35c5399f8efbbdab44e3bc81125eb69c69d7",
+                             "bytes":  3630
+                         },
+                         {
+                             "path":  "tests/test_argon_task01.py",
+                             "sha256":  "e0fdb8e33baf7b9ab0741c6a610b930a3c2a7cb822cb132a31f8dfc186745099",
+                             "bytes":  7506
+                         },
+                         {
+                             "path":  "tests/test_audit_regressions.py",
+                             "sha256":  "abd43827b783d338f148316dbfb2497e0610eed4bb9fe9234e163c3da365ae7b",
+                             "bytes":  6243
+                         },
+                         {
+                             "path":  "tests/test_cabin_stabilization.py",
+                             "sha256":  "658f1c73b67be765c7c54b1b725b9389460f90cec75d25778c9f8e368672b16c",
+                             "bytes":  2833
+                         },
+                         {
+                             "path":  "tests/test_camera_zoom.mjs",
+                             "sha256":  "e3035f97863ea792baee2868a4373141c6cf5712111c5815f3b69122029a74ee",
+                             "bytes":  569
+                         },
+                         {
+                             "path":  "tests/test_cockpit_avionics.mjs",
+                             "sha256":  "f953ba79971165e4c1dcc1fd2b81061eaa03bfda1aaa0424cae7c3eb385ad3a6",
+                             "bytes":  986
+                         },
+                         {
+                             "path":  "tests/test_cockpit_axes.mjs",
+                             "sha256":  "32756dc80107c3996da42fecf5d2bba910a14f1d5de41e800cc5da3f13182d93",
+                             "bytes":  867
+                         },
+                         {
+                             "path":  "tests/test_cockpit_visibility.mjs",
+                             "sha256":  "73034131aa048d48ffa20565ffd8c6bab182bf12842bb31ae6b368e62f85c33c",
+                             "bytes":  1178
+                         },
+                         {
+                             "path":  "tests/test_environment_and_fan_screen.py",
+                             "sha256":  "5c4afcbfa7f6307eb65e669eac3ca24f777a05269fc24f5f2c1d1bdd5fb77c1a",
+                             "bytes":  2960
+                         },
+                         {
+                             "path":  "tests/test_fan_ecu_shadow.py",
+                             "sha256":  "a07d0a3048515939e1bd689a647fe6dc4af29c0b6f5d45099ec9a3bb10b9785b",
+                             "bytes":  938
+                         },
+                         {
+                             "path":  "tests/test_flight_checkpoint.py",
+                             "sha256":  "67b0519e0cb108d70e714884512beb7ee4e69ef7c6e1d129e12d7ce399351e31",
+                             "bytes":  2462
+                         },
+                         {
+                             "path":  "tests/test_governor.py",
+                             "sha256":  "599fe45d8808e0098cf4e6987d3c81a0c5c456c5b8a6bf7fa9ad1a930908617b",
+                             "bytes":  1816
+                         },
+                         {
+                             "path":  "tests/test_live_interface.py",
+                             "sha256":  "bb270c43d3d92196d6e9e8d95b3020c669ccbdaedae253b38a31a14e0ea178fb",
+                             "bytes":  9691
+                         },
+                         {
+                             "path":  "tests/test_live_waypoint_bench.py",
+                             "sha256":  "949926d96315d7265631b61216f4125e467661b050dc801c9ce420de4510ab07",
+                             "bytes":  1869
+                         },
+                         {
+                             "path":  "tests/test_mission_selection.py",
+                             "sha256":  "ebdbdecf77c49462171930acdb771830cb6972834ec52a3e171ca43a64d69c41",
+                             "bytes":  3912
+                         },
+                         {
+                             "path":  "tests/test_multibody.py",
+                             "sha256":  "6261c4c286f3830f34c4dab3be548f0514c4a05ec51aab6dc9285851849d99fd",
+                             "bytes":  10253
+                         },
+                         {
+                             "path":  "tests/test_operator_controls.mjs",
+                             "sha256":  "ef814b962d3007b9ea50e84fe003fd09b12d2eed1e7211306014354482888757",
+                             "bytes":  1876
+                         },
+                         {
+                             "path":  "tests/test_persistent_pilot.py",
+                             "sha256":  "c87fd33842bc210edbfc57553dd3636a41626fa9f26649f9794fb89701c3d741",
+                             "bytes":  8047
+                         },
+                         {
+                             "path":  "tests/test_phantom_a10.py",
+                             "sha256":  "10dbc9c61bc00aa1a5809e81a2d0f7da3a839c953395af931ca4e13d1c990b24",
+                             "bytes":  4635
+                         },
+                         {
+                             "path":  "tests/test_phantom_aero.py",
+                             "sha256":  "0e870619bcfc2d39ef82d0792cab2096c9361dd826ac7f14dd945b278d89e68f",
+                             "bytes":  2756
+                         },
+                         {
+                             "path":  "tests/test_phantom_energy.py",
+                             "sha256":  "98345b2d65768fc74991aa5a738d395f803b84407e0cb8943e239b1c5af23246",
+                             "bytes":  729
+                         },
+                         {
+                             "path":  "tests/test_phantom_ledger.py",
+                             "sha256":  "869bdbb8ab3c6f0fc5d5d0bedca18860841af3cfb2f01c98b0a92bf9bf971e76",
+                             "bytes":  2588
+                         },
+                         {
+                             "path":  "tests/test_phantom_live.py",
+                             "sha256":  "caf361cd73aa31a5739faaf2bd47e450df8de9b83b2f517facd3010059ba6c08",
+                             "bytes":  3216
+                         },
+                         {
+                             "path":  "tests/test_phantom_p6_p7.py",
+                             "sha256":  "09b7ea4c9c42f422dae8e89cc5e8f574f8e3afb8a3e60d078b22843cf5f5683f",
+                             "bytes":  5173
+                         },
+                         {
+                             "path":  "tests/test_phantom_plant.py",
+                             "sha256":  "2bd63bd6d69c513c543da50aa32a4339e107448e12c14a584b89a6d35680a09a",
+                             "bytes":  1717
+                         },
+                         {
+                             "path":  "tests/test_physics.py",
+                             "sha256":  "ea1ed2bef17fe7a5b8889f1bac9036a0eb89735ead89041a1ce167d8c9e1d445",
+                             "bytes":  2873
+                         },
+                         {
+                             "path":  "tests/test_pilot_api_recorder.py",
+                             "sha256":  "949be1c93a3c59048e09156678debc027d8f4c78371bf181bb99800ec6828457",
+                             "bytes":  3333
+                         },
+                         {
+                             "path":  "tests/test_pilot_exchange.py",
+                             "sha256":  "d477e4892d171337f30969f0fcacff031706f24ba7fc8fa99bdd2c3661fdd12e",
+                             "bytes":  1710
+                         },
+                         {
+                             "path":  "tests/test_r6_mobile_restore.py",
+                             "sha256":  "8dc544f95ff63a19eda2fb233b956abc4bd0b0fa67a6621e972ef2661614e818",
+                             "bytes":  3096
+                         },
+                         {
+                             "path":  "tests/test_release_guard.py",
+                             "sha256":  "1a315e36679bdc7dbc5299a1a105c093f16bcad1499e32ce0a371f739f992649",
+                             "bytes":  2064
+                         },
+                         {
+                             "path":  "tests/test_retry_airframe_variant.py",
+                             "sha256":  "cd79f0db5e29bac42d579176fd09e014e1100a0c294646cec930a7f744f86846",
+                             "bytes":  2360
+                         },
+                         {
+                             "path":  "tests/test_rotor_render_truth.py",
+                             "sha256":  "666250e72d99dff4e08697826bfc8b683d4c6c05e6f2cc50e11b148123bdf711",
+                             "bytes":  639
+                         },
+                         {
+                             "path":  "tests/test_rotor_visual.mjs",
+                             "sha256":  "3a67addb1ad9ebdef5a145303ad6f14b7281a93ca3536f5c59a31a44cc60e3b7",
+                             "bytes":  992
+                         },
+                         {
+                             "path":  "tests/test_sim_fixes_20261103.py",
+                             "sha256":  "8667f7b4af4415fa8b092f048b7f9183ada63aff9a75ae5b2f5419367380285d",
+                             "bytes":  11060
+                         },
+                         {
+                             "path":  "tests/test_tilt_direction.mjs",
+                             "sha256":  "0eb7bd854f816947edc8e467adf2e04d17b3a855591de541e83756a8596bc629",
+                             "bytes":  728
+                         },
+                         {
+                             "path":  "tests/test_training_assist.py",
+                             "sha256":  "2e2f4ed82097a584eabb99281ef09e9b982008c9ea889e731b2ac3e396eb0ab7",
+                             "bytes":  2693
+                         },
+                         {
+                             "path":  "tests/test_urban.py",
+                             "sha256":  "473d71e268a19516b0b2458ba4aaed280473a89c42007c0892eec269318e5c9e",
+                             "bytes":  978
+                         },
+                         {
+                             "path":  "tests/test_variable_drive_bench.py",
+                             "sha256":  "733703cc6b96c4722788a3a525a0484a764a8f981191ebe36b86ac03d333ff68",
+                             "bytes":  1060
+                         },
+                         {
+                             "path":  "tests/test_visual_glb_parity.py",
+                             "sha256":  "7df53324350f720ea49630a4ed59c5f7ae804b0a17d609a1aed77bf0b64831e9",
+                             "bytes":  2517
+                         },
+                         {
+                             "path":  "tests/test_voice_pilot_js.py",
+                             "sha256":  "b4f1e28a062a164e5876ea2fbbb8bad81d9515256071ed4ecbdbfaaffae640da",
+                             "bytes":  511
+                         },
+                         {
+                             "path":  "tests/traffic-path.test.mjs",
+                             "sha256":  "e7fde615182e5258ee16a4ac7549eae52b8e9632b4f2a369c17ba6256f6f3c58",
+                             "bytes":  1873
+                         },
+                         {
+                             "path":  "tests/js/voice_pilot.test.mjs",
+                             "sha256":  "e15a342a3ff8e6956764bbd3956cd993531dad145302b079c1cf24210de4d9bb",
+                             "bytes":  3926
+                         },
+                         {
+                             "path":  "engineering/phantom/drs_flap.py",
+                             "sha256":  "73f518ab73f1a967cff1b1201c5b6eb882e610030f7a0ac7d70e913f21e3b818",
+                             "bytes":  13854
+                         },
+                         {
+                             "path":  "engineering/phantom/wing_loads.py",
+                             "sha256":  "c8d21ce3905a5c40cbb0bd4a8a69249a01b152242da86e8c6780ae502ec14edf",
+                             "bytes":  51781
+                         }
+                     ]
+}

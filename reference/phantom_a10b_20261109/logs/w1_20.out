@@ -1,0 +1,1 @@
+{"deploy_commanded_at": [4.66, 20.1], "steps": [["hatch_opening", 4.68, 20.2, 249], ["sliding_out", 5.68, 24.5, 367], ["pinning", 9.98, 41.8, 1070], ["locked", 10.5, 43.7, 1171]], "peak_q_in_transit_pa": 1167, "at_speed": 43.7, "q_limit_pa": 600, "locked": true, "interlock_events": [], "flags": []}

@@ -1,0 +1,1 @@
+{"deploy_commanded_at": [6.76, 29.0], "steps": [["hatch_opening", 6.78, 29.1, 519]], "peak_q_in_transit_pa": 6359, "at_speed": 101.9, "q_limit_pa": 600, "locked": false, "interlock_events": [{"event": "wing_transit_blocked_by_q", "t_s": 7.780000000000516, "q_pa": 675.8988586726264}], "flags": ["q_interlock"]}

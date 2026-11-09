@@ -42,3 +42,29 @@ export function sampleTrafficRoute(route, timeSeconds) {
   return { time: t, position, speed: Math.max(0, dsdu/h), heading, pitch, bank: 0,
     segment: route.segments.indexOf(seg) };
 }
+
+// World frame: X east, Y north, Z up; distances in metres, time in seconds.
+// A circular path is a reusable geometric reference, not aircraft control.
+export function circularPath({center, radius, elevation=0, speedLimit=4}) {
+  if (!Array.isArray(center) || center.length !== 2 || !center.every(Number.isFinite) || !Number.isFinite(radius) || radius <= 0 || !Number.isFinite(elevation) || !Number.isFinite(speedLimit) || speedLimit <= 0) throw Error('Invalid circular path');
+  return {center, radius, elevation, speedLimit, length: 2*Math.PI*radius,
+    sample(distance) {
+      const angle = distance / radius;
+      return {position:[center[0]+radius*Math.cos(angle), center[1]+radius*Math.sin(angle), elevation], heading:angle+Math.PI/2, curvature:1/radius};
+    }};
+}
+export function stoppingDistance(speed, braking) {
+  if (!Number.isFinite(speed) || speed < 0 || !Number.isFinite(braking) || braking <= 0) throw Error('Invalid braking parameters');
+  return speed*speed/(2*braking);
+}
+// Kinematic ground-traffic model, not a rigid-body collision model.
+export function stepGroundVehicle(state, path, vehicle, dt, requestedSpeed) {
+  if (!Number.isFinite(dt) || dt < 0 || !Number.isFinite(requestedSpeed) || requestedSpeed < 0 || !Number.isFinite(vehicle.acceleration) || vehicle.acceleration <= 0 || !Number.isFinite(vehicle.braking) || vehicle.braking <= 0 || !Number.isFinite(vehicle.minTurnRadius) || vehicle.minTurnRadius <= 0 || !Number.isFinite(vehicle.maxLateralAcceleration) || vehicle.maxLateralAcceleration <= 0) throw Error('Invalid vehicle constraints');
+  if (!Number.isFinite(vehicle.width) || vehicle.width <= 0 || !Number.isFinite(vehicle.length) || vehicle.length <= 0 || !Number.isFinite(vehicle.cgOffset) || Math.abs(vehicle.cgOffset) > vehicle.length/2) throw Error('Invalid vehicle dimensions or centre of gravity');
+  // Conservative inside-edge clearance for the body envelope.
+  if (path.radius - vehicle.width/2 < vehicle.minTurnRadius) throw Error('Path exceeds steering clearance');
+  const limit = Math.min(path.speedLimit, Math.sqrt(vehicle.maxLateralAcceleration * path.radius), requestedSpeed);
+  const next = Math.max(0, Math.min(state.speed + vehicle.acceleration*dt, Math.max(limit, state.speed - vehicle.braking*dt)));
+  const distance = state.distance + (state.speed+next)*dt/2;
+  return {distance, speed:next, pose:path.sample(distance)};
+}
