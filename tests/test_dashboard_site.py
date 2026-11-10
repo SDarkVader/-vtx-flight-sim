@@ -40,3 +40,27 @@ def test_default_does_not_replace_existing_workspace(tmp_path):
         root.touch()
         assert not dashboard_site._new_workspace(tmp_path)
         root.unlink()
+
+def test_dashboard_local_fallback_when_upstream_unavailable(tmp_path, monkeypatch):
+    import urllib.error
+    monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
+    def offline(*args, **kwargs):
+        raise urllib.error.URLError('offline')
+    monkeypatch.setattr(dashboard_site.urllib.request, 'urlopen', offline)
+    res_get = asyncio.run(dashboard_site.dashboard_data(make_request("GET")))
+    assert res_get.status_code == 200
+    assert json.loads(res_get.body)["version"] == 1
+    res_put = asyncio.run(dashboard_site.dashboard_data(make_request("PUT", b'{"data":{"notes":"test"},"version":1}')))
+    assert res_put.status_code == 200
+    assert json.loads(res_put.body)["version"] == 2
+    res_get2 = asyncio.run(dashboard_site.dashboard_data(make_request("GET")))
+    assert res_get2.status_code == 200
+    assert json.loads(res_get2.body)["version"] == 2
+
+def test_phantom_a10b_physics_endpoint_and_snapshot_linked():
+    from vtx import live_server
+    res = asyncio.run(live_server.phantom_physics('phantom-a10b'))
+    assert res['variant'] == 'phantom-a10b'
+    assert res['config_sha256'] == '3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01'
+    assert res['characteristics']['variant'] == 'phantom-a10b'
+    assert res['characteristics']['propulsion']['lift_fans']['thrust_max_each_n'] == 6552

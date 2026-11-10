@@ -77,16 +77,20 @@ def test_airport_and_sandbox_worlds_change_physics_geometry_and_model_hash():
     assert airport.id == 'stage1-extended-airfield-recovery' and airport.version == '4'
     assert sandbox.id == 'stage1-valley' and sandbox.version == '2'
     assert airport.half == 4000. and airport.n == 401
-    assert sandbox.half == 500. and sandbox.n == 101
+    assert sandbox.half == 1000. and sandbox.n == 201
     assert airport.default_departure == [-700., 0.]
-    assert sandbox.default_departure == [0., 0.]
+    assert sandbox.default_departure == [-700., 0.]
 
-    # Airport has the flattened east/west takeoff strip at (400, 0) and (-700, 0);
-    # Sandbox is enclosed by valley hills at (400, 0) and rejects (-700, 0) as out of bounds.
+    # Both Airport and Sandbox have the flattened east/west takeoff strip at (400, 0) and (-700, 0)
+    # aligned with the Phantom A10-B heading (+X); Sandbox is enclosed by valley hills off the strip
+    # and rejects (-1500, 0) as out of its 1,000 m half-extent boundary.
     assert airport.terrain_z(400., 0.) == pytest.approx(0., abs=1e-6)
-    assert sandbox.terrain_z(400., 0.) > 20.
+    assert sandbox.terrain_z(400., 0.) == pytest.approx(0., abs=1e-6)
+    assert sandbox.terrain_z(400., 180.) > 20.
     assert airport.validate(MapPoint(-700., 0.), 'departure').valid
-    assert not sandbox.validate(MapPoint(-700., 0.), 'departure').valid
+    assert sandbox.validate(MapPoint(-700., 0.), 'departure').valid
+    assert airport.validate(MapPoint(-1500., 0.), 'departure').valid
+    assert not sandbox.validate(MapPoint(-1500., 0.), 'departure').valid
     assert sandbox.validate(MapPoint(0., 0.), 'departure').valid
 
     # Both R6 and Phantom A10-B compile distinct MuJoCo XML models for Airport vs Sandbox.
@@ -104,14 +108,15 @@ def test_live_environment_switch_and_active_sortie_protection(tmp_path, monkeypa
     lab = Laboratory(data_root=tmp_path)
     monkeypatch.setattr(live_server, 'lab', lab)
 
-    # Switch to Test Sandbox while idle: updates world, view, model_xml_sha256, and places aircraft at [0, 0].
+    # Switch to Test Sandbox while idle: updates world, view, model_xml_sha256, and places aircraft at [-700, 0] facing +X down the runway.
     res_sandbox = asyncio.run(live_server.set_environment({'environment': 'sandbox', 'airframe_variant': 'phantom-a10b', 'start_configuration': 'road'}))
     assert res_sandbox['ok'] is True
     assert res_sandbox['environment'] == 'sandbox'
     assert res_sandbox['world']['id'] == 'stage1-valley'
     assert res_sandbox['view']['environment']['key'] == 'sandbox'
     sandbox_pos = res_sandbox['view']['rendering_truth']['body_poses']['airframe']['position']
-    assert sandbox_pos[0] == pytest.approx(0., abs=0.05) and sandbox_pos[1] == pytest.approx(0., abs=0.05)
+    assert sandbox_pos[0] == pytest.approx(-700., abs=0.05) and sandbox_pos[1] == pytest.approx(0., abs=0.05)
+    assert res_sandbox['view']['rendering_truth']['phantom']['physics_data']['variant'] == 'phantom-a10b'
     sandbox_hash = res_sandbox['view']['rendering_truth']['provenance']['model_xml_sha256']
 
     # Switch to Main Airport while idle: updates world, view, model_xml_sha256, and places aircraft at [-700, 0].

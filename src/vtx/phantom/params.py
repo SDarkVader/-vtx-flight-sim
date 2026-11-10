@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 PARAMETER_FILE = ROOT / 'inputs/phantom_parameters_v1.json'
 MANIFEST_FILE = ROOT / 'inputs/phantom_simulation_manifest_v0.json'
+A10B_CHARACTERISTICS_FILE = ROOT / 'evidence/phantom/a10b_characteristics.json'
 LABELS = {'MEASURED-K', 'DERIVED', 'SYNTHETIC_UNVALIDATED', 'MANUFACTURER', 'REGULATORY_REFERENCE'}
 VARIANTS = ('phantom-a10b', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')   # phantom-a10b = A10-B (current default); phantom-fx = A10-A; -a9 = earlier
 DEFAULT_VARIANT = 'phantom-a10b'
@@ -13,6 +14,14 @@ CASSETTE_REVISIONS = ('A9', 'A10')
 
 
 OVERLAY_DIR = ROOT / 'inputs/phantom_overlays'
+_A10B_CHARACTERISTICS_CACHE = None
+
+
+def load_a10b_characteristics():
+    global _A10B_CHARACTERISTICS_CACHE
+    if _A10B_CHARACTERISTICS_CACHE is None and A10B_CHARACTERISTICS_FILE.exists():
+        _A10B_CHARACTERISTICS_CACHE = json.loads(A10B_CHARACTERISTICS_FILE.read_text(encoding='utf-8'))
+    return copy.deepcopy(_A10B_CHARACTERISTICS_CACHE) if _A10B_CHARACTERISTICS_CACHE else {}
 
 
 class PhantomConfigError(ValueError):
@@ -130,4 +139,5 @@ class Params:
 
     def snapshot(self):
         return dict(variant=self.variant, parameter_file_sha256=self.file_sha256, config_sha256=self.config_sha256,
-                    variant_info=self.variant_info, revision_log=self.revision_log, parameters=self.tree)
+                    variant_info=self.variant_info, revision_log=self.revision_log, parameters=self.tree,
+                    **({'characteristics': load_a10b_characteristics()} if self.variant == 'phantom-a10b' else {}))

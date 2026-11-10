@@ -149,7 +149,9 @@ def sensor_observation(lab):
                command_mode='hold_until_changed', scheduler_backlog_s=round(lab.clock_lag_s, 3), time_scale=lab.time_scale,
                action_schema='phantom-fbw-1', mission=lab.mission, authority=lab.authority, active=lab.active, paused=lab.paused,
                configuration=dict(airframe_variant=p.variant, airframe_revision=p.provenance['revision'], config_sha256=p.P.config_sha256,
-                                  load_state=p.load_state, occupants=p.L.occupants, initial_fuel_kg=float(p.fuel_initial.sum())),
+                                  load_state=p.load_state, occupants=p.L.occupants, initial_fuel_kg=float(p.fuel_initial.sum()),
+                                  **({'physics_characteristics_uri': p.provenance.get('physics_characteristics_uri'),
+                                      'physics_model_doc_uri': p.provenance.get('physics_model_doc_uri')} if p.provenance.get('physics_characteristics_uri') else {})),
                sensor_status='Provisional modelled sensors: GNSS, baro, radar altimeter (ray along gravity), AHRS, body-axis gyro, fan rpm, pod/leg/surface position, power, fuel; no truth forces')
     return obs
 

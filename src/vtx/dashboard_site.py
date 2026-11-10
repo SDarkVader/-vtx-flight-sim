@@ -13,16 +13,56 @@ from vtx import live_server
 
 DASHBOARD_STORE = "https://vtx-phantom-a10-flight-test.tawnyzinnia4.chatgpt.site/api/data"
 
+def _local_store_path():
+    root = Path(os.environ.get('VTX_DATA_ROOT', str(live_server.ROOT))).resolve()
+    return root / 'dashboard-store.json'
+
+def _local_transfer(method, body):
+    import json
+    path = _local_store_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    current = {"data": "{}", "version": 1}
+    if path.exists():
+        try:
+            current = json.loads(path.read_text(encoding='utf-8'))
+        except (ValueError, OSError):
+            pass
+    if method == "GET":
+        return 200, json.dumps(current).encode('utf-8')
+    try:
+        incoming = json.loads(body.decode('utf-8') if body else '{}')
+    except ValueError:
+        return 400, b'{"error":"Invalid JSON"}'
+    next_version = int(current.get("version", 1)) + 1
+    raw_data = incoming.get("data", "{}")
+    updated = {
+        "data": raw_data if isinstance(raw_data, str) else json.dumps(raw_data),
+        "version": next_version
+    }
+    try:
+        path.write_text(json.dumps(updated), encoding='utf-8')
+    except OSError:
+        pass
+    return 200, json.dumps(updated).encode('utf-8')
+
 def _transfer(method, body):
     request = urllib.request.Request(DASHBOARD_STORE, data=body, method=method,
         headers={"Content-Type": "application/json", "Accept": "application/json", "User-Agent": "Mozilla/5.0 VTX-Flight-Test"})
     try:
-        with urllib.request.urlopen(request, timeout=12) as response:
-            return response.status, response.read()
+        with urllib.request.urlopen(request, timeout=4) as response:
+            raw = response.read()
+            if response.status == 200:
+                try:
+                    path = _local_store_path()
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(raw)
+                except OSError:
+                    pass
+            return response.status, raw
     except urllib.error.HTTPError as error:
         return error.code, error.read()
     except (urllib.error.URLError, TimeoutError, OSError):
-        return 502, b'{"error":"Dashboard storage unavailable"}'
+        return _local_transfer(method, body)
 
 async def dashboard_data(request: Request):
     body = await request.body() if request.method == "PUT" else None
