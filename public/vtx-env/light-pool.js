@@ -40,5 +40,6 @@ export function createLightPool(scene, slots = 0) {
       }
     },
     get sourceCount() { return sources.length; },
+    clear() { sources.length = 0; for (const p of pool) p.intensity = 0; },
   };
 }

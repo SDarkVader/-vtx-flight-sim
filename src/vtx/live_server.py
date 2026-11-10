@@ -29,7 +29,7 @@ from pydantic import BaseModel,Field,field_validator,ConfigDict
 from ._rotation import Rotation
 from .aircraft import Aircraft,DT,ROOT
 from .mission_selection import MapPoint,select_mission
-from .world import TestWorld
+from .world import TestWorld,SandboxWorld,make_world,resolve_environment_key
 from .r6_hold import R6HoldController
 from .phantom import live as phantom_live
 from .phantom.controls import PhantomAction
@@ -104,7 +104,12 @@ class Mission(BaseModel):
     landing_precision_m:float|None=Field(default=None,gt=0,allow_inf_nan=False)
     label:str='user selected mission'
     landing_requested:bool=False
+    environment:str|None=None
     phantom:phantom_live.PhantomOptions|None=None
+    @field_validator('environment')
+    @classmethod
+    def env(cls,v):
+        return None if v is None else resolve_environment_key(v)
     @field_validator('departure','destination')
     @classmethod
     def xy(cls,v):
@@ -319,6 +324,9 @@ class Laboratory:
             saved_request.setdefault('airframe_variant','light')
             saved_request.setdefault('gear_variant','baseline')
             request=Mission(**saved_request)
+            saved_env=request.environment or (state.get('mission') or {}).get('environment_key') or (state.get('mission') or {}).get('environment')
+            if saved_env:
+                self.world=make_world(saved_env,seed=self.world.seed)
             flight_world=self.world_for(request.ignore_scenery_collisions)
             candidate=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
@@ -422,6 +430,9 @@ class Laboratory:
         saved=dict(metadata['request'])
         if saved.pop('fuel_kg_explicit',True) is False:saved.pop('fuel_kg',None)
         request=Mission(**saved)
+        saved_env=request.environment or (state.get('mission') or {}).get('environment_key') or (state.get('mission') or {}).get('environment')
+        if saved_env:
+            self.world=make_world(saved_env,seed=self.world.seed)
         flight_world=self.world_for(request.ignore_scenery_collisions)
         expected_config=state.get('config_sha256') or metadata.get('airframe',{}).get('config_sha256')
         if not expected_config:
@@ -536,8 +547,12 @@ class Laboratory:
             raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
         self.phantom_landing_site=None;self.phantom_cg_gate=None
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
-        flight_world=self.world_for(request.ignore_scenery_collisions)
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
+        if request.environment is not None:
+            target_env=resolve_environment_key(request.environment)
+            if getattr(self.world,'environment_key','airport')!=target_env:
+                self.world=make_world(target_env,seed=self.world.seed)
+        flight_world=self.world_for(request.ignore_scenery_collisions)
         self.preview_generation+=1
         departure_check=flight_world.validate(MapPoint(*request.departure),'departure')
         if not departure_check.valid:raise ValueError('INVALID_DEPARTURE: '+departure_check.reason)
@@ -564,7 +579,10 @@ class Laboratory:
         self.mission=dict(departure=request.departure,destination=request.destination,
                           departure_z_m=departure_check.terrain_z_m,destination_z_m=target_z,
                           destination_landing_valid=arrival_check.valid,destination_advisory=arrival_check.reason,landing_requested=request.landing_requested,
-                          environment=self.world.id,environment_version=self.world.version,label=request.label,
+                          environment=self.world.id,environment_version=self.world.version,
+                          environment_key=getattr(self.world,'environment_key','airport'),
+                          environment_label=getattr(self.world,'label','Main Airport'),
+                          label=request.label,
                           ignore_scenery_collisions=request.ignore_scenery_collisions,landing_precision_m=request.landing_precision_m)
         self.objective=None
         self.pilot_owner=None;self.pending_pilot=None;self.pilot_epoch=0
@@ -799,6 +817,7 @@ class Laboratory:
         if not phantom_live.is_phantom_variant(variant):fuel_kw['fuel_kg']=request.get('fuel_kg',old.get('fuel_kg',60.))
         elif 'fuel_kg' in request:fuel_kw['fuel_kg']=request['fuel_kg']
         elif old.get('fuel_kg') is not None and old.get('fuel_kg_explicit'):fuel_kw['fuel_kg']=old['fuel_kg']
+        retry_env=request.get('environment',old.get('environment') or hint.get('mission',{}).get('environment_key') or hint.get('mission',{}).get('environment'))
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
                   authority=request.get('authority','manual'),time_scale=request.get('time_scale',old.get('time_scale',Mission.model_fields['time_scale'].default)),
                   stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
@@ -810,6 +829,7 @@ class Laboratory:
                   ignore_scenery_collisions=request.get('ignore_scenery_collisions',old.get('ignore_scenery_collisions',False)),
                   landing_precision_m=request.get('landing_precision_m',old.get('landing_precision_m')),
                   label='Explicit retry of '+hint['run_id'],
+                  **({'environment':retry_env} if retry_env else {}),
                   **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}))
         result=self.start(m)
         self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
@@ -820,6 +840,12 @@ class Laboratory:
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
                     runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
+                    environment=dict(key=getattr(self.world,'environment_key','airport'),
+                                     id=self.world.id,version=self.world.version,
+                                     label=getattr(self.world,'label','Main Airport'),
+                                     half_m=self.world.half,
+                                     default_departure=list(getattr(self.world,'default_departure',[-700.,0.])),
+                                     default_destination=list(getattr(self.world,'default_destination',[-50.,20.]))),
                     active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,recovery_notice=self.recovery_notice,landing_assessment=self.last_landing,
                     clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
                     rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,objective=self.objective,
@@ -957,34 +983,84 @@ async def model_preview(request:dict):
     if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before changing vehicles')
     if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.get('airframe_variant')!='r6':
         raise HTTPException(409,'This cockpit is pinned to R6')
-    try:selection=Mission(airframe_variant=request.get('airframe_variant'), departure=request.get('departure',[0,0]), phantom={'start_configuration': request.get('start_configuration','vtol')})
+    target_world=lab.world
+    if request.get('environment') is not None:
+        try:env_key=resolve_environment_key(request.get('environment'))
+        except ValueError as e:raise HTTPException(422,str(e))
+        if getattr(lab.world,'environment_key','airport')!=env_key:
+            target_world=make_world(env_key,seed=lab.world.seed)
+    dep_default=list(getattr(target_world,'default_departure',[0,0])) if request.get('environment') is not None else [0,0]
+    try:selection=Mission(environment=request.get('environment'),airframe_variant=request.get('airframe_variant'), departure=request.get('departure',dep_default), phantom={'start_configuration': request.get('start_configuration','vtol')})
     except ValidationError as e:raise HTTPException(422,str(e))
     point=MapPoint(*selection.departure)
     if phantom_live.is_phantom_variant(selection.airframe_variant):
         from .phantom.mission import validate_phantom
-        verdict=validate_phantom(lab.world,point,selection.airframe_variant)
+        verdict=validate_phantom(target_world,point,selection.airframe_variant)
         if not verdict['ok']:raise HTTPException(422,verdict['reason'])
     else:
-        verdict=lab.world.validate(point,'departure')
+        verdict=target_world.validate(point,'departure')
         if not verdict.valid:raise HTTPException(422,verdict.reason)
     lab.preview_generation+=1
     generation=lab.preview_generation
     def build():
         if phantom_live.is_phantom_variant(selection.airframe_variant):
-            aircraft=phantom_live.make_aircraft(lab.world,selection)
+            aircraft=phantom_live.make_aircraft(target_world,selection)
         else:
-            aircraft=Aircraft(lab.world,selection.gear_variant,selection.reference_rpm,
+            aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
                               fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
                               engine_power_limit_kw=selection.engine_power_limit_kw,
                               atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
-        aircraft.spawn(*selection.departure,lab.world.surface_z(*selection.departure))
+        aircraft.spawn(*selection.departure,target_world.surface_z(*selection.departure))
         return aircraft
     aircraft=await asyncio.to_thread(build)
     if lab.active or generation!=lab.preview_generation:
         raise HTTPException(409,'The flight or model selection changed while the inspection model was loading')
-    lab.aircraft=aircraft;lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
+    lab.world=target_world;lab.flight_world=target_world;lab.aircraft=aircraft;lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
     lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
     return lab.view()
+@app.post('/api/environment')
+async def set_environment(request:dict):
+    """Switch the live world between Main Airport and Test Sandbox when no sortie is active."""
+    if lab.active:raise HTTPException(409,'End and retain the current sortie before switching environments')
+    if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before switching environments')
+    try:env_key=resolve_environment_key(request.get('environment'))
+    except ValueError as e:raise HTTPException(422,str(e))
+    target_world=lab.world if getattr(lab.world,'environment_key','airport')==env_key else make_world(env_key,seed=lab.world.seed)
+    current_variant=request.get('airframe_variant') or getattr(lab.aircraft,'variant',None) or getattr(lab.aircraft,'airframe_variant','r6')
+    if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and current_variant!='r6':
+        current_variant='r6'
+    start_cfg=request.get('start_configuration') or getattr(lab.aircraft,'start_configuration','vtol')
+    dep=request.get('departure') if request.get('departure') is not None else list(target_world.default_departure)
+    dest=request.get('destination') if request.get('destination') is not None else list(target_world.default_destination)
+    try:selection=Mission(environment=env_key,airframe_variant=current_variant,departure=dep,destination=dest,phantom={'start_configuration':start_cfg})
+    except ValidationError as e:raise HTTPException(422,str(e))
+    point=MapPoint(*selection.departure)
+    if phantom_live.is_phantom_variant(selection.airframe_variant):
+        from .phantom.mission import validate_phantom
+        verdict=validate_phantom(target_world,point,selection.airframe_variant)
+        if not verdict['ok']:raise HTTPException(422,verdict['reason'])
+    else:
+        verdict=target_world.validate(point,'departure')
+        if not verdict.valid:raise HTTPException(422,verdict.reason)
+    lab.preview_generation+=1
+    generation=lab.preview_generation
+    def build():
+        if phantom_live.is_phantom_variant(selection.airframe_variant):
+            aircraft=phantom_live.make_aircraft(target_world,selection)
+        else:
+            aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
+                              fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
+                              engine_power_limit_kw=selection.engine_power_limit_kw,
+                              atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
+        aircraft.spawn(*selection.departure,target_world.surface_z(*selection.departure))
+        return aircraft
+    aircraft=await asyncio.to_thread(build)
+    if lab.active or generation!=lab.preview_generation:
+        raise HTTPException(409,'The flight or model selection changed while the environment was loading')
+    lab.world=target_world;lab.flight_world=target_world;lab.aircraft=aircraft
+    lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
+    lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
+    return dict(ok=True,environment=env_key,world=lab.world.public(),view=lab.view())
 @app.post('/api/objective')
 async def set_objective(request:dict):
     if not lab.active:raise HTTPException(409,'No active flight')
@@ -1165,10 +1241,20 @@ async def lesson(request:dict):
 async def runs():
     result=[]
     for path in sorted((lab.data_root/'evidence/flights').glob('*/summary.json'),reverse=True):
-        s=json.loads(path.read_text());result.append({k:v for k,v in s.items() if k!='final'})
+        s=json.loads(path.read_text())
+        row={k:v for k,v in s.items() if k!='final'}
+        m=row.get('mission') or {}
+        if m.get('environment') and 'environment' not in row:
+            row['environment']=m.get('environment')
+            row['environment_key']=m.get('environment_key')
+            row['environment_label']=m.get('environment_label')
+        result.append(row)
     if lab.active and lab.run_id:
+        m=lab.mission or {}
         result.insert(0,dict(run_id=lab.run_id,outcome='in progress',simulated_seconds=float(lab.aircraft.data.time),
-                             decisions=lab.action_sequence,active=True))
+                             decisions=lab.action_sequence,active=True,mission=lab.mission,
+                             environment=m.get('environment'),environment_key=m.get('environment_key'),
+                             environment_label=m.get('environment_label')))
     return result
 
 

@@ -12,10 +12,11 @@ button.selected, .section-label, #phantom-panel b { color:#d4f66a; }
 input[type=range] { accent-color:#d4f66a; }
 .primary { background:#d4f66a; color:#13190c; border-color:#d4f66a; }
 .primary:hover { background:#e2fa9a; }
-.workspace-tabs, .workspace-pages { display:flex; gap:5px; margin-left:8px; flex-wrap:wrap; }
-.workspace-tabs button, .workspace-pages button { font-size:11px; white-space:nowrap; }
+.workspace-tabs, .workspace-pages, .environment-switch { display:flex; gap:5px; margin-left:8px; flex-wrap:wrap; }
+.workspace-tabs button, .workspace-pages button, .environment-switch button { font-size:11px; white-space:nowrap; }
 .workspace-tabs button[aria-expanded=true] { color:#d4f66a; border-color:#d4f66a; }
 .workspace-pages button[aria-pressed=true] { color:#d4f66a; border-color:#d4f66a; }
+.environment-switch button[aria-pressed=true] { color:#d4f66a; border-color:#d4f66a; }
 .workspace-dashboard-link{display:inline-flex;align-items:center;padding:9px 12px;border:1px solid #455149;color:#d4f66a;text-decoration:none;font-size:11px;white-space:nowrap}
 main { display:flex; flex:1 1 auto; min-height:0; height:auto; overflow:hidden; }
 .cockpit-workspace, .embedded-workspace { flex:1 1 0; min-width:0; min-height:0; height:100%; }

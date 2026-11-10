@@ -52,7 +52,8 @@ async def dashboard_lifespan(application):
     async with _live_lifespan(application):
         if use_default and not live_server.lab.active and not live_server.lab.recovery_blocked:
             await live_server.model_preview({'airframe_variant': 'phantom-a10b',
-                                             'start_configuration': 'road'})
+                                             'start_configuration': 'road',
+                                             'departure': list(live_server.lab.world.default_departure)})
         yield
 
 app.router.lifespan_context = dashboard_lifespan

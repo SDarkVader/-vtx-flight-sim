@@ -9,8 +9,12 @@ from .mission_selection import MapPoint, SurfaceDecision
 class TestWorld:
     id = 'stage1-extended-airfield-recovery'
     version = '4'
+    environment_key = 'airport'
+    label = 'Main Airport'
     half = 4000.
     n = 401
+    default_departure = [-700., 0.]
+    default_destination = [-50., 20.]
     def __init__(self, seed=41031):
         self.seed = seed
         xs = np.linspace(-self.half,self.half,self.n)
@@ -89,6 +93,79 @@ class TestWorld:
         return SurfaceDecision(True,'Six-foot support, swept footprint and local vertical approach column are clear',z)
 
     def public(self):
-        return dict(id=self.id,version=self.version,seed=self.seed,half_m=self.half,
+        return dict(id=self.id,version=self.version,environment=self.environment_key,
+                    label=self.label,seed=self.seed,half_m=self.half,
+                    default_departure=list(self.default_departure),
+                    default_destination=list(self.default_destination),
                     heights_m=self.heights.tolist(),obstacles=self.obstacles,water=self.water,
                     scale_m=100,validation='Local support and vertical approach only; pilot must assess the route')
+
+
+class SandboxWorld(TestWorld):
+    id = 'stage1-valley'
+    version = '2'
+    environment_key = 'sandbox'
+    label = 'Test Sandbox'
+    half = 500.
+    n = 101
+    default_departure = [0., 0.]
+    default_destination = [-50., 20.]
+
+    def __init__(self, seed=41031):
+        self.seed = seed
+        xs = np.linspace(-self.half, self.half, self.n)
+        x, y = np.meshgrid(xs, xs)
+        edge = np.clip((np.maximum(abs(x), abs(y)) - 220) / 240, 0, 1)
+        edge = edge * edge * (3 - 2 * edge)
+        self.heights = edge * (22 + 14 * np.sin(x / 81) ** 2 + 21 * np.cos(y / 107) ** 2)
+        self.obstacles = [
+            dict(id='hangar', kind='box', center=[85., 45., 9.], half=[23., 17., 9.], color='#606f7a', landable=True),
+            dict(id='workshop', kind='box', center=[150., -95., 5.], half=[23., 21., 5.], color='#627970', landable=True),
+            dict(id='tower', kind='box', center=[115., 115., 29.], half=[9., 9., 29.], color='#71838a', landable=False),
+            dict(id='freight', kind='box', center=[-100., 105., 4.], half=[18., 11., 4.], color='#ae735c', landable=True),
+            dict(id='ridge-block', kind='box', center=[-175., -110., 12.], half=[14., 30., 12.], color='#747b76', landable=False),
+        ]
+        rng = np.random.default_rng(seed)
+        for i in range(36):
+            angle = rng.uniform(0, 2 * math.pi)
+            r = rng.uniform(125, 210)
+            cx, cy = r * np.cos(angle), r * np.sin(angle)
+            if any(abs(cx - o['center'][0]) < o['half'][0] + 12 and abs(cy - o['center'][1]) < o['half'][1] + 12 for o in self.obstacles):
+                continue
+            height = float(rng.uniform(5, 13))
+            radius = float(rng.uniform(.7, 1.6))
+            self.obstacles.append(dict(id=f'tree-{i}', kind='cylinder', center=[float(cx), float(cy), height / 2], half=[radius, radius, height / 2], color='#536a55', landable=False))
+        self.water = dict(x=-265., y=30., half_x=28., half_y=80.)
+
+
+ENVIRONMENTS = {
+    'airport': TestWorld,
+    'sandbox': SandboxWorld,
+}
+
+ENVIRONMENT_ALIASES = {
+    'airport': 'airport',
+    'main-airport': 'airport',
+    'main_airport': 'airport',
+    'stage1-extended-airfield-recovery': 'airport',
+    'sandbox': 'sandbox',
+    'test-sandbox': 'sandbox',
+    'test_sandbox': 'sandbox',
+    'stage1-valley': 'sandbox',
+}
+
+
+def resolve_environment_key(value) -> str:
+    if value is None:
+        return 'airport'
+    if not isinstance(value, str):
+        raise ValueError('Unknown environment')
+    key = ENVIRONMENT_ALIASES.get(value.strip().lower())
+    if key is None:
+        raise ValueError('Unknown environment')
+    return key
+
+
+def make_world(environment: str | None = 'airport', seed: int = 41031):
+    key = resolve_environment_key(environment)
+    return ENVIRONMENTS[key](seed=seed)

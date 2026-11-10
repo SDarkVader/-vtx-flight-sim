@@ -135,6 +135,42 @@ export class TacticalMinimap {
       g.beginPath(); g.moveTo(0, py(y)); g.lineTo(w, py(y)); g.stroke();
     }
 
+    const isSandbox = world && (world.environment === 'sandbox' || world.id === 'stage1-valley');
+    if (isSandbox) {
+      // Stage 1 Valley Test Sandbox survey strip & central test pad
+      g.fillStyle = 'rgba(195, 212, 202, 0.18)';
+      g.fillRect(px(-18), py(160), scaleM(36), scaleM(320));
+      g.strokeStyle = 'rgba(212, 246, 106, 0.55)';
+      g.lineWidth = 1.2;
+      g.beginPath();
+      g.arc(px(0), py(0), Math.max(5, scaleM(12)), 0, Math.PI * 2);
+      g.stroke();
+
+      if (world.obstacles) {
+        for (const o of world.obstacles) {
+          const [ox, oy] = o.center, [hx, hy] = o.half;
+          if (o.kind === 'cylinder') {
+            g.fillStyle = '#536a55';
+            g.beginPath();
+            g.arc(px(ox), py(oy), Math.max(1.5, scaleM(hx)), 0, Math.PI * 2);
+            g.fill();
+          } else {
+            g.fillStyle = o.landable ? '#8ca094' : '#a07865';
+            g.fillRect(px(ox - hx), py(oy + hy), scaleM(hx * 2), scaleM(hy * 2));
+            g.strokeStyle = o.landable ? '#d4f66a' : '#ffaa77';
+            g.lineWidth = 1;
+            g.strokeRect(px(ox - hx), py(oy + hy), scaleM(hx * 2), scaleM(hy * 2));
+            g.fillStyle = '#eef2ed';
+            g.font = `bold ${Math.max(8, Math.round(scaleM(9)))}px system-ui`;
+            g.textAlign = 'center';
+            g.textBaseline = 'middle';
+            g.fillText(o.id.toUpperCase(), px(ox), py(oy));
+          }
+        }
+      }
+      return layer;
+    }
+
     // 4. Expanded Aprons
     if (LAYOUT.aprons_expanded) {
       for (const ap of LAYOUT.aprons_expanded) {
@@ -337,9 +373,9 @@ export class TacticalMinimap {
 
     // Cache or redraw background
     let bg = backgroundCache.get(this.canvas);
-    if (!bg || bg.w !== w || bg.h !== h || bg.zoom !== this.zoom || bg.cx !== this.center[0] || bg.cy !== this.center[1]) {
+    if (!bg || bg.worldId !== world.id || bg.w !== w || bg.h !== h || bg.zoom !== this.zoom || bg.cx !== this.center[0] || bg.cy !== this.center[1]) {
       const layer = this.buildBackgroundLayer(world, proj);
-      bg = { layer, w, h, zoom: this.zoom, cx: this.center[0], cy: this.center[1] };
+      bg = { layer, worldId: world.id, w, h, zoom: this.zoom, cx: this.center[0], cy: this.center[1] };
       backgroundCache.set(this.canvas, bg);
     }
     this.ctx.drawImage(bg.layer, 0, 0);
@@ -445,14 +481,15 @@ export class TacticalMinimap {
       this.ctx.textAlign = 'left';
       this.ctx.fillText(`POS X: ${p[0].toFixed(1)}m  Y: ${p[1].toFixed(1)}m`, 14, 23);
       this.ctx.fillText(`HDG: ${((yawDeg % 360 + 360) % 360).toFixed(0).padStart(3, '0')}°  SPD: ${speed.toFixed(1)}m/s`, 14, 37);
-      const clearance = last.observation.radar_clearance_m;
+      const clearance = last.observation.radar_clearance_m ?? (last.observation.radar_altimeter_m != null ? Math.max(0, last.observation.radar_altimeter_m - (last.observation.radar_altimeter_ground_reference_m || 0)) : null);
       this.ctx.fillText(`ALT: ${clearance == null ? 'unavailable' : clearance.toFixed(1) + 'm AGL'}`, 14, 50);
 
       // Tactical Mode Indicator & Zoom Pill
       this.ctx.fillStyle = this.tacticalMode ? '#f5b800' : 'rgba(235, 240, 245, 0.7)';
       this.ctx.font = 'bold 10px system-ui';
       this.ctx.textAlign = 'right';
-      this.ctx.fillText(this.tacticalMode ? 'WORLD' : 'AIRPORT', w - 10, 18);
+      const isSandbox = world && (world.environment === 'sandbox' || world.id === 'stage1-valley');
+      this.ctx.fillText(this.tacticalMode ? 'WORLD' : (isSandbox ? 'SANDBOX' : 'AIRPORT'), w - 10, 18);
       this.ctx.fillStyle = 'rgba(255,255,255,0.45)';
       this.ctx.fillText('DBL-CLICK / PINCH ZOOM', w - 10, 32);
     }

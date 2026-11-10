@@ -39,10 +39,13 @@ async function applyPreview(variant) {
   setBusy(true);
   status.textContent = 'Loading the selected aircraft…';
   try {
+    const envSelect = document.getElementById('environment-select');
+    const payload = {airframe_variant: variant, start_configuration: startConfiguration.value,
+      departure: document.getElementById('dep').value.split(',').map(Number)};
+    if (envSelect?.value) payload.environment = envSelect.value;
     const response = await fetch('/api/model-preview', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({airframe_variant: variant, start_configuration: startConfiguration.value,
-        departure: document.getElementById('dep').value.split(',').map(Number)}),
+      body: JSON.stringify(payload),
     });
     const result = await response.json();
     if (!response.ok) throw Error(result.detail || `HTTP ${response.status}`);
