@@ -7,6 +7,7 @@ from .mission_selection import MapPoint, SurfaceDecision
 
 
 class TestWorld:
+    __test__ = False
     id = 'stage1-extended-airfield-recovery'
     version = '4'
     environment_key = 'airport'
