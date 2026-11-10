@@ -66,12 +66,15 @@ def make_aircraft(world, request, *, enable_a10_surfaces=True):
                            overrides=overrides)
     if enable_a10_surfaces and o.start_configuration != 'road' and not request.airframe_variant.endswith('-a9'):
         aircraft.set_command({'canard_fold': 'deployed'})
+    aircraft.experimental_overrides = dict(o.experimental_overrides or {})
     return aircraft
 
 
 def after_start(lab, request):
     p = lab.aircraft
     (lab.log_path / 'phantom_parameters.json').write_text(json.dumps(p.P.snapshot(), indent=1))
+    (lab.log_path / 'aircraft_identity.json').write_text(json.dumps(aircraft_identity(lab), indent=1))
+    lab.log('aircraft_identity', aircraft_identity(lab))
     led = dict(components=p.L.records(), configurations=config_table(p.L),
                live_mass_kg=float(sum(p.model.body_mass)), actual_start_mass_properties=p.mass_properties())
     (lab.log_path / 'phantom_ledger.json').write_text(json.dumps(led, indent=1))
@@ -142,6 +145,17 @@ def gear_weight_fraction(p):
     return max(0.0, 1.0 - lift / w) if w > 0 else 0.0
 
 
+def aircraft_identity(lab):
+    """Effective identity of the loaded aircraft against its pin (cached per aircraft object)."""
+    from . import identity
+    p = lab.aircraft
+    cached = getattr(p, '_identity', None)
+    if cached is None:
+        experimental = bool(getattr(p, 'experimental_overrides', None))
+        cached = p._identity = identity.verify(p, experimental=experimental)
+    return cached
+
+
 def sensor_observation(lab):
     p = lab.aircraft; d = p.data
     obs = p.sensor_observation(lab.sensor_rng)
@@ -150,6 +164,7 @@ def sensor_observation(lab):
                action_schema='phantom-fbw-1', mission=lab.mission, authority=lab.authority, active=lab.active, paused=lab.paused,
                configuration=dict(airframe_variant=p.variant, airframe_revision=p.provenance['revision'], config_sha256=p.P.config_sha256,
                                   load_state=p.load_state, occupants=p.L.occupants, initial_fuel_kg=float(p.fuel_initial.sum()),
+                                  identity=aircraft_identity(lab),
                                   **({'physics_characteristics_uri': p.provenance.get('physics_characteristics_uri'),
                                       'physics_model_doc_uri': p.provenance.get('physics_model_doc_uri')} if p.provenance.get('physics_characteristics_uri') else {})),
                sensor_status='Provisional modelled sensors: GNSS, baro, radar altimeter (ray along gravity), AHRS, body-axis gyro, fan rpm, pod/leg/surface position, power, fuel; no truth forces')

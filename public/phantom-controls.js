@@ -22,6 +22,7 @@ export function createPhantomPanel({api,toast}){
     el.innerHTML='<b>PHANTOM FBW · phantom-fbw-1</b><div id="ph-sliders"></div>'+
       '<label>Mode <select id="ph-mode"><option>rate_damping</option><option>attitude</option><option>attitude_vs</option><option>off</option></select></label> '+
       '<button id="ph-voice" title="Push to talk: boost 50 percent, brakes off, drive 80 percent, take-off configuration, downforce, nose up 8, status, confirm">🎙 Voice</button> <button id="ph-take">Take control</button> <button id="ph-gear">Pods / wheels: 90°</button> <button id="ph-legs">Legs: extended</button> <button id="ph-brake">Brakes on</button> <button id="ph-wing">Wing deploy</button> <button id="ph-canard">Canards deploy</button>'+
+      '<input id="ph-say" type="text" placeholder="Type an instruction to the pilot, then Enter" aria-label="Typed pilot instruction" style="width:100%;margin-top:6px">'+
       '<div id="ph-voice-log" style="margin-top:6px;font-size:12px;color:#9fe6d6"></div><div id="ph-state" style="margin-top:6px;white-space:pre-wrap;font-family:monospace;font-size:11px"></div>';
     document.querySelector('.controls-panel').appendChild(el);
     const s=el.querySelector('#ph-sliders');
@@ -45,16 +46,42 @@ export function createPhantomPanel({api,toast}){
       if(cmd.canard_fold){can=cmd.canard_fold==='deployed';el.querySelector('#ph-canard').textContent='Canards '+(can?'fold':'deploy');}
       if(cmd.pod_tilt_deg){vtol=cmd.pod_tilt_deg[0]>45;el.querySelector('#ph-gear').textContent='Pods / wheels: '+(vtol?'90°':'0°');}};
     const apply=(r,heard)=>{Object.assign(cmd,JSON.parse(JSON.stringify(r.patch)));engage();dirty=true;voiceReason=`Voice: "${heard}" -> ${r.intent} ${JSON.stringify(r.patch)}`;syncUi();};
-    const hear=(text)=>{const r=parseUtterance(text);let reply=r.say;
+    // Local grammar: used only when the server's /api/pilot/command cannot be reached.
+    const hearLocal=(text)=>{const r=parseUtterance(text);let reply=r.say;
       if(r.intent==='confirm'){if(pendingVoice&&Date.now()-pendingVoice.t<8000){apply(pendingVoice.r,pendingVoice.heard);reply='Confirmed. '+pendingVoice.r.say.replace(/\?$/,'.');}else reply='Nothing to confirm.';pendingVoice=null;}
       else if(r.intent==='cancel'){reply=pendingVoice?'Cancelled.':'Nothing pending.';pendingVoice=null;}
       else if(r.intent==='status'){reply=statusReadback(lastView);}
       else if(r.patch&&r.risky){pendingVoice={r,heard:text,t:Date.now()};reply=r.say+' Say confirm or cancel.';}
       else if(r.patch){apply(r,text);}
-      vlog.textContent=`heard: "${text}" → ${reply}`;speak(reply);};
-    const speech=createSpeech({onText:hear,onState:st=>{el.querySelector('#ph-voice').textContent=st==='listening'?'🎙 Listening…':'🎙 Voice';if(st.startsWith('error'))vlog.textContent='voice '+st;}});
-    el.querySelector('#ph-voice').onclick=()=>{if(!speech){vlog.textContent='Voice needs the Web Speech API (Chrome or Edge).';return;}speech.listening?speech.stop():speech.start();};
-    window.__phantomVoice=hear;   // typed fallback / tests: __phantomVoice('boost 50 percent')
+      return reply;};
+    // The server interprets the instruction, sends it through /api/action's own checks and answers only after the
+    // physics loop holds the command. The reply is spoken; "executed" comes from the plant, never from the parser.
+    const hear=async(text,source='voice')=>{const t0=performance.now();let reply,detail='';
+      const word=parseUtterance(text).intent;
+      try{
+        if(word==='cancel'){reply=pendingVoice?'Cancelled.':'Nothing pending.';pendingVoice=null;}
+        else if(word==='confirm'&&!(pendingVoice&&Date.now()-pendingVoice.t<8000)){reply='Nothing to confirm.';pendingVoice=null;}
+        else{const confirm=word==='confirm';const sent=confirm?pendingVoice.heard:text;pendingVoice=null;
+          const r=await api('/api/pilot/command',{text:sent,source,confirm});reply=r.say;
+          if(r.needs_confirmation)pendingVoice={heard:sent,t:Date.now(),server:true};
+          if(r.executed&&r.patch){Object.assign(cmd,JSON.parse(JSON.stringify(r.patch)));syncUi();}
+          detail=r.executed?` · executed, applied in ${r.applied_latency_ms} ms (action ${r.sequence})`:r.accepted?' · accepted, not yet applied':r.rejected?' · rejected':r.needs_confirmation?' · awaiting confirm':'';}
+      }catch(e){reply=hearLocal(text);detail=' · server interpreter unavailable, local grammar used';}
+      vlog.textContent=`heard: "${text}" → ${reply}${detail} · ${Math.round(performance.now()-t0)} ms`;speak(reply);return reply;};
+    // Voice mode: hands-free, continuous listening that stays on (and is remembered) until switched off.
+    // The pilot's own spoken replies are not fed back in as commands.
+    let quietUntil=0;const speaking=()=>window.speechSynthesis?.speaking||performance.now()<quietUntil;
+    const vbtn=el.querySelector('#ph-voice');
+    const remember=(on)=>{try{localStorage.setItem('vtx-voice-mode',on?'on':'off');}catch{}};
+    const speech=createSpeech({onText:(t)=>{if(speaking()){quietUntil=performance.now()+600;return;}hear(t,'voice');},
+      onState:st=>{vbtn.textContent=st==='listening'?'🎙 Voice mode: ON (listening)':'🎙 Voice mode: off';vbtn.setAttribute('aria-pressed',String(st==='listening'));
+        if(st.startsWith('error')){vlog.textContent='voice '+st+(st.includes('not-allowed')?' — allow the microphone for this page, then switch voice mode on again':'');if(st.includes('not-allowed')||st.includes('service-not-allowed')){speech.stop();remember(false);}}}});
+    vbtn.textContent='🎙 Voice mode: off';
+    vbtn.onclick=()=>{if(!speech){vlog.textContent='Voice needs the Web Speech API (Chrome or Edge).';return;}if(speech.listening){speech.stop();remember(false);}else{speech.start();remember(true);}};
+    let wanted=false;try{wanted=localStorage.getItem('vtx-voice-mode')==='on';}catch{}
+    if(wanted&&speech)speech.start();   // resumes hands-free after a reload when the microphone is already permitted
+    window.__phantomVoice=(t)=>hear(t,'text');
+    const say=el.querySelector('#ph-say');say.onkeydown=e=>{if(e.key==='Enter'&&say.value.trim()){hear(say.value.trim(),'text');say.value='';}e.stopPropagation();};   // typed fallback / tests: __phantomVoice('boost 50 percent')
   }
   setInterval(async()=>{const v=lastView;beat++;if(!heartbeatDue({engaged,pending,view:v,dirty,beat,engagedRun}))return;
     dirty=false;pending=true;try{await api('/api/action',{...cmd,authority:'manual',expected_run_id:v.run_id,observation_id:v.observation.observation_id,reason:voiceReason||'Manual Phantom operator controls'});voiceReason=null;}
@@ -62,7 +89,7 @@ export function createPhantomPanel({api,toast}){
   return {
     show(on){el.style.display=on?'block':'none';},
     update(v){if(!engaged&&v.observation){const o=v.observation;if(Array.isArray(o.pod_tilt_deg)){vtol=o.pod_tilt_deg[0]>45;el.querySelector('#ph-gear').textContent='Pods / wheels: '+(vtol?'90°':'0°');}if(Array.isArray(o.leg_extension_m)){legsExtended=o.leg_extension_m[0]>.26;el.querySelector('#ph-legs').textContent='Legs: '+(legsExtended?'extended':'retracted');}}if(engaged&&engagedRun===undefined)engagedRun=v.run_id;if(engaged&&(!v.active||v.authority!=='manual'||v.run_id!==engagedRun))disengage();lastView=v;const o=v.observation||{},t=v.rendering_truth||{};
-      for(const control of el.querySelectorAll('input,button,select'))control.disabled=!v.active;
+      for(const control of el.querySelectorAll('input,button,select'))control.disabled=!v.active&&control.id!=='ph-voice'&&control.id!=='ph-say';
       const tb=el.querySelector('#ph-take');if(tb)tb.textContent=engaged?'Release control':'Take control';
       el.querySelector('#ph-state').textContent=[!v.active?'Inspection preview: start a mission to enable Phantom controls':engaged?'PANEL ENGAGED: sending manual commands':'panel idle: sends nothing',`t ${o.t_s?.toFixed?.(2)} s · ${v.time_scale}× · commands held`,
         `variant ${o.configuration?.airframe_variant} ${o.configuration?.load_state||''}`,`radar clearance ${cockpitTelemetry(o).altitude} m`,

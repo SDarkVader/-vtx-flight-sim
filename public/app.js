@@ -29,7 +29,7 @@ import {createAirportOperations} from './vtx-env/airport-operations.js?v=1';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
 import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
-import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261110-wheel-axle-y';import {createPhantomPanel} from './phantom-controls.js?v=3';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
+import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261110-wheel-axle-y';import {createPhantomPanel} from './phantom-controls.js?v=4-pilot-command';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
 const phantomMissionNote=document.createElement('p');
@@ -51,8 +51,13 @@ function showRevision(view) {
  const physics=provenance.physics_revision||(config?`config ${config.slice(0,12)}`:'physics identity unavailable');
  const runtime=view.runtime_source_sha256;
  const node=$('revision');
- node.textContent=`${provenance.revision||'unknown model'} · ${physics}${runtime?' · code '+runtime.slice(0,8):''}`;
- node.title=`Model: ${provenance.revision||'unknown'}; physics: ${provenance.physics_revision||'parameter configuration'}; config SHA-256: ${config||'not supplied'}; model XML SHA-256: ${provenance.model_xml_sha256||'not supplied'}; runtime SHA-256: ${runtime||'not supplied'}`;
+ const id=view.observation?.configuration?.identity;
+ const badge=id?(id.verified?' · IDENTITY VERIFIED':id.experimental?' · EXPERIMENTAL CONFIG':id.pinned?' · IDENTITY MISMATCH':' · not pinned'):'';
+ const visual=id?.render_asset_sha256?` · visual ${id.render_asset_sha256.slice(0,8)}`:'';
+ const commit=id?.git_commit?` · git ${id.git_commit.slice(0,7)}`:'';
+ node.textContent=`${provenance.revision||'unknown model'} · ${physics}${visual}${commit}${runtime?' · code '+runtime.slice(0,8):''}${badge}`;
+ node.style.color=id&&id.pinned&&!id.verified&&!id.experimental?'#ff7a6b':'';
+ node.title=`Model: ${provenance.revision||'unknown'}; physics: ${provenance.physics_revision||'parameter configuration'}; config SHA-256: ${config||'not supplied'}; model XML SHA-256: ${provenance.model_xml_sha256||'not supplied'}; runtime SHA-256: ${runtime||'not supplied'}${id?`; parameter file SHA-256: ${id.parameter_file_sha256}; visual asset: ${id.render_asset} SHA-256 ${id.render_asset_sha256}; git commit: ${id.git_commit||'not a git checkout'}; identity: ${id.status}`:''}`;
 }
 let last=null,world=null,model=null,pick='a',cameraMode='chase',replayFrames=null,replayFrame=0;
 let departure=[-700,0],destination=[-50,20],track=[],lastDecision='',lastRun=null;

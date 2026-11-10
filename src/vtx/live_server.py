@@ -20,6 +20,7 @@ from pathlib import Path
 import subprocess
 import time
 import uuid
+from typing import Literal
 import mujoco as mj
 import numpy as np
 from fastapi import FastAPI,HTTPException,WebSocket,WebSocketDisconnect,Request
@@ -562,7 +563,15 @@ class Laboratory:
         arrival_check=flight_world.validate(target,'destination')
         target_z=flight_world.surface_z(*request.destination)
         if phantom_live.is_phantom_variant(request.airframe_variant):
-            self.aircraft=phantom_live.make_aircraft(flight_world,request)
+            candidate=phantom_live.make_aircraft(flight_world,request)
+            # A pinned aircraft flies only as itself: physics configuration, parameter file and visual asset must match the pin.
+            from .phantom import identity as aircraft_identity_pins
+            check=aircraft_identity_pins.verify(candidate,experimental=bool(candidate.experimental_overrides))
+            if check['pinned'] and check['mismatches']:
+                self.log('flight_refused_identity_mismatch',check) if getattr(self,'log_path',None) else None
+                raise HTTPException(409,'Flight refused: '+check['name']+' does not match its pinned identity. '+check['status'])
+            candidate._identity=check
+            self.aircraft=candidate
         else:
             self.aircraft=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
@@ -976,6 +985,72 @@ async def release_identity():
                 supported_variants=['r6','r6_variator','light','baseline','phantom-a10b','phantom-fx','phantom','phantom-a9','phantom-fx-a9'])
 @app.get('/api/view')
 async def view():return lab.view()
+@app.get('/api/identity')
+async def identity():
+    """Effective aircraft, physics, visual and software identity of the loaded aircraft, checked against its pin."""
+    p=lab.aircraft
+    if getattr(p,'is_phantom',False):out=dict(phantom_live.aircraft_identity(lab))
+    else:
+        from .phantom import identity as pins
+        out=dict(variant=p.provenance.get('airframe_variant'),revision=p.provenance.get('revision'),render_asset=p.provenance.get('render_asset'),
+                 git_commit=pins.git_commit(),pinned=False,verified=None,mismatches=[],status='not pinned (historical or reference variant)')
+    out.update(runtime_source_sha256=RUNTIME_SOURCE_SHA256,run_id=lab.run_id,active=lab.active)
+    return out
+
+class PilotCommand(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    text:str=Field(min_length=1,max_length=500)
+    confirm:bool=False
+    source:Literal['voice','text','ai']='text'
+    heard_wall_ms:float|None=None
+
+@app.post('/api/pilot/command')
+async def pilot_command(c:PilotCommand):
+    """A spoken or typed instruction -> one validated action through accept_action -> confirmation from the plant.
+
+    'executed' is true only when the physics loop holds the commanded values; understanding alone is never reported as execution."""
+    from . import pilot_command as pc
+    t0=time.perf_counter()
+    base=dict(heard=c.text,source=c.source,understood=False,accepted=False,executed=False,run_id=lab.run_id,authority=lab.authority)
+    def done(**kw):
+        out={**base,**kw,'latency_ms':round((time.perf_counter()-t0)*1000,1)}
+        if lab.active and lab.run_id:lab.log('pilot_command',out)
+        return out
+    if not getattr(lab.aircraft,'is_phantom',False):
+        return done(intent='refused',say='Voice and text commands fly the Phantom only. Choose a Phantom first.')
+    before=lab.sensor_observation()
+    r=pc.parse(c.text,before)
+    if r['intent']=='status':return done(understood=True,intent='status',say=pc.status_readback(before),telemetry=pc.telemetry_excerpt(before))
+    if r['intent'] in ('unknown','refused','confirm','cancel') or not r['patch']:
+        return done(understood=r['intent'] in ('refused','confirm','cancel'),intent=r['intent'],say=r['say'])
+    base.update(understood=True,intent=r['intent'],patch=r['patch'])
+    if not lab.active:return done(say='No flight is running. Start a mission first.',rejected='No active sortie')
+    if r['risky'] and not c.confirm:return done(needs_confirmation=True,say=r['say']+' Say confirm or cancel.')
+    if r['risky']:r['say']='Confirmed. '+r['say'].rstrip('?')+'.'
+    try:
+        a=PhantomAction(schema='phantom-fbw-1',authority=lab.authority,observation_id=before['observation_id'],expected_run_id=lab.run_id,
+                        reason=f'Pilot command ({c.source}): "{c.text}" -> {r["intent"]}',**r['patch'])
+        result=lab.accept_action(a)
+    except HTTPException as e:
+        lab.log('rejected_pilot_action',dict(request=dict(text=c.text,patch=r['patch']),reason=e.detail))
+        return done(rejected=str(e.detail),say='Command rejected: '+str(e.detail))
+    except ValidationError as e:
+        return done(rejected=str(e),say='Command rejected: it is outside the control limits.')
+    base.update(accepted=True,sequence=result['sequence'],apply_t_s=result['apply_t_s'],observation_id=before['observation_id'])
+    get_recorder(lab.data_root).emit(dict(schema_version=1,run_id=lab.run_id,decision_id=None,wall_utc=datetime.now(timezone.utc).isoformat(),
+        kind='pilot_action_accepted',payload=dict(action=a.model_dump(by_alias=True,exclude_none=True),result=result)))
+    run=lab.run_id;deadline=time.perf_counter()+2.0;applied_ms=None
+    while time.perf_counter()<deadline and lab.active and lab.run_id==run and not lab.paused:
+        if float(lab.aircraft.data.time)>=result['apply_t_s'] and pc.held(lab.aircraft.fcc.cmd,r['patch']):
+            applied_ms=round((time.perf_counter()-t0)*1000,1);break
+        await asyncio.sleep(.005)
+    if applied_ms is None:
+        why='the simulation is paused' if lab.paused else 'the flight ended' if not lab.active or lab.run_id!=run else 'the physics loop did not apply it within 2 seconds'
+        return done(say=f'Command accepted but not yet applied: {why}.',not_applied=why,telemetry_before=pc.telemetry_excerpt(before))
+    await asyncio.sleep(.25)   # let the plant respond so the reply quotes telemetry from after the command
+    lab.last_obs=None;after=lab.sensor_observation()
+    return done(executed=True,applied_latency_ms=applied_ms,say=r['say'],telemetry_before=pc.telemetry_excerpt(before),telemetry_after=pc.telemetry_excerpt(after))
+
 @app.get('/api/phantom/physics')
 async def phantom_physics(variant:str='phantom-a10b'):
     from .phantom.params import Params, VARIANTS
