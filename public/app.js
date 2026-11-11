@@ -84,7 +84,8 @@ const mobileView=mobile;
 // Phones default to the lighter display path. The physics and model are unchanged.
 const lightweightView=mobile||new URLSearchParams(location.search).has('lite');
 // Rendering quality tier (visual only; physics unaffected): phone low, ?lite lite, desktop high, ?quality= overrides.
-import {resolveQuality} from './vtx-env/quality.js?v=gfx-20261103-1';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
+import {resolveQuality} from './vtx-env/quality.js?v=gfx-20261111-ultra';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
+import {createPost} from './vtx-env/post.js?v=1';import {createTimeOfDay} from './vtx-env/time-of-day.js?v=1';import {buildAirfieldKit} from './vtx-env/airfield-kit.js?v=1';
 const quality=resolveQuality({mobile,search:location.search});scene.userData.quality=quality.name;
 // On phones keep retained-flight actions and indicator bar directly below the flight view.
 if (innerWidth <= 800) {
@@ -98,6 +99,9 @@ const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
 const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
 const sky=buildSky(scene,renderer,{quality}),environment={};
+// Desktop-app tier only: post-processing. Day/night is presentation only and never touches the physics.
+const post=createPost(renderer,scene,camera,quality);
+const timeOfDay=createTimeOfDay({scene,sky,renderer,getPost:()=>post,environment});
 const rideCgLocal=[-0.15156246846624952,0.00004531509472356366,0.5529781802070567];
 let visualTraffic=null,airportOperations=null,rideRoute=null,rideTime=0,rideLastFrame=0,ridePaused=false,ridePose=null,rideActor=null,ridePlan=null;
 let sceneTime=0,sceneScale=1,selectedVehicleId='physical-plant',passengerRide=new URLSearchParams(location.search).has('trafficRide');
@@ -118,6 +122,12 @@ const trafficPreviewEnabled=true;
   locate.id='ride-locate';locate.type='button';locate.textContent='Find A10';
   locate.title='Reposition the independent free camera to look at the A10';locate.hidden=true;
   cameraTools.prepend(exterior,locate);
+  const nightButton=document.createElement('button');
+  nightButton.id='time-of-day';nightButton.type='button';nightButton.textContent='Night';
+  nightButton.title='Switch the scene between day and night lighting (visual only)';
+  nightButton.onclick=()=>{nightButton.textContent=timeOfDay.toggle()==='night'?'Day':'Night';};
+  cameraTools.append(nightButton);
+  if(new URLSearchParams(location.search).get('time')==='night'){timeOfDay.set('night');nightButton.textContent='Day';}
   function recenterPhysicalVehicle(){
    const truth=replayFrames?.[replayFrame]||last?.rendering_truth,target=physicalCameraTarget(truth);
    setCameraMode('chase');
@@ -155,7 +165,7 @@ const trafficPreviewEnabled=true;
   $('view-mode').textContent='PHYSICAL STATE - LIVE';
 }
 const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
-const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
+const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);post?.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 const worldGroup=new THREE.Group();worldGroup.name='vtx-world';scene.add(worldGroup);
 function plane(w,h,color,x,y,z,parent=worldGroup){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({color,roughness:.95}));m.position.set(x,y,z);m.receiveShadow=true;parent.add(m);return m;}
 function makeLabel(text,color='#7cdfcb'){
@@ -220,7 +230,7 @@ function clearWorldGroup(){
   child.traverse(n=>{if(!n.isMesh&&!n.isLineSegments&&!n.isPoints)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture&&!keepTextures.has(v))textures.add(v);}});
   geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());
  }
- environment.buildings=null;environment.volcano=null;environment.serviceRoads=null;environment.dressing=null;
+ environment.buildings=null;environment.kit=null;environment.volcano=null;environment.serviceRoads=null;environment.dressing=null;
  lightPool.clear?.();
 }
 function surfaceZ(x,y){if(!world)return 0;const n=world.heights_m.length,half=world.half_m,u=THREE.MathUtils.clamp((x+half)/(2*half)*(n-1),0,n-1.00001),v=THREE.MathUtils.clamp((y+half)/(2*half)*(n-1),0,n-1.00001),i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j,h=world.heights_m;let z=a>b?(1-a)*h[j][i]+(a-b)*h[j][i+1]+b*h[j+1][i+1]:(1-b)*h[j][i]+(b-a)*h[j+1][i]+a*h[j+1][i+1];for(const o of world.obstacles){if(o.kind==='box'&&Math.abs(x-o.center[0])<=o.half[0]&&Math.abs(y-o.center[1])<=o.half[1])z=Math.max(z,o.center[2]+o.half[2]);}return z;}
@@ -337,10 +347,11 @@ function buildWorld(w){
   const hills=makeHills(w);worldGroup.add(hills.mesh,makeSkyline(hills.heightAt),makeFarForest(hills.heightAt,quality.forest,w.half_m));const ground=createGround(w,hills.mesh);
   const groundZ=(x,y)=>Math.max(Math.abs(x),Math.abs(y))<=w.half_m?surfaceZ(x,y):ground.heightAt(x,y);
   // Buildings are dressed onto the physical obstacle boxes; airfield markings are flush paint.
-  environment.buildings=buildBuildings(worldGroup,w,{ppm:quality.facadePpm,quality});buildAirfield(worldGroup,{ppm:quality.airfieldPpm,quality,world:w});buildTrees(worldGroup,w,{quality});buildForecourt(worldGroup,w);environment.volcano=buildVolcanoBasement(worldGroup,w);environment.serviceRoads=buildServiceRoads(worldGroup,w,groundZ);
+  environment.buildings=buildBuildings(worldGroup,w,{ppm:quality.facadePpm,quality});environment.kit=buildAirfieldKit(worldGroup,w,{quality});buildAirfield(worldGroup,{ppm:quality.airfieldPpm,quality,world:w});buildTrees(worldGroup,w,{quality});buildForecourt(worldGroup,w);environment.volcano=buildVolcanoBasement(worldGroup,w);environment.serviceRoads=buildServiceRoads(worldGroup,w,groundZ);
   worldGroup.add(makeWater(w,surfaceZ(w.water.x,w.water.y)+.1));
   environment.dressing=dressWorld(worldGroup,w,ground,{quality,lightPool,extraTextures:[markerA.material.map,markerB.material.map]});
  }
+ timeOfDay.refresh();
  syncEnvironmentControls(isSandbox?'sandbox':'airport');
  for(const c of [$('map'),$('large-map')]){
   const mm=getMinimap(c);
@@ -910,8 +921,8 @@ function connect(){
 api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&&w.default_departure.length===2){departure=[...w.default_departure];$('dep').value=departure.join(', ');}buildWorld(w);connect();}).catch(()=>fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{buildWorld(w);$('view-sync').textContent='SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';})).catch(e=>{$('loading').textContent='Unable to load airport: '+e.message;console.error('Airport world',e);});
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
-if(new URLSearchParams(location.search).has('debug'))window.__vtx={scene,worldGroup,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,switchEnvironment,get currentEnvironment(){return currentEnvironment;},get model(){return model;},get loadedAsset(){return loadedAsset;},get modelReady(){return modelReady;},get last(){return last;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
-function animate(){requestAnimationFrame(animate);if(document.hidden)return;const now=performance.now();if(now-lastFrameMs<(lightweightView?67:50))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
+if(new URLSearchParams(location.search).has('debug'))window.__vtx={post,timeOfDay,scene,worldGroup,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,switchEnvironment,get currentEnvironment(){return currentEnvironment;},get model(){return model;},get loadedAsset(){return loadedAsset;},get modelReady(){return modelReady;},get last(){return last;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
+function animate(){requestAnimationFrame(animate);if(document.hidden)return;const now=performance.now();if(now-lastFrameMs<(lightweightView?67:(quality.frameMs??50)))return;lastFrameMs=now;const truth=replayFrames?.[replayFrame]||last?.rendering_truth;
  const frameDt=rideLastFrame?Math.min(.25,(now-rideLastFrame)/1000):0;
  rideLastFrame=now;
  if(!ridePaused)sceneTime+=frameDt*sceneScale;
@@ -980,7 +991,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
  }else if(visualTraffic&&now-(animate.progressLast||0)>500){animate.progressLast=now;$('ride-progress').textContent='Traffic active · '+Math.floor(sceneTime)+' s';}
  sky.update(camera,now/1000);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);environment.serviceRoads?.update(now/1000,last?.observation?.gnss_xy_m);
   aircraftFx?.update(last?.observation?.rotor_rpm,now/1000);
- if(world&&!window.__vtxNoRender)renderer.render(scene,camera);
+ if(world&&!window.__vtxNoRender){if(post)post.render();else renderer.render(scene,camera);}
  const status=$('view-sync');if(status&&!rideEnabled&&now-(status._last||0)>400){status._last=now;
   const age=now-latestTruthReceivedMs;
   if(last&&age>2000&&!panelWasStale){aircraftFx?.updateAvionics?.(last.observation,true);panelWasStale=true;}
