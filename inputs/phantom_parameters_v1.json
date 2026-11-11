@@ -35,6 +35,10 @@
   {
    "date": "2026-11-09",
    "change": "Added phantom-a10b (A10-B, current default Phantom) = phantom-fx + P6 + P8 7 deg + overlays hull_lift_v1, road_suspension_v1, wheel_drive_limits_v1, control_effectors_v1. phantom-fx relabelled A10-A (previous prototype); its parameter tree and config SHA are unchanged."
+  },
+  {
+   "date": "2026-11-11",
+   "change": "Added variant phantom-a10c (development): A10-B + P7 turbojet boosters + take-off stance nose-lift strut overlay. A10-B and all earlier variants are unchanged (config 3ecae1a9 pinned by test)."
   }
  ],
  "base": {
@@ -1686,6 +1690,29 @@
       "u": "deg",
       "l": "SYNTHETIC_UNVALIDATED",
       "s": "A10-B: wing incidence 7 deg (owner direction 9 Nov; T3/T4: rotation possible near 94 m/s)"
+     }
+    }
+   }
+  },
+  "phantom-a10c": {
+   "inherits": "phantom-a10b",
+   "release_stage": "development_prototype",
+   "description": "A10-C: DEVELOPMENT prototype for take-off and flight without the lift fans. A10-B plus turbojet boosters (P7: four PBS TJ150, 6 kN) and a take-off stance nose-lift strut (0.20 m). In the plant it lifts off from a standing start at about 78 m/s in about 1.0 km and climbs with the fans off. See docs/phantom/A10C_FANS_OFF_TAKEOFF.md.",
+   "design_proposals": [
+    "all A10-B proposals",
+    "P7 turbojet boosters (4 x PBS TJ150)",
+    "take-off stance nose-lift strut 0.20 m"
+   ],
+   "overlay_files": [
+    "takeoff_stance_v1"
+   ],
+   "overlay": {
+    "proposals": {
+     "p7_booster_engine": {
+      "v": 1.0,
+      "u": "-",
+      "l": "SYNTHETIC_UNVALIDATED",
+      "s": "A10-C: turbojet boosters on (1 = four PBS TJ150); the EDF boosters' 3.1-3.4 kN is below the 4.3 kN needed for level fans-off flight at L/D 4.4"
      }
     }
    }

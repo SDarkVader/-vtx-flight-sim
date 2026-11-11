@@ -122,6 +122,8 @@ class PhantomLedger:
             C.append(_c(f'fuel_{side}', 'fuel', f'fuel_{side}', P['fuel.tank_capacity_kg'], pos, P['fuel.box_half_m'], S, 'Jet A-1 state mass (full)', tags=['fuel']))
         for a in (P.get('effectors.added_components') or []) if P.get('effectors.enabled', 0.0) > 0.5 else []:
             C.append(_c(a['id'], a['kind'], 'airframe', a['mass_kg'], a['position_m'], a['half_m'], a['label'], a['source']))
+        for a in (P.get('suspension.added_components') or []) if P.get('suspension.nose_lift_m', 0.0) > 0.0 else []:
+            C.append(_c(a['id'], a['kind'], 'airframe', a['mass_kg'], a['position_m'], a['half_m'], a['label'], a['source']))
         pp = P.tree['pods']; R = P['pods.tyre_radius_m']; hw = P['pods.tyre_half_width_m']
         for k in PODS:
             s = SIDE[k]; x = P['pods.hinge_x_front_m'] if FRONT[k] else P['pods.hinge_x_rear_m']

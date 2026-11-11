@@ -8,7 +8,7 @@ PARAMETER_FILE = ROOT / 'inputs/phantom_parameters_v1.json'
 MANIFEST_FILE = ROOT / 'inputs/phantom_simulation_manifest_v0.json'
 A10B_CHARACTERISTICS_FILE = ROOT / 'evidence/phantom/a10b_characteristics.json'
 LABELS = {'MEASURED-K', 'DERIVED', 'SYNTHETIC_UNVALIDATED', 'MANUFACTURER', 'REGULATORY_REFERENCE'}
-VARIANTS = ('phantom-a10b', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')   # phantom-a10b = A10-B (current default); phantom-fx = A10-A; -a9 = earlier
+VARIANTS = ('phantom-a10b', 'phantom-a10c', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')   # phantom-a10b = A10-B (current default); phantom-fx = A10-A; -a9 = earlier
 DEFAULT_VARIANT = 'phantom-a10b'
 CASSETTE_REVISIONS = ('A9', 'A10')
 
