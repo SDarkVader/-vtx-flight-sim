@@ -53,10 +53,13 @@ Switch instantly between two distinct, high-fidelity physical environments direc
 | Aircraft Variant | Class / Architecture | Distinctive Flight Capabilities | Historic Milestone / Provenance |
 | :--- | :--- | :--- | :--- |
 | **Phantom A10-B** *(Default)* | Two-seat transforming aerocar (FX-A) | 7° wing incidence, active front-wheel steering, Munk hull lift, Moog 965 actuator models, twin rear boosters, DRS flap | Production standard; verified 0.8g air-brake and fan-assisted turns |
+| **Phantom FX-A A10-C** *(Development; PR #41)* | Fans-off, wing-borne A10-B derivative | Four PBS TJ150 turbojets (1,500 N each), twin rate-limited nose struts (+0.20 m / ~3.7° stance); lift fans at 0 rpm during test | MuJoCo live-simulator runway 08/26: wheels off at 79 m/s after ~1.0 km (22.8 s); 41 m radar height at 42 s |
 | **Phantom A10-A** | Baseline VTOL prototype | Retractable cassette wings, 4 wheel-pod fans, fixed P6 stabilator | 72-sortie November campaign benchmark (peak altitude 600.58 m) |
 | **R6 Argon** | Four-pod ducted quadrotor | 4 independently articulated ducted fan pods, annular primary structure | Foundation testbed; pure hover agility and dynamic station-keeping |
 | **Phantom A10 As-Drawn** | Scale CAD concept | Compact Ø0.49 m fan geometry (thrust-to-weight 0.52) | Educational study frame demonstrating hover deficit |
 | **R4 / R5 Study Frames** | Aerodynamic test mules | Lightweight tubular airframes with variable mass distributions | Inertia screening and ground-resonance validation |
+
+> **Canonical FX-A model/physics references (11 Nov 2026):** The **pinned default** remains `phantom-a10b`, config SHA `3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01`, recorded in [aircraft identity](inputs/aircraft_identity.json). The **A10-C development checkpoint** is `phantom-a10c` from [merged PR #41](https://github.com/SDarkVader/-vtx-flight-sim/pull/41), [merge commit `32353fef`](https://github.com/SDarkVader/-vtx-flight-sim/commit/32353fef841e680e25c036b086f1115e1e031782), using [the A10-C parameter variant](inputs/phantom_parameters_v1.json) and [`takeoff_stance_v1` overlay](inputs/phantom_overlays/takeoff_stance_v1.json). See the [full fans-off takeoff study](docs/phantom/A10C_FANS_OFF_TAKEOFF.md) for plant/live tests, mass and CG, assumptions, and outstanding work. **A10-C is not yet identity-pinned** and still renders with the **A10-B visual GLB** (nose strut and turbojet geometry not added). Fans-off landing, fuel endurance, crosswind and engine-out remain untested.
 
 ![Phantom A10-B Vertical Takeoff](reference/phantom_a10b_20261109/images/06_vtol_1.png)
 
@@ -262,6 +265,7 @@ Open your browser to: **[http://127.0.0.1:8766/](http://127.0.0.1:8766/)** (or p
 
 * **[Design System Rules](DESIGN_SYSTEM_RULES.md):** Complete specifications for UI tokens, color palettes, typography, Three.js asset pipelines, and DOM component patterns.
 * **[Phantom A10-B Model Specification](docs/phantom/PHANTOM_A10B_MODEL.md):** Aerodynamic polars, mass breakdown, actuator travel limits, and power distribution.
+* **[Phantom FX-A A10-C Fans-Off Takeoff Study](docs/phantom/A10C_FANS_OFF_TAKEOFF.md):** PR #41 development model, turbojet/nose-strut physics, verified run results and remaining limitations.
 * **[Live Fly-By-Wire Pilot Contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md):** Strict architectural requirements for human and AI closed-loop control.
 * **[Physics & Research Baseline](docs/PHYSICS_AND_RESEARCH_BASELINE.md):** The underlying equations of motion, momentum bounds, and verification benchmarks.
 * **[Flight Index](docs/FLIGHT_INDEX.md):** Master catalog of historical sorties and black-box data archives.
