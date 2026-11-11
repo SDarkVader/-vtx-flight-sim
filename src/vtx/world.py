@@ -7,15 +7,15 @@ from .mission_selection import MapPoint, SurfaceDecision
 
 
 class TestWorld:
-    id = 'stage1-valley'
-    version = '2'
-    half = 500.
-    n = 101
+    id = 'stage1-extended-airfield'
+    version = '3'
+    half = 900.
+    n = 181
     def __init__(self, seed=41031):
         self.seed = seed
         xs = np.linspace(-self.half,self.half,self.n)
         x,y = np.meshgrid(xs,xs)
-        edge=np.clip((np.maximum(abs(x),abs(y))-220)/240,0,1)
+        edge=np.clip((np.maximum(abs(x),abs(y))-760)/120,0,1)
         edge=edge*edge*(3-2*edge)
         self.heights = edge*(22+14*np.sin(x/81)**2+21*np.cos(y/107)**2)
         self.obstacles = [
@@ -33,6 +33,8 @@ class TestWorld:
         for i in range(36):
             angle=rng.uniform(0,2*math.pi);r=rng.uniform(125,210)
             cx,cy=r*np.cos(angle),r*np.sin(angle)
+            # Keep the entire runway 08/26 clear, including lateral aircraft clearance.
+            if -716. <= cx <= 716. and abs(cy) <= 25.:continue
             if any(abs(cx-o['center'][0])<o['half'][0]+12 and abs(cy-o['center'][1])<o['half'][1]+12 for o in self.obstacles):continue
             height=float(rng.uniform(5,13));radius=float(rng.uniform(.7,1.6))
             self.obstacles.append(dict(id=f'tree-{i}',kind='cylinder',center=[float(cx),float(cy),height/2],half=[radius,radius,height/2],color='#536a55',landable=False))

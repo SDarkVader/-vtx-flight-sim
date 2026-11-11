@@ -6,7 +6,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from vtx.live_server import Laboratory, Mission
+from vtx.live_server import Laboratory, Mission, normalize_saved_mission_request
 
 
 def test_midair_restart_preserves_physics_and_requires_manual_resume():

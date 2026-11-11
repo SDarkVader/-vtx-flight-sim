@@ -51,7 +51,7 @@ def proposed_variator_components():
     Status: PROPOSED_VARIATOR_ARCHITECTURE_CANDIDATE (not in source CAD).
     Places coaxial 20:60 4-planet epicyclic variator (Ø220x120mm, 8.5kg) +
     EMRAX 268 axial-flux motor-generator (Ø268x91mm, 20.5kg) at the base of
-    each vertical column F1..F4 (r=2.600m, z=0.420..0.641m), plus twin dual-channel
+    each vertical column F1..F4 (r=2.600m, z=0.660..0.881m), plus twin dual-channel
     SiC inverters (2x9.5kg) and twin DC-bus/cooling/lube modules (2x7.0kg) in
     the lower truss bay at (±0.650, ±0.650, 0.300m). Total net delta: +149.0 kg.
     """
@@ -478,6 +478,8 @@ class Aircraft:
         # actuators. Keep the same physical ranges, but slew operator inputs
         # slowly enough to observe and counter the response.
         if self.stability_assist and self.step_count%20==0:
+            # Body-axis rates: XBODY uses xmat (body frame). mjOBJ_BODY with
+            # flg_local rotates into the principal-inertia frame (audit F1).
             body_velocity=np.zeros(6)
             mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_XBODY,self.bids['airframe'],body_velocity,1)
             self.assisted_collective_deg=assisted_collective(self.command['collective_deg'],np.degrees(body_velocity[:3]),self.stability_assist)
@@ -537,12 +539,7 @@ class Aircraft:
                 for info in axes:info['applied_n']*=fraction;info['fuel_limited']=True
             for info in self.actuator_telemetry['cabin'].values():info['applied_nm']*=fraction;info['fuel_limited']=True
         d.qfrc_applied[self.vadr['rotor1_spin']]+=torque
-        remaining=burn
-        while remaining>1e-15 and np.any(self.fuel>0):
-            live=self.fuel>0
-            take=np.minimum(self.fuel[live],remaining/int(live.sum()))
-            self.fuel[live]-=take
-            remaining-=float(take.sum())
+        if burn>0:self.draw_fuel(burn)
         if self.fuel.sum()<=1e-12:self.flags.add('FUEL_EXHAUSTED')
         chemical=burn/DT*43e6
         self.power=dict(engine_w=engine_power,rotor_aero_w=aero_power,servo_w=servo_power,
@@ -562,6 +559,17 @@ class Aircraft:
         altitude=float(d.xpos[self.bids['airframe'],2]-self.world.surface_z(*d.xpos[self.bids['airframe'],:2]))
         self.max_alt=max(self.max_alt,altitude)
         if not np.all(np.isfinite(d.qpos)) or not np.all(np.isfinite(d.qvel)):raise RuntimeError('Nonfinite physical state')
+
+    def draw_fuel(self,burn):
+        """Draw burn mass from the tanks that still hold fuel, conserving the total.
+
+        The former equal quarter split discarded an empty tank's share (audit F3)."""
+        remaining=float(burn)
+        while remaining>1e-15 and (self.fuel>0).any():
+            live=self.fuel>0;share=remaining/live.sum()
+            take=np.minimum(self.fuel[live],share);self.fuel[live]-=take;remaining-=float(take.sum())
+        if not (self.fuel>0).any():self.flags.add('FUEL_EXHAUSTED')
+        return float(burn)-remaining
 
     def check_contacts(self):
         loads={}

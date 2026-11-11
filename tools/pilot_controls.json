@@ -6,10 +6,10 @@
     "time_scale":  0.05,
     "stability_assist":  1,
     "experimental_assist_wire":  true,
-    "armed":  false,
-    "arm_run_id":  "",
-    "serial":  3,
-    "reason":  "Disarmed: monitoring only",
+    "armed":  true,
+    "arm_run_id":  "20261103T164155-6cf6cf",
+    "serial":  4,
+    "reason":  "Operator authorized waypoint B flight",
     "max_attitude_deg":  12,
     "max_rate_deg_s":  15,
     "engine":  1,
@@ -42,5 +42,6 @@
                       0,
                       0
                   ],
-    "cabin_level":  true
+    "cabin_level":  true,
+    "waypoint_mode":  true
 }

@@ -1,0 +1,196 @@
+{
+ "run": "20261103T194858-35a724",
+ "samples": 7655,
+ "trim_points": [
+  {
+   "t0": 16.07,
+   "t1": 25.01,
+   "height_m": 5.61,
+   "mass_kg": 1886.9,
+   "collective_applied": 0.7056,
+   "thrust_total_n": 18483.0,
+   "T_over_W": 0.9989,
+   "front_share": 0.4598,
+   "elec_power_kw": 1407.1,
+   "P_over_T15": 0.55988,
+   "W_per_N": 76.12,
+   "gef_FL": 1.0003,
+   "soc_rate_per_s": -0.001857,
+   "pitch_deg": -0.0,
+   "roll_deg": -0.02,
+   "pil_roll": 0.0,
+   "saturated_frac": 0.0
+  }
+ ],
+ "pti": [
+  {
+   "t0": 25.01,
+   "axis": "pitch",
+   "type": "step",
+   "amplitude": 0.3,
+   "pulse_s": 4.0,
+   "peak_rate": 3.62,
+   "peak_rate_units": "deg/s",
+   "peak_accel": 5.9,
+   "delay_10pct_s": 0.102,
+   "peak_attitude_change_deg": 4.97,
+   "commanded_attitude_deg": 3.0,
+   "steady_attitude_deg": 3.29,
+   "steady_error_frac": -0.097,
+   "time_constant_63pct_s": 0.962,
+   "off_axis_ratio": 0.058
+  },
+  {
+   "t0": 32.01,
+   "axis": "roll",
+   "type": "doublet",
+   "amplitude": 0.2,
+   "pulse_s": 1.2,
+   "peak_rate": 15.5,
+   "peak_rate_units": "deg/s",
+   "peak_accel": 21.4,
+   "delay_10pct_s": 0.105,
+   "peak_attitude_change_deg": 6.68,
+   "commanded_attitude_deg": 3.0,
+   "off_axis_ratio": 0.178
+  }
+ ],
+ "events": [
+  {
+   "event": "touchdown",
+   "t_s": 47.9899999999926,
+   "sink_rate_m_s": 0.46838118467004974,
+   "supports": [
+    "foot_FL",
+    "foot_FR",
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 48.63999999999201,
+   "sink_rate_m_s": 0.12769753081423985,
+   "supports": [
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 52.50999999998849,
+   "sink_rate_m_s": -0.06157709480308633,
+   "supports": [
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 60.68999999998105,
+   "sink_rate_m_s": 1.752291712987387,
+   "supports": [
+    "foot_FL",
+    "foot_FR",
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 60.979999999980784,
+   "sink_rate_m_s": -0.4965191092193409,
+   "supports": [
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 61.29999999998049,
+   "sink_rate_m_s": 0.2725870666828741,
+   "supports": [
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 71.34999999997136,
+   "sink_rate_m_s": 2.908630893287204,
+   "supports": [
+    "foot_FL",
+    "foot_FR",
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 71.38999999997132,
+   "sink_rate_m_s": 2.190128640082659,
+   "supports": [
+    "foot_FL",
+    "foot_FR",
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 71.42999999997129,
+   "sink_rate_m_s": 1.4143943415115083,
+   "supports": [
+    "foot_FL",
+    "foot_FR",
+    "foot_RL"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 71.47999999997124,
+   "sink_rate_m_s": 0.5720211929596103,
+   "supports": [
+    "foot_FL",
+    "foot_FR",
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 71.5199999999712,
+   "sink_rate_m_s": -0.12043349816396025,
+   "supports": [
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 71.56999999997116,
+   "sink_rate_m_s": -0.8777281658341008,
+   "supports": [
+    "foot_FL",
+    "foot_FR",
+    "foot_RL",
+    "foot_RR"
+   ]
+  },
+  {
+   "event": "touchdown",
+   "t_s": 72.48999999997032,
+   "sink_rate_m_s": 1.2717020756056756,
+   "supports": [
+    "foot_RL",
+    "foot_RR"
+   ]
+  }
+ ],
+ "soc_start_end": [
+  0.899999,
+  0.790517
+ ],
+ "t_end": 76.55,
+ "max_height_m": 5.76082,
+ "saturation_time_s": 0.0
+}

@@ -1,0 +1,142 @@
+{
+ "pod_FL": {
+  "cad": "JOINT_WHEEL_POD_FR",
+  "q_rest": 0.0,
+  "children": 5
+ },
+ "pod_FR": {
+  "cad": "JOINT_WHEEL_POD_FL",
+  "q_rest": -0.0,
+  "children": 5
+ },
+ "pod_RL": {
+  "cad": "JOINT_WHEEL_POD_RR",
+  "q_rest": 0.0,
+  "children": 5
+ },
+ "pod_RR": {
+  "cad": "JOINT_WHEEL_POD_RL",
+  "q_rest": -0.0,
+  "children": 5
+ },
+ "leg_FL": {
+  "cad": "JOINT_LEG_SLIDE_FR",
+  "q_rest": -0.0,
+  "children": 3
+ },
+ "leg_FR": {
+  "cad": "JOINT_LEG_SLIDE_FL",
+  "q_rest": -0.0,
+  "children": 3
+ },
+ "leg_RL": {
+  "cad": "JOINT_LEG_SLIDE_RR",
+  "q_rest": -0.0,
+  "children": 3
+ },
+ "leg_RR": {
+  "cad": "JOINT_LEG_SLIDE_RL",
+  "q_rest": -0.0,
+  "children": 3
+ },
+ "wing_left": {
+  "cad": "A10_JOINT_WING_R_SLIDE",
+  "q_rest": -1.205,
+  "children": 26
+ },
+ "pin_left_front_out": {
+  "cad": "A10_JOINT_WING_R_LOCK_FRONT_OUT",
+  "q_rest": -0.07,
+  "children": 1
+ },
+ "pin_left_front_in": {
+  "cad": "A10_JOINT_WING_R_LOCK_FRONT_IN",
+  "q_rest": -0.07,
+  "children": 1
+ },
+ "pin_left_rear_out": {
+  "cad": "A10_JOINT_WING_R_LOCK_REAR_OUT",
+  "q_rest": -0.07,
+  "children": 1
+ },
+ "pin_left_rear_in": {
+  "cad": "A10_JOINT_WING_R_LOCK_REAR_IN",
+  "q_rest": -0.07,
+  "children": 1
+ },
+ "flap_left": {
+  "cad": "A10_JOINT_FLAP_R",
+  "q_rest": 0.0,
+  "children": 1
+ },
+ "aileron_left": {
+  "cad": "A10_JOINT_AILERON_R",
+  "q_rest": 0.0,
+  "children": 1
+ },
+ "canard_left_fold": {
+  "cad": "A10_JOINT_CANARD_R_FOLD",
+  "q_rest": 1.5708,
+  "children": 5
+ },
+ "canard_left": {
+  "cad": "A10_JOINT_CANARD_R_PITCH",
+  "q_rest": 0.0,
+  "children": 3
+ },
+ "hatch_left": {
+  "cad": "A10_JOINT_HATCH_R",
+  "q_rest": 3.14159,
+  "children": 2
+ },
+ "wing_right": {
+  "cad": "A10_JOINT_WING_L_SLIDE",
+  "q_rest": -1.205,
+  "children": 26
+ },
+ "pin_right_front_out": {
+  "cad": "A10_JOINT_WING_L_LOCK_FRONT_OUT",
+  "q_rest": -0.07,
+  "children": 1
+ },
+ "pin_right_front_in": {
+  "cad": "A10_JOINT_WING_L_LOCK_FRONT_IN",
+  "q_rest": -0.07,
+  "children": 1
+ },
+ "pin_right_rear_out": {
+  "cad": "A10_JOINT_WING_L_LOCK_REAR_OUT",
+  "q_rest": -0.07,
+  "children": 1
+ },
+ "pin_right_rear_in": {
+  "cad": "A10_JOINT_WING_L_LOCK_REAR_IN",
+  "q_rest": -0.07,
+  "children": 1
+ },
+ "flap_right": {
+  "cad": "A10_JOINT_FLAP_L",
+  "q_rest": 0.0,
+  "children": 1
+ },
+ "aileron_right": {
+  "cad": "A10_JOINT_AILERON_L",
+  "q_rest": 0.0,
+  "children": 1
+ },
+ "canard_right_fold": {
+  "cad": "A10_JOINT_CANARD_L_FOLD",
+  "q_rest": -1.5708,
+  "children": 5
+ },
+ "canard_right": {
+  "cad": "A10_JOINT_CANARD_L_PITCH",
+  "q_rest": 0.0,
+  "children": 3
+ },
+ "hatch_right": {
+  "cad": "A10_JOINT_HATCH_L",
+  "q_rest": 3.14159,
+  "children": 2
+ }
+}

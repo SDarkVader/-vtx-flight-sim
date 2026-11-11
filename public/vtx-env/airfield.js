@@ -551,33 +551,14 @@ export function buildAirfield(scene, { ppm = 11 } = {}) {
   const sockGroup = new THREE.Group();
   sockGroup.position.set(-112, -38, 0);
   const poleMat = new THREE.MeshStandardMaterial({ color: '#55595d', metalness: 0.8, roughness: 0.4 });
-  const sockPole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 6.5, 8), poleMat);
+  const sockPole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 6.5, 8).rotateX(Math.PI / 2), poleMat); // upright
   sockPole.position.set(0, 0, 3.25); sockGroup.add(sockPole);
   const sockCone = new THREE.Mesh(new THREE.ConeGeometry(0.55, 3.4, 12, 1, true), new THREE.MeshStandardMaterial({ map: windsockTexture(), roughness: 0.7, side: THREE.DoubleSide }));
-  sockCone.rotateZ(Math.PI / 2); sockCone.position.set(1.7, 0, 6.2); sockGroup.add(sockCone);
+  sockCone.rotateZ(-Math.PI / 2); // mouth at the pole, tail streaming downwind sockCone.position.set(1.7, 0, 6.2); sockGroup.add(sockCone);
   const sockLamp = new THREE.PointLight('#fff2d4', 1.8, 12); sockLamp.position.set(0, 0, 6.6); sockGroup.add(sockLamp);
   group.add(sockGroup);
 
-  // ---- Ground Support Equipment (GSE)
-  const gseMat = new THREE.MeshStandardMaterial({ color: '#f5b800', roughness: 0.5, metalness: 0.2 });
-  const darkMat = new THREE.MeshStandardMaterial({ color: '#16191c', roughness: 0.7 });
-  const gpuGroup = new THREE.Group(); gpuGroup.position.set(16, 12, 0);
-  const gpuBody = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.2, 0.9), gseMat);
-  gpuBody.position.set(0, 0, 0.65); gpuBody.castShadow = true; gpuGroup.add(gpuBody);
-  for (const [wx, wy] of [[-0.7, 0.65], [-0.7, -0.65], [0.7, 0.65], [0.7, -0.65]]) {
-    const wMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.16, 12), darkMat);
-    wMesh.rotateX(Math.PI / 2); wMesh.position.set(wx, wy, 0.24); gpuGroup.add(wMesh);
-  }
-  group.add(gpuGroup);
-
-  const ladderGroup = new THREE.Group(); ladderGroup.position.set(22, 16, 0);
-  const plat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.1), gseMat);
-  plat.position.set(0, 0, 2.2); ladderGroup.add(plat);
-  for (const [lx, ly] of [[-0.5, -0.6], [0.5, -0.6], [-0.5, 0.6], [0.5, 0.6]]) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.2, 6), darkMat);
-    leg.position.set(lx, ly, 1.1); ladderGroup.add(leg);
-  }
-  ladderGroup.castShadow = true; group.add(ladderGroup);
+  // (GPU cart and step ladder near Stand 1 removed: visible props with no collider beside a landing pad.)
 
   scene.add(group);
   return { group, lightCount: lights.length };

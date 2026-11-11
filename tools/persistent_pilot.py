@@ -237,6 +237,7 @@ class Pilot:
         setpoints={k:cfg[k] for k in SAFE} if armed else dict(SAFE)
         if armed and cfg.get('waypoint_mode', False):
             try:
+                obs['mission'] = {'destination': view['mission']['destination']}
                 setpoints, distance = waypoint_command(obs)
                 if distance < 2.0:
                     setpoints['tilt_deg']=[[0.0,0.0] for _ in range(4)]
