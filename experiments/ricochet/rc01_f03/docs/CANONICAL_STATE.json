@@ -1,0 +1,97 @@
+{
+  "schema": "vtx.ricochet.canonical.f03.v1",
+  "as_of": "2026-11-11",
+  "status": "DEVELOPMENT_ISOLATED_ONLY",
+  "git": {
+    "repo": "SDarkVader/-vtx-flight-sim",
+    "branch": "dev/ricochet-rc01-f03-isolated",
+    "base_branch": "main",
+    "base_sha": "b9cdbe8f9898d77169e720ad564848c0de5b08e8",
+    "runtime_files_changed": false
+  },
+  "model": {
+    "name": "Ricochet RC-01",
+    "revision": "F03",
+    "blendstra_project_id": "5e68818b-0922-4239-8a57-c35d7e72ec68",
+    "version_id": "version_c5b32f472bc4616bc00025706062fff2ab7a8e9ac5890c07fa8f4c1b2b7c1d8f",
+    "source_artifact_sha256": "f33947ad579adbfe19f6f660177eb98f118d3239d99f48931e8ff5860e2a61e4",
+    "rebuild_script_sha256": "a1613082354ea48b29948b564d96b79e1fdcbcc1f97a1952e87f6200186726be",
+    "game_cad_status": "NOT_INSTALLED",
+    "full_native_blend_on_github": false,
+    "hull_reference_glb_sha256": "b98fd718780fa224d8fc89def6ef2c341696f676023726df61497c4eb983e94a",
+    "components": {
+      "F01_objects": 303,
+      "F02_objects": 340,
+      "F03_objects": 343,
+      "F03_new_parts": 3
+    },
+    "hull": {
+      "length_m": 6.8,
+      "max_beam_m": 1.6,
+      "span_m": 9.6,
+      "closed_mesh_volume_m3": 4.807485243375001,
+      "manifold_surface": true,
+      "sealed_hardware_proven": false
+    }
+  },
+  "physics": {
+    "kind": "separate_reduced_order_python",
+    "runtime": "none",
+    "gravity_m_s2": 9.80665,
+    "standard_pressure_pa": 101325.0,
+    "air_temperature_K": 288.15,
+    "freshwater_density_kg_m3": 999.1,
+    "nominal_mass_kg": 900,
+    "cg_body_m": [
+      0.45,
+      0,
+      0.59
+    ],
+    "Munk_coefficient_status": "uncalibrated sensitivity",
+    "joint_deformations": "not simulated",
+    "planing_lift": "not modelled",
+    "fluid_slam": "not modelled",
+    "solver_sha256": "6c614e8ab3836476c92be0c5d2fb3bb800bafe8aa0fe6e6b2d989fc76621bde6"
+  },
+  "world": {
+    "reference": "src/vtx/world.py",
+    "lake_center_xy_m": [
+      -265,
+      30
+    ],
+    "lake_half_extent_xy_m": [
+      28,
+      80
+    ],
+    "surface_z_m": 0,
+    "virtual_test_bottom_z_m": -3,
+    "physical_lake_present_in_main": false
+  },
+  "test": {
+    "run_id": "RC01_F03_calmwater_20261111",
+    "duration_s": 24,
+    "distance_along_lake_m": 50.67598394324048,
+    "peak_speed_m_s": 2.852563596058534,
+    "max_roll_deg": 2.9701321917920973,
+    "max_pitch_deg": 1.732753062986969,
+    "time_step_convergence_distance_m": 0.00808,
+    "telemetry_sha256": "f4c82684efbc986cae282a8f50fe70f6079948a1e27d90712904afe60e6c92a0",
+    "corrected_renderer_sha256": "a84237d0e5e1d1230a3d7d9b0b94a9a7aabf8f054026ed301534befdfb67548b",
+    "corrected_video_sha256": "e8a27b636a0f11eaab2c1c1d37d38862fe1be270f0390cbbd2dd0923546b3f9d",
+    "original_video_visual_valid": false
+  },
+  "recovery": {
+    "google_drive": "https://drive.google.com/drive/folders/19Muw51jKaPYrsbp8GSraPO8xeKzIP6Xt",
+    "source_model": "https://blendstra.com/studio?workspace=wsp_816786f2f8ced68922a0d7b529616880cf8b6f22&project=5e68818b-0922-4239-8a57-c35d7e72ec68&version=version_c5b32f472bc4616bc00025706062fff2ab7a8e9ac5890c07fa8f4c1b2b7c1d8f"
+  },
+  "open_gates": [
+    "fully massed multibody model",
+    "real water bathymetry and shared contact",
+    "bulkhead joint reaction/FEA",
+    "control and propulsion envelope/gearbox",
+    "hydrodynamic force calibration and planing",
+    "CG and Munk yaw moment regression",
+    "body-axis frame mapping",
+    "water takeoff not validated"
+  ]
+}

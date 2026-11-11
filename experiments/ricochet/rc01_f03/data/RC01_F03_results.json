@@ -1,0 +1,261 @@
+{
+  "run": "RC01_F03_calmwater_20261111",
+  "location": {
+    "center_xy_m": [
+      -265.0,
+      30.0
+    ],
+    "half_extent_xy_m": [
+      28.0,
+      80.0
+    ],
+    "surface_z_m": 0.0,
+    "assumed_bottom_z_m": -3.0,
+    "wave_height_m": 0.0
+  },
+  "environment": {
+    "g_m_s2": 9.80665,
+    "p0_pa": 101325.0,
+    "air_temp_K": 288.15,
+    "air_density_kgm3": 1.225,
+    "freshwater_rho_kgm3": 999.1,
+    "wind_mps": 0.0,
+    "waves_m": 0.0
+  },
+  "hull_mesh": {
+    "source": "F01 six station loft; F02 bulkheads remain interior",
+    "watertight_closed_surface": true,
+    "mesh_volume_m3": 4.807485243375001
+  },
+  "nominal": {
+    "name": "F03 nominal",
+    "mass_kg": 900,
+    "cg_body_m": [
+      0.45,
+      0,
+      0.59
+    ],
+    "with_floats": true,
+    "eq": {
+      "z0_m": -0.3743263780429905,
+      "pitch_rad": 0.0029989008330050726,
+      "pitch_deg": 0.17182436090945755,
+      "total_buoyancy_N": 8825.984999999993,
+      "net_buoyancy_residual_N": -5.4569682106375694e-12,
+      "by_N": {
+        "HULL": 8531.888703648827,
+        "BULKHEAD_N0_N": 133.50559015753953,
+        "BULKHEAD_N1_N": 924.8979660388705,
+        "BULKHEAD_N2_N": 2223.8686083466127,
+        "BULKHEAD_N3_N": 2599.2824852741473,
+        "BULKHEAD_N4_N": 1959.4716358866403,
+        "BULKHEAD_N5_N": 690.8624179450112,
+        "FLOAT_PORT": 147.04814817558398,
+        "FLOAT_STARBOARD": 147.04814817558398
+      },
+      "buoyancy_centres_m": {
+        "HULL": [
+          0.478911344028587,
+          0.0023057002305395917,
+          -0.11191203044279718
+        ],
+        "FLOAT_PORT": [
+          -0.3356949767386959,
+          -3.799807539587847,
+          -0.03268120387833556
+        ],
+        "FLOAT_STARBOARD": [
+          -0.3356949767386959,
+          3.8001924604121515,
+          -0.03268120387833556
+        ]
+      }
+    },
+    "static_roll": {
+      "Kroll_Nm_per_rad": 27009.28186671917,
+      "roll_restoring_torque_at_plus5_Nm": -2337.146830514349,
+      "tests": [
+        [
+          -5.0,
+          2376.862141220149,
+          9225.535960504798
+        ],
+        [
+          0.0,
+          19.72857964534944,
+          8825.984999999993
+        ],
+        [
+          5.0,
+          -2337.146830514349,
+          9199.616094304758
+        ]
+      ]
+    },
+    "static_Kpitch_Nm_per_rad": 76378.59598894494,
+    "total_closed_nominal_geometry_volume_m3": 4.925709658114893,
+    "inertia_estimate_kgm2": [
+      1750.0,
+      1900.0,
+      2400.0
+    ],
+    "model_fidelity": "reduced-order hydrostatics, lumped hydrodynamic drag and provisional joint loads; NOT CFD/planing/FEA",
+    "summary": {
+      "duration_s": 24.0,
+      "distance_along_lake_m": 50.67598394324048,
+      "maximum_speed_mps": 2.852563596058534,
+      "maximum_abs_roll_deg": 2.9701321917920973,
+      "maximum_abs_pitch_deg": 1.732753062986969,
+      "maximum_abs_yaw_deg": 14.649712487050511,
+      "max_munk_abs_Nm": 63.31469242022436,
+      "max_hydro_pitch_torque_Nm": 2280.652221223973,
+      "max_float_buoyancy_N": 579.1710049489126,
+      "min_hull_buoyancy_N": 8278.303356242523
+    }
+  },
+  "sensitivity_mass_CG": [
+    {
+      "mass_kg": 750,
+      "cg_z_m": 0.42,
+      "eq_z_m": -0.3464350468311453,
+      "eq_pitch_deg": 0.18353205458147828,
+      "Kroll_Nm_rad": 28215.783400689554,
+      "Kpitch_Nm_rad": 73401.498669564
+    },
+    {
+      "mass_kg": 750,
+      "cg_z_m": 0.59,
+      "eq_z_m": -0.3464110444644144,
+      "eq_pitch_deg": 0.1865011920662271,
+      "Kroll_Nm_rad": 26872.109660694096,
+      "Kpitch_Nm_rad": 72140.72884417792
+    },
+    {
+      "mass_kg": 750,
+      "cg_z_m": 0.74,
+      "eq_z_m": -0.3463891457465199,
+      "eq_pitch_deg": 0.18923972745501386,
+      "Kroll_Nm_rad": 25686.493733546977,
+      "Kpitch_Nm_rad": 71028.51485175607
+    },
+    {
+      "mass_kg": 900,
+      "cg_z_m": 0.42,
+      "eq_z_m": -0.3743524827045599,
+      "eq_pitch_deg": 0.1686419741221167,
+      "Kroll_Nm_rad": 28573.394896237452,
+      "Kpitch_Nm_rad": 77896.18625911637
+    },
+    {
+      "mass_kg": 900,
+      "cg_z_m": 0.59,
+      "eq_z_m": -0.3743263780429905,
+      "eq_pitch_deg": 0.17182436090945755,
+      "Kroll_Nm_rad": 27009.28186671917,
+      "Kpitch_Nm_rad": 76378.59598894494
+    },
+    {
+      "mass_kg": 900,
+      "cg_z_m": 0.74,
+      "eq_z_m": -0.3743026986937425,
+      "eq_pitch_deg": 0.17477139364307173,
+      "Kroll_Nm_rad": 25629.085412523367,
+      "Kpitch_Nm_rad": 75039.02702061797
+    },
+    {
+      "mass_kg": 1050,
+      "cg_z_m": 0.42,
+      "eq_z_m": -0.40146366389214366,
+      "eq_pitch_deg": 0.1560096186378538,
+      "Kroll_Nm_rad": 28747.88144377364,
+      "Kpitch_Nm_rad": 80679.59037104704
+    },
+    {
+      "mass_kg": 1050,
+      "cg_z_m": 0.59,
+      "eq_z_m": -0.401436812963548,
+      "eq_pitch_deg": 0.15956995434650623,
+      "Kroll_Nm_rad": 26961.72734564739,
+      "Kpitch_Nm_rad": 78922.848579428
+    },
+    {
+      "mass_kg": 1050,
+      "cg_z_m": 0.74,
+      "eq_z_m": -0.40141192299265344,
+      "eq_pitch_deg": 0.162799899008255,
+      "Kroll_Nm_rad": 25385.601802913443,
+      "Kpitch_Nm_rad": 77372.73985815336
+    }
+  ],
+  "without_outboard_floats": {
+    "name": "no outboard floats",
+    "mass_kg": 900,
+    "cg_body_m": [
+      0.45,
+      0,
+      0.59
+    ],
+    "with_floats": false,
+    "eq": {
+      "z0_m": -0.38246392433245385,
+      "pitch_rad": -0.0005587040759815321,
+      "pitch_deg": -0.032011385550498254,
+      "total_buoyancy_N": 8825.984999366723,
+      "net_buoyancy_residual_N": -6.332757038762793e-07,
+      "by_N": {
+        "HULL": 8825.984999366723,
+        "BULKHEAD_N0_N": 130.0898676010494,
+        "BULKHEAD_N1_N": 923.8670521477713,
+        "BULKHEAD_N2_N": 2264.0986102686647,
+        "BULKHEAD_N3_N": 2687.800944345663,
+        "BULKHEAD_N4_N": 2071.7439738062526,
+        "BULKHEAD_N5_N": 748.3845511973174
+      },
+      "buoyancy_centres_m": {
+        "HULL": [
+          0.4496702942987657,
+          0.002443035817887409,
+          -0.11456189616415069
+        ]
+      }
+    },
+    "static_roll": {
+      "Kroll_Nm_per_rad": 1975.35552233725,
+      "roll_restoring_torque_at_plus5_Nm": -151.92102150708934,
+      "tests": [
+        [
+          -5.0,
+          192.8435561152847,
+          8947.003213256923
+        ],
+        [
+          0.0,
+          21.562197481589884,
+          8825.984999366723
+        ],
+        [
+          5.0,
+          -151.92102150708934,
+          8916.552849302814
+        ]
+      ]
+    },
+    "static_Kpitch_Nm_per_rad": 74807.87800679519,
+    "total_closed_nominal_geometry_volume_m3": 4.807485243375001,
+    "inertia_estimate_kgm2": [
+      1750.0,
+      1900.0,
+      2400.0
+    ],
+    "model_fidelity": "reduced-order hydrostatics, lumped hydrodynamic drag and provisional joint loads; NOT CFD/planing/FEA"
+  },
+  "scope": "Independent reduced-order numerical test, not executed by live VTX MuJoCo runtime; no FEA/contact or viscous CFD",
+  "limits": [
+    "No planing pressure force law",
+    "No slam, spray or free-surface CFD",
+    "Not a joint deformation simulation",
+    "Unknown fuel tank/engine mass properties",
+    "Not a measured thruster map",
+    "No actual bathymetry in current VTX lake"
+  ]
+}

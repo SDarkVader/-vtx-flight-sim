@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "dt": 0.02,
+      "duration_s": 24.0,
+      "distance_along_lake_m": 50.67598394324048,
+      "maximum_speed_mps": 2.852563596058534,
+      "maximum_abs_roll_deg": 2.9701321917920973,
+      "maximum_abs_pitch_deg": 1.732753062986969,
+      "maximum_abs_yaw_deg": 14.649712487050511,
+      "max_munk_abs_Nm": 63.31469242022436,
+      "max_hydro_pitch_torque_Nm": 2280.652221223973,
+      "max_float_buoyancy_N": 579.1710049489126,
+      "min_hull_buoyancy_N": 8278.303356242523
+    },
+    {
+      "dt": 0.01,
+      "duration_s": 24.0,
+      "distance_along_lake_m": 50.667900311369394,
+      "maximum_speed_mps": 2.8525603666287354,
+      "maximum_abs_roll_deg": 2.992533048487507,
+      "maximum_abs_pitch_deg": 1.7315920139198162,
+      "maximum_abs_yaw_deg": 14.654484034842264,
+      "max_munk_abs_Nm": 63.31544241154063,
+      "max_hydro_pitch_torque_Nm": 2280.652221223973,
+      "max_float_buoyancy_N": 579.1710049489126,
+      "min_hull_buoyancy_N": 8275.127259553841
+    }
+  ],
+  "diff": {
+    "distance_m": -0.00808363187108796,
+    "speed_mps": -3.22942979869012e-06,
+    "pitch_peak_deg": -0.001161049067152753
+  },
+  "verification": {
+    "mesh_watertight": true,
+    "mesh_winding_consistent": true,
+    "nominal_buoyancy_error_N": -5.4569682106375694e-12
+  }
+}

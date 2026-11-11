@@ -1,0 +1,47 @@
+{
+  "revision": "F03 rendering correction v2",
+  "geometry_or_dynamics_changed": false,
+  "supersedes_visual_only": "RC01_F03_calmwater_h264.mp4",
+  "files": [
+    {
+      "name": "RC01_F03_calmwater_h264_orientation_fix_v2.mp4",
+      "bytes": 2108894,
+      "sha256": "e8a27b636a0f11eaab2c1c1d37d38862fe1be270f0390cbbd2dd0923546b3f9d"
+    },
+    {
+      "name": "RC01_F03_calmwater_preview_orientation_fix_v2.gif",
+      "bytes": 3819367,
+      "sha256": "4432deceb7acfea16005560db01bbfae502a5fd1b304bbcd627cef94400d054b"
+    },
+    {
+      "name": "RC01_F03_animation_preview_orientation_fix_v2.png",
+      "bytes": 265826,
+      "sha256": "32d2a6602e918671e486b36f4886f4d77d4880316b63ef2765d234ebb00fb12c"
+    },
+    {
+      "name": "RC01_F03_body_velocity_orientation_audit.csv",
+      "bytes": 147923,
+      "sha256": "fd399fb751883704166350bbf98c484bd9143f2bf5d9a449530dba316ef80dd9"
+    },
+    {
+      "name": "RC01_F03_orientation_correction.md",
+      "bytes": 1965,
+      "sha256": "0969e9626c10496b0c2da944f63b652171cd26562f746489a0673b888ba3ad99"
+    },
+    {
+      "name": "render_animation_orientation_fix_v2.py",
+      "bytes": 11388,
+      "sha256": "a84237d0e5e1d1230a3d7d9b0b94a9a7aabf8f054026ed301534befdfb67548b"
+    },
+    {
+      "name": "RC01_F03_nominal_timeseries.csv",
+      "bytes": 699942,
+      "sha256": "f4c82684efbc986cae282a8f50fe70f6079948a1e27d90712904afe60e6c92a0"
+    },
+    {
+      "name": "RC01_F03_results.json",
+      "bytes": 7164,
+      "sha256": "76017fcf7c8578418bf4bae89c51ddcacaac44175699c16078ada255dcd4570e"
+    }
+  ]
+}
