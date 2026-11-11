@@ -57,8 +57,10 @@ def suspension_design(P, L, inert):
         F = M * g * (front if FRONT[k] else 1 - front) / 2 - m_u * g          # static sprung load at this corner
         ms = F / g; w = 2 * math.pi * f
         kk = ms * w * w; c = 2 * zeta * math.sqrt(kk * ms)
-        out[k] = dict(stiffness_n_m=kk, damping_ns_m=c, preload_n=F, springref_m=-F / kk, unsprung_kg=m_u, sprung_kg=ms,
-                      travel_m=list(P['suspension.travel_m']))
+        lift = 0.0   # built level; PhantomAircraft.nose_strut_update extends the strut at run time
+        lo, hi = P['suspension.travel_m']
+        out[k] = dict(stiffness_n_m=kk, damping_ns_m=c, preload_n=F, springref_m=-F / kk - lift, unsprung_kg=m_u, sprung_kg=ms,
+                      travel_m=[lo - lift, hi - lift], ride_offset_m=-lift)
     return out
 
 
@@ -221,6 +223,7 @@ class PhantomAircraft:
         self.L = PhantomLedger(P, occupants)
         self.variant = self.airframe_variant = variant
         self.xml = build_xml(self.L, world)
+        self.suspension = suspension_design(self.P, self.L, self.L.body_inertials())
         self.model = mj.MjModel.from_xml_string(self.xml)
         self.model.hfield_data[:] = (world.heights / 70).ravel()
         self.data = mj.MjData(self.model)
@@ -257,6 +260,7 @@ class PhantomAircraft:
         self.p6 = P['proposals.p6_drs_stabilator'] > 0.5
         self.stab_te_up = math.radians(P['proposals.p6_stab_rest_te_up_deg']) if self.p6 else 0.0
         self.jet = turbine_boosters(P)
+        self.nose_lift = 0.0; self.nose_lift_max = float(P.get('suspension.nose_lift_m', 0.0))   # take-off stance strut extension (m)
         self.eff = P.get('effectors.enabled', 0.0) > 0.5          # control_effectors overlay: rudders, booster TVC, steering
         self.rudder = 0.0; self.tvc = [0.0, 0.0]                   # rad: rudder (+ = side force +y); TVC pitch (+ = thrust up), yaw (+ = thrust +y)
         self.jet_spool = [0.0, 0.0]
@@ -265,7 +269,7 @@ class PhantomAircraft:
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
         self.physics_data = load_a10b_characteristics() if variant == 'phantom-a10b' else None
-        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=('/assets/phantom-a10b-visual.glb' if variant == 'phantom-a10b' else ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10' else f'/assets/phantom-{P.cassette_revision.lower()}.glb')),
+        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=('/assets/phantom-a10b-visual.glb' if variant in ('phantom-a10b', 'phantom-a10c') else ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10' else f'/assets/phantom-{P.cassette_revision.lower()}.glb')),
                                model_xml_sha256=hashlib.sha256(self.xml.encode()).hexdigest(), parameter_file_sha256=P.file_sha256,
                                config_sha256=P.config_sha256, wing_cassette_revision=P.tree['geometry_sources']['wing_cassette_revision'],
                                physics_characteristics_uri='/evidence/phantom/a10b_characteristics.json' if variant == 'phantom-a10b' else None,
@@ -506,6 +510,8 @@ class PhantomAircraft:
             self.stab_te_up += float(np.clip(math.radians(tgt) - self.stab_te_up, -step, step))
         if self.eff:
             self.effector_update(dt, c, v_air)
+        if self.nose_lift_max > 0.0 and 'pod_FL_susp' in self.jid:
+            self.nose_strut_update(dt)
         for n_, a in self.aid.items():
             if n_[4:] in self.targets:
                 d.ctrl[a] = self.targets[n_[4:]]
@@ -585,6 +591,23 @@ class PhantomAircraft:
         self.check_contacts()
 
     # ------------------------------------------------------------ per-step forces
+    def nose_strut_update(self, dt):
+        """Take-off stance overlay: each front wheel's spring seat moves down on a rate-limited strut actuator, raising
+        the nose. Extended while the wings are out in road stance, retracted otherwise. It is the suspension joint's own
+        spring reference and travel that move, so the load path stays spring, damper and tyre."""
+        m = self.model; P = self.P
+        road = all(abs(self.joint(f'pod_{k}')[0]) < math.radians(10) for k in PODS)
+        want = self.nose_lift_max if road and self.wing_state['left'] != 'stowed' else 0.0
+        step = P.get('suspension.nose_lift_rate_m_s', 0.05) * dt
+        self.nose_lift += float(np.clip(want - self.nose_lift, -step, step))
+        lo, hi = P['suspension.travel_m']
+        for k in PODS:
+            if not FRONT[k]:
+                continue
+            j = self.jid[f'pod_{k}_susp']; base = self.suspension[k]['springref_m']
+            m.qpos_spring[m.jnt_qposadr[j]] = base - self.nose_lift
+            m.jnt_range[j] = [lo - self.nose_lift, hi - self.nose_lift]
+
     def effector_update(self, dt, c, v_air):
         """control_effectors overlay: rudders and booster thrust vectoring from the FCC moment demand; front steering
         from the yaw stick while on the road (speed-scheduled to a lateral-acceleration limit). All rate-limited."""
@@ -804,12 +827,12 @@ class PhantomAircraft:
                                  drs_deg=(math.degrees(self.stab_te_up) if self.p6 else None),
                                  booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg'] + math.degrees(self.tvc[0])),
                                  **({'booster_vector_yaw_deg': math.degrees(self.tvc[1]), 'rudder_deg': math.degrees(self.rudder),
-                                     'steer_deg': [math.degrees(self.joint(f'pod_{k}_steer')[0]) if f'pod_{k}_steer' in self.jid else 0.0 for k in PODS]} if self.eff else {}),
+                                     'nose_lift_m': float(self.nose_lift), 'steer_deg': [math.degrees(self.joint(f'pod_{k}_steer')[0]) if f'pod_{k}_steer' in self.jid else 0.0 for k in PODS]} if self.eff else {}),
                                  **({'physics_data': self.physics_data} if self.physics_data else {}),
                                  fan_rpm_max=float(self.fan.omega_max * 60 / (2 * math.pi))),
                     mass=mp, propulsors=[dict(pod=k, cmd_n=(self.alloc.get('thrust') or [0] * 4)[i], **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.fan_state[i].items()},
                                               motor_torque_nm=float(self.motor_torque[i])) for i, k in enumerate(PODS)],
-                    boosters=[dict(side=s, **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.booster_state[j].items()}) for j, s in enumerate(WING_SIDES)],
+                    boosters=[dict(side=s, **{kk: (vv if isinstance(vv, (bool, str)) else float(vv)) for kk, vv in self.booster_state[j].items()}) for j, s in enumerate(WING_SIDES)],
                     aero=dict(force_body_n=np.asarray(self.aero_out['force_body']).tolist(), moment_body_nm=np.asarray(self.aero_out['moment_body']).tolist(),
                               surfaces=self.aero_out['surfaces'], hinge_moments=self.aero_out['hinge_moments']),
                     energy=dict(b, totals=self.bus.energy), fcc=self.fcc.last, command=self.fcc.cmd, targets=self.targets,

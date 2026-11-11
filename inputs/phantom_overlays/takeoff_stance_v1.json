@@ -1,0 +1,12 @@
+{
+  "_note": "Take-off stance: an extending nose strut on each front wheel raises the nose for the rolling take-off, so the wing and hull reach lifting incidence without having to rotate about the rear tyres. Found in the 11 Nov 2026 fans-off take-off investigation (docs/phantom/A10C_FANS_OFF_TAKEOFF.md). Opt-in; variants that do not list this overlay are unchanged.",
+  "suspension": {
+    "nose_lift_m": {"v": 0.2, "u": "m", "l": "DERIVED", "s": "front ride-height increase in take-off stance: 0.20 m over the 3.13 m wheelbase = 3.7 deg nose-up; chosen from plant take-off rolls (0.2 m lifts off at 74-78 m/s; 0.3 m peaks at 13 deg pitch, above the 11.9 deg tail-strike angle)"},
+    "nose_lift_rate_m_s": {"v": 0.05, "u": "m/s", "l": "MANUFACTURER", "s": "Thomson Electrak HD (10 kN dynamic variant): 71 mm/s no load, 58 mm/s at maximum load; 50 mm/s used at the 4.3 kN static corner load"},
+    "nose_lift_force_n": {"v": 10000.0, "u": "N", "l": "MANUFACTURER", "s": "Thomson Electrak HD rear-mount brochure: 10,000 N maximum dynamic load, 18,000 N static; one actuator per front corner (static corner load about 4.3 kN)"},
+    "added_components": {"v": [
+      {"id": "nose_strut_actuator_left", "kind": "landing_gear", "mass_kg": 9.0, "position_m": [1.54, 1.0, 0.75], "half_m": [0.06, 0.06, 0.25], "label": "SYNTHETIC_UNVALIDATED", "source": "Thomson Electrak HD class electric linear actuator, 200 mm stroke; mass not taken from a datasheet"},
+      {"id": "nose_strut_actuator_right", "kind": "landing_gear", "mass_kg": 9.0, "position_m": [1.54, -1.0, 0.75], "half_m": [0.06, 0.06, 0.25], "label": "SYNTHETIC_UNVALIDATED", "source": "Thomson Electrak HD class electric linear actuator, 200 mm stroke; mass not taken from a datasheet"}
+    ], "u": "-", "l": "SYNTHETIC_UNVALIDATED", "s": "nose strut actuators added to the airframe ledger"}
+  }
+}
