@@ -58,7 +58,8 @@ class Params:
         if variant not in VARIANTS:
             raise PhantomConfigError(f'unknown Phantom variant {variant!r}')
         raw = json.loads(Path(path).read_text(encoding='utf-8'))
-        self.file_sha256 = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+        # line endings folded to LF so a Windows (CRLF) checkout reports the same parameter-file identity as Linux
+        self.file_sha256 = hashlib.sha256(Path(path).read_bytes().replace(b'\r\n', b'\n')).hexdigest()
         self.variant = variant
         chain, v = [], variant
         while v:   # a variant may inherit another (e.g. phantom-fx-a9 = phantom-fx + A9 cassette)

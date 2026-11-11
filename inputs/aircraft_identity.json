@@ -1,0 +1,10 @@
+{
+  "_purpose": "Pins each canonical aircraft's physics configuration to its visual asset. A flight of a pinned variant is refused if any pinned value differs. Parameter-file hashes are taken with line endings normalised to LF, so Windows (CRLF) and Linux checkouts agree.",
+  "phantom-a10b": {
+    "name": "Phantom FX-A A10-B",
+    "config_sha256": "3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01",
+    "parameter_file_sha256": "c6c4d32d30ff090b1b2840c2f0559db8490be8820cc8815e81248b31e1894a5f",
+    "render_asset": "/assets/phantom-a10b-visual.glb",
+    "render_asset_sha256": "45364301f2950ca57e5b34ac73d29b0abe11471dd82f0fe0e5068da70418a93e"
+  }
+}
