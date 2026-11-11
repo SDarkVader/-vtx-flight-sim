@@ -29,3 +29,23 @@ def test_check_does_not_start_server(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(launcher, "port_available", lambda host, port: True)
     assert launcher.main(["--port", "8799", "--data-root", str(tmp_path), "--check"]) == 0
     assert "no flight started" in capsys.readouterr().out
+
+
+def test_data_root_is_per_checkout_and_stable(tmp_path):
+    a = launcher.checkout_data_root(tmp_path / "-vtx-flight-sim")
+    b = launcher.checkout_data_root(tmp_path / "other" / "-vtx-flight-sim")
+    assert a != b
+    assert a == launcher.checkout_data_root(tmp_path / "-vtx-flight-sim")
+    assert a.parent.name == "checkouts" and "unified-live" not in str(a)
+
+
+def test_default_port_skips_busy_ports(monkeypatch):
+    busy = {8770, 8771}
+    monkeypatch.setattr(launcher, "port_available", lambda host, port: port not in busy)
+    assert launcher.first_free_port(8770) == 8772
+
+
+def test_no_free_port_is_refused(monkeypatch):
+    monkeypatch.setattr(launcher, "port_available", lambda host, port: False)
+    with pytest.raises(RuntimeError, match="No free port"):
+        launcher.first_free_port(8770, 3)
