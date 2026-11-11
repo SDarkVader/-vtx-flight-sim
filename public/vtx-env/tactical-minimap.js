@@ -137,9 +137,24 @@ export class TacticalMinimap {
 
     const isSandbox = world && (world.environment === 'sandbox' || world.id === 'stage1-valley');
     if (isSandbox) {
-      // Stage 1 Valley Test Sandbox survey strip & central test pad
-      g.fillStyle = 'rgba(195, 212, 202, 0.18)';
+      // Stage 1 Valley Test Sandbox east-west runway (Runway 09/27: 1,900m x 42m) & cross apron
+      g.fillStyle = 'rgba(195, 212, 202, 0.14)';
       g.fillRect(px(-18), py(160), scaleM(36), scaleM(320));
+      g.save();
+      g.fillStyle = '#22252a';
+      g.fillRect(px(-950), py(21), scaleM(1900), scaleM(42));
+      g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = Math.max(1, scaleM(0.8));
+      g.setLineDash([scaleM(16), scaleM(18)]);
+      g.beginPath(); g.moveTo(px(-910), py(0)); g.lineTo(px(910), py(0)); g.stroke();
+      g.setLineDash([]);
+      g.fillStyle = '#ffffff';
+      g.font = `bold ${Math.max(8, Math.round(scaleM(13)))}px "Arial Black", sans-serif`;
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText('09', px(-880), py(0));
+      g.fillText('27', px(880), py(0));
+      g.fillStyle = '#22e055'; g.fillRect(px(-950), py(21), scaleM(3), scaleM(42));
+      g.fillStyle = '#ff2211'; g.fillRect(px(947), py(21), scaleM(3), scaleM(42));
+      g.restore();
       g.strokeStyle = 'rgba(212, 246, 106, 0.55)';
       g.lineWidth = 1.2;
       g.beginPath();

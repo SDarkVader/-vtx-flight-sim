@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 import mujoco as mj
 import numpy as np
 from ..aircraft import DT
-from .params import Params, ROOT
+from .params import Params, ROOT, load_a10b_characteristics
 from .ledger import PhantomLedger
 from .geometry import PODS, SIDE, FRONT, WING_SIDES, WING_SIGN, PINS
 from .propulsion import DuctedFan
@@ -264,9 +264,12 @@ class PhantomAircraft:
         self.ring = np.zeros((int(20 / DT), 32)); self.ring_i = 0; self.ring_full = False
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
+        self.physics_data = load_a10b_characteristics() if variant == 'phantom-a10b' else None
         self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=('/assets/phantom-a10b-visual.glb' if variant == 'phantom-a10b' else ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10' else f'/assets/phantom-{P.cassette_revision.lower()}.glb')),
                                model_xml_sha256=hashlib.sha256(self.xml.encode()).hexdigest(), parameter_file_sha256=P.file_sha256,
                                config_sha256=P.config_sha256, wing_cassette_revision=P.tree['geometry_sources']['wing_cassette_revision'],
+                               physics_characteristics_uri='/evidence/phantom/a10b_characteristics.json' if variant == 'phantom-a10b' else None,
+                               physics_model_doc_uri='/docs/phantom/PHANTOM_A10B_MODEL.md' if variant == 'phantom-a10b' else None,
                                ledger_mass_kg=self.mass_properties()['mass_kg'] if False else None)
         self.engine_power_limit_w = P['generators.count'] * P['generators.power_each_w']
         self.reference_rpm = None; self.gear_variant = 'phantom-legs-oleo'
@@ -802,6 +805,7 @@ class PhantomAircraft:
                                  booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg'] + math.degrees(self.tvc[0])),
                                  **({'booster_vector_yaw_deg': math.degrees(self.tvc[1]), 'rudder_deg': math.degrees(self.rudder),
                                      'steer_deg': [math.degrees(self.joint(f'pod_{k}_steer')[0]) if f'pod_{k}_steer' in self.jid else 0.0 for k in PODS]} if self.eff else {}),
+                                 **({'physics_data': self.physics_data} if self.physics_data else {}),
                                  fan_rpm_max=float(self.fan.omega_max * 60 / (2 * math.pi))),
                     mass=mp, propulsors=[dict(pod=k, cmd_n=(self.alloc.get('thrust') or [0] * 4)[i], **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.fan_state[i].items()},
                                               motor_torque_nm=float(self.motor_torque[i])) for i, k in enumerate(PODS)],

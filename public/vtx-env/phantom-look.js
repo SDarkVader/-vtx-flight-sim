@@ -150,7 +150,7 @@ export function attachPhantom(model) {
     }
     const spokes = j.node.getObjectByName(`VTX_VISUAL_WHEEL_${cad}_VTX_ALLOY_SPOKES`);
     if (spokes) wheel.attach(spokes);
-    rig.wheels.push({node: wheel, idx, axis: new THREE.Vector3(0, 0, pod.endsWith('L') ? -1 : 1)});
+    rig.wheels.push({node: wheel, idx, axis: new THREE.Vector3(0, pod.endsWith('L') ? 1 : -1, 0)});
 
     // Exhaust points opposite the force axis and turns with the actual pod joint.
     const jet = new THREE.Group();

@@ -976,6 +976,12 @@ async def release_identity():
                 supported_variants=['r6','r6_variator','light','baseline','phantom-a10b','phantom-fx','phantom','phantom-a9','phantom-fx-a9'])
 @app.get('/api/view')
 async def view():return lab.view()
+@app.get('/api/phantom/physics')
+async def phantom_physics(variant:str='phantom-a10b'):
+    from .phantom.params import Params, VARIANTS
+    if variant not in VARIANTS:
+        raise HTTPException(422, f'Unknown Phantom variant {variant!r}')
+    return Params(variant).snapshot()
 @app.post('/api/model-preview')
 async def model_preview(request:dict):
     """Switch the idle inspection aircraft without creating a flight record."""
@@ -1362,11 +1368,17 @@ async def stream(ws:WebSocket):
     await ws.accept()
     try:
         while True:
-            # Paused/inspection states do not need 20 full snapshots per second.
-            await ws.send_json(lab.view());await asyncio.sleep(.25 if lab.paused or not lab.active else .1)
+            try:
+                snapshot=lab.view()
+            except Exception:
+                await asyncio.sleep(.05)
+                continue
+            await ws.send_json(snapshot)
+            await asyncio.sleep(.25 if lab.paused or not lab.active else .1)
     except (WebSocketDisconnect,RuntimeError):pass
 from .experiments import install_experiment_routes
 install_experiment_routes(app, get_lab, Laboratory, Mission, parse_action, DT)
 
+app.mount('/docs/phantom',StaticFiles(directory=ROOT/'docs/phantom'),name='phantom_docs')
 app.mount('/evidence',StaticFiles(directory=ROOT/'evidence'),name='evidence')
 app.mount('/',StaticFiles(directory=ROOT/'public',html=True),name='frontend')
