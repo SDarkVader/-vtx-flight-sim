@@ -28,6 +28,14 @@ const TIERS = {
     forest: 2600, facadePpm: 24, airfieldPpm: 11, detailMaps: true, localLights: 4,
     heightFog: true, glow: true, clouds: 40, anisotropy: 16, drape: 'full', sunDisc: true,
   },
+  // Desktop-app target for a decent PC with a discrete GPU: post-processing (ambient occlusion, bloom, grade),
+  // real apron floodlights at night and an uncapped 60 fps frame pacing. Select with ?quality=ultra.
+  ultra: {
+    name: 'ultra', antialias: true, pixelRatio: 2, shadows: true, shadowSize: 4096,
+    forest: 2600, facadePpm: 24, airfieldPpm: 11, detailMaps: true, localLights: 4,
+    heightFog: true, glow: true, clouds: 40, anisotropy: 16, drape: 'full', sunDisc: true,
+    post: true, aoSamples: 16, floodlights: 3, frameMs: 15,
+  },
 };
 
 const TONE = { aces: THREE.ACESFilmicToneMapping, agx: THREE.AgXToneMapping, neutral: THREE.NeutralToneMapping };

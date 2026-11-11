@@ -511,7 +511,7 @@ function addGallery(group, fr) {
 
 function addTowerTop(group, o, updaters) {
   const [cx, cy, cz] = o.center, [hx, hy, hz] = o.half, top = cz + hz;
-  const cab = new THREE.Mesh(new THREE.BoxGeometry(hx * 2 + 1.4, hy * 2 + 1.4, 6.5), new THREE.MeshStandardMaterial({ color: '#0b1a22', roughness: .08, metalness: .6, emissive: '#2a8fb0', emissiveIntensity: .45, envMapIntensity: 1.6 }));
+  const cab = new THREE.Mesh(new THREE.BoxGeometry(hx * 2 + 1.4, hy * 2 + 1.4, 6.5), new THREE.MeshStandardMaterial({ color: '#0b1a22', roughness: .08, metalness: .6, emissive: '#ffb45a', emissiveIntensity: .1, envMapIntensity: 1.6 }));
   cab.position.set(cx, cy, top - 3.25); cab.castShadow = true; group.add(cab);
   const slab = new THREE.Mesh(new THREE.BoxGeometry(hx * 2 + 1.6, hy * 2 + 1.6, .6), metal('#4a4f52', { roughness: .8 })); slab.position.set(cx, cy, top + .3); group.add(slab);
   const mast = new THREE.Mesh(new THREE.CylinderGeometry(.08, .12, 5, 6).rotateX(Math.PI / 2), metal('#9aa0a3')); mast.position.set(cx + 3, cy - 2, top + 2.9); group.add(mast);
