@@ -991,7 +991,8 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
  }else if(visualTraffic&&now-(animate.progressLast||0)>500){animate.progressLast=now;$('ride-progress').textContent='Traffic active · '+Math.floor(sceneTime)+' s';}
  sky.update(camera,now/1000);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);environment.serviceRoads?.update(now/1000,last?.observation?.gnss_xy_m);
   aircraftFx?.update(last?.observation?.rotor_rpm,now/1000);
- if(world&&!window.__vtxNoRender){if(post)post.render();else renderer.render(scene,camera);}
+ if(post&&world&&!window.__vtxNoRender)post.render();   // desktop-app tier: composer path
+ else if(world&&!window.__vtxNoRender)renderer.render(scene,camera);
  const status=$('view-sync');if(status&&!rideEnabled&&now-(status._last||0)>400){status._last=now;
   const age=now-latestTruthReceivedMs;
   if(last&&age>2000&&!panelWasStale){aircraftFx?.updateAvionics?.(last.observation,true);panelWasStale=true;}
