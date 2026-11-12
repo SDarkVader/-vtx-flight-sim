@@ -233,7 +233,7 @@ export function updatePhantom(rig, truth, parked = false, wheelOffsets = []) {
   const q = truth.phantom?.joints;
   if (q || parked) {
     for (const j of rig.joints) {
-      const raw = q?.[j.name]; if (raw === undefined && !parked) continue; const v = parked && /^pod_(FL|FR|RL|RR)$/.test(j.name) ? (j.name.endsWith("L") ? Math.PI / 2 : -Math.PI / 2) : parked && j.name.startsWith("leg_") ? 0 : raw; if (v === undefined) continue; const d = v - j.q0;
+      const raw = q?.[j.name]; if (raw === undefined && !parked) continue; const v = parked && /^pod_(FL|FR|RL|RR)$/.test(j.name) ? (j.name.endsWith("L") ? Math.PI / 2 : -Math.PI / 2) : parked && j.name.startsWith("leg_") ? 0 : raw; if (v === undefined) continue; const compression = /^leg_(FL|FR|RL|RR)$/.test(j.name) && !parked ? (q?.[`${j.name}_oleo`] || 0) : 0; const d = v - j.q0 + compression;
       if (j.type === 'slide') { j.node.position.copy(j.pos).addScaledVector(j.axis, d); }
       else { tmp.setFromAxisAngle(j.axis, d); j.node.quaternion.copy(tmp).multiply(j.quat); }
       const steer=q?.[`${j.name}_steer`];

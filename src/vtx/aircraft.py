@@ -141,6 +141,8 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
     ET.SubElement(asset,'hfield',name='terrain',nrow=str(world.n),ncol=str(world.n),size=f'{world.half} {world.half} 70 2')
     wb=ET.SubElement(xml,'worldbody')
     ET.SubElement(wb,'geom',name='terrain',type='hfield',hfield='terrain',contype='1',conaffinity='2')
+    if getattr(world, 'environment_key', None) == 'sandbox':
+        ET.SubElement(wb, 'geom', name='sandbox_boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
     for o in world.obstacles:
         args=dict(name=o['id'],type=o['kind'],pos=fmt(o['center']),contype='1',conaffinity='2')
         args['size']=fmt(o['half']) if o['kind']=='box' else fmt([o['half'][0],o['half'][2]])

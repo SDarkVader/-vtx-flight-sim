@@ -26,7 +26,7 @@ assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='go-around'
 assert.ok(airport.aircraft.some(a=>!a.runwayId),'main runway lacks scheduled arrivals');
 assert.deepEqual(airport.sample('a10-primary',0).position.slice(0,2),[-45,-50]);
 assert.deepEqual(airport.sample('r6-flight',0).position.slice(0,2),[185,-90]);
-assert.deepEqual(airport.sample('r6-training',0).position.slice(0,2),LAYOUT.spawn);
+assert.deepEqual(airport.sample('r6-training',0).position.slice(0,2),LAYOUT.destination);
 for(const actor of airport.aircraft.filter(a=>a.id!=='a10-primary')){
  const [x,y]=airport.sample(actor.id,0).position;
  const marked=LAYOUT.pads.some(p=>Math.hypot(x-p.x,y-p.y)<.1)||

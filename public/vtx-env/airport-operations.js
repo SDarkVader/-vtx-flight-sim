@@ -9,7 +9,7 @@ import {DEFAULT_VISUAL_MODEL,vehicleModel} from './vehicle-registry.js';
 const AIRCRAFT=[
  {id:'a10-primary',modelId:DEFAULT_VISUAL_MODEL,route:'standard',direction:'left',stand:[-45,-50]},
  {id:'r6-flight',modelId:'r6',route:'holding',direction:'left',runwayId:'03/21',alternateIndex:0,stand:[185,-90]},
- {id:'r6-training',modelId:'r6',route:'training',direction:'right',stand:[0,0]},
+ {id:'r6-training',modelId:'r6',route:'training',direction:'right',stand:LAYOUT.destination},
  {id:'r6-teardrop',modelId:'r6',route:'teardrop',direction:'left',runwayId:'03/21',alternateIndex:1,stand:[205,-90]},
  {id:'r6-go-around',modelId:'r6',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:[225,-90]}
 ];
