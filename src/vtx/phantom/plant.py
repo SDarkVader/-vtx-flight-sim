@@ -91,6 +91,8 @@ def build_xml(L: PhantomLedger, world):
         ET.SubElement(asset, 'mesh', name=f'hull_{i}', vertex=f3(pc['vertices']))
     wb = ET.SubElement(x, 'worldbody')
     ET.SubElement(wb, 'geom', name='terrain', type='hfield', hfield='terrain', contype='1', conaffinity='2', group='0')
+    if getattr(world, 'environment_key', None) == 'sandbox':
+        ET.SubElement(wb, 'geom', name='sandbox_boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
     for o in world.obstacles:
         a = dict(name=o['id'], type=o['kind'], pos=f3(o['center']), contype='1', conaffinity='2', group='0')
         a['size'] = f3(o['half']) if o['kind'] == 'box' else f3([o['half'][0], o['half'][2]])
