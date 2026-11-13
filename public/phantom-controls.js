@@ -15,13 +15,13 @@ export function createPhantomPanel({api,toast}){
   let dirty=false,beat=0,pending=false,lastView=null,engaged=false,engagedRun,voiceReason=null,pendingVoice=null; let vtol=true,legsExtended=true,brakes=true,wing=false,can=false;
   function engage(){if(!engaged){engaged=true;engagedRun=lastView?.run_id;toast?.('Phantom panel has taken manual control');}}
   function disengage(){engaged=false;engagedRun=undefined;dirty=false;}
-  const cmd={schema:'phantom-fbw-1',engine:1,collective:0,vertical_speed_m_s:0,pitch:0,roll:0,yaw:0,stability_mode:'rate_damping'};
+  const cmd={schema:'phantom-fbw-1',engine:1,collective:0,vertical_speed_m_s:0,pitch:0,roll:0,yaw:0,stability_mode:'attitude'};
   let surfaceControls, steerInput;
   let el=document.getElementById('phantom-panel');
   if(!el){el=document.createElement('section');el.id='phantom-panel';el.className='phantom-panel';
     el.style.display='none';
     el.innerHTML='<b id="ph-aircraft">PHANTOM</b><div id="ph-feedback" style="margin:8px 0;font:12px monospace;white-space:pre-line"></div><div id="ph-surface-controls"></div><div id="ph-sliders"></div>'+
-      '<label>Mode <select id="ph-mode"><option>rate_damping</option><option>attitude</option><option>attitude_vs</option><option>off</option></select></label> '+
+      '<label>Mode <select id="ph-mode"><option>attitude</option><option>rate_damping</option><option>attitude_vs</option><option>off</option></select></label> '+
       '<button id="ph-voice" title="Push to talk: boost 50 percent, brakes off, drive 80 percent, take-off configuration, downforce, nose up 8, status, confirm">🎙 Voice</button> <button id="ph-take">Take control</button> <button id="ph-gear">Pods / wheels: 90°</button> <button id="ph-legs">Legs: extended</button> <button id="ph-brake">Brakes on</button> <button id="ph-wing">Wing deploy</button> <button id="ph-canard">Canards deploy</button>'+
       '<input id="ph-say" type="text" placeholder="Type an instruction to the pilot, then Enter" aria-label="Typed pilot instruction" style="width:100%;margin-top:6px">'+
       '<div id="ph-voice-log" style="margin-top:6px;font-size:12px;color:#9fe6d6"></div><div id="ph-state" style="margin-top:6px;white-space:pre-wrap;font-family:monospace;font-size:11px"></div>';
@@ -109,7 +109,7 @@ export function createPhantomPanel({api,toast}){
       if(t.command){
         if(!engaged)for(const key of Object.keys(cmd))if(key!=='schema'&&t.command[key]!=null)cmd[key]=structuredClone(t.command[key]);
         if(!dirty&&!pending)for(const input of el.querySelectorAll('[data-live-field]')){const raw=t.command[input.dataset.liveField];const value=input.dataset.liveIndex!=null?raw?.[Number(input.dataset.liveIndex)]:raw;if(value!=null&&document.activeElement!==input){input.value=value;input.parentElement.querySelector('output').value=Number(value).toFixed(2);}}
-        if(!dirty&&!pending&&document.activeElement!==el.querySelector('#ph-mode'))el.querySelector('#ph-mode').value=t.command.stability_mode||'rate_damping';
+        if(!dirty&&!pending&&document.activeElement!==el.querySelector('#ph-mode'))el.querySelector('#ph-mode').value=t.command.stability_mode||'attitude';
       }
       const fmt=(x)=>x!=null&&Number.isFinite(Number(x))?Number(x).toFixed(1)+'°':'—'; const pair=(x)=>Array.isArray(x)?x.map(fmt).join(' / '):'—'; const truth=t.phantom||{};
       el.querySelector('#ph-aircraft').textContent=(o.configuration?.airframe_variant||'phantom').toUpperCase()+' · LIVE CONTROLS';
