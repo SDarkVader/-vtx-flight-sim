@@ -22,6 +22,7 @@ from .surface_aero import SurfaceAero
 from .controls import FlightControl, default_command
 
 AIRBORNE_DEBOUNCE_S = 0.25   # continuous no-support time before the plant counts itself airborne
+POD_DOWN_PRELOAD_FRACTION = 0.8   # share of tilt-servo stall torque used to press a lowered pod onto its down-stop
 VEH = dict(contype='2', conaffinity='1', group='3')
 WING_STATES = ('stowed', 'hatch_opening', 'sliding_out', 'pinning', 'locked', 'unpinning', 'sliding_in', 'hatch_closing')
 
@@ -484,8 +485,17 @@ class PhantomAircraft:
         avail = {k: self.fan.thrust_max * min(1.0, (self.bus.motor_power_limit(i) / P['pods.motor_power_peak_w']) ** (2 / 3)) for i, k in enumerate(PODS)}
         al = self.alloc = self.fcc.update(float(d.time), sensed, float(sum(self.model.body_mass)), led['cg_m'][0], g, fan_en, avail)
         # actuator targets (rate-limited)
+        # Pod down-stop preload (ECU logic; no model or parameter change). A pod commanded fully down (0 deg, wheels
+        # on the road) is driven slightly past its 0 deg hard stop, so the tilt servo presses it onto the stop
+        # instead of only resisting once the pod has already been levered away. Without this, in the nose-up
+        # take-off stance tyre side load pushed the rear pods ~7 deg off the stop above ~20 m/s; with the body
+        # pitched that camber becomes opposing rear toe, the rear tyres scrub and hop, and the aircraft veers off
+        # the runway. The preload is a fixed fraction of the servo's stall torque and is rate-limited like any
+        # other tilt command, so the transition to and from a commanded tilt is unchanged.
+        preload = POD_DOWN_PRELOAD_FRACTION * P['pods.tilt_stall_torque_nm'] / P['pods.tilt_kp_nm_rad']
         for i, k in enumerate(PODS):
-            self.ramp(f'pod_{k}', SIDE[k] * math.radians(al['tilt_deg'][i]), P['pods.tilt_rate_rad_s'], dt)
+            tilt_cmd = math.radians(al['tilt_deg'][i])
+            self.ramp(f'pod_{k}', SIDE[k] * (tilt_cmd if tilt_cmd > 0.0 else -preload), P['pods.tilt_rate_rad_s'], dt)
             self.ramp(f'leg_{k}', -c['leg_extension_m'][i], P['contact.leg_rate_m_s'], dt)
         hl = P.handover['control_limits']
         v_air = float(np.linalg.norm(d.qvel[:3] - self.wind)); qdyn = 0.5 * P['atmosphere.density_kg_m3'] * v_air ** 2
