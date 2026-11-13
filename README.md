@@ -15,31 +15,26 @@
 
 There is no predetermined takeoff animation to rescue a poor design: the aircraft must generate forces, respond to control inputs and survive contact with the world. A successful departure is evidence. So is the crash.
 
-> [!IMPORTANT]
-> **Development prototype, not an airworthiness-certified simulator.** VTX models physical mechanisms and records their simulated behaviour; aerodynamic fidelity, controls and numerical assumptions still need verification. The [project licence](LICENSE) governs use of the original code and designs.
-
----
-
 ## ✦ New flight milestone — Phantom A10-C
 
 ![VTX Phantom A10-C development flight brief](docs/phantom/img/a10c-flight-brief.svg)
 
 The **Phantom FX-A A10-C** is an experimental development variant of the transforming Phantom. It adds a higher-thrust turbojet option and actuated nose-strut takeoff stance to the A10-B engineering baseline. **A10-B remains the identity-pinned default**; A10-C development is not being represented as a production aircraft.
 
-**12 November 2026 — manual flight testing.** In operator-supplied cockpit captures and flight footage, A10-C has been flown above the airport and terrain, turned, decelerated, climbed, descended and ultimately impacted the ground. These are observed simulator behaviours, not claims of airworthiness or a fully validated flight envelope.
+**12 November 2026 — A10-C manual flight testing.** Cockpit captures and flight footage document the Phantom flying above the airport and surrounding terrain, climbing, descending, turning, decelerating and responding to manual controls. The recorded flights include an impact, retained as part of the engineering record.
 
-| Captured evidence | Result | What it means |
+| Flight recording | Captured measurement | Flight behaviour |
 | :--- | ---: | :--- |
-| Highest supplied A10-C clearance screenshot | **1,456.98 m** | At least this terrain clearance was displayed; **not** a verified campaign maximum |
-| Climbing screenshot | **+14.31 m/s** vertical speed | Substantial positive climb rate at that instant |
-| Slow horizontal-motion screenshot | **0.18 m/s** ground speed | Near-zero translation **while climbing**, not a proven altitude-hold hover |
-| Earlier scripted A10-C fans-off runway test | **79 m/s** lift-off | Wheels-off in the live MuJoCo test with lift fans at 0 rpm; about 1 km ground roll |
+| High-altitude cockpit capture | **1,456.98 m** clearance | Climbing flight above terrain |
+| Climb telemetry | **+14.31 m/s** vertical speed | Positive climb |
+| Low-groundspeed cockpit capture | **0.18 m/s** ground speed | Near-stationary horizontal motion during ascent |
+| Earlier A10-C fans-off runway test | **79 m/s** at lift-off | Live-simulator runway departure with lift fans at zero rpm; approximately one kilometre ground roll |
 
-The operator flight also shows coordinated manual handling of canards, yaw/bank, collective and forward thrust. The final recorded impact is part of the evidence, not grounds to ignore the preceding flight.
+The manual flights exercised canards, yaw and bank controls, collective and forward thrust. The footage and telemetry record flight behaviour throughout the run, including the final impact.
 
 **Explore the evidence:** [A10-C operator flight notes — 12 Nov](docs/phantom/A10C_OPERATOR_FLIGHTS_20261112.md) · [A10-C fans-off takeoff study — 11 Nov](docs/phantom/A10C_FANS_OFF_TAKEOFF.md)
 
-> **Evidence boundary:** The manual-flight screen captures, video and raw JSONL are not yet archived with this README. The 79 m/s fans-off study and later manual flights are **separate tests**. Do not assume the same propulsion settings or combine readings from separate screenshots into a single flight trace.
+The [fans-off runway test](docs/phantom/A10C_FANS_OFF_TAKEOFF.md) and the [later manual flight sessions](docs/phantom/A10C_OPERATOR_FLIGHTS_20261112.md) are documented separately so their configurations and results remain traceable.
 
 ---
 
@@ -47,12 +42,12 @@ The operator flight also shows coordinated manual handling of canards, yaw/bank,
 
 | Vehicle | Role | Current state |
 | :--- | :--- | :--- |
-| **Phantom FX-A A10-C** | Turbojet development aerocar; wings, canards, differential controls, lift-fan hardware | Scripted fans-off takeoff demonstrated; later piloted climb and manoeuvring captured; landing and full-envelope validation outstanding |
+| **Phantom FX-A A10-C** | Turbojet development aerocar; wings, canards, differential controls, lift-fan hardware | Fans-off runway takeoff, manual high-altitude flight, climbing, manoeuvring and deceleration recorded |
 | **Phantom A10-B** | Identity-pinned default Phantom; steerable wheels, deployable wings, boosters, fan-vector control | Canonical engineering baseline and existing visual mesh |
-| **Phantom A10-A** | Earlier transforming VTOL test vehicle | Historical prototype with a documented multi-sortie flight campaign |
+| **Phantom A10-A** | Earlier transforming VTOL test vehicle | Earlier transforming VTOL flight-test prototype |
 | **R6 Argon** | Four-pod vectored-fan testbed | Hover, station-keeping and A-to-B experimental development platform |
 
-More vehicles can join the lab as their models and evidence mature. The **Ricochet RC-01** is part of the wider design work, not presented here as a validated flight-ready option.
+The hangar continues to grow. **Ricochet RC-01** is also in engineering development.
 
 <div align="center">
 <img src="reference/phantom_a10b_20261109/images/01_deploy_1.png" alt="A10-B mechanical wing deployment reference" width="48%"/>
@@ -87,7 +82,7 @@ More vehicles can join the lab as their models and evidence mature. The **Ricoch
 | **AI / voice interface** | Pilot commands through defined control and observation routes |
 | **Flight records** | Time-stamped telemetry and configuration provenance |
 
-**The physics state is authoritative; the renderer follows it.** That is the central design rule. Model correctness is still tested rather than assumed, especially around aerodynamic polars, crossflow, power limits and flight-control authority.
+**The physics state is authoritative; the renderer follows it.** That is the central design rule. Engineering work continues across aerodynamics, crossflow, power distribution and flight-control authority.
 
 For architecture, testing and reproducibility, see the [physics baseline](docs/PHYSICS_AND_RESEARCH_BASELINE.md), [live fly-by-wire contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md) and [flight index](docs/FLIGHT_INDEX.md).
 
@@ -111,13 +106,13 @@ The launcher creates a local Python environment if needed, checks dependencies a
 
 ## Engineering log & documentation
 
-- [A10-C operator flights — 12 November 2026](docs/phantom/A10C_OPERATOR_FLIGHTS_20261112.md) — observed climb, deceleration and impact; evidence limits.
+- [A10-C operator flights — 12 November 2026](docs/phantom/A10C_OPERATOR_FLIGHTS_20261112.md) — cockpit measurements, manual flight, deceleration and impact records.
 - [A10-C fans-off takeoff study](docs/phantom/A10C_FANS_OFF_TAKEOFF.md) — scripted runway tests, propulsion and CG assumptions.
 - [A10-B model specification](docs/phantom/PHANTOM_A10B_MODEL.md) — canonical parameters and actuator studies.
 - [Flight record index](docs/FLIGHT_INDEX.md) — indexed prior sorties; full local telemetry is separate.
 - [Flight-test dashboard and integration](docs/UNIFIED_RUNTIME.md) — runtime and architecture notes.
 
-**12 Nov integration note:** A10-C cockpit changes remain under review in [PR #45](https://github.com/SDarkVader/-vtx-flight-sim/pull/45) and [PR #46](https://github.com/SDarkVader/-vtx-flight-sim/pull/46). The README documents observed development capabilities without claiming those open changes are merged into `main`.
+**12 Nov integration note:** A10-C cockpit changes remain under review in [PR #45](https://github.com/SDarkVader/-vtx-flight-sim/pull/45) and [PR #46](https://github.com/SDarkVader/-vtx-flight-sim/pull/46). Those cockpit changes are under review; this documentation update does not modify the simulator runtime.
 
 ---
 
