@@ -217,6 +217,7 @@ class PhantomAircraft:
     def __init__(self, world, variant='phantom', fuel_kg=None, occupants=None, start_configuration='vtol', engines_running=True,
                  buffer_soc=None, wind=None, overrides=None, load_state=None):
         self.world = world
+        self.stability_assist = 0.0
         P = self.P = Params(variant, overrides)
         if load_state:
             spec = P.tree['load_states'][load_state]
