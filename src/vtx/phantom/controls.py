@@ -5,12 +5,6 @@ command is kept). Sign conventions (pilot-facing): pitch +1 = nose up, roll +1 =
 yaw +1 = nose right; arrays are in physical order FL, FR, RL, RR / left, right (left = +Y).
 
 Stability modes (disclosed, bounded, logged separately from the pilot):
-  auto           - DEFAULT: the FCC selects the law from the sensed flight phase (ground roll, take-off
-                   roll, hover, transition, wing-borne) and logs phase and resolved law each update;
-                   the pilot selects nothing. Today every phase resolves to the attitude law (whose
-                   gains already schedule on dynamic pressure); on the ground the yaw-rate loop also
-                   reaches the nosewheel steering (plant.effector_update). The explicit modes below
-                   remain selectable for test work (PTI needs off / rate_damping).
   off            - stick = normalised differential moment demand
   rate_damping   - off + rate damping on sensed body rates (default)
   attitude       - stick = bank/pitch command, pedal = yaw-rate command; PD attitude loops
@@ -29,9 +23,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from .geometry import PODS, SIDE, FRONT
 
 PHANTOM_SCHEMA = 'phantom-fbw-1'
-MODES = ('auto', 'off', 'rate_damping', 'attitude', 'attitude_vs')
-PHASES = ('ground', 'takeoff_roll', 'hover', 'transition', 'wingborne')
-PHASE_LAW = {'ground': 'attitude', 'takeoff_roll': 'attitude', 'hover': 'attitude', 'transition': 'attitude', 'wingborne': 'attitude'}
+MODES = ('off', 'rate_damping', 'attitude', 'attitude_vs')
 
 
 class PTI(BaseModel):
@@ -72,7 +64,7 @@ class PhantomAction(BaseModel):
     pitch: float | None = Field(default=None, ge=-1, le=1)
     roll: float | None = Field(default=None, ge=-1, le=1)
     yaw: float | None = Field(default=None, ge=-1, le=1)
-    stability_mode: Literal['auto', 'off', 'rate_damping', 'attitude', 'attitude_vs'] | None = None
+    stability_mode: Literal['off', 'rate_damping', 'attitude', 'attitude_vs'] | None = None
     pod_tilt_deg: list[float] | None = None
     flap_deg: list[float] | None = None
     aileron_trim_deg: list[float] | None = None
@@ -100,7 +92,7 @@ COMMAND_FIELDS = ('engine', 'collective', 'vertical_speed_m_s', 'pitch', 'roll',
 
 
 def default_command(start='vtol'):
-    return dict(engine=1.0, collective=0.0, vertical_speed_m_s=0.0, pitch=0.0, roll=0.0, yaw=0.0, stability_mode='auto',
+    return dict(engine=1.0, collective=0.0, vertical_speed_m_s=0.0, pitch=0.0, roll=0.0, yaw=0.0, stability_mode='rate_damping',
                 pod_tilt_deg=[90.0] * 4 if start == 'vtol' else [0.0] * 4, flap_deg=[0.0, 0.0], aileron_trim_deg=[0.0, 0.0],
                 canard_pitch_deg=[0.0, 0.0], canard_fold='folded', booster_throttle=[0.0, 0.0], wheel_drive=[0.0] * 4, brake=[1.0] * 4,
                 leg_extension_m=[0.52] * 4 if start == 'vtol' else [0.0] * 4, wing='hold')
@@ -149,24 +141,7 @@ class FlightControl:
         self.vs_int = 0.0
         self.pti = PTIGenerator()
         self.last = {}
-        self.phase = 'ground'
         self.pod_x = {k: (P['pods.hinge_x_front_m'] if FRONT[k] else P['pods.hinge_x_rear_m']) for k in PODS}
-
-    def resolve_phase(self, sensed):
-        """Flight phase from sensed state only (weight on wheels, airborne flag, pod tilt, wings out), with hysteresis
-        on the pod tilt so a pod mid-travel does not flicker the law. Returns one of PHASES."""
-        tilt = float(sensed.get('pod_tilt_deg', 0.0)); wow = bool(sensed.get('wow', True)); air = bool(sensed.get('airborne', False))
-        fan_mode = tilt >= 45.0 if self.phase != 'hover' else tilt >= 35.0        # hysteresis: leave hover below 35 deg
-        road = tilt <= 10.0 if self.phase not in ('hover', 'transition') else tilt <= 5.0
-        if fan_mode:
-            self.phase = 'hover'
-        elif not road:
-            self.phase = 'transition'
-        elif air and not wow:
-            self.phase = 'wingborne'
-        else:
-            self.phase = 'takeoff_roll' if sensed.get('wing_out', False) else 'ground'
-        return self.phase
 
     def wingborne_blend(self, sensed):
         """0 (hover gains) -> 1 (wing-borne gains) with dynamic pressure; 0 unless the control_effectors overlay is on."""
@@ -190,10 +165,6 @@ class FlightControl:
     def update(self, t, sensed, mass_kg, cg_x, g, fan_enabled, thrust_avail):
         """sensed: roll, pitch_up, yaw (rad); p, q_up, r_left (rad/s body); vz (m/s up). Returns allocation dict."""
         P = self.P; c = self.cmd; mode = c['stability_mode']
-        phase = self.resolve_phase(sensed)
-        if mode == 'auto':
-            mode = PHASE_LAW[phase]
-        self.mode_resolved = mode
         stick = dict(roll=c['roll'], pitch=c['pitch'], yaw=c['yaw'], heave=0.0)
         pti_axis, pti_val = self.pti.value(t)
         lim = P['fbw.pti_attitude_limits_deg']
@@ -277,7 +248,7 @@ class FlightControl:
         # surfaces: pilot + trim; roll -> ailerons, pitch -> canards (effect physical, nil at zero airspeed)
         ail = [c['aileron_trim_deg'][0] + 20 * demand[0], c['aileron_trim_deg'][1] - 20 * demand[0]]
         can = [c['canard_pitch_deg'][i] + 15 * demand[1] for i in range(2)]
-        self.last = dict(mode=c['stability_mode'], mode_resolved=mode, phase=phase, yaw_rate_left=float(sensed['r_left']), pilot_moment=pil.tolist(), augmentation_moment=aug.tolist(), moment_demand=demand.tolist(),
+        self.last = dict(mode=mode, pilot_moment=pil.tolist(), augmentation_moment=aug.tolist(), moment_demand=demand.tolist(),
                          collective_cmd=c['collective'], collective_applied=coll, vs_cmd=c['vertical_speed_m_s'], vs_contribution=vs_contrib, vs_integrator=self.vs_int,
                          trim_collective_estimate=trim, trim_front_share=f, pti_axis=pti_axis, pti_value=pti_val, pod_thrust_cmd=[T[k] for k in PODS],
                          saturated=sat, tilt_cmd=tilt, aileron_cmd=ail, canard_cmd=can)
