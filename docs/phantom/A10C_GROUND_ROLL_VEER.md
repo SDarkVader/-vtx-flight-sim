@@ -86,10 +86,21 @@ start from rest at the runway 08 threshold; the chart stops at 46 m/s or at the 
 * It does not identify the pod tilt servo as "the" fault. Three things combine: hinge at the wheel centre with no
   down-lock, the pitched stance, and a tyre with no slip-angle compliance. Removing any one of them stops the
   divergence in simulation; only the first two exist on a real aircraft.
-* The canards in the model are pitch surfaces only. The flight computer commands them symmetrically (15 deg per unit
-  pitch demand plus the two trim sliders); they have no yaw path. The 0.2 / -2.8 deg readout in the 12 November
-  screenshots is the two trim sliders set differently, not aerodynamic hinge compliance (the hinge moment at those
-  speeds is under 1 N m against an 8,000 N m/rad servo).
+* The pilot's observation that the canards keep the aircraft straight on take-off is reproduced. Same full-thrust
+  schedule, four canard conditions (`takeoff.py`):
+
+  | Canards | Track at lift-off | Lift-off |
+  |---|---|---|
+  | Deployed, under the attitude loop (as flown) | 4.7 m off the centreline, 0.1 deg yaw | 80 m/s, 1,156 m |
+  | Folded | 16.7 m off, drifting through the roll | 88 m/s, 1,597 m |
+  | Held full nose-up (+25 deg) | 3.4 m off | 74 m/s, 952 m |
+  | Held full nose-down (-20 deg) | 7 to 16 m off | none: still rolling at 96 m/s |
+
+  In the model they do it through pitch, not side force: the canards carry the nose as the wing loads up, so the
+  aircraft leaves its wheels before the rear-pod fight has time to swing it. Nose-down canard, which keeps the
+  nosewheels loaded, is the worst case here because it keeps the aircraft on the ground longest. The flight computer
+  commands the canards symmetrically; the 0.2 / -2.8 deg readout in the 12 November screenshots is the two trim
+  sliders set differently (the aero hinge moment at those speeds is under 1 N m against an 8,000 N m/rad servo).
 
 ## Decisions this leaves open (not taken)
 
@@ -103,7 +114,7 @@ start from rest at the runway 08 threshold; the chart stops at 46 m/s or at the 
 3. **Ground directional control in the ECU.** Today the wheels receive no feedback in any mode. A yaw-rate or heading
    loop to the nosewheels whenever the wheels are loaded, and the automatic per-phase mode selection asked for on
    13 November (no pilot-selected default), are design changes to the flight computer, not the airframe.
-4. **The canards.** If the real aircraft uses the canards for directional control on the ground, the model does not
-   have that effect and the surface model gives them none. What is needed is a statement of what the canards are meant
-   to do between 40 and 80 m/s on the ground (differential for roll, symmetric to load or unload the nosewheels, or a
-   yaw effect the model lacks) so the model can be checked against it rather than guessed.
+4. **The canards.** They already do in the model what the pilot reports: deployed, the take-off tracks straight and
+   lifts off 440 m earlier than folded. Whether the take-off procedure should state canards out and nose-up as the
+   directional-control step, and whether the slow-roll case (wings out below rotation speed for longer than a
+   full-thrust take-off needs) is one the aircraft must survive, are operational calls.
