@@ -130,6 +130,7 @@ def parse(text, obs=None):
         if has(r' (on|start|run|full) '): return R('engine', 'Engine running.', dict(engine=1.0))
     if has(r' (stability|augmentation) off '): return R('stability', 'Turn stability augmentation off?', dict(stability_mode='off'), True)
     if has(r' rate damping '): return R('stability', 'Rate damping.', dict(stability_mode='rate_damping'))
+    if has(r' (auto|automatic) (mode|modes|law) '): return R('stability', 'Automatic law selection by flight phase.', dict(stability_mode='auto'))
     if has(r' attitude (mode|hold) '): return R('stability', 'Attitude hold.', dict(stability_mode='attitude'))
     return R('unknown', f'Not understood: {str(text or "").strip()}')
 

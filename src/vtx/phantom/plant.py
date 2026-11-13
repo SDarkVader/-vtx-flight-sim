@@ -22,6 +22,10 @@ from .surface_aero import SurfaceAero
 from .controls import FlightControl, default_command
 
 AIRBORNE_DEBOUNCE_S = 0.25   # continuous no-support time before the plant counts itself airborne
+# Automatic ground law (stability_mode 'auto', phases ground / takeoff_roll): nosewheel angle per unit sensed yaw rate,
+# opposing the rate, inside the road or take-off steering lock. ECU logic, not a model parameter: the A10-B parameter
+# file is pinned by hash, so this cannot live there. SYNTHETIC_UNVALIDATED.
+GROUND_YAW_DAMPING_DEG_PER_RAD_S = 30.0
 VEH = dict(contype='2', conaffinity='1', group='3')
 WING_STATES = ('stowed', 'hatch_opening', 'sliding_out', 'pinning', 'locked', 'unpinning', 'sliding_in', 'hatch_closing')
 
@@ -478,6 +482,9 @@ class PhantomAircraft:
                       p=w[0] + n(0, 3e-4), q_up=-w[1] + n(0, 3e-4), r_left=w[2] + n(0, 3e-4), vz=float(d.qvel[2]) + n(0, 0.005))
         va = vb - self.R().T @ self.wind                     # air data (used by the wing-borne law only)
         sensed.update(qdyn=0.5 * P['atmosphere.density_kg_m3'] * float(va @ va), beta=math.atan2(float(va[1]), max(abs(float(va[0])), 1.0)))
+        # flight-phase inputs for the automatic law selection (pilot-visible quantities only)
+        sensed.update(wow=self.support_count() > 0, airborne=self.airborne, wing_out=any(self.wing_state[s] != 'stowed' for s in WING_SIDES),
+                      pod_tilt_deg=float(np.mean([abs(math.degrees(self.joint(f'pod_{k}')[0])) for k in PODS])))
         joint_positions = {name: float(self.joint(name)[0]) for name in self.L.bodies if name in self.jid}
         led = self.L.mass_properties(joint_positions, fuel_kg=list(self.fuel))
         fan_en = {k: abs(self.joint(f'pod_{k}')[0]) >= math.radians(P['pods.fan_enable_tilt_deg']) for k in PODS}
@@ -633,6 +640,11 @@ class PhantomAircraft:
         if any(self.wing_state[s] != 'stowed' for s in WING_SIDES):           # take-off mode: calibrated lock while wings deploy / are out
             dmax = min(dmax, st['takeoff_lock_deg']); rate = st['takeoff_rate_deg_s']
         target = -math.radians(c['yaw'] * dmax) if road else 0.0                 # yaw +1 = nose right = wheels to the right
+        last = self.fcc.last or {}
+        if road and c['stability_mode'] == 'auto' and last.get('phase') in ('ground', 'takeoff_roll'):
+            # automatic ground law: the yaw-rate loop reaches the nosewheels (explicit modes keep the stick-only path)
+            yaw_rate_right = -float(last.get('yaw_rate_left', 0.0))
+            target = float(np.clip(target + math.radians(GROUND_YAW_DAMPING_DEG_PER_RAD_S * yaw_rate_right), -math.radians(dmax), math.radians(dmax)))
         for k in PODS:
             n = f'pod_{k}_steer'
             if n in self.targets:
@@ -876,6 +888,7 @@ class PhantomAircraft:
             power_unmet_kw=round(b.get('unmet_w', 0) / 1000, 1), loop_temperature_c=round(self.bus.loop_T - 273.15, 1),
             motor_temperature_c=[round(t - 273.15, 1) for t in self.bus.motor_T],
             fuel_kg=np.round(self.fuel, 3).tolist(), stability_mode=self.fcc.cmd['stability_mode'],
+            stability_mode_resolved=getattr(self.fcc, 'mode_resolved', self.fcc.cmd['stability_mode']), flight_phase=self.fcc.phase,
             pti_active=self.fcc.pti.active, faults=[f['fault'] for f in self.faults],
             warning_lamps=(['IMPACT'] if self.crashed else []) + (['POWER_LIMITED'] if self.prop_scale < 0.999 else []) + (['FUEL_EXHAUSTED'] if self.fuel.sum() <= 1e-3 else [])
                           + (['HARD_LANDING'] if 'hard_landing' in self.flags else []),
