@@ -35,6 +35,8 @@ def test_nose_strut_extends_only_in_takeoff_stance():
     level = math.degrees(a.attitude()['pitch_up'])
     assert a.nose_lift == 0.0 and abs(level) < 0.6                                                  # road stance: strut retracted
     a.set_command(dict(wing='deploy', canard_fold='deployed')); _roll(a, 7.0)
+    assert a.nose_lift == 0.0 and abs(math.degrees(a.attitude()['pitch_up']) - level) < 0.3     # parked with wings out: nose stays level
+    a.set_command(dict(brake=[0.0] * 4, wheel_drive=[0.2] * 4)); _roll(a, 5.0)                    # take-off roll: strut extends
     assert a.nose_lift == pytest.approx(0.2, abs=1e-6)
     raised = math.degrees(a.attitude()['pitch_up'])
     assert raised - level == pytest.approx(math.degrees(math.atan(0.2 / 3.13)), abs=0.7)            # 0.20 m over the wheelbase

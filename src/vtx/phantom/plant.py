@@ -600,7 +600,11 @@ class PhantomAircraft:
         spring reference and travel that move, so the load path stays spring, damper and tyre."""
         m = self.model; P = self.P
         road = all(abs(self.joint(f'pod_{k}')[0]) < math.radians(10) for k in PODS)
-        want = self.nose_lift_max if road and self.wing_state['left'] != 'stowed' else 0.0
+        # Parked, the nose stays level: the strut extends only for the take-off roll (wings out, brakes released and
+        # drive or booster power applied) and stays extended while still rolling, so it never drops at speed.
+        c = self.fcc.cmd; rolling = abs(float(self.vel_body()[0])) > 5.0
+        powered = float(np.mean(c['brake'])) < 0.5 and (max(abs(x) for x in c['wheel_drive']) > 0.05 or max(c['booster_throttle']) > 0.05)
+        want = self.nose_lift_max if road and self.wing_state['left'] != 'stowed' and (powered or rolling) else 0.0
         step = P.get('suspension.nose_lift_rate_m_s', 0.05) * dt
         self.nose_lift += float(np.clip(want - self.nose_lift, -step, step))
         lo, hi = P['suspension.travel_m']
