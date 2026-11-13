@@ -1,5 +1,10 @@
 # Phantom A10-C: automatic law selection and battery-assisted wheel drive (13 November 2026)
 
+> **Reverted on 13 November 2026.** The automatic law selection described in section 1 (PR #48) was removed from
+> the A10-C branch: it was not in the build the owner flew on 12 November (runtime `3b30e763`, commit `eb85581`),
+> and the branch was restored to that build plus the world-edge safety floor. Section 2 (wheel-power sweep) is
+> analysis only and still stands.
+
 Companion to `A10C_GROUND_ROLL_VEER.md`. Same code base and runway; scripts and outputs in `engineering/phantom/a10c_ground_roll/`.
 
 ## 1. Automatic law selection (`stability_mode: auto`, now the default)
