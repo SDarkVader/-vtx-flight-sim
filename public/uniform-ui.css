@@ -1,0 +1,95 @@
+/* Phantom Controls menu: every control visible while flying, no scrolling.
+   Loaded last. Touches only the Phantom controls panel inside the Controls
+   drawer; the rest of the cockpit keeps its existing look.
+
+   - controls in two compact columns, flight controls and action buttons first
+   - slim instrument-style sliders with a thin position/command bar under each
+   - the text readouts (not controls) sit underneath, reached by scrolling */
+
+#phantom-panel[style*="block"] {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 3px 6px;
+  align-items: center;
+}
+#phantom-panel > * { flex: 0 0 100%; min-width: 0; margin: 0 !important; }
+#phantom-panel > #ph-aircraft          { order: 0; }
+#phantom-panel > #ph-sliders           { order: 1; }
+#phantom-panel > label                 { order: 2; display: flex; align-items: center; gap: 6px; }
+#phantom-panel > label select          { flex: 1; min-width: 0; }
+#phantom-panel > button                { order: 3; flex: 1 1 22%; padding: 3px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#phantom-panel > #ph-surface-controls  { order: 4; }
+#phantom-panel > #ph-say               { order: 5; }
+#phantom-panel > #ph-voice-log         { order: 6; }
+#phantom-panel > #ph-state             { order: 7; }
+#phantom-panel > #ph-feedback          { order: 8; }
+
+#phantom-panel #ph-sliders,
+#phantom-panel #ph-surface-controls {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 2px 8px;
+}
+#phantom-panel #ph-surface-controls > p { grid-column: 1 / -1; order: 99; margin: 4px 0 0; }
+
+/* One control: name and value on one line, slider under it, bar under that. */
+#phantom-panel #ph-sliders > label,
+#phantom-panel #ph-surface-controls > label {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 4px;
+  row-gap: 0;
+  align-items: baseline;
+  min-width: 0;
+  line-height: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  margin: 0 !important;
+}
+#phantom-panel #ph-sliders output,
+#phantom-panel #ph-surface-controls output {
+  grid-row: 1;
+  grid-column: 2;
+  color: var(--muted, #89958f);
+}
+#phantom-panel #ph-sliders input[type=range],
+#phantom-panel #ph-surface-controls input[type=range],
+#phantom-panel #ph-sliders meter,
+#phantom-panel #ph-surface-controls meter {
+  grid-column: 1 / -1;
+  width: 100% !important;
+}
+
+/* Slim sliders. */
+#controls-drawer input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 9px;
+  margin: 1px 0 0;
+  background: transparent;
+  cursor: pointer;
+}
+#controls-drawer input[type=range]::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: #3a4646; }
+#controls-drawer input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 4px; height: 9px; margin-top: -3.5px;
+  border: 0; border-radius: 1px;
+  background: var(--accent, #d4f66a);
+}
+#controls-drawer input[type=range]::-moz-range-track { height: 2px; border-radius: 1px; background: #3a4646; }
+#controls-drawer input[type=range]::-moz-range-thumb { width: 4px; height: 9px; border: 0; border-radius: 1px; background: var(--accent, #d4f66a); }
+#controls-drawer input[type=range]:disabled { opacity: 0.55; cursor: default; }
+#controls-drawer input[type=range]:focus-visible { outline: 1px solid var(--accent, #d4f66a); outline-offset: 2px; }
+
+/* Position / command-in-effect bars. */
+#controls-drawer meter { display: block; height: 2px; margin: 0; border: 0; background: #232c2c; }
+#controls-drawer meter::-webkit-meter-bar { height: 2px; border: 0; border-radius: 1px; background: #232c2c; }
+#controls-drawer meter::-webkit-meter-optimum-value,
+#controls-drawer meter::-webkit-meter-suboptimum-value,
+#controls-drawer meter::-webkit-meter-even-less-good-value { border-radius: 1px; background: #9fe6d6; }
+#controls-drawer meter::-moz-meter-bar { border-radius: 1px; background: #9fe6d6; }
+
+/* Six-track grid: sliders take half the width each, display-only rows a third. */
+#phantom-panel #ph-sliders > label,
+#phantom-panel #ph-surface-controls > label { grid-column: span 3; }
+#phantom-panel #ph-surface-controls > label.ph-readonly { grid-column: span 2; }

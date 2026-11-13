@@ -200,6 +200,7 @@ class Laboratory:
         self.memory_path=self.data_root/'pilot/colin-memory.json'
         self.memory_path.parent.mkdir(parents=True,exist_ok=True)
         if not self.memory_path.exists():self.memory_path.write_text(json.dumps(dict(schema_version=1,pilot='Colin',experience_count=0,lessons=[],aircraft_familiarity='cold start; no VTX-specific solution',stage2_accessed=False,history=[]),indent=2))
+        self.checkpoint_set_aside=None
         restored=self.restore_checkpoint()
         # Never replace or classify a saved sortie merely because its checkpoint
         # cannot be decoded by this build. It remains available for recovery.
@@ -220,10 +221,12 @@ class Laboratory:
             path=unfinished[-1]
             try:
                 meta=json.loads(path.read_text())
+                aside=self.checkpoint_set_aside if self.checkpoint_set_aside and self.checkpoint_set_aside.get('run_id')==meta['run_id'] else None
                 interrupted=dict(run_id=meta['run_id'],mission=meta['mission'],
                                  outcome='interrupted',authority=meta.get('operator'),
-                                 reason='Server exited before the sortie ended; physical state not recoverable',
-                                 previous_evidence=path.parent.name)
+                                 reason=('Checkpoint written by a different software build was set aside; physical state not resumed'
+                                         if aside else 'Server exited before the sortie ended; physical state not recoverable'),
+                                 previous_evidence=path.parent.name,**({'checkpoint_set_aside':aside} if aside else {}))
                 (path.parent/'summary.json').write_text(json.dumps(interrupted,indent=2))
                 self.retry_hint=dict(run_id=meta['run_id'],mission=meta['mission'],
                                      request=meta['request'])
@@ -307,7 +310,18 @@ class Laboratory:
             state=json.loads(path.read_text(encoding='utf-8'))
             saved_source=state.get('runtime_source_sha256')
             if saved_source and saved_source != RUNTIME_SOURCE_SHA256:
-                raise ValueError('Checkpoint runtime source differs from the running software')
+                # A checkpoint written by a different software build cannot be resumed by this one. Keep it, renamed so
+                # it names the build that wrote it, and start clean; the sortie's flight evidence is not touched and is
+                # recorded below as interrupted for this reason. Unreadable checkpoints and configuration mismatches
+                # still block (they may be recoverable by this build).
+                aside=path.with_name(f'live-flight-checkpoint.from-build-{saved_source[:8]}-{datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")}.json')
+                os.replace(path,aside)
+                self.checkpoint_set_aside=dict(run_id=state.get('run_id'),saved_runtime_source_sha256=saved_source,
+                                               running_runtime_source_sha256=RUNTIME_SOURCE_SHA256,path=str(aside))
+                self.recovery_notice=(f"Saved flight {state.get('run_id')} was recorded by software build {saved_source[:8]} and cannot be "
+                                      f"resumed by this build ({RUNTIME_SOURCE_SHA256[:8]}). Its checkpoint is kept at {aside} and its "
+                                      f"flight evidence is unchanged. Start a new mission.")
+                return False
             if not saved_source:
                 self.recovery_notice='Legacy checkpoint has no runtime source fingerprint; source equivalence is unverified.'
             if state['schema']=='phantom-1':

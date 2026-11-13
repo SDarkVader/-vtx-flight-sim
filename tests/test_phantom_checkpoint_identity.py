@@ -22,7 +22,7 @@ def test_phantom_resume_retains_exact_configuration(tmp_path, variant, p6, expec
     restored.stop('Isolated checkpoint test completed')
 
 
-@pytest.mark.parametrize('field', ['config_sha256', 'runtime_source_sha256'])
+@pytest.mark.parametrize('field', ['config_sha256'])
 def test_checkpoint_identity_mismatch_blocks_replacement(tmp_path, field):
     original = Laboratory(data_root=tmp_path)
     original.start(Mission(airframe_variant='phantom-a10b'))
@@ -38,3 +38,34 @@ def test_checkpoint_identity_mismatch_blocks_replacement(tmp_path, field):
     assert recovered.recovery_blocked and not recovered.active
     assert 'differs' in recovered.error
     assert checkpoint.read_bytes() == before
+
+
+def test_checkpoint_from_another_build_is_set_aside_not_blocking(tmp_path):
+    """A checkpoint written by different software is kept (renamed), its evidence untouched, the sortie recorded as
+    interrupted for that reason, and the laboratory starts clean instead of blocking every mission."""
+    original = Laboratory(data_root=tmp_path)
+    original.start(Mission(airframe_variant='phantom-a10b'))
+    original.checkpoint(force=True)
+    run_id = original.run_id
+    original.aircraft.step_log.close()
+    original.audit_file.close()
+    checkpoint = original.checkpoint_path
+    saved = json.loads(checkpoint.read_text(encoding='utf-8'))
+    saved['runtime_source_sha256'] = 'f' * 64
+    checkpoint.write_text(json.dumps(saved), encoding='utf-8')
+    before = checkpoint.read_bytes()
+    evidence = tmp_path / 'evidence/flights' / run_id
+    events_before = (evidence / 'events.jsonl').read_bytes()
+    recovered = Laboratory(data_root=tmp_path)
+    assert not recovered.recovery_blocked and not recovered.active and recovered.error is None
+    assert not checkpoint.exists()
+    aside = list(checkpoint.parent.glob('live-flight-checkpoint.from-build-ffffffff-*.json'))
+    assert len(aside) == 1 and aside[0].read_bytes() == before                      # kept byte for byte
+    assert (evidence / 'events.jsonl').read_bytes() == events_before                 # evidence untouched
+    summary = json.loads((evidence / 'summary.json').read_text())
+    assert summary['outcome'] == 'interrupted' and 'different software build' in summary['reason']
+    assert summary['checkpoint_set_aside']['path'] == str(aside[0])
+    assert run_id in recovered.recovery_notice and 'ffffffff' in recovered.recovery_notice
+    recovered.start(Mission(airframe_variant='phantom-a10b'))                        # no longer blocked
+    assert recovered.active and recovered.run_id != run_id
+    recovered.stop('Isolated checkpoint test completed')
