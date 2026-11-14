@@ -33,6 +33,9 @@ from .world import TestWorld,SandboxWorld,make_world,resolve_environment_key
 from .r6_hold import R6HoldController
 from .phantom import live as phantom_live
 from .phantom.controls import PhantomAction
+from .ricochet import live as ricochet_live
+from .ricochet.live import RicochetAction
+from .water.datum import WaterEnvironmentConfig
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from .release import EXPECTED_RELEASE, actual_release, assert_expected_release
@@ -106,6 +109,8 @@ class Mission(BaseModel):
     landing_requested:bool=False
     environment:str|None=None
     phantom:phantom_live.PhantomOptions|None=None
+    water_config:dict|None=None
+    ricochet_load_case:str|None=None
     @field_validator('environment')
     @classmethod
     def env(cls,v):
@@ -143,17 +148,19 @@ class Mission(BaseModel):
     @field_validator('airframe_variant')
     @classmethod
     def airframe(cls,v):
-        if v not in ['baseline','light','r6','r6_variator','phantom-a10b','phantom','phantom-fx','phantom-a9','phantom-fx-a9']:raise ValueError('Unknown airframe revision')
+        if v not in ['baseline','light','r6','r6_variator','phantom-a10b','phantom','phantom-fx','phantom-a9','phantom-fx-a9','ricochet-rc01-f03','ricochet-concept-a','ricochet-rc01-dev']:raise ValueError('Unknown airframe revision')
         return v
 
 
 def mission_dump(request):
-    """Legacy metadata stays byte-identical: the optional phantom block is omitted when unset.
+    """Legacy metadata stays byte-identical: the optional phantom/ricochet blocks are omitted when unset.
 
     Phantom requests also record whether the top-level fuel_kg was set by the
     operator; an unset value is the four-fan default and is not Phantom fuel."""
     d=request.model_dump()
     if d.get('phantom') is None:d.pop('phantom',None)
+    if d.get('water_config') is None:d.pop('water_config',None)
+    if d.get('ricochet_load_case') is None:d.pop('ricochet_load_case',None)
     if phantom_live.is_phantom_variant(d.get('airframe_variant')):d['fuel_kg_explicit']='fuel_kg' in request.model_fields_set
     return d
 
@@ -247,6 +254,14 @@ class Laboratory:
                                     last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state,
                                     phantom_cg_gate=getattr(self,'phantom_cg_gate',None)))
             return self._write_checkpoint(state)
+        if getattr(p,'is_ricochet',False):
+            state=dict(schema='ricochet-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],runtime_source_sha256=RUNTIME_SOURCE_SHA256,mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback_status=self.fallback_status,authority=self.authority,
+                       time_scale=self.time_scale,paused=self.paused,plant=p.checkpoint_state(),
+                       session=dict(action_log=self.action_log,action_sequence=self.action_sequence,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
+                                    lease_expired=self.lease_expired,obs_id=self.obs_id,settled_s=self.settled_s,left_ground=self.left_ground,
+                                    landing_recorded=self.landing_recorded,last_landing=self.last_landing,
+                                    last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state))
+            return self._write_checkpoint(state)
         state=dict(schema=1,run_id=self.run_id, runtime_source_sha256=RUNTIME_SOURCE_SHA256,
                    model_xml_sha256=p.provenance['model_xml_sha256'],
                    mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,
@@ -311,6 +326,8 @@ class Laboratory:
                 self.recovery_notice='Legacy checkpoint has no runtime source fingerprint; source equivalence is unverified.'
             if state['schema']=='phantom-1':
                 return self._restore_phantom(state)
+            if state['schema']=='ricochet-1':
+                return self._restore_ricochet(state)
             if state['schema']!=1:
                 raise ValueError('Unsupported checkpoint schema')
             run_id=state['run_id']
@@ -469,6 +486,34 @@ class Laboratory:
                  reason='Explicit operator resume required; physics position and velocity retained'))
         return True
 
+    def _restore_ricochet(self,state):
+        run_id=state['run_id'];evidence=self.data_root/'evidence/flights'/run_id
+        metadata=json.loads((evidence/'metadata.json').read_text())
+        if metadata['run_id']!=run_id or (evidence/'summary.json').exists():raise ValueError('Checkpoint does not identify an unfinished sortie')
+        request=Mission(**metadata['request'])
+        saved_env=request.environment or (state.get('mission') or {}).get('environment_key') or 'ricochet_lake'
+        self.world=make_world(saved_env,seed=self.world.seed)
+        flight_world=self.world_for(request.ignore_scenery_collisions)
+        wcfg=WaterEnvironmentConfig(**request.water_config) if request.water_config else None
+        candidate=ricochet_live.make_aircraft(flight_world,request.airframe_variant,water_config=wcfg,load_case=request.ricochet_load_case or 'LC-03',wind_world_mps=request.wind_world_mps)
+        if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:
+            raise ValueError('Checkpoint model differs from current Ricochet physics model')
+        candidate.restore_state(state['plant'])
+        session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']
+        self.aircraft=candidate;self.flight_world=flight_world;self.run_id=run_id;self.log_path=evidence
+        self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
+        self.mission=state['mission'];self.objective=state.get('objective');self.pilot_owner=state.get('pilot_owner');self.pending_pilot=state.get('pending_pilot');self.pilot_epoch=state.get('pilot_epoch',0);self.fallback_status=state.get('fallback_status');self.authority=state['authority'];self.time_scale=state['time_scale']
+        self.active=True;self.paused=True;self.wall_started=time.monotonic()
+        self.action_log=session['action_log'];self.action_sequence=session.get('action_sequence',max((a['sequence'] for a in self.action_log),default=0));self.next_pending_action=session['next_pending_action']
+        for action in self.action_log[self.next_pending_action:]:action['cancelled']=True
+        self.next_pending_action=len(self.action_log)
+        self.last_command_time=session['last_command_time'];self.lease_expired=session['lease_expired'];self.obs_id=session['obs_id']
+        self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.last_audit_t=session['last_audit_t']
+        self.settled_s=session['settled_s'];self.left_ground=session['left_ground'];self.landing_recorded=session.get('landing_recorded',False);self.last_landing=session.get('last_landing');self.last_checkpoint_t=float(candidate.data.time);self.end_summary=None
+        self.log('flight_checkpoint_restored',dict(checkpoint_t_s=candidate.data.time,paused=True,pending_actions_cancelled=True,variant=candidate.variant,
+                 reason='Explicit operator resume required; Ricochet water and body state retained'))
+        return True
+
     def log(self,kind,payload):
         if self.audit_file:
             row=dict(kind=kind,wall_utc=datetime.now(timezone.utc).isoformat(),t_s=round(float(self.aircraft.data.time),9),payload=payload)
@@ -480,6 +525,12 @@ class Laboratory:
         self.last_sensor_t=float(d.time);self.obs_id+=1
         if getattr(p,'is_phantom',False):
             obs=phantom_live.sensor_observation(self)
+            self.last_obs=obs;self.observations[self.obs_id]=obs
+            if len(self.observations)>3000:del self.observations[min(self.observations)]
+            self.log('observation',obs)
+            return obs
+        if getattr(p,'is_ricochet',False):
+            obs=ricochet_live.sensor_observation(self)
             self.last_obs=obs;self.observations[self.obs_id]=obs
             if len(self.observations)>3000:del self.observations[min(self.observations)]
             self.log('observation',obs)
@@ -552,6 +603,8 @@ class Laboratory:
             target_env=resolve_environment_key(request.environment)
             if getattr(self.world,'environment_key','airport')!=target_env:
                 self.world=make_world(target_env,seed=self.world.seed)
+        elif ricochet_live.is_ricochet_variant(request.airframe_variant) and getattr(self.world,'environment_key','airport')!='ricochet_lake':
+            self.world=make_world('ricochet_lake',seed=self.world.seed)
         flight_world=self.world_for(request.ignore_scenery_collisions)
         self.preview_generation+=1
         departure_check=flight_world.validate(MapPoint(*request.departure),'departure')
@@ -563,6 +616,10 @@ class Laboratory:
         target_z=flight_world.surface_z(*request.destination)
         if phantom_live.is_phantom_variant(request.airframe_variant):
             self.aircraft=phantom_live.make_aircraft(flight_world,request)
+        elif ricochet_live.is_ricochet_variant(request.airframe_variant):
+            existing_wcfg=getattr(self.aircraft,'water_config',None)
+            wcfg=WaterEnvironmentConfig(**request.water_config) if request.water_config else existing_wcfg
+            self.aircraft=ricochet_live.make_aircraft(flight_world,request.airframe_variant,water_config=wcfg,load_case=request.ricochet_load_case or 'LC-03',wind_world_mps=request.wind_world_mps)
         else:
             self.aircraft=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
@@ -570,7 +627,7 @@ class Laboratory:
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
         self.aircraft.spawn(*request.departure,departure_check.terrain_z_m)
         # Bench engine is ready after launch; collective remains zero until commanded.
-        if not getattr(self.aircraft, 'is_phantom', False):
+        if not getattr(self.aircraft, 'is_phantom', False) and not getattr(self.aircraft, 'is_ricochet', False):
             self.aircraft.set_command(dict(engine=1.0))
         self.flight_world=flight_world
         self.aircraft.stability_assist=request.stability_assist
@@ -644,6 +701,8 @@ class Laboratory:
             raise HTTPException(409,'Flight changed; refresh before sending controls')
         if isinstance(a,PhantomAction)!=bool(getattr(self.aircraft,'is_phantom',False)):
             raise HTTPException(409,'Action schema does not match the active airframe (Phantom requires schema phantom-fbw-1)')
+        if isinstance(a,RicochetAction)!=bool(getattr(self.aircraft,'is_ricochet',False)):
+            raise HTTPException(409,'Action schema does not match the active vehicle (Ricochet requires schema ricochet-1)')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
         if self.authority=='colin' and a.observation_id not in self.observations:raise HTTPException(409,'Colin action requires an actual permitted observation ID')
         takeover=(a.authority=='colin' and self.pending_pilot is not None and a.pilot_id==self.pending_pilot
@@ -684,6 +743,10 @@ class Laboratory:
         if getattr(p,'is_phantom',False):
             phantom_live.integrate(self);self.compact_actions()
             if p.crashed:self.reset_after_failure('Physical crash detected')
+            return
+        if getattr(p,'is_ricochet',False):
+            ricochet_live.integrate(self);self.compact_actions()
+            if p.crashed:self.reset_after_failure('Physical hull impact detected')
             return
         if self.fallback_controller and p.data.time-self.fallback_controller.last_time>=.05:
             try:
@@ -830,7 +893,9 @@ class Laboratory:
                   landing_precision_m=request.get('landing_precision_m',old.get('landing_precision_m')),
                   label='Explicit retry of '+hint['run_id'],
                   **({'environment':retry_env} if retry_env else {}),
-                  **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}))
+                  **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}),
+                  **({'water_config':request.get('water_config',old.get('water_config'))} if (request.get('water_config') or old.get('water_config')) else {}),
+                  **({'ricochet_load_case':request.get('ricochet_load_case',old.get('ricochet_load_case'))} if (request.get('ricochet_load_case') or old.get('ricochet_load_case')) else {}))
         result=self.start(m)
         self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
                                       previous_fuel_kg=old.get('fuel_kg',60.),new_fuel_kg=m.fuel_kg if not phantom_live.is_phantom_variant(variant) else float(self.aircraft.fuel_initial.sum()),
@@ -838,7 +903,7 @@ class Laboratory:
         return result
 
     def view(self):
-        return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
+        data=dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
                     runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
                     environment=dict(key=getattr(self.world,'environment_key','airport'),
                                      id=self.world.id,version=self.world.version,
@@ -852,6 +917,10 @@ class Laboratory:
                     pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback=self.fallback_status,
                     recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
                     end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
+        if getattr(self.world,'environment_key','airport')=='ricochet_lake':
+            wf=ricochet_live.water_frame(self.world,self.aircraft)
+            if wf is not None:data['water_frame']=wf
+        return data
 
 # Laboratory initialization restores checkpoints and may write evidence; it
 # belongs at server startup rather than at module import (audit F16).
@@ -938,6 +1007,62 @@ async def login(request:Request):
     response=RedirectResponse('/',status_code=303)
     response.set_cookie('vtx_session',hmac.new(_access_token.encode(),b'vtx-browser-session',hashlib.sha256).hexdigest(),secure=True,httponly=True,samesite='strict')
     return response
+@app.get('/api/water/config')
+async def get_water_config():
+    p=lab.aircraft
+    if not getattr(p,'is_ricochet',False):
+        return dict(supported=False,environment_key=getattr(lab.world,'environment_key','airport'))
+    return dict(supported=True,water_config=p.water_config.to_dict(),mass_properties=p.mass_properties(),calibration=p.calibration.to_dict())
+
+@app.post('/api/water/config')
+async def update_water_config(request:dict):
+    p=lab.aircraft
+    if not getattr(p,'is_ricochet',False):
+        raise HTTPException(409,'Load Ricochet Lake & Ricochet vehicle before configuring water physics')
+    try:cfg=p.update_water_config(request)
+    except (ValueError,TypeError) as e:raise HTTPException(422,str(e))
+    lab.last_obs=None
+    lab.log('water_config_updated',cfg.to_dict())
+    return dict(ok=True,water_config=cfg.to_dict(),water_frame=ricochet_live.water_frame(lab.world,p))
+
+@app.get('/api/water/state')
+async def get_water_state():
+    wf=ricochet_live.water_frame(lab.world,lab.aircraft)
+    if wf is None:
+        raise HTTPException(409,'Water field state is only available on Ricochet Lake')
+    return wf
+
+@app.get('/api/water/model')
+async def get_water_model():
+    p=lab.aircraft
+    if not getattr(p,'is_ricochet',False):
+        raise HTTPException(409,'Pinned Ricochet geometry is only available when RicochetCraft is loaded')
+    return p.visual_geometry()
+
+@app.post('/api/water/mass')
+async def update_water_mass(request:dict):
+    p=lab.aircraft
+    if not getattr(p,'is_ricochet',False):
+        raise HTTPException(409,'Load Ricochet vehicle before updating marine mass properties')
+    try:
+        mp=p.update_mass_properties(
+            load_case=request.get('load_case'),
+            total_mass_kg=request.get('total_mass_kg'),
+            cg_shift_vtx_m=request.get('cg_shift_vtx_m'),
+            passenger_aboard=request.get('passenger_aboard'),
+            passenger_mass_kg=request.get('passenger_mass_kg'),
+            payload_mass_kg=request.get('payload_mass_kg'),
+        )
+    except (ValueError,TypeError) as e:raise HTTPException(422,str(e))
+    lab.last_obs=None
+    lab.log('mass_properties_updated',mp)
+    return dict(ok=True,mass_properties=mp,observation=lab.sensor_observation())
+
+@app.get('/api/water/export')
+async def export_water_run():
+    try:return ricochet_live.export_run_bundle(lab)
+    except ValueError as e:raise HTTPException(409,str(e))
+
 @app.get('/api/world')
 async def world():return lab.world.public()
 @app.get('/api/observe')
@@ -973,7 +1098,7 @@ async def release_identity():
     return dict(expected=EXPECTED_RELEASE,loaded=loaded,matches=(loaded==EXPECTED_RELEASE),
                 enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1',
                 selection_allowed=os.environ.get('VTX_ENFORCE_RELEASE')!='1',
-                supported_variants=['r6','r6_variator','light','baseline','phantom-a10b','phantom-fx','phantom','phantom-a9','phantom-fx-a9'])
+                supported_variants=['r6','r6_variator','light','baseline','phantom-a10b','phantom-fx','phantom','phantom-a9','phantom-fx-a9','ricochet-rc01-f03','ricochet-concept-a','ricochet-rc01-dev'])
 @app.get('/api/view')
 async def view():return lab.view()
 @app.post('/api/model-preview')
@@ -989,8 +1114,10 @@ async def model_preview(request:dict):
         except ValueError as e:raise HTTPException(422,str(e))
         if getattr(lab.world,'environment_key','airport')!=env_key:
             target_world=make_world(env_key,seed=lab.world.seed)
-    dep_default=list(getattr(target_world,'default_departure',[0,0])) if request.get('environment') is not None else [0,0]
-    try:selection=Mission(environment=request.get('environment'),airframe_variant=request.get('airframe_variant'), departure=request.get('departure',dep_default), phantom={'start_configuration': request.get('start_configuration','vtol')})
+    elif ricochet_live.is_ricochet_variant(request.get('airframe_variant')) and getattr(lab.world,'environment_key','airport')!='ricochet_lake':
+        target_world=make_world('ricochet_lake',seed=lab.world.seed)
+    dep_default=list(getattr(target_world,'default_departure',[0,0])) if (request.get('environment') is not None or ricochet_live.is_ricochet_variant(request.get('airframe_variant'))) else [0,0]
+    try:selection=Mission(environment=request.get('environment') or getattr(target_world,'environment_key',None),airframe_variant=request.get('airframe_variant'), departure=request.get('departure',dep_default), phantom={'start_configuration': request.get('start_configuration','vtol')})
     except ValidationError as e:raise HTTPException(422,str(e))
     point=MapPoint(*selection.departure)
     if phantom_live.is_phantom_variant(selection.airframe_variant):
@@ -1005,6 +1132,9 @@ async def model_preview(request:dict):
     def build():
         if phantom_live.is_phantom_variant(selection.airframe_variant):
             aircraft=phantom_live.make_aircraft(target_world,selection)
+        elif ricochet_live.is_ricochet_variant(selection.airframe_variant):
+            wcfg=getattr(lab.aircraft,'water_config',None)
+            aircraft=ricochet_live.make_aircraft(target_world,selection.airframe_variant,water_config=wcfg,wind_world_mps=selection.wind_world_mps)
         else:
             aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
                               fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
@@ -1020,13 +1150,17 @@ async def model_preview(request:dict):
     return lab.view()
 @app.post('/api/environment')
 async def set_environment(request:dict):
-    """Switch the live world between Main Airport and Test Sandbox when no sortie is active."""
+    """Switch the live world between Main Airport, Test Sandbox and Ricochet Lake when no sortie is active."""
     if lab.active:raise HTTPException(409,'End and retain the current sortie before switching environments')
     if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before switching environments')
     try:env_key=resolve_environment_key(request.get('environment'))
     except ValueError as e:raise HTTPException(422,str(e))
     target_world=lab.world if getattr(lab.world,'environment_key','airport')==env_key else make_world(env_key,seed=lab.world.seed)
     current_variant=request.get('airframe_variant') or getattr(lab.aircraft,'variant',None) or getattr(lab.aircraft,'airframe_variant','r6')
+    if env_key=='ricochet_lake' and not request.get('airframe_variant') and not ricochet_live.is_ricochet_variant(current_variant):
+        current_variant='ricochet-rc01-f03'
+    elif env_key!='ricochet_lake' and not request.get('airframe_variant') and ricochet_live.is_ricochet_variant(current_variant):
+        current_variant='r6'
     if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and current_variant!='r6':
         current_variant='r6'
     start_cfg=request.get('start_configuration') or getattr(lab.aircraft,'start_configuration','vtol')
@@ -1047,6 +1181,9 @@ async def set_environment(request:dict):
     def build():
         if phantom_live.is_phantom_variant(selection.airframe_variant):
             aircraft=phantom_live.make_aircraft(target_world,selection)
+        elif ricochet_live.is_ricochet_variant(selection.airframe_variant):
+            wcfg=getattr(lab.aircraft,'water_config',None)
+            aircraft=ricochet_live.make_aircraft(target_world,selection.airframe_variant,water_config=wcfg,wind_world_mps=selection.wind_world_mps)
         else:
             aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
                               fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
@@ -1164,8 +1301,10 @@ async def destination(request:dict):
         raise HTTPException(422,str(e))
 
 def parse_action(body):
-    """One endpoint, two schemas: 'phantom-fbw-1' -> PhantomAction, anything else -> the unchanged legacy Action."""
-    model=PhantomAction if isinstance(body,dict) and body.get('schema')=='phantom-fbw-1' else Action
+    """One endpoint, three schemas: 'phantom-fbw-1' -> PhantomAction, 'ricochet-1' -> RicochetAction, else Action."""
+    if isinstance(body,dict) and body.get('schema')=='phantom-fbw-1':model=PhantomAction
+    elif isinstance(body,dict) and body.get('schema')=='ricochet-1':model=RicochetAction
+    else:model=Action
     try:return model.model_validate(body)
     except ValidationError as e:
         raise RequestValidationError([{**err,'loc':('body',*err['loc'])} for err in e.errors()])

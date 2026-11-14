@@ -1,0 +1,5 @@
+arXiv API Terms of Use Notification:
+Please review the arXiv API Terms of Use at https://info.arxiv.org/help/api/index.html
+and always check the license of individual papers retrieved via the literature-search-arxiv skill for any reuse or distribution restrictions.
+
+Recorded timestamp (UTC): 2026-11-14T19:20:00Z

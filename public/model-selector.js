@@ -40,9 +40,14 @@ async function applyPreview(variant) {
   status.textContent = 'Loading the selected aircraft…';
   try {
     const envSelect = document.getElementById('environment-select');
+    const isRicochet = variant.startsWith('ricochet');
     const payload = {airframe_variant: variant, start_configuration: startConfiguration.value,
-      departure: document.getElementById('dep').value.split(',').map(Number)};
-    if (envSelect?.value) payload.environment = envSelect.value;
+      departure: isRicochet ? [40, 0] : document.getElementById('dep').value.split(',').map(Number)};
+    if (isRicochet) {
+      payload.environment = 'ricochet_lake';
+    } else if (envSelect?.value) {
+      payload.environment = envSelect.value === 'ricochet_lake' ? 'airport' : envSelect.value;
+    }
     const response = await fetch('/api/model-preview', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload),

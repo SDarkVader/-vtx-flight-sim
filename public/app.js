@@ -29,7 +29,7 @@ import {createAirportOperations} from './vtx-env/airport-operations.js?v=1';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
 import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
-import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261107-thrust-wheel-1';import {createPhantomPanel} from './phantom-controls.js?v=3';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
+import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261107-thrust-wheel-1';import {createPhantomPanel} from './phantom-controls.js?v=3';import {buildRicochetLake,updateWaterSurface,buildRicochetVisual,createRicochetPanel} from './vtx-env/ricochet-lake.js?v=20261114-lake-pass3';let phantomRig=null,phantomPanel=null,ricochetPanel=null; // Phantom & Ricochet hooks
 
 const $=id=>document.getElementById(id);
 const phantomMissionNote=document.createElement('p');
@@ -40,7 +40,8 @@ const windOptions=$('wind-east').closest('.coordinates');
 const legacyMissionOptions=[$('initial-fuel').closest('.coordinates'),$('fuel-note'),$('drive').closest('label'),$('power-limit').closest('label'),$('gear').closest('label'),$('atmosphere-model').closest('label'),windOptions,windOptions.nextElementSibling];
 function setMissionOptions(variant){
  const phantom=variant.startsWith('phantom');
- for(const node of legacyMissionOptions)node.style.display=phantom?'none':'';
+ const ricochet=variant.startsWith('ricochet');
+ for(const node of legacyMissionOptions)node.style.display=(phantom||ricochet)?'none':'';
  phantomMissionNote.style.display=phantom?'':'none';
  $('phantom-start-label').style.display=phantom?'':'none';
 }
@@ -165,13 +166,22 @@ const START_PRESETS={
   ['-60,-60','South valley floor'],
   ['custom','Custom point'],
  ],
+ ricochet_lake:[
+  ['40,0','Deep basin open water (10.5 m depth)'],
+  ['-620,0','Acceleration lane start'],
+  ['350,0','Turning basin entry'],
+  ['-360,220','Shallow shelf (~0.65 m depth)'],
+  ['-560,290','Marina berth 2'],
+  ['-798,-110','Launch & recovery ramp'],
+  ['custom','Custom point'],
+ ],
 };
 let currentEnvironment='airport';
 function syncEnvironmentControls(envKey){
- currentEnvironment=envKey==='sandbox'?'sandbox':'airport';
+ currentEnvironment=envKey==='ricochet_lake'?'ricochet_lake':envKey==='sandbox'?'sandbox':'airport';
  const select=$('environment-select');
  if(select)select.value=currentEnvironment;
- for(const [id,key] of [['env-airport','airport'],['env-sandbox','sandbox']]){
+ for(const [id,key] of [['env-airport','airport'],['env-sandbox','sandbox'],['env-ricochet','ricochet_lake']]){
   const btn=$(id);
   if(!btn)continue;
   const active=currentEnvironment===key;
@@ -187,14 +197,16 @@ function syncEnvironmentControls(envKey){
  }
  const rwyBtn=$('runway-start');
  if(rwyBtn){
-  rwyBtn.textContent=currentEnvironment==='sandbox'?'Set A: central test pad':'Set A: runway 08 start';
-  rwyBtn.title=currentEnvironment==='sandbox'?'Central valley test pad at X 0 m, Y 0 m':'Runway 08 start, 15 m inside the marked threshold';
+  rwyBtn.textContent=currentEnvironment==='ricochet_lake'?'Set A: deep lake basin':currentEnvironment==='sandbox'?'Set A: central test pad':'Set A: runway 08 start';
+  rwyBtn.title=currentEnvironment==='ricochet_lake'?'Deep central lake basin at X 40 m, Y 0 m':currentEnvironment==='sandbox'?'Central valley test pad at X 0 m, Y 0 m':'Runway 08 start, 15 m inside the marked threshold';
  }
  const caption=$('scene-caption');
  if(caption){
-  caption.innerHTML=currentEnvironment==='sandbox'
-   ?'<span>STAGE 1 / VALLEY TEST RANGE</span><p>1,000 × 1,000 m · terrain, structures and six-point ground contact</p>'
-   :'<span>VTX / EXTENDED AIRFIELD</span><p>8,000 × 8,000 m · terrain, extended runway and ground contact</p>';
+  caption.innerHTML=currentEnvironment==='ricochet_lake'
+   ?'<span>RICOCHET LAKE / MARINE HYDRODYNAMICS TESTBED</span><p>2,000 × 1,200 m · hybrid waves, shallow-water flow &amp; 400 Hz MuJoCo hull coupling</p>'
+   :currentEnvironment==='sandbox'
+    ?'<span>STAGE 1 / VALLEY TEST RANGE</span><p>1,000 × 1,000 m · terrain, structures and six-point ground contact</p>'
+    :'<span>VTX / EXTENDED AIRFIELD</span><p>8,000 × 8,000 m · terrain, extended runway and ground contact</p>';
  }
 }
 function clearWorldGroup(){
@@ -205,10 +217,10 @@ function clearWorldGroup(){
   child.traverse(n=>{if(!n.isMesh&&!n.isLineSegments&&!n.isPoints)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture&&!keepTextures.has(v))textures.add(v);}});
   geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());
  }
- environment.buildings=null;environment.volcano=null;environment.serviceRoads=null;environment.dressing=null;
+ environment.buildings=null;environment.volcano=null;environment.serviceRoads=null;environment.dressing=null;environment.waterMesh=null;
  lightPool.clear?.();
 }
-function surfaceZ(x,y){if(!world)return 0;const n=world.heights_m.length,half=world.half_m,u=THREE.MathUtils.clamp((x+half)/(2*half)*(n-1),0,n-1.00001),v=THREE.MathUtils.clamp((y+half)/(2*half)*(n-1),0,n-1.00001),i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j,h=world.heights_m;let z=a>b?(1-a)*h[j][i]+(a-b)*h[j][i+1]+b*h[j+1][i+1]:(1-b)*h[j][i]+(b-a)*h[j+1][i]+a*h[j+1][i+1];for(const o of world.obstacles){if(o.kind==='box'&&Math.abs(x-o.center[0])<=o.half[0]&&Math.abs(y-o.center[1])<=o.half[1])z=Math.max(z,o.center[2]+o.half[2]);}return z;}
+function surfaceZ(x,y){if(!world)return 0;const h=world.heights_m,nx=world.nx||h[0].length,ny=world.ny||h.length,hx=world.half_x||world.half_m,hy=world.half_y||world.half_m,u=THREE.MathUtils.clamp((x+hx)/(2*hx)*(nx-1),0,nx-1.00001),v=THREE.MathUtils.clamp((y+hy)/(2*hy)*(ny-1),0,ny-1.00001),i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j;let z=a>b?(1-a)*h[j][i]+(a-b)*h[j][i+1]+b*h[j+1][i+1]:(1-b)*h[j][i]+(b-a)*h[j+1][i]+a*h[j+1][i+1];for(const o of (world.obstacles||[])){if(o.kind==='box'&&Math.abs(x-o.center[0])<=o.half[0]&&Math.abs(y-o.center[1])<=o.half[1])z=Math.max(z,o.center[2]+o.half[2]);}return z;}
 function updateMarkers(){markerA.position.set(departure[0]-5,departure[1]+4,surfaceZ(...departure)+1.5);markerB.position.set(destination[0]-5,destination[1]+4,surfaceZ(...destination)+1.5);}
 function buildSandboxWorld(w){
  const n=w.heights_m.length,g=new THREE.PlaneGeometry(w.half_m*2,w.half_m*2,n-1,n-1),p=g.attributes.position,colors=[];
@@ -241,9 +253,10 @@ function buildSandboxWorld(w){
 function buildWorld(w){
  console.log('VTX: terrain building',w.id);
  world=w;
- const isSandbox=w.environment==='sandbox'||w.id==='stage1-valley';
+ const isRicochet=w.environment==='ricochet_lake'||w.id==='ricochet-lake-v1';
+ const isSandbox=!isRicochet&&(w.environment==='sandbox'||w.id==='stage1-valley');
  clearWorldGroup();
- if(!isSandbox&&trafficPreviewEnabled&&!visualTraffic){
+ if(!isSandbox&&!isRicochet&&trafficPreviewEnabled&&!visualTraffic){
   airportOperations=createAirportOperations(w);
   airportOperations.setDensity($('traffic-density').value);
   const plan=buildRideJourney($('ride-route').value,$('ride-direction').value,rideCgLocal[2]);
@@ -307,7 +320,15 @@ function buildWorld(w){
   });
   visualTraffic=createVisualAirTraffic({THREE,GLTFLoader,scene,aircraft:specs});
  }
- if(isSandbox){
+ if(isRicochet){
+  if(rideEnabled){
+   selectedVehicleId='physical-plant';rideEnabled=false;$('airport-aircraft').value='physical-plant';
+   if(model)model.visible=modelReady;setCameraMode('chase');$('view-mode').textContent='PHYSICAL STATE · LIVE';
+  }
+  const lake=buildRicochetLake(THREE,w);
+  worldGroup.add(lake.group);
+  environment.waterMesh=lake.waterMesh;
+ }else if(isSandbox){
   if(rideEnabled){
    selectedVehicleId='physical-plant';rideEnabled=false;$('airport-aircraft').value='physical-plant';
    if(model)model.visible=modelReady;setCameraMode('chase');$('view-mode').textContent='PHYSICAL STATE · LIVE';
@@ -323,13 +344,13 @@ function buildWorld(w){
   worldGroup.add(makeWater(w,surfaceZ(w.water.x,w.water.y)+.1));
   environment.dressing=dressWorld(worldGroup,w,ground,{quality,lightPool,extraTextures:[markerA.material.map,markerB.material.map]});
  }
- syncEnvironmentControls(isSandbox?'sandbox':'airport');
+ syncEnvironmentControls(isRicochet?'ricochet_lake':isSandbox?'sandbox':'airport');
  for(const c of [$('map'),$('large-map')]){
   const mm=getMinimap(c);
   if(mm){
    mm.tacticalMode=false;
-   mm.zoom=isSandbox?1.0:0.5;
-   mm.center=isSandbox?[0,0]:[0,100];
+   mm.zoom=isRicochet?0.65:isSandbox?1.0:0.5;
+   mm.center=(isSandbox||isRicochet)?[0,0]:[0,100];
   }
  }
  if($('map-mode'))$('map-mode').textContent='World';
@@ -351,6 +372,21 @@ function loadAirframe(asset){
  if(asset===loadedAsset||performance.now()<assetRetryAfter)return;loadedAsset=asset;
  modelReady=false;if(model)model.visible=false;
  $('loading').hidden=false;$('loading').textContent='Loading physical revision…';
+ if(asset.startsWith('pinned://ricochet')){
+  api('/api/water/model').then(payload=>{
+   if(asset!==loadedAsset)return;
+   if(model){detachPhantomEffects(phantomRig);scene.remove(model);disposeModel(model);}
+   for(const key of Object.keys(bodyNodes))delete bodyNodes[key];pitchMeshes.length=0;
+   phantomRig=null;aircraftFx=null;
+   model=buildRicochetVisual(THREE,payload);
+   model.traverse(n=>{if(n.userData?.physical_body)bodyNodes[n.userData.physical_body]=n;});
+   for(const name of ['airframe','sponson_port','sponson_stbd']){const n=model.getObjectByName(name);if(n)bodyNodes[name]=n;}
+   scene.add(model);modelReady=true;model.visible=true;$('loading').hidden=true;
+  }).catch(err=>{
+   assetRetryAfter=performance.now()+1500;loadedAsset=null;$('loading').textContent='Ricochet model load deferred: '+err.message;
+  });
+  return;
+ }
  new GLTFLoader().load(asset+(asset.includes('?')?'&':'?')+'v=20261106-zup-pose-bound-1',async g=>{
  if(asset!==loadedAsset){disposeModel(g.scene);return;}
  if(model){detachPhantomEffects(phantomRig);scene.remove(model);disposeModel(model);}
@@ -460,7 +496,7 @@ async function choosePoint(p){
  updateMarkers();drawMaps();
 }
 async function switchEnvironment(envKey){
- const target=envKey==='sandbox'?'sandbox':'airport';
+ const target=envKey==='ricochet_lake'?'ricochet_lake':envKey==='sandbox'?'sandbox':'airport';
  if(last?.active){
   syncEnvironmentControls(currentEnvironment);
   toast('End and retain the current sortie before switching environments.');
@@ -471,12 +507,15 @@ async function switchEnvironment(envKey){
   const btn=document.querySelector('.workspace-pages button[aria-controls="cockpit-workspace"]');
   btn?.click();
  }
- const variant=$('airframe').value;
+ let variant=$('airframe').value;
+ if(target==='ricochet_lake'&&!variant.startsWith('ricochet'))variant='ricochet-concept-a';
+ else if(target!=='ricochet_lake'&&variant.startsWith('ricochet'))variant='r6';
  const startCfg=$('phantom-start').value;
+ if(model){detachPhantomEffects(phantomRig);scene.remove(model);disposeModel(model);model=null;loadedAsset=null;modelReady=false;}
  const res=await api('/api/environment',{environment:target,airframe_variant:variant,start_configuration:startCfg});
  if(res.world){
-  departure=[...(res.world.default_departure||(target==='sandbox'?[0,0]:[-700,0]))];
-  destination=[...(res.world.default_destination||[-50,20])];
+  departure=[...(res.world.default_departure||(target==='ricochet_lake'?[40,0]:target==='sandbox'?[0,0]:[-700,0]))];
+  destination=[...(res.world.default_destination||(target==='ricochet_lake'?[350,0]:[-50,20]))];
   $('dep').value=departure.join(', ');
   $('dest').value=destination.join(', ');
   buildWorld(res.world);
@@ -493,17 +532,20 @@ async function switchEnvironment(envKey){
    orbit.update();
   }
  }
- toast(target==='sandbox'
-  ?`Switched to Test Sandbox (${departure.join(', ')} m).`
-  :`Switched to Main Airport (${departure.join(', ')} m).`);
+ toast(target==='ricochet_lake'
+  ?`Switched to Ricochet Lake (${departure.join(', ')} m).`
+  :target==='sandbox'
+   ?`Switched to Test Sandbox (${departure.join(', ')} m).`
+   :`Switched to Main Airport (${departure.join(', ')} m).`);
 }
 if($('env-airport'))$('env-airport').onclick=guard(()=>switchEnvironment('airport'));
 if($('env-sandbox'))$('env-sandbox').onclick=guard(()=>switchEnvironment('sandbox'));
+if($('env-ricochet'))$('env-ricochet').onclick=guard(()=>switchEnvironment('ricochet_lake'));
 if($('environment-select'))$('environment-select').onchange=guard(()=>switchEnvironment($('environment-select').value));
 $('start-preset').onchange=guard(async()=>{const value=$('start-preset').value;if(value==='custom')return;pick='a';await choosePoint(value.split(',').map(Number));});
 $('map').onclick=guard(e=>onMap(e,$('map')));$('large-map').onclick=guard(e=>onMap(e,$('large-map')));
 function setPick(p){pick=p;$('pick-a').classList.toggle('selected',p==='a');$('pick-b').classList.toggle('selected',p==='b');$('large-pick').textContent=p.toUpperCase();}
-$('runway-start').onclick=guard(async()=>{pick='a';const pt=currentEnvironment==='sandbox'?[0,0]:[-700,0];await choosePoint(pt);toast(currentEnvironment==='sandbox'?'Departure set at central sandbox test pad: X 0 m, Y 0 m.':'Departure set near runway 08 threshold: X -700 m, Y 0 m.');});
+$('runway-start').onclick=guard(async()=>{pick='a';const pt=currentEnvironment==='ricochet_lake'?[40,0]:currentEnvironment==='sandbox'?[0,0]:[-700,0];await choosePoint(pt);toast(currentEnvironment==='ricochet_lake'?'Departure set in deep basin: X 40 m, Y 0 m.':currentEnvironment==='sandbox'?'Departure set at central sandbox test pad: X 0 m, Y 0 m.':'Departure set near runway 08 threshold: X -700 m, Y 0 m.');});
 $('pick-a').onclick=()=>setPick('a');$('pick-b').onclick=()=>setPick('b');
 for(const [id,p] of [['dep','a'],['dest','b']])$(id).onchange=guard(async()=>{const vals=$(id).value.split(',').map(Number);if(vals.length!==2||vals.some(v=>!Number.isFinite(v)))throw Error('Use two finite coordinates: east, north');setPick(p);await choosePoint(vals);});
 $('map-zoom').onclick=()=>{$('map-dialog').showModal();drawMaps(true);};
@@ -528,7 +570,7 @@ $('objective-form').addEventListener('submit',guard(async(e)=>{
  if($('objective-input').value.trim()===text)$('objective-input').value='';
  toast('Objective saved for this flight.');
 }));
-$('start').onclick=guard(async()=>{replayFrames=null;const variant=$('airframe').value,phantom=variant.startsWith('phantom');const request={environment:currentEnvironment,departure,destination,ignore_scenery_collisions:$('ignore-scenery').checked,landing_precision_m:$('landing-precision').value===''?null:Number($('landing-precision').value),authority:$('pilot').value,time_scale:+$('scale').value,airframe_variant:variant,label:'Map-selected live ground-to-ground attempt'};if(phantom)request.phantom={start_configuration:$('phantom-start').value};if(!phantom)Object.assign(request,{stability_assist:+$('assist').value/100,reference_rpm:+$('drive').value,gear_variant:$('gear').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value,atmosphere_model:$('atmosphere-model').value,wind_world_mps:selectedWind()});const r=await api('/api/mission',request);manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];if(!phantom){command.engine=1;$('engine').value=1;$('engine-value').value='100%';dirty=manualOwned;}toast('Sortie '+r.run_id+' started on the landing gear.');});
+$('start').onclick=guard(async()=>{replayFrames=null;const variant=$('airframe').value,phantom=variant.startsWith('phantom'),ricochet=variant.startsWith('ricochet');const request={environment:ricochet?'ricochet_lake':currentEnvironment,departure,destination,ignore_scenery_collisions:$('ignore-scenery').checked,landing_precision_m:$('landing-precision').value===''?null:Number($('landing-precision').value),authority:$('pilot').value,time_scale:+$('scale').value,airframe_variant:variant,label:ricochet?'Ricochet Lake marine trial':'Map-selected live ground-to-ground attempt'};if(phantom)request.phantom={start_configuration:$('phantom-start').value};if(ricochet){const lc=$('rico-load-case')?.value;if(lc)request.ricochet_load_case=lc;}if(!phantom&&!ricochet)Object.assign(request,{stability_assist:+$('assist').value/100,reference_rpm:+$('drive').value,gear_variant:$('gear').value,fuel_kg:selectedFuel(),engine_power_limit_kw:+$('power-limit').value,atmosphere_model:$('atmosphere-model').value,wind_world_mps:selectedWind()});const r=await api('/api/mission',request);manualOwned=$('pilot').value==='manual';if(manualOwned)manualChannel.postMessage('takeover');track=[];if(ricochet){ricochetPanel?.markDirty();toast('Ricochet run '+r.run_id+' started on Ricochet Lake.');return;}if(!phantom){command.engine=1;$('engine').value=1;$('engine-value').value='100%';dirty=manualOwned;}toast('Sortie '+r.run_id+' started on the landing gear.');});
 $('end').onclick=guard(async()=>{const r=await api('/api/stop',{reason:'Operator ended the live attempt'});toast(`Recorded: ${r.outcome}. Every failed attempt is retained.`);});
 for(const authority of ['manual','colin'])$('retry-'+authority).onclick=guard(async()=>{
  replayFrames=null;
@@ -780,6 +822,18 @@ function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return
 function updateEngineering(){
  if(!last)return;
  const t=last.rendering_truth,o=last.observation;
+ if(t.ricochet){
+  $('engineering-content').textContent=JSON.stringify({
+   identity:{variant:o.configuration?.airframe_variant,hull_variant:o.configuration?.hull_variant,
+    hull_geometry_sha256:o.configuration?.hull_geometry_sha256,model_xml_sha256:t.provenance?.model_xml_sha256,
+    runtime_source_sha256:last.runtime_source_sha256},
+   instruments:o,hydrodynamics:t.hydrodynamics,mass_cg_inertia:t.mass_properties,
+   attachment_loads:t.attachment_loads,water_conservation:t.water_conservation,
+   water_config:t.water_config,body_poses:t.body_poses,pinned_mujoco_meshes:t.provenance?.pinned_mujoco_meshes,
+   events:t.events
+  },null,2);
+  return;
+ }
  if(t.phantom){
   $('engineering-content').textContent=JSON.stringify({
    identity:{variant:o.configuration?.airframe_variant,config_sha256:o.configuration?.config_sha256,
@@ -803,8 +857,9 @@ function updateView(v){
  const nextAsset=visualAsset(v.rendering_truth?.provenance?.render_asset);
  if(model && nextAsset && loadedAsset!==nextAsset){model.visible=false;modelReady=false;renderer.clear();}
  last=v;latestTruthReceivedMs=performance.now();panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
+ if(v.water_frame&&environment.waterMesh){updateWaterSurface(environment.waterMesh,v.water_frame);}
  const envLocked=v.active||document.documentElement.dataset.vtxPreviewPending==='1';
- for(const id of ['environment-select','env-airport','env-sandbox']){const el=$(id);if(el)el.disabled=envLocked;}
+ for(const id of ['environment-select','env-airport','env-sandbox','env-ricochet']){const el=$(id);if(el)el.disabled=envLocked;}
  if(v.environment?.key&&v.environment.key!==currentEnvironment){
   syncEnvironmentControls(v.environment.key);
   if(world&&world.id!==v.environment.id&&!updateView._fetchingWorld){
@@ -821,6 +876,38 @@ function updateView(v){
  $('objective-submit').disabled=!v.active;
 
  const landing=v.landing_assessment; $('landing-evidence').textContent=landing?`Supported landing recorded at ${landing.t_s.toFixed(1)} s; ${landing.destination_distance_m.toFixed(2)} m from destination. Precision: ${landing.precision==='not_specified'?'not specified':landing.precision}.`:'No landing recorded yet.';
+ if(v.rendering_truth?.ricochet||v.observation?.action_schema==='ricochet-1'){
+  phantomPanel?.show(false);document.querySelector('.controls-panel').classList.remove('phantom-active');
+  ricochetPanel??=createRicochetPanel({api,toast,onZoneSelect:async xy=>{pick='a';await choosePoint(xy);}});
+  ricochetPanel?.show(true);ricochetPanel?.update(v);
+  const o=v.observation,velocity=o.gnss_velocity_mps||[0,0,0];
+  if(v.run_id!==lastRun){lastRun=v.run_id;track=[];if(v.mission){departure=[...v.mission.departure];$('dep').value=departure.join(', ');}}
+  if(v.mission&&(destination[0]!==v.mission.destination[0]||destination[1]!==v.mission.destination[1])){destination=[...v.mission.destination];$('dest').value=destination.join(', ');updateMarkers();}
+  $('state').textContent=v.active?(v.paused?'PHYSICS PAUSED':'LIVE MARINE TRIAL · RICOCHET'):'RICOCHET LAKE INSPECTION';
+  $('lamp').style.background=v.active?'#7cdfcb':'#8a9a9d';
+  $('clock').textContent=`${Math.floor(o.t_s/60).toString().padStart(2,'0')}:${(o.t_s%60).toFixed(2).padStart(5,'0')} / ${v.time_scale}×`;
+  $('authority').textContent=v.authority.toUpperCase();
+  $('start').disabled=v.active||document.documentElement.dataset.vtxPreviewPending==='1';$('end').disabled=!v.active;$('pause').disabled=!v.active;
+  $('pause').textContent=v.paused?'Resume existing mission':'Pause physics';
+  $('start').innerHTML='New Ricochet Lake run <span>↗</span>';
+  $('run-id').textContent=v.run_id||'NO SORTIE ACTIVE';showRevision(v);
+  if(document.documentElement.dataset.vtxPreviewPending!=='1'||v.active)$('airframe').value=o.configuration.airframe_variant;
+  setMissionOptions($('airframe').value);
+  for(const id of ['dep','dest','airframe','pilot','ignore-scenery','landing-precision']){const el=$(id);if(el)el.disabled=v.active||(document.documentElement.dataset.vtxPreviewPending==='1'&&id==='airframe');}
+  $('power-label').textContent='SHAFT POWER';
+  $('alt').innerHTML=o.radar_clearance_m==null?'—':o.radar_clearance_m.toFixed(2)+'<small>m</small>';
+  $('vs').innerHTML=velocity[2].toFixed(2)+'<small>m/s</small>';
+  $('speed').innerHTML=Math.hypot(...velocity.slice(0,2)).toFixed(2)+'<small>m/s</small>';
+  $('power').innerHTML=(o.engine_shaft_kw||0).toFixed(1)+'<small>kW</small>';
+  $('fuel').innerHTML=(o.fuel_kg||[]).reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';
+  $('angles').textContent=(o.attitude_xyz_deg||[0,0,0]).map((x,i)=>`${'XYZ'[i]} ${x.toFixed(1)}°`).join(' · ');
+  const h=cockpitHorizon(o.attitude_xyz_deg||[0,0,0]);$('horizon').style.transform=`translateY(${h.pitchDegrees*1.2}px) rotate(${-h.bankDegrees}deg)`;
+  if(v.active&&o.gnss_xy_m&&(!track.length||Math.hypot(o.gnss_xy_m[0]-track.at(-1)[0],o.gnss_xy_m[1]-track.at(-1)[1])>.2)){track.push(o.gnss_xy_m);if(track.length>3000)track.shift();}
+  drawMaps();if($('engineering-dialog').open)updateEngineering();
+  return;
+ }
+ ricochetPanel?.show(false);
+ $('start').innerHTML=$('airframe').value.startsWith('phantom')?'New Phantom FX-A A10 mission <span>↗</span>':'New mission <span>↗</span>';
  if(v.rendering_truth?.phantom){
   phantomPanel??=createPhantomPanel({api,toast});phantomPanel.show(true);phantomPanel.update(v);
   document.querySelector('.controls-panel').classList.add('phantom-active');
@@ -865,7 +952,19 @@ function updateView(v){
  if(v.active&&(!track.length||Math.hypot(o.gnss_xy_m[0]-track.at(-1)[0],o.gnss_xy_m[1]-track.at(-1)[1])>.2)){track.push(o.gnss_xy_m);if(track.length>3000)track.shift();}drawMaps();if($('engineering-dialog').open)updateEngineering();
 }
 let manualRequestPending=false;
-setInterval(guard(async()=>{if(manualRequestPending||last?.rendering_truth?.phantom||!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames)return;manualBeat++;if(dirty){dirty=false;manualRequestPending=true;try{await api('/api/action',{...command,authority:'manual',expected_run_id:last.run_id,observation_id:last.observation.observation_id,reason:'Manual operator controls'});}catch(e){dirty=true;throw e;}finally{manualRequestPending=false;}}}),50);
+setInterval(guard(async()=>{
+ if(manualRequestPending||last?.rendering_truth?.phantom||!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames)return;
+ if(last?.rendering_truth?.ricochet||last?.observation?.action_schema==='ricochet-1'){
+  if(ricochetPanel?.consumeDirty()){
+   manualRequestPending=true;
+   try{await api('/api/action',{...ricochetPanel.getCommand(),authority:'manual',expected_run_id:last.run_id,observation_id:last.observation.observation_id,reason:'Ricochet marine controls'});}
+   catch(e){ricochetPanel?.markDirty();throw e;}
+   finally{manualRequestPending=false;}
+  }
+  return;
+ }
+ manualBeat++;if(dirty){dirty=false;manualRequestPending=true;try{await api('/api/action',{...command,authority:'manual',expected_run_id:last.run_id,observation_id:last.observation.observation_id,reason:'Manual operator controls'});}catch(e){dirty=true;throw e;}finally{manualRequestPending=false;}}
+}),50);
 function connect(){const ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);ws.onmessage=e=>updateView(JSON.parse(e.data));ws.onclose=()=>{toast('Live connection lost; reconnecting. Last accepted controls remain held.');setTimeout(connect,2000);};}
 api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&&w.default_departure.length===2){departure=[...w.default_departure];$('dep').value=departure.join(', ');}buildWorld(w);connect();}).catch(()=>fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{buildWorld(w);$('view-sync').textContent='SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';})).catch(e=>{$('loading').textContent='Unable to load airport: '+e.message;console.error('Airport world',e);});
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
@@ -889,13 +988,19 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
     const angle=rotorVisualOffset(truth.rotor_spin_rad_s?.[i],now-latestTruthReceivedMs,last?.time_scale,last?.active,last?.paused);
     if(angle)n.quaternion.multiply(rotorSpinQ.setFromAxisAngle(rotorSpinAxis,angle));
    }
-  }if(phantomRig){
+  }if(truth.ricochet&&!last?.paused){
+    const rpmP=Number(truth.fan_rpm?.[0]??0),rpmS=Number(truth.fan_rpm?.[1]??0);
+    const ts=last?.time_scale||1;
+    const fp=model.getObjectByName('fan_rotor_port'),fs=model.getObjectByName('fan_rotor_stbd');
+    if(fp&&rpmP>0)fp.rotation.x+=frameDt*(rpmP*Math.PI/30)*ts;
+    if(fs&&rpmS>0)fs.rotation.x-=frameDt*(rpmS*Math.PI/30)*ts;
+   }if(phantomRig){
    const offsets=(truth.phantom?.wheel_rad_s||[]).map(omega=>rotorVisualOffset(omega,now-latestTruthReceivedMs,last?.time_scale,!!last?.active&&!replayFrames,last?.paused));
    updatePhantom(phantomRig,truth,false,offsets);
   }if(truth.pitch_deg)for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
   const physicalTarget=physicalCameraTarget(truth);if(physicalTarget)pos.set(...physicalTarget);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
-  else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position);if(truth.phantom)camera.position.add(new THREE.Vector3(0,.15,.30).applyQuaternion(q));if(!truth.phantom)camera.position.add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);const sight=truth.phantom?new THREE.Vector3(Math.cos(cockpitYaw)*cp,Math.sin(cockpitYaw)*cp,Math.sin(cockpitPitch)):new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch));cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));camera.lookAt(cameraTarget);}
+  else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin||truth.body_poses.airframe,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position);if(truth.phantom)camera.position.add(new THREE.Vector3(0,.15,.30).applyQuaternion(q));else if(truth.ricochet)camera.position.add(new THREE.Vector3(.95,0,1.10).applyQuaternion(q));else camera.position.add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);const sight=(truth.phantom||truth.ricochet)?new THREE.Vector3(Math.cos(cockpitYaw)*cp,Math.sin(cockpitYaw)*cp,Math.sin(cockpitPitch)):new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch));cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));camera.lookAt(cameraTarget);}
   else if(cameraMode==='free'){freeCam.update(0.08);}
   else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);

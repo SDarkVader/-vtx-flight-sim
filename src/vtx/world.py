@@ -139,9 +139,12 @@ class SandboxWorld(TestWorld):
         self.water = dict(x=-265., y=30., half_x=28., half_y=80.)
 
 
+from vtx.water.lake_world import RicochetLakeWorld
+
 ENVIRONMENTS = {
     'airport': TestWorld,
     'sandbox': SandboxWorld,
+    'ricochet_lake': RicochetLakeWorld,
 }
 
 ENVIRONMENT_ALIASES = {
@@ -153,6 +156,10 @@ ENVIRONMENT_ALIASES = {
     'test-sandbox': 'sandbox',
     'test_sandbox': 'sandbox',
     'stage1-valley': 'sandbox',
+    'ricochet_lake': 'ricochet_lake',
+    'ricochet-lake': 'ricochet_lake',
+    'ricochet-water-testbed': 'ricochet_lake',
+    'lake': 'ricochet_lake',
 }
 
 

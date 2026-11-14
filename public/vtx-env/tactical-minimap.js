@@ -94,21 +94,35 @@ export class TacticalMinimap {
     const g = layer.getContext('2d');
     const { px, py, scaleM, w, h } = proj;
 
-    // 1. Terrain elevation contour background
-    g.fillStyle = '#1c2826'; g.fillRect(0, 0, w, h);
+    const isLake = world && (world.environment === 'ricochet_lake' || world.id === 'ricochet-lake-v1');
+    // 1. Terrain / bathymetry elevation contour background
+    g.fillStyle = isLake ? '#081b29' : '#1c2826'; g.fillRect(0, 0, w, h);
     if (world && world.heights_m) {
-      const n = world.heights_m.length;
-      const step = Math.max(1, Math.floor(n / 64));
-      for (let j = 0; j < n - 1; j += step) {
-        for (let i = 0; i < n - 1; i += step) {
+      const ny = world.heights_m.length;
+      const nx = world.heights_m[0] ? world.heights_m[0].length : ny;
+      const hx = world.half_x || world.half_m;
+      const hy = world.half_y || world.half_m;
+      const step = Math.max(1, Math.floor(Math.max(nx, ny) / 80));
+      for (let j = 0; j < ny - 1; j += step) {
+        for (let i = 0; i < nx - 1; i += step) {
           const v = world.heights_m[j][i];
-          const wx = -world.half_m + (i / (n - 1)) * world.half_m * 2;
-          const wy = -world.half_m + (j / (n - 1)) * world.half_m * 2;
-          const shade = Math.min(85, Math.round(35 + v * 0.9));
-          g.fillStyle = `rgb(${shade},${shade + 22},${shade + 14})`;
+          const wx = -hx + (i / (nx - 1)) * hx * 2;
+          const wy = -hy + (j / (ny - 1)) * hy * 2;
+          if (isLake) {
+            if (v < 0) {
+              const d = Math.min(1, Math.abs(v) / 13.0);
+              g.fillStyle = `rgb(${Math.round(34 - 22 * d)},${Math.round(98 - 58 * d)},${Math.round(132 - 58 * d)})`;
+            } else {
+              const e = Math.min(1, v / 14.0);
+              g.fillStyle = `rgb(${Math.round(58 + 18 * e)},${Math.round(78 + 26 * e)},${Math.round(52 + 12 * e)})`;
+            }
+          } else {
+            const shade = Math.min(85, Math.round(35 + v * 0.9));
+            g.fillStyle = `rgb(${shade},${shade + 22},${shade + 14})`;
+          }
           const x0 = px(wx), y0 = py(wy);
-          const x1 = px(wx + (step / (n - 1)) * world.half_m * 2);
-          const y1 = py(wy + (step / (n - 1)) * world.half_m * 2);
+          const x1 = px(wx + (step / (nx - 1)) * hx * 2);
+          const y1 = py(wy + (step / (ny - 1)) * hy * 2);
           g.fillRect(x0, y1, Math.max(1, x1 - x0 + 1), Math.max(1, y0 - y1 + 1));
         }
       }
@@ -133,6 +147,37 @@ export class TacticalMinimap {
     }
     for (let y = Math.ceil(ymin / spacing) * spacing; y <= ymax; y += spacing) {
       g.beginPath(); g.moveTo(0, py(y)); g.lineTo(w, py(y)); g.stroke();
+    }
+
+    if (isLake) {
+      for (const z of world.zones || []) {
+        g.strokeStyle = z.color || '#38bdf8';
+        g.lineWidth = 1.2;
+        if (z.kind === 'rect') {
+          g.strokeRect(px(z.x_min), py(z.y_max), scaleM(z.x_max - z.x_min), scaleM(z.y_max - z.y_min));
+        } else if (z.kind === 'circle' || z.kind === 'ellipse') {
+          g.beginPath();
+          g.ellipse(px(z.cx), py(z.cy), Math.max(2, scaleM(z.r || z.rx)), Math.max(2, scaleM(z.r || z.ry)), 0, 0, Math.PI * 2);
+          g.stroke();
+        }
+      }
+      for (const s of world.structures || []) {
+        const [cx, cy] = s.center;
+        const [ex, ey] = s.half_extents;
+        g.fillStyle = s.color || '#78828c';
+        g.fillRect(px(cx - ex), py(cy + ey), Math.max(2, scaleM(ex * 2)), Math.max(2, scaleM(ey * 2)));
+      }
+      for (const r of world.ramps || []) {
+        g.fillStyle = 'rgba(205, 212, 220, 0.75)';
+        g.fillRect(px(r.x_dry), py(r.y_center + r.width_m * 0.5), Math.max(3, scaleM(Math.abs(r.x_toe - r.x_dry))), Math.max(2, scaleM(r.width_m)));
+      }
+      for (const b of world.buoys || []) {
+        g.fillStyle = b.color || '#f59e0b';
+        g.beginPath();
+        g.arc(px(b.x), py(b.y), Math.max(2, scaleM(b.radius_m * 1.4)), 0, Math.PI * 2);
+        g.fill();
+      }
+      return layer;
     }
 
     const isSandbox = world && (world.environment === 'sandbox' || world.id === 'stage1-valley');
@@ -489,7 +534,8 @@ export class TacticalMinimap {
       this.ctx.font = 'bold 10px system-ui';
       this.ctx.textAlign = 'right';
       const isSandbox = world && (world.environment === 'sandbox' || world.id === 'stage1-valley');
-      this.ctx.fillText(this.tacticalMode ? 'WORLD' : (isSandbox ? 'SANDBOX' : 'AIRPORT'), w - 10, 18);
+      const isLake = world && (world.environment === 'ricochet_lake' || world.id === 'ricochet-lake-v1');
+      this.ctx.fillText(this.tacticalMode ? 'WORLD' : (isLake ? 'RICOCHET LAKE' : (isSandbox ? 'SANDBOX' : 'AIRPORT')), w - 10, 18);
       this.ctx.fillStyle = 'rgba(255,255,255,0.45)';
       this.ctx.fillText('DBL-CLICK / PINCH ZOOM', w - 10, 32);
     }
