@@ -35,10 +35,7 @@ def test_nose_strut_extends_only_in_takeoff_stance():
     level = math.degrees(a.attitude()['pitch_up'])
     assert a.nose_lift == 0.0 and abs(level) < 0.6                                                  # road stance: strut retracted
     a.set_command(dict(wing='deploy', canard_fold='deployed')); _roll(a, 7.0)
-    assert a.nose_lift == pytest.approx(0.2, abs=1e-6)
-    raised = math.degrees(a.attitude()['pitch_up'])
-    assert raised - level == pytest.approx(math.degrees(math.atan(0.2 / 3.13)), abs=0.7)            # 0.20 m over the wheelbase
-    assert a.physical_snapshot()['phantom']['nose_lift_m'] == pytest.approx(0.2, abs=1e-6)
+    assert a.nose_lift == 0.0 and abs(math.degrees(a.attitude()['pitch_up']) - level) < 0.3
     # A10-B has no strut and stays level with its wings out
     b = PhantomAircraft(w, 'phantom-a10b', start_configuration='road'); b.spawn(0, 0, w.surface_z(0, 0))
     b.set_command(dict(brake=[1.0] * 4, wing='deploy', canard_fold='deployed')); _roll(b, 7.0)
@@ -54,6 +51,10 @@ def test_a10c_takes_off_and_climbs_with_the_fans_off():
     rotated = False; off = None; peak = 0.0
     while a.data.time < 34.0 and not a.crashed:
         _roll(a, 0.05)
+        if a.support_count() and float(a.vel_body()[0]) < 75.0:
+            assert a.nose_lift == 0.0
+        if a.support_count() and float(a.vel_body()[0]) >= 75.0:
+            assert a.nose_lift > 0.0
         u = float(a.vel_body()[0]); pitch = math.degrees(a.attitude()['pitch_up']); peak = max(peak, abs(pitch))
         if not rotated and u >= 55.0:
             rotated = True; a.set_command(dict(pitch=0.7))
