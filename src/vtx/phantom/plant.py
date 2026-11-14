@@ -600,7 +600,10 @@ class PhantomAircraft:
         spring reference and travel that move, so the load path stays spring, damper and tyre."""
         m = self.model; P = self.P
         road = all(abs(self.joint(f'pod_{k}')[0]) < math.radians(10) for k in PODS)
-        want = self.nose_lift_max if road and self.wing_state['left'] != 'stowed' else 0.0
+        # Keep the parked aircraft level; extend the nose strut only above take-off speed.
+        speed = abs(float(self.vel_body()[0]))
+        takeoff_roll = speed >= 75.0
+        want = self.nose_lift_max if road and self.wing_state['left'] != 'stowed' and takeoff_roll else 0.0
         step = P.get('suspension.nose_lift_rate_m_s', 0.05) * dt
         self.nose_lift += float(np.clip(want - self.nose_lift, -step, step))
         lo, hi = P['suspension.travel_m']
