@@ -153,14 +153,12 @@ class Mission(BaseModel):
 
 
 def mission_dump(request):
-    """Legacy metadata stays byte-identical: the optional phantom/ricochet blocks are omitted when unset.
+    """Legacy metadata stays byte-identical: the optional phantom block is omitted when unset.
 
     Phantom requests also record whether the top-level fuel_kg was set by the
     operator; an unset value is the four-fan default and is not Phantom fuel."""
     d=request.model_dump()
     if d.get('phantom') is None:d.pop('phantom',None)
-    if d.get('water_config') is None:d.pop('water_config',None)
-    if d.get('ricochet_load_case') is None:d.pop('ricochet_load_case',None)
     if phantom_live.is_phantom_variant(d.get('airframe_variant')):d['fuel_kg_explicit']='fuel_kg' in request.model_fields_set
     return d
 
