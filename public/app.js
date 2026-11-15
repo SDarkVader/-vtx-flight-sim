@@ -35,7 +35,7 @@ import {createAirportOperations} from './vtx-env/airport-operations.js?v=1';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
 import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
-import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261115-historical-replay';import {createPhantomPanel} from './phantom-controls.js?v=20261115-patch-queue';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
+import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261115-authored-wheel-fit';import {createPhantomPanel} from './phantom-controls.js?v=20261115-held-toggle-state';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
 const phantomMissionNote=document.createElement('p');
@@ -431,6 +431,12 @@ const suspensionSchematic=createSuspensionSchematic({
  },
  dispose:disposeModel,
 });
+let suspensionSchematicEnabled=false;
+const suspensionSchematicToggle=$('suspension-schematic-toggle');
+suspensionSchematicToggle.onclick=()=>{
+ suspensionSchematicEnabled=!suspensionSchematicEnabled;
+ suspensionSchematicToggle.setAttribute('aria-pressed',String(suspensionSchematicEnabled));
+};
 // Render the asset identified by the physical snapshot, including during replay.
 function visualAsset(a){return typeof a==='string'&&a.startsWith('/assets/')?a:null;}
 function loadAirframe(asset){
@@ -952,7 +958,7 @@ function drawMap(canvas){
 let lastMapMs=0;
 function drawMaps(force=false){if(!force&&performance.now()-lastMapMs<400)return;lastMapMs=performance.now();drawMap($('map'));if($('map-dialog').open)drawMap($('large-map'));}
 function updateEngineering(){
- if(replayFrames){$('engineering-content').textContent=JSON.stringify({mode:'recorded state',run_context:replayContext,frame:replayFrames[replayFrame],suspension_schematic:suspensionSchematic.status,wheel_visual_fit:phantomRig?.wheels?.map(w=>({pod:['FL','FR','RL','RR'][w.idx],...w.fit}))||[]},null,2);return;}
+ if(replayFrames){$('engineering-content').textContent=JSON.stringify({mode:'recorded state',run_context:replayContext,frame:replayFrames[replayFrame],suspension_schematic:{enabled:suspensionSchematicEnabled,...suspensionSchematic.status},wheel_visual_fit:phantomRig?.wheels?.map(w=>({pod:['FL','FR','RL','RR'][w.idx],...w.fit}))||[]},null,2);return;}
  if(!last)return;
  const t=last.rendering_truth,o=last.observation;
  if(t.phantom){
@@ -966,8 +972,8 @@ function updateEngineering(){
    nose_lift:{spring_seat_setting_m:t.phantom.nose_lift_m,
     front_suspension_joint_m:{FL:t.phantom.joints?.pod_FL_susp,FR:t.phantom.joints?.pod_FR_susp},
     note:'Spring-seat setting and measured wheel suspension travel are different quantities; actuator rod travel is not modelled.'},
-   suspension_schematic:suspensionSchematic.status,
-   wheel_visual_fit:{note:'Presentation alignment and scaling use measured pod positions and tyre colliders; authored GLB is unchanged.',
+   suspension_schematic:{enabled:suspensionSchematicEnabled,...suspensionSchematic.status},
+   wheel_visual_fit:{note:'Authored wheel dimensions and attachment datums are preserved. Measured articulation is applied; collision dimensions and anchor offsets are reported separately and do not resize or relocate the visual assembly.',
     wheels:phantomRig?.wheels?.map(w=>({pod:['FL','FR','RL','RR'][w.idx],...w.fit}))||[]},
    wing_state:t.phantom.wing_state,aerodynamics:t.aero,propulsion:t.propulsors,energy:t.energy,
    control_law:t.fcc,commands:t.command,contacts:t.contact,events:t.events
@@ -1025,7 +1031,8 @@ function updateView(v){
   if(v.inspection_selection_known===false)$('airframe').value='';else if(document.documentElement.dataset.vtxPreviewPending!=='1'||v.active)$('airframe').value=o.configuration.airframe_variant;
   setMissionOptions($('airframe').value);
   for(const id of ['dep','dest','drive','gear','airframe','phantom-start','initial-fuel','power-limit','pilot','atmosphere-model','wind-east','wind-north','wind-up'])$(id).disabled=v.active||(document.documentElement.dataset.vtxPreviewPending==='1'&&(id==='airframe'||id==='phantom-start'));
-  $('alt').innerHTML=o.radar_altimeter_m==null?'—':Math.max(0,o.radar_altimeter_m-(o.radar_altimeter_ground_reference_m||0)).toFixed(2)+'<small>m</small>';
+  const clearance=cockpitTelemetry(o).altitude;
+  $('alt').innerHTML=clearance==='—'?'—':clearance+'<small>m</small>';
   $('vs').innerHTML=velocity[2].toFixed(2)+'<small>m/s</small>';
   $('speed').innerHTML=Math.hypot(...velocity.slice(0,2)).toFixed(2)+'<small>m/s</small>';
   $('power').innerHTML=(o.generator_kw||0).toFixed(1)+'<small>kW</small>';
@@ -1092,10 +1099,13 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
  if(requestedAsset)loadAirframe(requestedAsset);
  if(model)model.visible=!rideEnabled&&modelReady&&loadedAsset===requestedAsset;
  const schematicFresh=!!replayFrames||now-latestTruthReceivedMs<=2000;
- suspensionSchematic.update(model,truth,!rideEnabled&&modelReady&&loadedAsset===requestedAsset&&schematicFresh);
  const schematicStatus=$('suspension-schematic-status'),hasSchematic=!!suspensionSchematicDescriptor(truth);
- schematicStatus.hidden=!hasSchematic||rideEnabled;
- if(hasSchematic)schematicStatus.textContent=!schematicFresh?'SUSPENSION SCHEMATIC · DATA STALE':suspensionSchematic.status.status==='measured'?'MEASURED SUSPENSION SCHEMATIC · PRESENTATION ONLY':suspensionSchematic.status.status==='loading'?'SUSPENSION SCHEMATIC · LOADING':'SUSPENSION SCHEMATIC · MEASUREMENT OR ASSET UNAVAILABLE';
+ if(!hasSchematic){suspensionSchematicEnabled=false;suspensionSchematicToggle.setAttribute('aria-pressed','false');}
+ suspensionSchematicToggle.hidden=!hasSchematic||rideEnabled;
+ const showSchematic=hasSchematic&&suspensionSchematicEnabled&&!rideEnabled;
+ suspensionSchematic.update(model,truth,showSchematic&&modelReady&&loadedAsset===requestedAsset&&schematicFresh);
+ schematicStatus.hidden=!showSchematic;
+ if(showSchematic)schematicStatus.textContent=!schematicFresh?'SUSPENSION SCHEMATIC · DATA STALE':suspensionSchematic.status.status==='measured'?'PHYSICAL SUSPENSION REFERENCE · SCHEMATIC':suspensionSchematic.status.status==='loading'?'SUSPENSION SCHEMATIC · LOADING':'SUSPENSION SCHEMATIC · MEASUREMENT OR ASSET UNAVAILABLE';
  if(truth&&model){for(const [name,pose] of Object.entries(truth.body_poses)){const n=bodyNodes[name];if(!n)continue;n.position.set(...pose.position);const a=pose.quaternion_wxyz;n.quaternion.set(a[1],a[2],a[3],a[0]);
    // The authoritative rotor pose is sampled at 20 Hz. At 1200 RPM one full
    // revolution occurs between samples, so drawing snapshots alone looks static.

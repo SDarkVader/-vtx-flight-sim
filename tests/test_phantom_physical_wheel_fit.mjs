@@ -37,7 +37,7 @@ function assetRig() {
   return model;
 }
 
-test('visual wheels follow MuJoCo body poses and collider sizes in road and articulated states', () => {
+test('visual wheels preserve authored dimensions and attachment datums while following measured articulation', () => {
   const python = process.env.VTX_TEST_PYTHON || 'python';
   const cases = JSON.parse(execFileSync(python, [resolve(root, 'tests/wheel_pose_fixture.py')], {
     cwd: root, env: {...process.env, PYTHONPATH: resolve(root, 'src'), PYTHONDONTWRITEBYTECODE:'1'}, encoding:'utf8', maxBuffer: 4 * 1024 * 1024,
@@ -55,15 +55,25 @@ test('visual wheels follow MuJoCo body poses and collider sizes in road and arti
       assert.equal(wheel.podJoint.node.visible, true, `${c.variant} ${pod} pod visible`);
       assert.equal(wheel.fit.pose_status, pod.startsWith('R') ? 'measured-fixed-steering' : 'measured');
       const actualPos = wheel.node.getWorldPosition(new THREE.Vector3());
-      assert.ok(actualPos.distanceTo(new THREE.Vector3(...expected.position)) < 3e-5, `${c.variant} ${c.tilted} ${pod} center: ${actualPos.toArray()} vs ${expected.position}`);
+      const authoredNode = json.nodes.find(n => n.extras?.phantom_joint === `pod_${pod}`);
+      assert.ok(wheel.podJoint.node.position.distanceTo(new THREE.Vector3(...authoredNode.translation)) < 1e-12, 'original attachment remains intact');
+      const airQ = new THREE.Quaternion(air.quaternion_wxyz[1], air.quaternion_wxyz[2], air.quaternion_wxyz[3], air.quaternion_wxyz[0]).normalize();
+      const physicalAnchor = new THREE.Vector3(...c.truth.body_poses[`pod_${pod}`].position)
+        .sub(new THREE.Vector3(...air.position)).applyQuaternion(airQ.clone().invert());
+      const authoredOffset = new THREE.Vector3(...authoredNode.translation).sub(physicalAnchor);
+      const expectedVisualPos = new THREE.Vector3(...expected.position).add(authoredOffset.clone().applyQuaternion(airQ));
+      assert.ok(actualPos.distanceTo(expectedVisualPos) < 3e-5, `${c.variant} ${c.tilted} ${pod} authored center follows suspension`);
       const eq = expected.quaternion_wxyz;
       const actualQ = wheel.node.getWorldQuaternion(new THREE.Quaternion());
       const expectedQ = new THREE.Quaternion(eq[1], eq[2], eq[3], eq[0]);
       assert.ok(1 - Math.abs(actualQ.dot(expectedQ)) < 1e-8, `${c.variant} ${c.tilted} ${pod} orientation`);
-      assert.equal(wheel.fit.status, 'collider-aligned');
+      assert.equal(wheel.fit.status, 'authored-visual');
       const collider = c.truth.phantom.wheel_collision_geometry[pod];
-      assert.ok(Math.abs(wheel.authored.radius_m * wheel.node.scale.x - collider.radius_m) < 1e-8);
-      assert.ok(Math.abs(wheel.authored.half_width_m * wheel.node.scale.y - collider.half_width_m) < 1e-8);
+      assert.deepEqual(wheel.node.scale.toArray(), [1,1,1], 'collision dimensions never resize the authored wheel');
+      assert.ok(Math.abs(wheel.authored.radius_m - .36) < 1e-6);
+      assert.deepEqual(wheel.fit.collider, collider, 'collider dimensions remain inspectable');
+      assert.ok(new THREE.Vector3(...wheel.fit.visual_minus_collision_anchor_m).distanceTo(authoredOffset) < 1e-12);
+      assert.equal(wheel.fit.size_comparison, Math.abs(wheel.authored.radius_m-collider.radius_m)<1e-5 && Math.abs(wheel.authored.half_width_m-collider.half_width_m)<1e-5 ? 'matches' : 'different');
     }
     const unknown = structuredClone(c.truth); unknown.variant = 'unknown-phantom';
     updatePhantom(rig, unknown, false, [], true);
@@ -77,11 +87,13 @@ test('visual wheels follow MuJoCo body poses and collider sizes in road and arti
     const wrongConfig = structuredClone(c.truth); wrongConfig.config_sha256 = 'unverified';
     updatePhantom(rig, wrongConfig, false, [], true);
     assert.equal(rig.wheels.find(w => w.idx === 2).node.visible, false, 'unverified configuration cannot assume fixed steering');
-    // An old recording without collider/pose telemetry must not retain a stale
-    // adjustment from a previous aircraft frame.
+    // An old recording without collider/pose telemetry keeps its authored fit;
+    // diagnostics must not carry a collider comparison over from another frame.
     updatePhantom(rig, {phantom: {joints: {}}});
     for (const wheel of rig.wheels) {
-      assert.equal(wheel.fit.status, 'unavailable');
+      assert.equal(wheel.fit.status, 'authored-visual');
+      assert.equal(wheel.fit.size_comparison, 'unavailable');
+      assert.equal(wheel.fit.collision_anchor_m, null);
       assert.deepEqual(wheel.node.scale.toArray(), [1, 1, 1]);
       assert.ok(wheel.podJoint.node.position.distanceTo(wheel.podJoint.pos) < 1e-12);
     }

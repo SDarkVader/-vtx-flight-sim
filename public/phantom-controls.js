@@ -8,6 +8,23 @@ export function heartbeatDue({engaged,pending,view,dirty,beat,engagedRun}){
   if(engagedRun!==undefined&&view.run_id!==engagedRun)return false;
   return dirty;
 }
+// Buttons describe the held command and offer the opposite group action.
+// Pending local edits retain their optimistic state until the plant confirms them.
+export function heldControlToggles(command={},optimisticFields=new Set()){
+  const result={};
+  if(!optimisticFields.has('wing')&&['deploy','stow'].includes(command.wing))result.wing={value:command.wing==='deploy',label:'Wing '+(command.wing==='deploy'?'stow':'deploy')};
+  if(!optimisticFields.has('canard_fold')&&['deployed','folded'].includes(command.canard_fold))result.can={value:command.canard_fold==='deployed',label:'Canards '+(command.canard_fold==='deployed'?'fold':'deploy')};
+  for(const [field,key,threshold] of [['pod_tilt_deg','vtol',45],['leg_extension_m','legsExtended',.26],['brake','brakes',.5]]){
+    const values=command[field];
+    if(optimisticFields.has(field)||!Array.isArray(values)||values.length!==4||!values.every(Number.isFinite))continue;
+    const uniform=values.every(x=>Math.abs(x-values[0])<1e-9),value=values.every(x=>x>threshold),n=values[0];
+    const label=field==='pod_tilt_deg'?'Pods / wheels: '+(uniform?Number(n.toFixed(1))+'°':'mixed'):
+      field==='leg_extension_m'?'Legs: '+(uniform?(Math.abs(n)<1e-9?'retracted':Math.abs(n-.52)<1e-9?'extended':n.toFixed(2)+' m'):'mixed'):
+      'Brakes '+(uniform?(Math.abs(n)<1e-9?'off':Math.abs(n-1)<1e-9?'on':n.toFixed(2)):'mixed');
+    result[key]={value,label};
+  }
+  return result;
+}
 import {parseUtterance,statusReadback,createSpeech,speak} from './voice-pilot.js?v=1';
 import {cockpitTelemetry} from './cockpit-telemetry.js?v=1';
 import {flapInterlockMessage} from './flap-interlock.js?v=1';
@@ -121,6 +138,12 @@ export function createPhantomPanel({api,toast}){
         if(!engaged)for(const key of Object.keys(cmd))if(key!=='schema'&&t.command[key]!=null)cmd[key]=structuredClone(t.command[key]);
         if(!dirty&&!pending)for(const input of el.querySelectorAll('[data-live-field]')){const raw=t.command[input.dataset.liveField];const value=input.dataset.liveIndex!=null?raw?.[Number(input.dataset.liveIndex)]:raw;if(value!=null&&document.activeElement!==input){input.value=value;input.parentElement.querySelector('output').value=Number(value).toFixed(2);}}
         if(!dirty&&!pending&&document.activeElement!==el.querySelector('#ph-mode'))el.querySelector('#ph-mode').value=t.command.stability_mode||'attitude';
+        const held=heldControlToggles(t.command,optimisticFields);
+        if(held.vtol){vtol=held.vtol.value;el.querySelector('#ph-gear').textContent=held.vtol.label;}
+        if(held.legsExtended){legsExtended=held.legsExtended.value;el.querySelector('#ph-legs').textContent=held.legsExtended.label;}
+        if(held.brakes){brakes=held.brakes.value;el.querySelector('#ph-brake').textContent=held.brakes.label;}
+        if(held.wing){wing=held.wing.value;el.querySelector('#ph-wing').textContent=held.wing.label;}
+        if(held.can){can=held.can.value;el.querySelector('#ph-canard').textContent=held.can.label;}
       }
       const fmt=(x)=>x!=null&&Number.isFinite(Number(x))?Number(x).toFixed(1)+'°':'—'; const pair=(x)=>Array.isArray(x)?x.map(fmt).join(' / '):'—'; const truth=t.phantom||{};
       el.querySelector('#ph-aircraft').textContent=(o.configuration?.airframe_variant||'phantom').toUpperCase()+' · LIVE CONTROLS';

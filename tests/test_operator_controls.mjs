@@ -11,7 +11,7 @@ const dataUrl=async f=>{
   return 'data:text/javascript;base64,'+Buffer.from(src).toString('base64');
 };
 const load=async f=>import(await dataUrl(f));
-const {heartbeatDue}=await load('phantom-controls.js');
+const {heartbeatDue,heldControlToggles}=await load('phantom-controls.js');
 const {cockpitToBody}=await load('tilt-direction.js');
 const {createPatchQueue,editArrayCommand}=await load('phantom-command-queue.js');
 const {renderReadout}=await load('phantom-readouts.js');
@@ -66,4 +66,25 @@ test('readouts clear unavailable values and distinguish zero from missing',()=>{
   assert.equal(meter.hidden,true);assert.equal(output.textContent,'—');
   renderReadout(meter,0,{unit:' m'});renderReadout(output,0,{unit:' m'});
   assert.equal(meter.hidden,false);assert.equal(meter.value,0);assert.equal(output.textContent,'0.00 m');
+});
+
+test('restored held commands determine toggle actions without sending new commands',()=>{
+  const command={wing:'deploy',canard_fold:'deployed',brake:[1,1,1,1],pod_tilt_deg:[0,0,0,0],leg_extension_m:[.52,.52,.52,.52]};
+  const before=structuredClone(command),state=heldControlToggles(command);
+  assert.deepEqual(state.wing,{value:true,label:'Wing stow'});
+  assert.deepEqual(state.can,{value:true,label:'Canards fold'});
+  assert.deepEqual(state.brakes,{value:true,label:'Brakes on'});
+  assert.deepEqual(state.vtol,{value:false,label:'Pods / wheels: 0°'});
+  assert.deepEqual(state.legsExtended,{value:true,label:'Legs: extended'});
+  assert.deepEqual(command,before);
+  assert.deepEqual(heldControlToggles({wing:'stow',canard_fold:'folded'}),{
+    wing:{value:false,label:'Wing deploy'},can:{value:false,label:'Canards deploy'}});
+});
+
+test('unacknowledged edits and unavailable commands cannot be replaced by an old snapshot',()=>{
+  const state=heldControlToggles({wing:'stow',brake:[0,0,0,0],pod_tilt_deg:[90,90,90,90]},new Set(['wing','brake']));
+  assert.equal(state.wing,undefined);assert.equal(state.brakes,undefined);
+  assert.deepEqual(state.vtol,{value:true,label:'Pods / wheels: 90°'});
+  assert.deepEqual(heldControlToggles({wing:'unknown',brake:[NaN,1,1,1]}),{});
+  assert.equal(heldControlToggles({brake:[0,1,0,1]}).brakes.label,'Brakes mixed');
 });

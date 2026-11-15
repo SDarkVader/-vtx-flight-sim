@@ -963,7 +963,8 @@ class PhantomAircraft:
                         bus_last=self.bus.last, flap_interlock=self.flap_interlock,
                         ring_i=self.ring_i, ring_full=self.ring_full,
                         ring_zlib_b64=base64.b64encode(zlib.compress(self.ring.tobytes(), 1)).decode('ascii'))
-        return checkpoint_json(dict(checkpoint_format=2, integration_spec=int(spec), integration_state=integration,
+        return checkpoint_json(dict(checkpoint_format=3, integration_spec=int(spec), integration_state=integration,
+                    sensor_calibration=dict(schema=1, radar_ground_reference_m=getattr(self, 'radar_ground_reference_m', None)),
                     dependency_versions=dict(python='.'.join(map(str, sys.version_info[:3])), numpy=np.__version__, mujoco=mj.__version__),
                     model_state=dict(body_mass=m.body_mass, body_inertia=m.body_inertia,
                                      qpos_spring=m.qpos_spring, jnt_range=m.jnt_range,
@@ -978,8 +979,18 @@ class PhantomAircraft:
                     stab_te_up=self.stab_te_up, jet_spool=list(self.jet_spool)))
 
     def restore_state(self, s):
-        if s.get('checkpoint_format') != 2:
+        if s.get('checkpoint_format') == 2:
+            raise ValueError('Phantom checkpoint lacks retained radar sensor calibration; retained for inspection')
+        if s.get('checkpoint_format') != 3:
             raise ValueError('Phantom checkpoint lacks state required for a verified continuation')
+        calibration = s.get('sensor_calibration')
+        if (not isinstance(calibration, dict) or calibration.get('schema') != 1 or
+                isinstance(calibration.get('schema'), bool) or 'radar_ground_reference_m' not in calibration):
+            raise ValueError('Phantom checkpoint lacks retained radar sensor calibration')
+        radar_reference = calibration['radar_ground_reference_m']
+        if radar_reference is not None and (isinstance(radar_reference, bool) or
+                not isinstance(radar_reference, (int, float)) or not math.isfinite(radar_reference)):
+            raise ValueError('Invalid checkpoint radar sensor calibration')
         versions = dict(python='.'.join(map(str, sys.version_info[:3])), numpy=np.__version__, mujoco=mj.__version__)
         if s.get('dependency_versions') != versions:
             raise ValueError('Checkpoint Python, NumPy or MuJoCo version differs from this runtime')
@@ -1013,6 +1024,7 @@ class PhantomAircraft:
         self.crashed = s['crashed']; self.max_alt = s['max_alt']; self.max_impact_n = s['max_impact_n']; self.step_count = s['step_count']
         self._restored_contact_samples = s['contact_samples'] if self.step_count % 4 == 0 else None
         self.airborne = s['airborne']; self.spawn_z = s['spawn_z']
+        self.radar_ground_reference_m = radar_reference
         self.stab_te_up = s.get('stab_te_up', self.stab_te_up); self.jet_spool = list(s.get('jet_spool', self.jet_spool))
         e = s['evolving']
         self.wing_timer = dict(e['wing_timer']); self.nose_lift = float(e['nose_lift'])

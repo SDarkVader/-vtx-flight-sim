@@ -156,8 +156,8 @@ export function attachPhantom(model) {
     }
     const spokes = j.node.getObjectByName(`VTX_VISUAL_WHEEL_${cad}_VTX_ALLOY_SPOKES`);
     if (spokes) wheel.attach(spokes);
-    // Measure the authored tyre in wheel coordinates. The original asset remains
-    // untouched; radial scaling is uniform around the physical wheel axis.
+    // Measure the authored tyre for inspection. Collision dimensions do not
+    // resize the accepted visual assembly or move its authored attachments.
     const tyre = wheel.getObjectByName(`WHEEL_${cad}_CLOSED_TYRE`);
     let authored = null;
     if (tyre?.isMesh && tyre.geometry) {
@@ -272,26 +272,28 @@ export function updatePhantom(rig, truth, parked = false, wheelOffsets = [], req
     const pod = PODS[wheel.idx];
     const rootPose = truth.body_poses?.airframe, podPose = truth.body_poses?.[`pod_${pod}`];
     const validArray = (a, n) => Array.isArray(a) && a.length === n && a.every(Number.isFinite);
-    let anchorAligned = false;
+    let collisionAnchor = null;
     if (!parked && wheel.podJoint.node.parent?.name === 'airframe' && validArray(rootPose?.position, 3) && validArray(rootPose?.quaternion_wxyz, 4) && validArray(podPose?.position, 3)) {
       const r = rootPose.quaternion_wxyz;
       const inverse = new THREE.Quaternion(r[1], r[2], r[3], r[0]);
       if (inverse.lengthSq() > 1e-12) {
         inverse.normalize().invert();
-        wheel.podJoint.node.position.fromArray(podPose.position).sub(new THREE.Vector3().fromArray(rootPose.position)).applyQuaternion(inverse);
-        anchorAligned = true;
+        collisionAnchor = new THREE.Vector3().fromArray(podPose.position).sub(new THREE.Vector3().fromArray(rootPose.position)).applyQuaternion(inverse);
       }
     }
-    if (!anchorAligned) wheel.podJoint.node.position.copy(wheel.podJoint.pos);
+    // Keep the original mesh assembly intact. The collision model has different
+    // tyre dimensions and attachment datums; those differences are diagnostics,
+    // not a reason to enlarge or relocate individual visible components.
+    wheel.podJoint.node.position.copy(wheel.podJoint.pos);
     const physical = truth.phantom?.wheel_collision_geometry?.[pod];
-    if (!parked && wheel.authored && Number.isFinite(physical?.radius_m) && physical.radius_m > 0 && Number.isFinite(physical?.half_width_m) && physical.half_width_m > 0) {
-      const radial = physical.radius_m / wheel.authored.radius_m, width = physical.half_width_m / wheel.authored.half_width_m;
-      wheel.node.scale.set(radial, width, radial);
-      wheel.fit = {status: anchorAligned ? 'collider-aligned' : 'collider-scaled-anchor-unavailable', authored: wheel.authored, collider: physical, radial_scale: radial, width_scale: width};
-    } else {
-      wheel.node.scale.set(1, 1, 1);
-      wheel.fit = {status: anchorAligned ? 'anchor-aligned-size-unavailable' : 'unavailable'};
-    }
+    const colliderKnown = Number.isFinite(physical?.radius_m) && physical.radius_m > 0 && Number.isFinite(physical?.half_width_m) && physical.half_width_m > 0;
+    wheel.node.scale.set(1, 1, 1);
+    wheel.fit = {status:'authored-visual', authored:wheel.authored, collider:colliderKnown ? physical : null,
+      authored_anchor_m:wheel.podJoint.pos.toArray(), collision_anchor_m:collisionAnchor?.toArray() ?? null,
+      visual_minus_collision_anchor_m:collisionAnchor ? wheel.podJoint.pos.clone().sub(collisionAnchor).toArray() : null,
+      size_comparison:!wheel.authored || !colliderKnown ? 'unavailable' :
+        Math.abs(wheel.authored.radius_m-physical.radius_m)<1e-5 && Math.abs(wheel.authored.half_width_m-physical.half_width_m)<1e-5 ? 'matches' : 'different',
+      radial_scale:1, width_scale:1};
     const suspension = q?.[`pod_${pod}_susp`];
     const steering = q?.[`pod_${pod}_steer`];
     const angle = wheelAngle(q?.[`pod_${pod}_wheel`], wheelOffsets[wheel.idx]);
