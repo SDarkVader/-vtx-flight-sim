@@ -1,7 +1,13 @@
 # Phantom A10-C: take-off and flight without the lift fans (11 November 2026)
 
+This is a preserved **11 November study**. Its schedules and figures describe
+that study and must not be substituted for the later recorded pilot flights.
+Current defaults and promotion decisions are described in the
+[README](../../README.md); A10-B is a pinned reference, not a promoted Main
+Aircraft default in the continuity integration.
+
 `phantom-a10c` is a **development** variant: A10-B plus two changes. A10-B (`phantom-a10b`, config `3ecae1a9`) is unchanged
-and remains the pinned default. Every figure here is from the MuJoCo plant with scripted test inputs, not a piloted
+and was the pinned default for this study. Every figure in the original study below is from the MuJoCo plant with scripted test inputs, not a piloted
 flight or a measurement.
 
 ## What stopped A10-B
@@ -54,3 +60,50 @@ Schedule used: brakes off, full wheel drive and boosters, wings and canards out,
 * Flaps still retract automatically above 75 m/s; ducted-fan crossflow and ground effect on the hull are not modelled.
 * A bug found on the way: `/api/view` failed with turbojet boosters selected (the engine name could not be converted
   to a number). Fixed in `plant.py`.
+
+## Recovered recorded flights and current integration (15 November 2026)
+
+The owner has numerous successful takeoffs. The recorded 12 November flights
+are independent evidence of that behavior; a later outcome does not erase an
+earlier demonstrated takeoff. The integrated revisions remain separate and
+unpromoted while the owner tests both.
+
+| Integrated candidate | Recorded parent runtime | Original evidence and environment |
+| --- | --- | --- |
+| `phantom-a10c-runway-20261112` | `26ec2aa2…`, commit `b38d5f1b…` | Runway takeoffs `20261112T132734-215fcf` (airport) and `20261112T135625-df0959` (sandbox) |
+| `phantom-a10c-vtol-20261112` | `3b30e763…`, commit `eb855817…` | Vertical takeoffs and sustained flight `20261112T204732-17cc37` and `20261112T211016-e9d0ab` (airport) |
+
+Exact parent/configuration/asset hashes and original run associations are in
+[the registry](../../inputs/flight_revisions.json). Original flight folders are
+retained in the local data archive; the repository does not duplicate those
+large logs. Read the project's continuity record before selecting a live
+runtime or data directory.
+
+The recorded runway flight established the 0.20 m spring-seat setting before
+acceleration: full extension by 5.67 s, drive/booster command at 12.255 s, and
+the final continuous no-wheel-support interval near 35.02 s at about 78.9 m/s.
+It climbed before its later collision. These timings differ from the original
+study schedule above. The flap command remained held while the airspeed
+interlock retracted the actual flaps near 75 m/s; that did not prevent the
+recorded takeoff. Do not attribute the later collision to a tail strike or one
+control mechanism without contact evidence.
+
+The current integrated Python tree is pinned by the registry to
+`94e13085e9d7b6d5c1c4e87547d621fbd3655f0fd2764f862b8e37bbddc70cc0`.
+Offline recorded-control reproductions used the original manual patch semantics,
+recorded issue times, 20 ms transport, 400 Hz integration, airport model and
+129 kg initial fuel. The first 42 s / 4,200 samples of the runway run and
+45 s / 4,500 samples of the VTOL run match all 16 compared channels at stored
+CSV precision. The reproducible harness is
+[`tools/reproduce_recorded_phantom.py`](../../tools/reproduce_recorded_phantom.py).
+The local `final14` comparison/evidence paths are recorded in the continuity
+record. These results establish the requested takeoff reproductions, not a
+complete flight envelope or owner acceptance.
+
+The newer dashboard/instruments/controls are retained. The cockpit now uses
+the original authored B wheel sizes/mounts, measured articulation, and an
+[optional measured-suspension schematic](A10C_SUSPENSION_SCHEMATIC.md).
+Ground cockpit checks verified deployed wings/canards and nose-up attitude.
+Format-3 calibrated save → inspect VTOL → restore-paused returned identical
+checkpoint bytes/state and retained the 0.11 m radar reference. Owner flight
+tests and Main Aircraft promotion remain outstanding.

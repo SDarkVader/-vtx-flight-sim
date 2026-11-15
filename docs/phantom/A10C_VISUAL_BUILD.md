@@ -1,8 +1,41 @@
-# Phantom A10-C visual assembly — isolated derived build (13 November 2026)
+# Phantom A10-C visuals — current schematic and preserved provisional assembly
+
+## Current integration (15 November 2026)
+
+The two unpromoted recovered candidates in [the flight revision registry](../../inputs/flight_revisions.json),
+`phantom-a10c-runway-20261112` and `phantom-a10c-vtol-20261112`, retain the original
+`public/assets/phantom-a10b-visual.glb` (SHA-256
+`45364301f2950ca57e5b34ac73d29b0abe11471dd82f0fe0e5068da70418a93e`).
+Its authored wheel dimensions and pod attachments are preserved. A trial that
+enlarged wheels to their collision dimensions and relocated pod anchors failed
+cockpit visual acceptance and was removed; collision discrepancies are reported
+in Engineering rather than applied as visible mesh deformation.
+
+The **Suspension schematic** control enables a separate physical reference,
+off by default. Its asset is `public/assets/phantom-a10c-suspension-schematic.glb`
+(SHA-256 `c571a3bcbcebd67651c5f202e566a9762460cc7819da20feb3f99de1e08466e5`),
+with editable source `assets/derived/phantom-a10c-suspension-schematic.blend`
+and generator `tools/phantom/build_suspension_schematic.py`.
+See [its dimensions and node contract](A10C_SUSPENSION_SCHEMATIC.md).
+
+This overlay uses measured pod/wheel body poses from the same snapshot. It
+depicts wheel-to-pod displacement along pod-local +Z; the measured suspension
+joint is reported separately. The spring-seat setting does not drive a
+fabricated actuator rod. The model has no separate rod or structural attachment
+geometry, and the reference can be offset from the authored visible wheel.
+Historical variants without the explicit schematic descriptor retain their
+original visual. Neither candidate is promoted by this visual update.
+
+## Preserved 13 November provisional build
+
+The sections below describe the earlier, unwired parts/composite experiment.
+They are retained as construction history, not the selected cockpit asset or
+proof of a physical linkage. Its provisional front labels/mounts and missing
+rest metadata are not suitable for direct binding to the measured suspension.
 
 ## Scope
 
-This is a **development visual** for `phantom-a10c`. Keep the canonical A10-B visual, its GLB and its pinned configuration unchanged. The primary changes are four P7 TJ150-class turbojets and two front takeoff-stance linear actuators. This work does **not** implement the optional larger stabilator, improve the tyre model, add rear-pod downlocks, or change flight physics.
+This is a **preserved provisional development visual** for `phantom-a10c`. Keep the canonical A10-B visual, its GLB and its pinned configuration unchanged. The primary additions are four P7 TJ150-class turbojet envelopes and two illustrative front takeoff-stance actuator packages. This work does **not** implement the optional larger stabilator, improve the tyre model, add rear-pod downlocks, or change flight physics.
 
 The master is made **outside the tracked source model directory** in `assets/derived/phantom-a10c-parts.blend`. A copy of the editable master is saved in the private Blendstra project at:
 

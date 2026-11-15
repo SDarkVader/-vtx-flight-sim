@@ -6,12 +6,24 @@ datums/guides and orange moving carriers. It is a diagram, not recovered actuato
 hardware or a structural design. It adds no mass, collision shape, force or
 aircraft trajectory.
 
+The cockpit's **Suspension schematic** button is off by default. Enable it
+only when inspecting the physical reference; the normal authored aircraft
+view remains clear. The cyan/orange graphics are not structural mounts on the
+visible B model. Engineering reports the reference/visual offsets separately.
+
 ## Files
 
 - Editable Blender master: `assets/derived/phantom-a10c-suspension-schematic.blend`.
 - Browser derivative: `public/assets/phantom-a10c-suspension-schematic.glb`.
 - Generator: `tools/phantom/build_suspension_schematic.py`.
 - Standalone preview: `assets/derived/phantom-a10c-suspension-schematic.png`.
+
+The current GLB SHA-256 is
+`c571a3bcbcebd67651c5f202e566a9762460cc7819da20feb3f99de1e08466e5`.
+The per-candidate descriptor in
+[`inputs/flight_revisions.json`](../../inputs/flight_revisions.json) records it;
+the browser verifies fetched bytes before parsing. A missing or changed asset
+is reported rather than replaced.
 
 The preview uses an illustrative selected slide of -0.20 m. It is not a recorded
 flight state. The master and GLB retain a zero-displacement rest pose.
@@ -45,6 +57,14 @@ schematic does not claim them. It does not display `nose_lift_m` as measured rod
 travel; that value controls the suspension spring-seat reference and remains a
 separate readout.
 
+The B visual's authored pod datum is y ±1.04 m, z 0.42 m; the recorded physical
+pod datum is y ±1.25 m, z 0.61 m. The authored tyre radius is approximately
+0.36 m while the physical collider radius is 0.55 m. Enlarging and relocating
+only the visible wheels to those collision values disrupted the assembly fit
+and failed cockpit acceptance. The authored geometry is restored; this
+optional reference continues to show the measured physical datums without
+claiming that they coincide with the visible hardware.
+
 ## Runtime node contract
 
 Root: `VTX_A10C_SUSPENSION_SCHEMATIC`.
@@ -70,7 +90,10 @@ For each physical side `FL` / `FR`:
 Use measured pod/wheel state from the same timestamp; never drive this overlay
 from a command or the spring-seat target. Keep it hidden until its identity and
 required state are available. Live cockpit verification is a separate required
-check.
+check. The off → on → off control and missing/stale status behavior were checked
+in the actual cockpit on 15 November. The restored normal view and fully
+deployed canards/wings were inspected after the wheel-size correction; owner
+flight acceptance remains separate.
 
 ## Rebuild
 
