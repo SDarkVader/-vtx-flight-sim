@@ -147,9 +147,17 @@ class SandboxWorld(TestWorld):
         self.water = dict(x=-265., y=140., half_x=28., half_y=80.)
 
 
+def _historical_r6_valley(seed=41031):
+    # Deferred import avoids a cycle: the historical world shares TestWorld's
+    # interpolation and validation methods but has its own recovered geometry.
+    from .r6_historical_valley import R6HistoricalValley
+    return R6HistoricalValley(seed=seed)
+
+
 ENVIRONMENTS = {
     'airport': TestWorld,
     'sandbox': SandboxWorld,
+    'r6-valley-20261103': _historical_r6_valley,
 }
 
 ENVIRONMENT_ALIASES = {
@@ -161,6 +169,7 @@ ENVIRONMENT_ALIASES = {
     'test-sandbox': 'sandbox',
     'test_sandbox': 'sandbox',
     'stage1-valley': 'sandbox',
+    'r6-valley-20261103': 'r6-valley-20261103',
 }
 
 

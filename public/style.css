@@ -101,6 +101,14 @@
 #cockpit-look:not([hidden]){bottom:58px}
 @media(max-width:800px){#cockpit-look:not([hidden]){bottom:56px}#viewport:has(#cockpit-instruments:not([hidden])) #attitude,#viewport:has(#cockpit-instruments:not([hidden])) #view-mode{display:none}}
 
+/* A stopped feed must not leave an apparently valid artificial horizon. */
+#attitude-status{position:absolute;top:4px;left:5px;font:8px ui-monospace,monospace;color:#e8fff7;text-shadow:0 1px 3px #000}
+#attitude[data-status="stale"] #horizon{opacity:.3}
+#attitude[data-status="stale"] #attitude-status,#attitude[data-status="unavailable"] #attitude-status{color:#ffcf91;font-weight:700}
+.aircraft-choice{margin:18px 0;padding:12px;border:1px solid #52746e;border-radius:7px;background:#14282a}
+.aircraft-choice .section-label{color:#9fe6d6;font-weight:700;letter-spacing:1.4px}
+.aircraft-pending{font-size:11px;line-height:1.6;color:#d5e7e1}
+
 /* The airport controls share the original header typography and use one row. */
 header{position:relative;z-index:20;height:auto;min-height:88px;flex-wrap:wrap;align-content:center;column-gap:18px;row-gap:2px;padding-top:5px;padding-bottom:5px;background:#0d151d}
 .header-actions{display:none}
@@ -137,3 +145,16 @@ main{height:calc(100vh - 178px)}
  #scene-caption{display:none}
  #view-tools{top:46px;right:7px}
 }
+
+/* Recorded inspection must not present live controls and gauges as replay data. */
+html[data-vtx-replay="1"] .mission-panel,
+html[data-vtx-replay="1"] .controls-panel,
+html[data-vtx-replay="1"] footer,
+html[data-vtx-replay="1"] header .status,
+html[data-vtx-replay="1"] #environment-switch,
+html[data-vtx-replay="1"] #scene-caption,
+html[data-vtx-replay="1"] #consequence,
+html[data-vtx-replay="1"] #fork-checkpoint,
+html[data-vtx-replay="1"] #ride-controls { visibility:hidden !important; }
+
+#suspension-schematic-status{position:absolute;top:2.8rem;left:.75rem;z-index:9;max-width:calc(100% - 1.5rem);padding:.25rem .5rem;background:#123246e6;color:#9be3ee;border-radius:5px;font:600 11px system-ui;pointer-events:none}

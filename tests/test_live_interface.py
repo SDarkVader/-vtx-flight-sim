@@ -254,9 +254,11 @@ def test_retry_preserves_or_explicitly_changes_fuel(tmp_path,monkeypatch):
     assert (original/'summary.json').read_bytes()==summary_bytes
     assert hashlib.sha256(lab.memory_path.read_bytes()).hexdigest()==memory_hash
     lab.stop('End isolated reduced-fuel retry')
-    # Historical metadata predating the fuel field always represented 60 kg.
+    # An absent fuel field is not enough evidence to choose a loading.
     lab.retry_hint['request'].pop('fuel_kg')
-    lab.retry({'authority':'manual'})
+    with pytest.raises(server.HTTPException, match='no fuel loading'):
+        lab.retry({'authority':'manual'})
+    lab.retry({'authority':'manual','fuel_kg':60.})
     assert lab.aircraft.fuel_initial.sum()==pytest.approx(60.)
     lab.stop('End isolated legacy fuel compatibility check')
 

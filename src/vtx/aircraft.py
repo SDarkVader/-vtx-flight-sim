@@ -17,6 +17,7 @@ from ._rotation import Rotation
 from .aero import BladeElementModel, ideal_hover
 from .atmosphere import standard_air_density
 from .world import TestWorld
+from .r6_historical_valley import R6_HISTORICAL_VARIANT, R6_HISTORICAL_ENVIRONMENT
 from .governor import ShaftGovernor
 from .training_assist import assisted_collective
 
@@ -128,7 +129,7 @@ def inertial(parent,info,pivot):
                   fullinertia=fmt([j[0,0],j[1,1],j[2,2],j[0,1],j[0,2],j[1,2]]))
 
 
-def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_fuel_kg=None,variator_package=False):
+def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_fuel_kg=None,variator_package=False,boundary_floor=True):
     xml=ET.Element('mujoco',model='VTX-P0-V4A-experimental')
     ET.SubElement(xml,'compiler',angle='radian',autolimits='true',inertiafromgeom='false',fusestatic='false')
     ET.SubElement(xml,'option',timestep=str(DT),gravity=f'0 0 {-G}',integrator='implicit',
@@ -141,9 +142,10 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
     ET.SubElement(asset,'hfield',name='terrain',nrow=str(world.n),ncol=str(world.n),size=f'{world.half} {world.half} 70 2')
     wb=ET.SubElement(xml,'worldbody')
     ET.SubElement(wb,'geom',name='terrain',type='hfield',hfield='terrain',contype='1',conaffinity='2')
-    # Safety floor under every world (was sandbox-only): the terrain heightfield ends at +-half; flight
-    # 20261113T104255 drove off the Main Airport edge at x ~ 4,000 m and fell through the world.
-    ET.SubElement(wb, 'geom', name='boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
+    # Current variants retain the later floor; the named historical candidate
+    # deliberately reproduces the earlier no-floor collision geometry.
+    if boundary_floor:
+        ET.SubElement(wb, 'geom', name='boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
     for o in world.obstacles:
         args=dict(name=o['id'],type=o['kind'],pos=fmt(o['center']),contype='1',conaffinity='2')
         args['size']=fmt(o['half']) if o['kind']=='box' else fmt([o['half'][0],o['half'][2]])
@@ -283,7 +285,7 @@ class Aircraft:
         if airframe_variant=='baseline':
             ledger_path=LEDGER_R4_PATH
             render_asset='/assets/airframe-r4.glb'
-        elif airframe_variant in ('r6','r6_variator'):
+        elif airframe_variant in ('r6','r6_variator',R6_HISTORICAL_VARIANT):
             ledger_path=LEDGER_R6_PATH
             render_asset='/assets/airframe-r6.glb'
         else:
@@ -293,8 +295,11 @@ class Aircraft:
         self.ledger=json.loads(ledger_path.read_text())
         self.airframe_variant=airframe_variant
         self.world=world or TestWorld()
+        historical=(airframe_variant==R6_HISTORICAL_VARIANT)
+        if historical and getattr(self.world,'environment_key',None)!=R6_HISTORICAL_ENVIRONMENT:
+            raise ValueError('Historical R6 candidate requires its explicitly identified 3 November valley')
         self.gear_variant=gear_variant;self.reference_rpm=float(rpm)
-        self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm,tank_fuel_kg=tank_fuel_kg,variator_package=self.variator_package)
+        self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm,tank_fuel_kg=tank_fuel_kg,variator_package=self.variator_package,boundary_floor=not historical)
         self.data=mj.MjData(self.model)
         self.bids={name:mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,name) for name in self.ledger['bodies']}
         self.foot_geoms=[i for i in range(self.model.ngeom) if (mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_BODY,int(self.model.geom_bodyid[i])) or '').startswith('gear')]
@@ -360,6 +365,13 @@ class Aircraft:
                 self_contact='CAD clearance audit; no all-part multibody self-contact',
                 structural_failure='rigid load paths; no laminate failure allowables or FEA',
                 rotor_map='axial BEMT; duct gain=1; no CFD/interference/edgewise qualification')}
+        if historical:
+            self.provenance['flight_revision']=dict(
+                status='Unpromoted integrated experiment derived from the recorded R6 flight',
+                parent_runtime_sha256='951ef3f83e193513e89ba8abc6d1ac34210f9e826620cc6e7d649b8675bb8219',
+                evidence=[dict(run_id='20261103T125202-92636c',environment=R6_HISTORICAL_ENVIRONMENT,
+                    summary='Recorded hover and transit; supported ending 2.58 m from destination')],
+                limitations='Historical world has no boundary floor; original control event log is unavailable and this integrated runtime is not the historical runtime.')
         mj.mj_forward(self.model,self.data)
 
     def spawn(self,x,y,z):

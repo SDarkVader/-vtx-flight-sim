@@ -22,6 +22,10 @@ def test_both_canards_track_independent_commands_and_drs_tracks_pitch():
     b = PhantomAircraft(world, 'phantom', overrides=P6)
     b.restore_state(state)
     assert b.stab_te_up == pytest.approx(a.stab_te_up)
+    for _ in range(int(1 / DT)):
+        a.step(); b.step()
+    np.testing.assert_allclose(b.data.qpos, a.data.qpos, rtol=1e-8, atol=1e-7)
+    np.testing.assert_allclose(b.data.qvel, a.data.qvel, rtol=1e-8, atol=1e-7)
 
 def test_drs_is_physical_surface_and_deflection_changes_aerodynamics():
     aero = SurfaceAero(Params('phantom', P6))

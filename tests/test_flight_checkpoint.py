@@ -58,6 +58,56 @@ def test_explicit_stop_disables_recovery():
             recovered=Laboratory()
             assert not recovered.active
 
+
+def test_stop_failure_retains_checkpoint_and_pauses(tmp_path, monkeypatch):
+    import vtx.live_server as server
+    lab=Laboratory(data_root=tmp_path)
+    lab.start(Mission(airframe_variant='r6'))
+    before=lab.checkpoint_path.read_bytes()
+    # Failure after staging has written bytes must not publish a partial summary.
+    with monkeypatch.context() as inject:
+        def fail_sync(_fd):raise OSError('simulated disk failure')
+        inject.setattr(server.os,'fsync',fail_sync)
+        with pytest.raises(OSError,match='disk failure'):
+            lab.stop('Test failed summary write')
+    assert lab.active and lab.paused
+    assert lab.checkpoint_path.read_bytes()==before
+    assert not (lab.log_path/'summary.json').exists()
+    lab.audit_file.close()
+    recovered=Laboratory(data_root=tmp_path)
+    assert recovered.active and recovered.paused and recovered.run_id==lab.run_id
+    recovered.audit_file.close()
+
+
+def test_existing_partial_summary_is_retained_and_checkpoint_is_not_resumed(tmp_path,monkeypatch):
+    import asyncio
+    import json
+    import vtx.live_server as server
+    lab=Laboratory(data_root=tmp_path)
+    lab.start(Mission(airframe_variant='r6'))
+    before=lab.checkpoint_path.read_bytes()
+    summary=lab.log_path/'summary.json'
+    summary.write_text('{partial',encoding='utf-8')
+    # A pre-existing summary is evidence, even when malformed.
+    with pytest.raises(FileExistsError):lab.stop('Must not replace evidence')
+    assert summary.read_text(encoding='utf-8')=='{partial'
+    assert lab.active and lab.paused and lab.checkpoint_path.read_bytes()==before
+    lab.audit_file.close()
+    recovered=Laboratory(data_root=tmp_path)
+    assert not recovered.active and recovered.recovery_blocked
+    assert 'summary' in recovered.error.lower() and 'retained for inspection' in recovered.error
+    assert summary.read_text(encoding='utf-8')=='{partial'
+    assert recovered.checkpoint_path.read_bytes()==before
+    # One broken record must not hide all of the other retained flights.
+    other=tmp_path/'evidence/flights/other-flight'
+    other.mkdir()
+    (other/'summary.json').write_text(json.dumps(dict(run_id='other-flight',outcome='landed')),encoding='utf-8')
+    monkeypatch.setattr(server,'lab',recovered)
+    rows=asyncio.run(server.runs())
+    assert any(r['run_id']=='other-flight' and r['outcome']=='landed' for r in rows)
+    assert any(r['run_id']==lab.run_id and r['outcome']=='summary unreadable; evidence retained' for r in rows)
+    assert summary.read_text(encoding='utf-8')=='{partial'
+
 def test_objective_survives_reconnect_and_checkpoint(tmp_path, monkeypatch):
     import asyncio
     import vtx.live_server as server

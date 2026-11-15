@@ -7,6 +7,7 @@ import hashlib, json, subprocess
 from functools import lru_cache
 from pathlib import Path
 from .params import ROOT
+from .flight_revisions import flight_revision, registry
 
 IDENTITY_FILE = ROOT / 'inputs/aircraft_identity.json'
 
@@ -44,24 +45,46 @@ def pins():
     return {k: v for k, v in json.loads(IDENTITY_FILE.read_text(encoding='utf-8')).items() if not k.startswith('_')}
 
 
-def verify(aircraft, experimental=False):
+def verify(aircraft, experimental=False, runtime_source_sha256=None):
     """Compare a built Phantom against its pin. Returns the effective identity and every mismatch found."""
     P = aircraft.P; prov = aircraft.provenance
     asset = prov.get('render_asset')
     effective = dict(variant=aircraft.variant, revision=prov.get('revision'), config_sha256=P.config_sha256,
                      parameter_file_sha256=P.file_sha256, model_xml_sha256=prov.get('model_xml_sha256'),
                      render_asset=asset, render_asset_sha256=asset_sha256(asset), git_commit=git_commit())
-    pin = pins().get(aircraft.variant)
+    revision = flight_revision(aircraft.variant)
+    pin = revision or pins().get(aircraft.variant)
     if pin is None:
         return dict(effective, pinned=False, verified=None, experimental=bool(experimental), mismatches=[],
                     status='not pinned (historical or reference variant)')
     mismatches = [dict(field=k, expected=pin[k], loaded=effective.get(k))
                   for k in ('config_sha256', 'parameter_file_sha256', 'render_asset', 'render_asset_sha256')
                   if effective.get(k) != pin[k]]
+    if revision:
+        schematic = revision.get('suspension_schematic')
+        if schematic:
+            declared = prov.get('flight_revision', {}).get('suspension_schematic') or {}
+            loaded_schematic = dict(declared, sha256=asset_sha256(declared.get('asset')))
+            effective['suspension_schematic'] = loaded_schematic
+            if (declared != schematic or schematic.get('schema') != 1 or not schematic.get('sha256') or
+                    loaded_schematic['sha256'] != schematic['sha256']):
+                mismatches.append(dict(field='suspension_schematic', expected=schematic,
+                                       loaded=loaded_schematic))
+        expected_runtime = registry()['integrated_runtime_sha256']
+        effective['runtime_source_sha256'] = runtime_source_sha256
+        if runtime_source_sha256 != expected_runtime:
+            mismatches.append(dict(field='runtime_source_sha256', expected=expected_runtime,
+                                   loaded=runtime_source_sha256))
+        for relative, expected in registry()['text_dependencies_sha256_lf'].items():
+            path = ROOT / relative
+            loaded = text_sha256(path) if path.is_file() else None
+            if loaded != expected:
+                mismatches.append(dict(field=relative, expected=expected, loaded=loaded))
     if experimental:   # a declared experiment changes the configuration on purpose; it is labelled, never passed off as canonical
         mismatches = [m for m in mismatches if m['field'] != 'config_sha256']
     ok = not mismatches
-    status = ('verified' if ok and not experimental else 'experimental configuration (declared overrides)' if ok
+    status = ('verified integrated test candidate; promotion pending' if ok and not experimental and revision else
+              'verified' if ok and not experimental else 'experimental configuration (declared overrides)' if ok
               else 'MISMATCH: ' + '; '.join(f"{m['field']} expected {m['expected']} loaded {m['loaded']}" for m in mismatches))
     return dict(effective, name=pin.get('name'), pinned=True, verified=ok and not experimental, experimental=bool(experimental),
                 mismatches=mismatches, status=status)

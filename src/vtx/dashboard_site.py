@@ -86,14 +86,7 @@ _live_lifespan = app.router.lifespan_context
 
 @asynccontextmanager
 async def dashboard_lifespan(application):
-    root = Path(os.environ.get('VTX_DATA_ROOT', str(live_server.ROOT))).resolve()
-    use_default = (os.environ.get('VTX_ENFORCE_RELEASE') != '1'
-                   and live_server.lab is None and _new_workspace(root))
     async with _live_lifespan(application):
-        if use_default and not live_server.lab.active and not live_server.lab.recovery_blocked:
-            await live_server.model_preview({'airframe_variant': 'phantom-a10b',
-                                             'start_configuration': 'road',
-                                             'departure': list(live_server.lab.world.default_departure)})
         yield
 
 app.router.lifespan_context = dashboard_lifespan

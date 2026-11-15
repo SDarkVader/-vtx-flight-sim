@@ -108,6 +108,16 @@ def test_live_environment_switch_and_active_sortie_protection(tmp_path, monkeypa
     lab = Laboratory(data_root=tmp_path)
     monkeypatch.setattr(live_server, 'lab', lab)
 
+    # Environment selection cannot silently replace the currently loaded R6.
+    loaded = lab.aircraft
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(live_server.set_environment({'environment': 'sandbox', 'airframe_variant': 'phantom-a10b'}))
+    assert exc.value.status_code == 409
+    assert lab.aircraft is loaded and lab.world.environment_key == 'airport'
+
+    # An aircraft change is a separate, explicit selection.
+    asyncio.run(live_server.model_preview({'airframe_variant': 'phantom-a10b',
+                                           'start_configuration': 'road', 'departure': [-700., 0.]}))
     # Switch to Test Sandbox while idle: updates world, view, model_xml_sha256, and places aircraft at [-700, 0] facing +X down the runway.
     res_sandbox = asyncio.run(live_server.set_environment({'environment': 'sandbox', 'airframe_variant': 'phantom-a10b', 'start_configuration': 'road'}))
     assert res_sandbox['ok'] is True
