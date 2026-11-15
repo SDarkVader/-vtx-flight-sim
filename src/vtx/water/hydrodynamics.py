@@ -384,10 +384,7 @@ def evaluate_mesh_hydrodynamics(
     freeboard_min_m = max(0.0, deck_z_world - mean_eta)
     ground_clearance_m = float(keel_z_world - (mean_eta - mean_depth))
 
-    # Grazing transition band prevents discontinuity just before touching eta = z
-    band = max(float(cal.wet_dry_blend_band_m), 1e-4)
-    if float(np.max(s_verts)) <= 0.0:
-        # Pure dry case — check ultra-thin film proximity fade only for smooth contact entry
+    def _zero_breakdown(draft_val: float, freeboard_val: float) -> HydroBreakdown:
         zero3 = np.zeros(3, dtype=np.float64)
         return HydroBreakdown(
             submerged_volume_m3=0.0,
@@ -395,8 +392,8 @@ def evaluate_mesh_hydrodynamics(
             centre_of_buoyancy_world=body_pos_world.copy(),
             centre_of_buoyancy_body=np.zeros(3, dtype=np.float64),
             waterline_z_world_mean=mean_eta,
-            draft_m=0.0,
-            freeboard_min_m=max(0.0, keel_z_world - mean_eta),
+            draft_m=draft_val,
+            freeboard_min_m=freeboard_val,
             submergence_ratio=0.0,
             ground_clearance_m=ground_clearance_m,
             mean_water_depth_m=mean_depth,
@@ -416,35 +413,14 @@ def evaluate_mesh_hydrodynamics(
             total_torque_world=zero3.copy(),
         )
 
+    # Grazing transition band prevents discontinuity just before touching eta = z
+    band = max(float(cal.wet_dry_blend_band_m), 1e-4)
+    if float(np.max(s_verts)) <= 0.0:
+        return _zero_breakdown(0.0, max(0.0, keel_z_world - mean_eta))
+
     wet_tris, _, _, cap_segments = _clip_submerged_triangles(verts_world, mesh.faces, s_verts)
     if wet_tris.shape[0] == 0:
-        zero3 = np.zeros(3, dtype=np.float64)
-        return HydroBreakdown(
-            submerged_volume_m3=0.0,
-            wetted_area_m2=0.0,
-            centre_of_buoyancy_world=body_pos_world.copy(),
-            centre_of_buoyancy_body=np.zeros(3, dtype=np.float64),
-            waterline_z_world_mean=mean_eta,
-            draft_m=draft_m,
-            freeboard_min_m=freeboard_min_m,
-            submergence_ratio=0.0,
-            ground_clearance_m=ground_clearance_m,
-            mean_water_depth_m=mean_depth,
-            buoyancy_force_world=zero3.copy(),
-            buoyancy_torque_world=zero3.copy(),
-            resistance_force_world=zero3.copy(),
-            resistance_torque_world=zero3.copy(),
-            dynamic_lift_force_world=zero3.copy(),
-            dynamic_lift_torque_world=zero3.copy(),
-            added_mass_force_world=zero3.copy(),
-            added_mass_torque_world=zero3.copy(),
-            damping_force_world=zero3.copy(),
-            damping_torque_world=zero3.copy(),
-            wave_force_world=zero3.copy(),
-            wave_torque_world=zero3.copy(),
-            total_force_world=zero3.copy(),
-            total_torque_world=zero3.copy(),
-        )
+        return _zero_breakdown(draft_m, freeboard_min_m)
 
     # Geometry integrals
     e1 = wet_tris[:, 1, :] - wet_tris[:, 0, :]
@@ -453,6 +429,8 @@ def evaluate_mesh_hydrodynamics(
     tri_norm_len = np.linalg.norm(cross, axis=1)
     tri_areas = 0.5 * tri_norm_len
     valid = tri_areas > 1e-10
+    if not np.any(valid):
+        return _zero_breakdown(draft_m, freeboard_min_m)
     wet_tris = wet_tris[valid]
     cross = cross[valid]
     tri_norm_len = tri_norm_len[valid]

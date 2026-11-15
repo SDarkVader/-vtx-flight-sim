@@ -80,6 +80,11 @@ class MassPropertiesRegister:
     payload_mass_kg: float = 0.0
     extra_mass_kg: float = 0.0
     cg_shift_vtx_m: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    ballast_mass_kg: float = 0.0
+    ballast_x_m: float = -0.15
+    ballast_y_m: float = 0.0
+    waterproof: bool = True
+    flood_water_kg: float = 0.0
     components: list[MassComponent] = field(default_factory=list)
 
     @classmethod
@@ -89,6 +94,11 @@ class MassPropertiesRegister:
         passenger_aboard: bool | None = None,
         passenger_mass_kg: float | None = None,
         payload_mass_kg: float | None = None,
+        sponson_z_m: float = 0.42,
+        ballast_mass_kg: float = 0.0,
+        ballast_x_m: float = -0.15,
+        ballast_y_m: float = 0.0,
+        waterproof: bool = True,
     ) -> 'MassPropertiesRegister':
         lc = str(load_case).upper()
         if lc not in LOAD_CASE_DESCRIPTIONS:
@@ -191,7 +201,7 @@ class MassPropertiesRegister:
                 'sponson_port',
                 'Port outboard chined sponson float (structural + actuator)',
                 12.0,
-                (-0.34, -3.80, 0.42),
+                (-0.34, -3.80, float(sponson_z_m)),
                 (0.8, 1.6, 1.6),
                 status='envelope_nominal',
                 movable=True,
@@ -201,7 +211,7 @@ class MassPropertiesRegister:
                 'sponson_stbd',
                 'Starboard outboard chined sponson float (structural + actuator)',
                 12.0,
-                (-0.34, 3.80, 0.42),
+                (-0.34, 3.80, float(sponson_z_m)),
                 (0.8, 1.6, 1.6),
                 status='envelope_nominal',
                 movable=True,
@@ -241,6 +251,11 @@ class MassPropertiesRegister:
             passenger_mass_kg=pax_m,
             passenger_x_offset_m=0.0,
             payload_mass_kg=pay_m,
+            ballast_mass_kg=max(0.0, float(ballast_mass_kg)),
+            ballast_x_m=float(np.clip(ballast_x_m, -1.5, 1.5)),
+            ballast_y_m=float(np.clip(ballast_y_m, -0.5, 0.5)),
+            waterproof=bool(waterproof),
+            flood_water_kg=0.0,
             components=base_items,
         )
 
@@ -282,6 +297,34 @@ class MassPropertiesRegister:
                     (2.0, 4.0, 4.0),
                     status='envelope_nominal',
                     movable=True,
+                )
+            )
+        if self.ballast_mass_kg > 1e-6:
+            m_b = float(self.ballast_mass_kg)
+            items.append(
+                MassComponent(
+                    'trim_ballast',
+                    'Movable hull bilge trim ballast pack',
+                    m_b,
+                    (self.ballast_x_m, self.ballast_y_m, 0.34),
+                    (max(0.5, 0.04 * m_b), max(0.8, 0.06 * m_b), max(0.8, 0.06 * m_b)),
+                    status='envelope_nominal',
+                    movable=True,
+                    notes='Operator-adjustable internal keel trim ballast',
+                )
+            )
+        if self.flood_water_kg > 1e-6:
+            m_f = float(self.flood_water_kg)
+            items.append(
+                MassComponent(
+                    'ingressed_flood_water',
+                    'Ingressed cockpit/bilge water mass (non-waterproof hull)',
+                    m_f,
+                    (0.58, 0.0, 0.28),
+                    (max(1.0, 0.07 * m_f), max(2.0, 0.14 * m_f), max(2.0, 0.16 * m_f)),
+                    status='envelope_nominal',
+                    movable=True,
+                    notes='Pooled bilge/cockpit ingress when hull seal is breached/open',
                 )
             )
         return items
@@ -332,6 +375,11 @@ class MassPropertiesRegister:
             'passenger_aboard': self.passenger_aboard,
             'passenger_mass_kg': float(self.passenger_mass_kg),
             'payload_mass_kg': float(self.payload_mass_kg),
+            'ballast_mass_kg': float(self.ballast_mass_kg),
+            'ballast_x_m': float(self.ballast_x_m),
+            'ballast_y_m': float(self.ballast_y_m),
+            'waterproof': bool(self.waterproof),
+            'flood_water_kg': float(self.flood_water_kg),
             'cg_shift_vtx_m': [float(v) for v in self.cg_shift_vtx_m],
             'items': [c.to_dict() for c in items],
         }
@@ -343,6 +391,11 @@ class MassPropertiesRegister:
         passenger_aboard: bool | None = None,
         passenger_mass_kg: float | None = None,
         payload_mass_kg: float | None = None,
+        ballast_mass_kg: float | None = None,
+        ballast_x_m: float | None = None,
+        ballast_y_m: float | None = None,
+        waterproof: bool | None = None,
+        flood_water_kg: float | None = None,
     ) -> None:
         if passenger_aboard is not None:
             self.passenger_aboard = bool(passenger_aboard)
@@ -350,6 +403,16 @@ class MassPropertiesRegister:
             self.passenger_mass_kg = max(0.0, float(passenger_mass_kg))
         if payload_mass_kg is not None:
             self.payload_mass_kg = max(0.0, float(payload_mass_kg))
+        if ballast_mass_kg is not None:
+            self.ballast_mass_kg = max(0.0, float(ballast_mass_kg))
+        if ballast_x_m is not None:
+            self.ballast_x_m = float(np.clip(float(ballast_x_m), -1.5, 1.5))
+        if ballast_y_m is not None:
+            self.ballast_y_m = float(np.clip(float(ballast_y_m), -0.5, 0.5))
+        if waterproof is not None:
+            self.waterproof = bool(waterproof)
+        if flood_water_kg is not None:
+            self.flood_water_kg = max(0.0, float(flood_water_kg))
         if cg_shift_vtx_m is not None:
             s = [float(x) for x in cg_shift_vtx_m]
             self.cg_shift_vtx_m = (s[0], s[1], s[2])

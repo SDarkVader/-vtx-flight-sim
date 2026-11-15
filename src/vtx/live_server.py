@@ -616,14 +616,15 @@ class Laboratory:
             self.aircraft=phantom_live.make_aircraft(flight_world,request)
         elif ricochet_live.is_ricochet_variant(request.airframe_variant):
             existing_wcfg=getattr(self.aircraft,'water_config',None)
-            wcfg=WaterEnvironmentConfig(**request.water_config) if request.water_config else existing_wcfg
+            wcfg=WaterEnvironmentConfig(**request.water_config) if request.water_config else (existing_wcfg or ricochet_live.default_interactive_water_config())
             self.aircraft=ricochet_live.make_aircraft(flight_world,request.airframe_variant,water_config=wcfg,load_case=request.ricochet_load_case or 'LC-03',wind_world_mps=request.wind_world_mps)
         else:
             self.aircraft=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
-        self.aircraft.spawn(*request.departure,departure_check.terrain_z_m)
+        spawn_z=flight_world.surface_z(*request.departure) if getattr(self.aircraft,'is_ricochet',False) else departure_check.terrain_z_m
+        self.aircraft.spawn(*request.departure,spawn_z)
         # Bench engine is ready after launch; collective remains zero until commanded.
         if not getattr(self.aircraft, 'is_phantom', False) and not getattr(self.aircraft, 'is_ricochet', False):
             self.aircraft.set_command(dict(engine=1.0))
@@ -719,7 +720,7 @@ class Laboratory:
         self.action_sequence+=1
         row=dict(sequence=self.action_sequence,issued_t_s=float(self.aircraft.data.time),
                  apply_t_s=float(self.aircraft.data.time)+.02,observation=obs,decision=a.reason,
-                 issued=a.model_dump(by_alias=True,exclude_none=True) if isinstance(a,PhantomAction) else a.model_dump())
+                 issued=a.model_dump(by_alias=True,exclude_none=True) if isinstance(a,(PhantomAction,RicochetAction)) else a.model_dump())
         if isinstance(a,PhantomAction):phantom_live.accept_timing(self,row)
         self.action_log.append(row);self.last_command_time=float(self.aircraft.data.time);self.lease_expired=False
         self.log('pilot_decision',row)
@@ -1050,6 +1051,12 @@ async def update_water_mass(request:dict):
             passenger_aboard=request.get('passenger_aboard'),
             passenger_mass_kg=request.get('passenger_mass_kg'),
             payload_mass_kg=request.get('payload_mass_kg'),
+            ballast_mass_kg=request.get('ballast_mass_kg'),
+            ballast_x_m=request.get('ballast_x_m'),
+            ballast_y_m=request.get('ballast_y_m'),
+            waterproof=request.get('waterproof'),
+            flood_water_kg=request.get('flood_water_kg'),
+            bilge_pump=bool(request.get('bilge_pump',False)),
         )
     except (ValueError,TypeError) as e:raise HTTPException(422,str(e))
     lab.last_obs=None
@@ -1131,7 +1138,7 @@ async def model_preview(request:dict):
         if phantom_live.is_phantom_variant(selection.airframe_variant):
             aircraft=phantom_live.make_aircraft(target_world,selection)
         elif ricochet_live.is_ricochet_variant(selection.airframe_variant):
-            wcfg=getattr(lab.aircraft,'water_config',None)
+            wcfg=getattr(lab.aircraft,'water_config',None) or ricochet_live.default_interactive_water_config()
             aircraft=ricochet_live.make_aircraft(target_world,selection.airframe_variant,water_config=wcfg,wind_world_mps=selection.wind_world_mps)
         else:
             aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
@@ -1180,7 +1187,7 @@ async def set_environment(request:dict):
         if phantom_live.is_phantom_variant(selection.airframe_variant):
             aircraft=phantom_live.make_aircraft(target_world,selection)
         elif ricochet_live.is_ricochet_variant(selection.airframe_variant):
-            wcfg=getattr(lab.aircraft,'water_config',None)
+            wcfg=getattr(lab.aircraft,'water_config',None) or ricochet_live.default_interactive_water_config()
             aircraft=ricochet_live.make_aircraft(target_world,selection.airframe_variant,water_config=wcfg,wind_world_mps=selection.wind_world_mps)
         else:
             aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
@@ -1301,7 +1308,10 @@ async def destination(request:dict):
 def parse_action(body):
     """One endpoint, three schemas: 'phantom-fbw-1' -> PhantomAction, 'ricochet-1' -> RicochetAction, else Action."""
     if isinstance(body,dict) and body.get('schema')=='phantom-fbw-1':model=PhantomAction
-    elif isinstance(body,dict) and body.get('schema')=='ricochet-1':model=RicochetAction
+    elif isinstance(body,dict) and body.get('schema')=='ricochet-1':
+        try:body=ricochet_live.normalize_ricochet_action(body)
+        except ValueError as e:raise RequestValidationError([{'type':'value_error','loc':('body',),'msg':str(e),'input':body}])
+        model=RicochetAction
     else:model=Action
     try:return model.model_validate(body)
     except ValidationError as e:

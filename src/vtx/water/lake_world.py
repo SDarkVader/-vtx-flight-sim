@@ -54,8 +54,8 @@ class RicochetLakeWorld:
     ny = 241
     dx = 5.0
     dy = 5.0
-    default_departure = [0.0, 0.0]
-    default_destination = [300.0, 0.0]
+    default_departure = [40.0, 0.0]
+    default_destination = [350.0, 0.0]
     water_level = 0.0
     water_physics_revision = WATER_PHYSICS_REVISION
     bathymetry_verified = True
@@ -64,15 +64,74 @@ class RicochetLakeWorld:
         self.seed = int(seed)
         self.xs = np.linspace(-self.half_x, self.half_x, self.nx, dtype=np.float64)
         self.ys = np.linspace(-self.half_y, self.half_y, self.ny, dtype=np.float64)
+        self._island_defs = self._island_specs()
         self.heights = self._build_bathymetry()
         self.z_min = float(np.min(self.heights))
         self.z_max = float(np.max(self.heights))
         self.obstacles: list[dict[str, Any]] = []
+        self.islands = self._build_islands()
+        self.whirlpools = self._build_whirlpools()
         self.structures = self._build_structures()
         self.buoys = self._build_buoys()
         self.zones = self._build_zones()
         self.ramps = self._build_ramps()
         self.spawn_points = self._build_spawn_points()
+
+    @staticmethod
+    def _island_specs() -> list[dict[str, Any]]:
+        return [
+            {
+                'id': 'island_north_crag',
+                'name': "Finch's Folie Basalt Crag",
+                'x': 40.0,
+                'y': 335.0,
+                'radius_m': 42.0,
+                'rx_scale': 1.08,
+                'ry_scale': 0.92,
+                'peak_m': 6.2,
+                'phase': 0.4,
+                'sign_title': "FINCH'S FOLIE // NO ANCHORING",
+                'sign_lines': [
+                    'Vaderland Surveying Dept · Elevation +6.2 m MLD',
+                    'Steep basalt reef: hull resonance tested against',
+                    "optimism and physics. Spoiler: the rock wins.",
+                ],
+            },
+            {
+                'id': 'island_sw_atoll',
+                'name': 'Instrumentation Islet',
+                'x': -245.0,
+                'y': -305.0,
+                'radius_m': 38.0,
+                'rx_scale': 0.96,
+                'ry_scale': 1.05,
+                'peak_m': 4.6,
+                'phase': 1.9,
+                'sign_title': 'DATUM STATION B // VADERLAND HYDRO',
+                'sign_lines': [
+                    'Calibrated tide gauge & wind mast +4.6 m',
+                    'Navigable moat >= 150 m in all quadrants.',
+                    'Wait for high tide to blame the bathymetry.',
+                ],
+            },
+            {
+                'id': 'island_east_skerry',
+                'name': 'Eastern Sentry Skerry',
+                'x': 690.0,
+                'y': -155.0,
+                'radius_m': 36.0,
+                'rx_scale': 1.12,
+                'ry_scale': 0.88,
+                'peak_m': 5.4,
+                'phase': 3.1,
+                'sign_title': 'EASTERN SENTRY // SHOAL HAZARD',
+                'sign_lines': [
+                    'Volcanic skerry +5.4 m · East approach gate',
+                    'Clearance verified for competent helmsmen.',
+                    'Insurance premiums void beyond speed limit.',
+                ],
+            },
+        ]
 
     def _build_bathymetry(self) -> np.ndarray:
         xg, yg = np.meshgrid(self.xs, self.ys)  # shape (ny, nx): row=Y, col=X
@@ -158,6 +217,19 @@ class RicochetLakeWorld:
         ramp2_z = np.clip((-795.0 - xg) / 12.0, -3.4, 2.8)
         z = z * (1.0 - ramp2_mask) + ramp2_z * ramp2_mask
 
+        # 10b. Carve 3 navigable basalt/shingle islands outside all test corridors
+        for isl in self._island_defs:
+            dx_i = (xg - isl['x']) / isl['rx_scale']
+            dy_i = (yg - isl['y']) / isl['ry_scale']
+            theta_i = np.arctan2(dy_i, dx_i)
+            r_raw = np.hypot(dx_i, dy_i)
+            # Subtle 3-lobe basalt crag silhouette
+            r_mod = r_raw / (1.0 + 0.09 * np.sin(3.0 * theta_i + isl['phase']) + 0.05 * np.cos(5.0 * theta_i - 0.5))
+            rad = float(isl['radius_m'])
+            peak = float(isl['peak_m'])
+            z_isl = peak - (peak + 7.5) * _smoothstep(0.14 * rad, 1.32 * rad, r_mod)
+            z = np.maximum(z, z_isl)
+
         # 11. Carve clean open-water acceleration lane (-350..+650, y in [-55,+55]) >= 10 m deep
         acc_x = _smoothstep(-380.0, -330.0, xg) * (1.0 - _smoothstep(630.0, 680.0, xg))
         acc_y = 1.0 - _smoothstep(45.0, 75.0, np.abs(yg))
@@ -222,13 +294,130 @@ class RicochetLakeWorld:
             return SurfaceDecision(False, 'Point is outside Ricochet Lake boundary margin.', z)
         if purpose in ('spawn', 'water_test', 'marina'):
             if z > self.water_level - 0.45:
-                return SurfaceDecision(False, 'Insufficient water depth for vessel flotation.', z)
+                return SurfaceDecision(False, 'Insufficient water depth (shoreline, island, or breakwater).', z)
+            haz = self.whirlpool_hazard_at(x, y)
+            if haz['in_core']:
+                return SurfaceDecision(False, f"Inside dangerous whirlpool throat ({haz['whirlpool_name']}).", z)
             return SurfaceDecision(True, 'Navigable water surface inside Ricochet Lake.', z)
         if purpose in ('ramp', 'recovery'):
             return SurfaceDecision(True, 'Valid shoreline / slipway approach point.', z)
         if z > self.water_level + 0.05:
             return SurfaceDecision(True, 'Dry shoreline surface.', z)
         return SurfaceDecision(True, 'Valid water point inside Ricochet Lake.', z)
+
+    def _build_islands(self) -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = []
+        for spec in self._island_defs:
+            r_edge = float(spec['radius_m']) * 1.45
+            moat = [
+                self.terrain_z(spec['x'] + r_edge * math.cos(a), spec['y'] + r_edge * math.sin(a))
+                for a in (0.0, 0.5 * math.pi, math.pi, 1.5 * math.pi)
+            ]
+            out.append({
+                'id': spec['id'],
+                'name': spec['name'],
+                'x': float(spec['x']),
+                'y': float(spec['y']),
+                'radius_m': float(spec['radius_m']),
+                'peak_m': float(spec['peak_m']),
+                'z_peak_actual_m': round(self.terrain_z(spec['x'], spec['y']), 3),
+                'moat_min_depth_m': round(max(0.0, self.water_level - max(moat)), 3),
+                'sign_title': spec['sign_title'],
+                'sign_lines': list(spec['sign_lines']),
+            })
+        return out
+
+    @staticmethod
+    def _build_whirlpools() -> list[dict[str, Any]]:
+        return [
+            {
+                'id': 'whirlpool_alpha',
+                'name': "Vortex-01 · Colin's Humility Well",
+                'x': -10.0,
+                'y': -235.0,
+                'r_core_m': 14.0,
+                'r_influence_m': 88.0,
+                'max_swirl_mps': 7.5,
+                'max_suction_mps': 3.2,
+                'core_drop_m': -1.45,
+                'spin': 1,
+                'warning': 'High suction & orbital shear inside 88 m funnel — bypass or throttle through',
+            },
+            {
+                'id': 'whirlpool_bravo',
+                'name': "Vortex-02 · Arthur's Drainpipe",
+                'x': 205.0,
+                'y': 245.0,
+                'r_core_m': 13.0,
+                'r_influence_m': 82.0,
+                'max_swirl_mps': 7.0,
+                'max_suction_mps': 2.9,
+                'core_drop_m': -1.35,
+                'spin': -1,
+                'warning': 'Counter-rotating sink vortex — 125+ m bypass channels open all around',
+            },
+        ]
+
+    def whirlpool_hazard_at(
+        self,
+        x: float,
+        y: float,
+        config: Any | None = None,
+    ) -> dict[str, Any]:
+        """Compute active Burgers-Rott whirlpool hazard metrics at world (x, y)."""
+        enabled = True if config is None else bool(getattr(config, 'whirlpools_enabled', True))
+        intensity = 1.0 if config is None else max(0.0, float(getattr(config, 'whirlpool_intensity', 1.0)))
+        if not enabled or intensity <= 1e-4 or not self.whirlpools:
+            return {
+                'in_influence': False,
+                'in_core': False,
+                'whirlpool_id': None,
+                'whirlpool_name': None,
+                'distance_m': 9999.0,
+                'swirl_mps': 0.0,
+                'suction_mps': 0.0,
+                'funnel_drop_m': 0.0,
+                'intensity': intensity if enabled else 0.0,
+            }
+
+        best = None
+        best_dist = 1e9
+        for wp in self.whirlpools:
+            d = math.hypot(float(x) - wp['x'], float(y) - wp['y'])
+            if d < best_dist:
+                best_dist = d
+                best = wp
+        assert best is not None
+        r_infl = float(best['r_influence_m'])
+        r_core = float(best['r_core_m'])
+        if best_dist >= r_infl:
+            return {
+                'in_influence': False,
+                'in_core': False,
+                'whirlpool_id': best['id'],
+                'whirlpool_name': best['name'],
+                'distance_m': round(best_dist, 2),
+                'swirl_mps': 0.0,
+                'suction_mps': 0.0,
+                'funnel_drop_m': 0.0,
+                'intensity': intensity,
+            }
+        xi = best_dist / max(r_core, 1.0)
+        taper = 1.0 - float(_smoothstep(0.62 * r_infl, r_infl, best_dist))
+        swirl = float(best['max_swirl_mps']) * intensity * ((1.0 - math.exp(-(xi * xi))) / max(xi * 0.6382, 1e-3) if xi > 1e-3 else 0.0) * taper
+        suction = float(best['max_suction_mps']) * intensity * (2.0 * xi / (1.0 + xi * xi)) * taper
+        drop = float(best['core_drop_m']) * intensity * math.exp(-0.5 * (best_dist / (1.45 * r_core)) ** 2) * taper
+        return {
+            'in_influence': True,
+            'in_core': best_dist <= 1.25 * r_core,
+            'whirlpool_id': best['id'],
+            'whirlpool_name': best['name'],
+            'distance_m': round(best_dist, 2),
+            'swirl_mps': round(swirl, 3),
+            'suction_mps': round(suction, 3),
+            'funnel_drop_m': round(drop, 3),
+            'intensity': intensity,
+        }
 
     def _build_structures(self) -> list[dict[str, Any]]:
         """Physical collidable and renderable marina, quay, pier, and breakwater structures."""
@@ -430,12 +619,12 @@ class RicochetLakeWorld:
 
     def _build_spawn_points(self) -> dict[str, dict[str, float]]:
         return {
-            'open_water': {'x': 0.0, 'y': 0.0, 'z_offset': 0.05, 'yaw_deg': 0.0},
+            'open_water': {'x': 40.0, 'y': 0.0, 'z_offset': 0.05, 'yaw_deg': 0.0},
             'accel_start': {'x': -320.0, 'y': 0.0, 'z_offset': 0.05, 'yaw_deg': 0.0},
             'turning_entry': {'x': 310.0, 'y': 180.0, 'z_offset': 0.05, 'yaw_deg': 0.0},
-            'shallow_shelf': {'x': -340.0, 'y': 260.0, 'z_offset': 0.05, 'yaw_deg': 0.0},
+            'shallow_shelf': {'x': -360.0, 'y': 220.0, 'z_offset': 0.05, 'yaw_deg': 0.0},
             'marina_berth_2': {'x': -772.0, 'y': -220.0, 'z_offset': 0.05, 'yaw_deg': 0.0},
-            'ramp_approach': {'x': -780.0, 'y': -110.0, 'z_offset': 0.05, 'yaw_deg': 180.0},
+            'ramp_approach': {'x': -798.0, 'y': -110.0, 'z_offset': 0.05, 'yaw_deg': 180.0},
         }
 
     def public(self) -> dict[str, Any]:
@@ -467,6 +656,8 @@ class RicochetLakeWorld:
             'heights': h_list,
             'heights_m': h_list,
             'obstacles': self.obstacles,
+            'islands': self.islands,
+            'whirlpools': self.whirlpools,
             'structures': self.structures,
             'buoys': self.buoys,
             'ramps': self.ramps,

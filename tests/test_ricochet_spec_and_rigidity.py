@@ -37,10 +37,19 @@ def _step_seconds(craft: RicochetCraft, seconds: float) -> None:
         craft.step()
 
 
-def test_all_19_glb_nodes_strict_directed_2manifold_and_duct_clearance():
+def test_all_25_glb_nodes_strict_directed_2manifold_and_duct_clearance():
     bundle = HullGeometryRegistry.build_variant('concept_a')
     assert bundle.variant_id == 'concept_a'
-    assert len(bundle.airframe_meshes) == 16  # + main_hull + 2 sponsons = 19 total nodes
+    assert len(bundle.airframe_meshes) == 22  # + main_hull + 2 sponsons = 25 total nodes
+
+    expected_articulated = {
+        'fan_rotor_port', 'fan_rotor_stbd',
+        'fan_spinner_port', 'fan_spinner_stbd',
+        'aileron_port', 'aileron_stbd',
+        'elevator', 'rudder',
+        'reverse_bucket_port', 'reverse_bucket_stbd',
+    }
+    assert expected_articulated.issubset(set(bundle.airframe_meshes.keys()))
 
     all_meshes = [
         bundle.main_hull.mesh,
@@ -48,7 +57,7 @@ def test_all_19_glb_nodes_strict_directed_2manifold_and_duct_clearance():
         bundle.stbd_sponson.mesh,
         *[spec['mesh'] for spec in bundle.airframe_meshes.values()],
     ]
-    assert len(all_meshes) == 19
+    assert len(all_meshes) == 25
     for wmesh in all_meshes:
         assert wmesh.is_watertight(), f'{wmesh.name} failed strict directed 2-manifold check'
         assert wmesh.gross_volume_m3 > 0.0, f'{wmesh.name} has non-positive volume'
@@ -107,9 +116,19 @@ def test_crisp_seam_split_paint_and_explicit_normals(lake_world: RicochetLakeWor
     cfg = WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0)
     craft = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-03', water_config=cfg)
     vg = craft.visual_geometry()
-    assert len(vg['meshes']) == 19
+    assert len(vg['meshes']) == 25
     assert vg['boxes'] == []
     assert all(m['pinned'] is True for m in vg['meshes'])
+    body_map = {m['name']: m['body'] for m in vg['meshes']}
+    for body_name in (
+        'fan_rotor_port', 'fan_rotor_stbd',
+        'aileron_port', 'aileron_stbd',
+        'elevator', 'rudder',
+        'reverse_bucket_port', 'reverse_bucket_stbd',
+    ):
+        assert body_map[body_name] == body_name
+    assert body_map['fan_spinner_port'] == 'fan_rotor_port'
+    assert body_map['fan_spinner_stbd'] == 'fan_rotor_stbd'
 
     main_hull_vis = next(m for m in vg['meshes'] if m['name'] == 'main_hull')
     assert 'normals' in main_hull_vis
@@ -227,7 +246,7 @@ def test_hydrostatic_draft_envelope_and_side_stabiliser_immersion_across_load_ca
     for lc in ('LC-01', 'LC-03', 'LC-04'):
         craft = RicochetCraft(lake_world, hull_variant='concept_a', load_case=lc, water_config=cfg)
         craft.spawn(40.0, 0.0, 0.0)
-        _step_seconds(craft, 3.0)
+        _step_seconds(craft, 4.0)
         snap = craft.physical_snapshot()
         hydro = snap['hydrodynamics']
         weight_n = snap['mass_properties']['total_mass_kg'] * G_SI
@@ -283,3 +302,57 @@ def test_dynamic_roll_restoring_with_immersed_sponsons_and_full_throttle_pitch_s
     assert abs(snap_surge['pitch_deg']) < 4.5
     assert snap_surge['hydrodynamics']['submerged_volume_m3'] > 0.5
     assert not snap_surge['crashed']
+
+
+def test_articulated_mechanics_rotors_surfaces_fuel_and_vtx_standard(lake_world: RicochetLakeWorld):
+    cfg = WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0)
+    craft = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-03', water_config=cfg)
+    craft.spawn(40.0, 0.0, 0.0)
+    _step_seconds(craft, 0.5)
+    q0 = {
+        'fan_p': craft.joint('fan_rotor_port_hinge')[0],
+        'fan_s': craft.joint('fan_rotor_stbd_hinge')[0],
+        'q_af': list(craft.physical_snapshot()['body_poses']['airframe']['quaternion_wxyz']),
+        'fuel0': float(craft.physical_snapshot()['fuel_kg'][0]),
+    }
+    craft.set_command({
+        'throttle': 0.85,
+        'differential_thrust': 0.25,
+        'rudder_deg': -25.0,
+        'elevator_deg': 14.0,
+        'aileron_deg': 18.0,
+        'reverse_bucket': 0.60,
+    })
+    _step_seconds(craft, 1.5)
+    snap = craft.physical_snapshot()
+
+    # Required VTX engineering snapshot standard keys + mass/inertia conservation
+    for key in (
+        't_s', 'variant', 'body_poses', 'provenance', 'events', 'joints', 'mass',
+        'propulsors', 'aero', 'power', 'energy', 'command', 'targets', 'actuators',
+        'fuel_kg', 'environment', 'contact', 'flags', 'crashed', 'mechanical_energy_j',
+    ):
+        assert key in snap, f'Missing VTX standard snapshot key: {key}'
+    assert 'surfaces' in snap['aero'] and 'hinge_moments' in snap['aero']
+    assert snap['mass']['total_mass_kg'] == pytest.approx(snap['mass_properties']['mujoco_total_mass_kg'], abs=0.2)
+
+    # Real articulated joint motion driven purely by MuJoCo motors & servos
+    q_fan_p, dq_fan_p = craft.joint('fan_rotor_port_hinge')
+    q_fan_s, dq_fan_s = craft.joint('fan_rotor_stbd_hinge')
+    assert abs(q_fan_p - q0['fan_p']) > 50.0 and dq_fan_p > 100.0
+    assert abs(q_fan_s - q0['fan_s']) > 50.0 and dq_fan_s > 100.0
+    surf = snap['control_surfaces']
+    assert abs(surf['rudder']['achieved_deg'] - (-25.0)) < 2.0
+    assert abs(surf['elevator']['achieved_deg'] - 14.0) < 2.0
+    assert abs(surf['aileron']['achieved_deg'] - 18.0) < 2.0
+    assert abs(surf['aileron']['port_achieved_deg'] - (-18.0)) < 2.0
+    assert abs(surf['aileron']['stbd_achieved_deg'] - 18.0) < 2.0
+    assert surf['reverse_bucket']['achieved_frac'] > 0.45
+    assert float(snap['fuel_kg'][0]) < q0['fuel0']
+
+    # Poses of articulated child bodies must differ from airframe quaternion
+    q_af = np.array(snap['body_poses']['airframe']['quaternion_wxyz'])
+    q_rud = np.array(snap['body_poses']['rudder']['quaternion_wxyz'])
+    q_rot = np.array(snap['body_poses']['fan_rotor_port']['quaternion_wxyz'])
+    assert np.linalg.norm(q_rud - q_af) > 0.05
+    assert np.linalg.norm(q_rot - q_af) > 0.01

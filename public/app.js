@@ -18,7 +18,7 @@ import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=phantom-beacon-20261107';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=airport-scale-20261107';
+import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=20261115-islands-1';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=4';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
@@ -29,7 +29,7 @@ import {createAirportOperations} from './vtx-env/airport-operations.js?v=1';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
 import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
-import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261107-thrust-wheel-1';import {createPhantomPanel} from './phantom-controls.js?v=3';import {buildRicochetLake,updateWaterSurface,buildRicochetVisual,createRicochetPanel} from './vtx-env/ricochet-lake.js?v=20261114-lake-pass3';let phantomRig=null,phantomPanel=null,ricochetPanel=null; // Phantom & Ricochet hooks
+import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261107-thrust-wheel-1';import {createPhantomPanel} from './phantom-controls.js?v=3';import {buildRicochetLake,updateWaterSurface,animateRicochetWater,buildRicochetVisual,createRicochetPanel} from './vtx-env/ricochet-lake.js?v=20261115-mujoco-water-2';let phantomRig=null,phantomPanel=null,ricochetPanel=null; // Phantom & Ricochet hooks
 
 const $=id=>document.getElementById(id);
 const phantomMissionNote=document.createElement('p');
@@ -168,10 +168,10 @@ const START_PRESETS={
  ],
  ricochet_lake:[
   ['40,0','Deep basin open water (10.5 m depth)'],
-  ['-620,0','Acceleration lane start'],
-  ['350,0','Turning basin entry'],
+  ['-320,0','Acceleration lane start'],
+  ['310,180','Turning basin NE leg'],
   ['-360,220','Shallow shelf (~0.65 m depth)'],
-  ['-560,290','Marina berth 2'],
+  ['-772,-220','Marina quay approach'],
   ['-798,-110','Launch & recovery ramp'],
   ['custom','Custom point'],
  ],
@@ -273,7 +273,7 @@ function buildWorld(w){
     }:undefined,
     makeModel:modelSpec.asset?undefined:THREE=>makeAirportModel(THREE,modelSpec.kind==='ground'?'ground':modelSpec.kind==='rotorcraft'?'rotorcraft':'fixed-wing',actor.color),
     visible:()=>{
-     if(world?.environment==='sandbox'||world?.id==='stage1-valley')return false;
+     if(world?.environment==='sandbox'||world?.id==='stage1-valley'||world?.environment==='ricochet_lake'||world?.id==='ricochet-lake-v1')return false;
      if(!(airportOperations.isVisible(actor.id)||selectedVehicleId===actor.id))return false;
      const physical=!rideEnabled&&last?.rendering_truth?.body_poses?.airframe?.position;
      return clearOfPhysicalAircraft(airportOperations.sample(actor.id,sceneTime).position,physical);
@@ -857,7 +857,7 @@ function updateView(v){
  const nextAsset=visualAsset(v.rendering_truth?.provenance?.render_asset);
  if(model && nextAsset && loadedAsset!==nextAsset){model.visible=false;modelReady=false;renderer.clear();}
  last=v;latestTruthReceivedMs=performance.now();panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
- if(v.water_frame&&environment.waterMesh){updateWaterSurface(environment.waterMesh,v.water_frame);}
+ if(v.water_frame&&environment.waterMesh){updateWaterSurface(environment.waterMesh,v.water_frame,v.rendering_truth);}
  const envLocked=v.active||document.documentElement.dataset.vtxPreviewPending==='1';
  for(const id of ['environment-select','env-airport','env-sandbox','env-ricochet']){const el=$(id);if(el)el.disabled=envLocked;}
  if(v.environment?.key&&v.environment.key!==currentEnvironment){
@@ -988,13 +988,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
     const angle=rotorVisualOffset(truth.rotor_spin_rad_s?.[i],now-latestTruthReceivedMs,last?.time_scale,last?.active,last?.paused);
     if(angle)n.quaternion.multiply(rotorSpinQ.setFromAxisAngle(rotorSpinAxis,angle));
    }
-  }if(truth.ricochet&&!last?.paused){
-    const rpmP=Number(truth.fan_rpm?.[0]??0),rpmS=Number(truth.fan_rpm?.[1]??0);
-    const ts=last?.time_scale||1;
-    const fp=model.getObjectByName('fan_rotor_port'),fs=model.getObjectByName('fan_rotor_stbd');
-    if(fp&&rpmP>0)fp.rotation.x+=frameDt*(rpmP*Math.PI/30)*ts;
-    if(fs&&rpmS>0)fs.rotation.x-=frameDt*(rpmS*Math.PI/30)*ts;
-   }if(phantomRig){
+  }if(phantomRig){
    const offsets=(truth.phantom?.wheel_rad_s||[]).map(omega=>rotorVisualOffset(omega,now-latestTruthReceivedMs,last?.time_scale,!!last?.active&&!replayFrames,last?.paused));
    updatePhantom(phantomRig,truth,false,offsets);
   }if(truth.pitch_deg)for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
@@ -1005,6 +999,7 @@ function animate(){requestAnimationFrame(animate);if(document.hidden)return;cons
   else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);
  }
+ if(currentEnvironment==='ricochet_lake'&&environment?.waterMesh){animateRicochetWater(environment.waterMesh,truth,frameDt,!last?.paused);}
  if(rideEnabled&&rideRoute){
   ridePose=visualTraffic?.getActor(selectedVehicleId)?.pose;
   rideActor=visualTraffic?.getActor(selectedVehicleId)?.root;

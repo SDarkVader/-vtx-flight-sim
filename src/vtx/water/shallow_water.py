@@ -169,6 +169,55 @@ class ShallowWaterSolver:
         self.h = np.maximum(0.0, self.h + dh)
         self._expected_volume_m3 += float(np.sum(dh) * self.cell_area)
 
+    def apply_momentum_impulse(
+        self,
+        cx: float,
+        cy: float,
+        fx_n: float,
+        fy_n: float,
+        dt: float,
+        radius_m: float = 5.0,
+    ) -> None:
+        """Couple craft hydrodynamic reaction & fan slipstream into wet SWE momentum (zero mass change)."""
+        if dt <= 0.0 or not self.config.shallow_water_enabled:
+            return
+        if abs(fx_n) + abs(fy_n) < 1e-3:
+            return
+        sigma = max(float(radius_m), 0.75 * max(self.dx, self.dy))
+        span_x = 3.0 * sigma
+        span_y = 3.0 * sigma
+        ix0 = max(0, int(math.floor((cx - span_x + self.half_x) / self.dx)))
+        ix1 = min(self.nx, int(math.ceil((cx + span_x + self.half_x) / self.dx)) + 1)
+        iy0 = max(0, int(math.floor((cy - span_y + self.half_y) / self.dy)))
+        iy1 = min(self.ny, int(math.ceil((cy + span_y + self.half_y) / self.dy)) + 1)
+        if ix1 <= ix0 or iy1 <= iy0:
+            return
+
+        h_sub = self.h[iy0:iy1, ix0:ix1]
+        wet = h_sub > self.h_vel_damp
+        if not np.any(wet):
+            return
+
+        xg, yg = np.meshgrid(self.xs[ix0:ix1], self.ys[iy0:iy1])
+        r2 = ((xg - cx) ** 2 + (yg - cy) ** 2) / (sigma * sigma)
+        weights = np.where(wet, np.exp(-0.5 * r2), 0.0)
+        w_sum = float(np.sum(weights))
+        if w_sum <= 1e-12:
+            return
+        # Convert Newtons integrated over cell_area to m^2/s^2 momentum source
+        rho_w = max(float(self.config.rho_water_kg_m3), 100.0)
+        g = float(self.config.g_m_s2)
+        scale = float(dt) / (rho_w * w_sum * self.cell_area)
+        hu_next = self.hu[iy0:iy1, ix0:ix1] + float(fx_n) * scale * weights
+        hv_next = self.hv[iy0:iy1, ix0:ix1] + float(fy_n) * scale * weights
+
+        # Preserve sub-critical Froude CFL stability on localized impulse cells
+        max_q = np.where(wet, h_sub * np.minimum(5.5, 0.55 * np.sqrt(g * np.maximum(h_sub, 0.0))), 0.0)
+        q_mag = np.hypot(hu_next, hv_next)
+        cap = np.where(q_mag > max_q, max_q / np.maximum(q_mag, 1e-12), 1.0)
+        self.hu[iy0:iy1, ix0:ix1] = np.where(wet, hu_next * cap, 0.0)
+        self.hv[iy0:iy1, ix0:ix1] = np.where(wet, hv_next * cap, 0.0)
+
     def max_stable_dt(self, cfl: float = 0.42) -> float:
         g = float(self.config.g_m_s2)
         wet = self.h > self.h_dry
@@ -392,6 +441,77 @@ class HybridWaterField:
         self.sim_time_s = 0.0
         self.swe_step_interval_s = max(float(swe_step_interval_s), 0.0025)
         self._swe_accum_s = 0.0
+        self._vessel_wake: dict[str, Any] = {
+            'active': False,
+            'x': 40.0,
+            'y': 0.0,
+            'heading_rad': 0.0,
+            'speed_mps': 0.0,
+            'vx_mps': 0.0,
+            'vy_mps': 0.0,
+            'heave_rate_mps': 0.0,
+            'draft_m': 0.0,
+            'submerged_vol_m3': 0.0,
+            'thrust_n': 0.0,
+            'beam_m': 1.6,
+            'length_m': 6.8,
+            't_s': 0.0,
+        }
+
+    def apply_vessel_disturbance(
+        self,
+        x: float,
+        y: float,
+        heading_rad: float,
+        vx_world: float,
+        vy_world: float,
+        heave_rate_mps: float,
+        draft_m: float,
+        submerged_vol_m3: float,
+        hydro_reaction_xy: tuple[float, float] | np.ndarray,
+        fan_thrust_n: float,
+        dt: float,
+        beam_m: float = 1.6,
+        length_m: float = 6.8,
+        t_s: float | None = None,
+    ) -> None:
+        """Update vessel wake state and inject opposing hull+propwash momentum into SWE."""
+        speed = math.hypot(float(vx_world), float(vy_world))
+        thr = float(fan_thrust_n)
+        heave = float(heave_rate_mps)
+        active = bool(speed >= 0.08 or abs(heave) >= 0.04 or abs(thr) >= 40.0)
+        self._vessel_wake = {
+            'active': active,
+            'x': float(x),
+            'y': float(y),
+            'heading_rad': float(heading_rad),
+            'speed_mps': speed,
+            'vx_mps': float(vx_world),
+            'vy_mps': float(vy_world),
+            'heave_rate_mps': heave,
+            'draft_m': max(0.0, float(draft_m)),
+            'submerged_vol_m3': max(0.0, float(submerged_vol_m3)),
+            'thrust_n': thr,
+            'beam_m': float(beam_m),
+            'length_m': float(length_m),
+            't_s': self.sim_time_s if t_s is None else float(t_s),
+        }
+        if not active or not getattr(self.config, 'wake_enabled', True):
+            return
+        # Opposing hull hydrodynamic drag/lift + aft ducted-fan slipstream wash (-cos(psi), -sin(psi))
+        fx_water = -float(hydro_reaction_xy[0]) - 0.25 * thr * math.cos(float(heading_rad))
+        fy_water = -float(hydro_reaction_xy[1]) - 0.25 * thr * math.sin(float(heading_rad))
+        self.shallow.apply_momentum_impulse(
+            cx=float(x),
+            cy=float(y),
+            fx_n=fx_water,
+            fy_n=fy_water,
+            dt=float(dt),
+            radius_m=max(4.5, 0.75 * float(length_m)),
+        )
+
+    def get_wake_state(self) -> dict[str, Any]:
+        return dict(self._vessel_wake)
 
     def reconfigure(self, payload: dict[str, Any] | WaterEnvironmentConfig) -> WaterEnvironmentConfig:
         if isinstance(payload, WaterEnvironmentConfig):
@@ -450,16 +570,8 @@ class HybridWaterField:
         # Near dry shoreline (h_swe < 0.25 m), attenuate wave perturbation smoothly to 0
         # so dry banks remain dry unless SWE run-up wets them.
         wave_blend = np.clip((h_swe - 0.08) / 0.35, 0.0, 1.0)
-        eta_hybrid = np.where(
-            h_swe > 1e-4,
-            np.maximum(bed, eta_swe + wave.eta * wave_blend),
-            bed,
-        )
-        depth_hybrid = np.maximum(0.0, eta_hybrid - bed)
+        eta_delta = wave.eta * wave_blend
 
-        # Combine SWE depth-averaged wind/current flow with open-water wave orbital velocity.
-        # Note: open_water.velocity already contains ambient current, so remove ambient
-        # open-water current base before adding SWE velocity to avoid double-counting.
         vel = wave.velocity.copy()
         vel[..., 0] = (vel[..., 0] - self.open_water.current_xy[0]) * wave_blend + u_swe
         vel[..., 1] = (vel[..., 1] - self.open_water.current_xy[1]) * wave_blend + v_swe
@@ -468,11 +580,127 @@ class HybridWaterField:
         acc = wave.acceleration * wave_blend[..., None]
         p_dyn = wave.dynamic_pressure * wave_blend
 
-        # Effective surface normal blends wave normal in wet regions toward terrain normal when dry
-        norm = wave.normal.copy()
-        norm[..., 0] *= wave_blend
-        norm[..., 1] *= wave_blend
-        norm[..., 2] = np.where(wave_blend > 0.0, norm[..., 2], 1.0)
+        # Recover total free-surface slope gradients (d_eta / dx, d_eta / dy)
+        nz_safe = np.maximum(wave.normal[..., 2], 1e-6)
+        dhdx_tot = -(wave.normal[..., 0] / nz_safe) * wave_blend
+        dhdy_tot = -(wave.normal[..., 1] / nz_safe) * wave_blend
+
+        # Overlay analytical Kelvin V-wake & heave rings strictly aft/outside hull center when underway
+        wake = self._vessel_wake
+        if getattr(self.config, 'wake_enabled', True) and wake.get('active'):
+            wx, wy = float(wake['x']), float(wake['y'])
+            dx_w = xa - wx
+            dy_w = ya - wy
+            r_w = np.hypot(dx_w, dy_w)
+            w_mask = r_w < 115.0
+            if np.any(w_mask):
+                psi = float(wake['heading_rad'])
+                c_p, s_p = math.cos(psi), math.sin(psi)
+                # Track direction follows velocity vector when moving fast, else craft heading
+                spd = float(wake['speed_mps'])
+                if spd >= 0.4:
+                    u_dir = float(wake['vx_mps']) / spd
+                    v_dir = float(wake['vy_mps']) / spd
+                else:
+                    u_dir, v_dir = c_p, s_p
+                # s_aft > 0 behind stern; y_lat signed offset port/starboard from wake axis
+                s_aft = -(dx_w * u_dir + dy_w * v_dir)
+                y_lat = -dx_w * v_dir + dy_w * u_dir
+                s_abs = np.maximum(s_aft, 0.0)
+
+                # Smooth Kelvin 19.47 deg half-wedge window beginning behind midship (s_aft >= 0)
+                aft_gate = np.clip((s_aft - 0.8) / 2.2, 0.0, 1.0) * (1.0 - np.clip((s_aft - 80.0) / 30.0, 0.0, 1.0))
+                wedge_half = np.maximum(1.2, 0.36 * s_abs + 1.6)
+                in_wedge = np.exp(-0.5 * np.maximum(0.0, np.abs(y_lat) - 0.72 * wedge_half) ** 2 / np.maximum(0.18 * wedge_half, 1.2) ** 2)
+                g_val = float(self.config.g_m_s2)
+                draft_eff = max(float(wake['draft_m']), 0.15)
+                amp_k = min(0.36, 0.032 * draft_eff * spd * min(spd / 2.0, 1.0))
+                if amp_k > 1e-4:
+                    lam_k = max(4.5, min(28.0, 2.0 * math.pi * max(spd, 2.5) ** 2 / g_val))
+                    k_k = 2.0 * math.pi / lam_k
+                    phase_div = k_k * (s_abs - 2.35 * np.abs(y_lat)) - 0.65 * spd * t_eval
+                    phase_tr = k_k * s_abs - 0.55 * spd * t_eval
+                    env = aft_gate * in_wedge / np.sqrt(1.0 + 0.055 * s_abs) * wave_blend
+                    eta_wake = amp_k * env * (0.72 * np.cos(phase_div) + 0.28 * np.cos(phase_tr))
+                    eta_delta = eta_delta + eta_wake
+                    # Approximate slope gradient for tilted Kelvin facets
+                    d_phase_s = k_k * amp_k * env * (-0.72 * np.sin(phase_div) - 0.28 * np.sin(phase_tr))
+                    dhdx_tot = dhdx_tot + (-u_dir) * d_phase_s
+                    dhdy_tot = dhdy_tot + (-v_dir) * d_phase_s
+                    # Orbital velocity under Kelvin surface wave
+                    vel[..., 0] = vel[..., 0] + eta_wake * 0.65 * u_dir
+                    vel[..., 1] = vel[..., 1] + eta_wake * 0.65 * v_dir
+
+                # Circular heave radiation ring outside r > 1.8 m (eliminates self-excitation loop)
+                h_rate = float(wake['heave_rate_mps'])
+                amp_h = min(0.16, 0.055 * abs(h_rate)) * min(draft_eff / 0.25, 1.0)
+                if amp_h > 1e-4:
+                    outer = np.clip((r_w - 1.8) / 1.8, 0.0, 1.0) * (1.0 - np.clip((r_w - 35.0) / 15.0, 0.0, 1.0))
+                    eta_h = amp_h * outer * np.cos(0.95 * r_w - 3.6 * t_eval) / np.sqrt(1.0 + 0.12 * r_w) * wave_blend
+                    eta_delta = eta_delta + eta_h
+
+        # Overlay Burgers-Rott whirlpools (compact support strictly zero outside r_influence_m)
+        wp_enabled = getattr(self.config, 'whirlpools_enabled', True)
+        wp_intensity = max(0.0, float(getattr(self.config, 'whirlpool_intensity', 1.0)))
+        whirlpools = getattr(self.world, 'whirlpools', ()) if (wp_enabled and wp_intensity > 1e-4) else ()
+        rho_w = float(self.config.rho_water_kg_m3)
+        for wp in whirlpools:
+            cx, cy = float(wp['x']), float(wp['y'])
+            r_core = max(float(wp['r_core_m']), 1.0)
+            r_infl = max(float(wp['r_influence_m']), r_core + 5.0)
+            dx_v = xa - cx
+            dy_v = ya - cy
+            r_v = np.hypot(dx_v, dy_v)
+            if not np.any(r_v < r_infl):
+                continue
+            r_safe = np.maximum(r_v, 1e-3)
+            xi = r_v / r_core
+            # Smooth C^2 compact window: 1 in core, 0 for r >= r_infl
+            tw = np.clip((r_v - 0.62 * r_infl) / (0.38 * r_infl), 0.0, 1.0)
+            taper = (1.0 - tw * tw * (3.0 - 2.0 * tw)) * np.clip((h_swe - 0.15) / 0.5, 0.0, 1.0)
+
+            spin = float(wp.get('spin', 1))
+            v_theta = spin * wp_intensity * float(wp['max_swirl_mps']) * ((1.0 - np.exp(-(xi * xi))) / np.maximum(xi * 0.6382, 1e-3)) * taper
+            v_rad = -wp_intensity * float(wp['max_suction_mps']) * (2.0 * xi / (1.0 + xi * xi)) * taper
+            w_down = -wp_intensity * (0.45 * float(wp['max_suction_mps'])) * np.exp(-(xi * xi)) * taper
+
+            er_x = dx_v / r_safe
+            er_y = dy_v / r_safe
+            et_x = -er_y
+            et_y = er_x
+            v_theta = np.where(r_v > 0.05, v_theta, 0.0)
+            v_rad = np.where(r_v > 0.05, v_rad, 0.0)
+            ux_v = v_theta * et_x + v_rad * er_x
+            uy_v = v_theta * et_y + v_rad * er_y
+            vel[..., 0] = vel[..., 0] + ux_v
+            vel[..., 1] = vel[..., 1] + uy_v
+            vel[..., 2] = vel[..., 2] + w_down
+
+            # Funnel depression and analytical spatial slope
+            r_f = 1.45 * r_core
+            eta_wp = wp_intensity * float(wp['core_drop_m']) * np.exp(-0.5 * (r_v / r_f) ** 2) * taper
+            d_eta_dr = eta_wp * (-r_v / (r_f * r_f))
+            eta_delta = eta_delta + eta_wp
+            dhdx_tot = dhdx_tot + np.where(r_v > 0.05, d_eta_dr * er_x, 0.0)
+            dhdy_tot = dhdy_tot + np.where(r_v > 0.05, d_eta_dr * er_y, 0.0)
+
+            # Centripetal fluid acceleration a_c = -v_theta^2 / r * e_r
+            ac_mag = np.where(r_v > 0.2, -(v_theta * v_theta) / r_safe, 0.0)
+            acc[..., 0] = acc[..., 0] + ac_mag * er_x
+            acc[..., 1] = acc[..., 1] + ac_mag * er_y
+
+            # Bernoulli dynamic pressure drop in high-swirl core
+            p_dyn = p_dyn - 0.5 * rho_w * (v_theta * v_theta + v_rad * v_rad)
+
+        eta_hybrid = np.where(
+            h_swe > 1e-4,
+            np.maximum(bed, eta_swe + eta_delta),
+            bed,
+        )
+        depth_hybrid = np.maximum(0.0, eta_hybrid - bed)
+
+        # Effective surface normal blends total free-surface slope in wet regions toward vertical when dry
+        norm = np.stack([-dhdx_tot, -dhdy_tot, np.ones_like(dhdx_tot)], axis=-1)
         n_len = np.linalg.norm(norm, axis=-1, keepdims=True)
         norm = norm / np.maximum(n_len, 1e-12)
 

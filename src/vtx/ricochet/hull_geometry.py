@@ -282,23 +282,39 @@ def load_glb_watertight_mesh(
     return wmesh
 
 
-CONCEPT_A_AIRFRAME_NODE_SPECS: tuple[tuple[str, str, str, bool, tuple[float, float, float]], ...] = (
-    ('wing_port', 'Ricochet_Wing_Port', 'carbon_satin', True, (0.0, 0.0, 0.0)),
-    ('wing_stbd', 'Ricochet_Wing_Stbd', 'carbon_satin', True, (0.0, 0.0, 0.0)),
-    ('winglet_port', 'Ricochet_Winglet_Port', 'carbon_satin', True, (0.0, 0.0, 0.0)),
-    ('winglet_stbd', 'Ricochet_Winglet_Stbd', 'carbon_satin', True, (0.0, 0.0, 0.0)),
-    ('strut_port', 'Ricochet_Strut_Port', 'titanium_strut', True, (0.0, 0.0, 0.0)),
-    ('strut_stbd', 'Ricochet_Strut_Stbd', 'titanium_strut', True, (0.0, 0.0, 0.0)),
-    ('tail_pylon_t_tail', 'Ricochet_Tail_Pylon_T_Tail', 'carbon_satin', True, (0.0, 0.0, 0.0)),
-    ('duct_port', 'Ricochet_Duct_Port', 'carbon_satin', True, (0.0, 0.0, 0.0)),
-    ('duct_stbd', 'Ricochet_Duct_Stbd', 'carbon_satin', True, (0.0, 0.0, 0.0)),
-    ('fan_rotor_port', 'Ricochet_Fan_Rotor_Port', 'fan_rotor', True, (-2.05, 0.78, 1.56)),
-    ('fan_rotor_stbd', 'Ricochet_Fan_Rotor_Stbd', 'fan_rotor', True, (-2.05, -0.78, 1.56)),
-    ('fan_spinner_port', 'Ricochet_Fan_Spinner_Port', 'vtx_gold', True, (-2.05, 0.78, 1.56)),
-    ('fan_spinner_stbd', 'Ricochet_Fan_Spinner_Stbd', 'vtx_gold', True, (-2.05, -0.78, 1.56)),
-    ('canopy_glass', 'Ricochet_Canopy_Glass', 'canopy_glass', True, (0.0, 0.0, 0.0)),
-    ('cockpit_interior', 'Ricochet_Cockpit_Interior', 'cockpit_detail', True, (0.0, 0.0, 0.0)),
-    ('avionics_display', 'Ricochet_Avionics_Display', 'avionics_glow', True, (0.0, 0.0, 0.0)),
+from vtx.ricochet.concept_a_builder import (
+    AILERON_HINGE_PORT_VTX,
+    AILERON_HINGE_STBD_VTX,
+    ELEVATOR_HINGE_VTX,
+    FAN_CENTER_PORT_VTX,
+    REVERSE_BUCKET_HINGE_PORT_VTX,
+    REVERSE_BUCKET_HINGE_STBD_VTX,
+    RUDDER_HINGE_VTX,
+)
+
+CONCEPT_A_AIRFRAME_NODE_SPECS: tuple[tuple[str, str, str, bool, tuple[float, float, float], str], ...] = (
+    ('wing_port', 'Ricochet_Wing_Port', 'carbon_satin', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('wing_stbd', 'Ricochet_Wing_Stbd', 'carbon_satin', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('aileron_port', 'Ricochet_Aileron_Port', 'carbon_satin', True, AILERON_HINGE_PORT_VTX, 'aileron_port'),
+    ('aileron_stbd', 'Ricochet_Aileron_Stbd', 'carbon_satin', True, AILERON_HINGE_STBD_VTX, 'aileron_stbd'),
+    ('winglet_port', 'Ricochet_Winglet_Port', 'carbon_satin', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('winglet_stbd', 'Ricochet_Winglet_Stbd', 'carbon_satin', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('strut_port', 'Ricochet_Strut_Port', 'titanium_strut', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('strut_stbd', 'Ricochet_Strut_Stbd', 'titanium_strut', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('tail_pylon_t_tail', 'Ricochet_Tail_Pylon_T_Tail', 'carbon_satin', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('elevator', 'Ricochet_Elevator', 'carbon_satin', True, ELEVATOR_HINGE_VTX, 'elevator'),
+    ('rudder', 'Ricochet_Rudder', 'carbon_satin', True, RUDDER_HINGE_VTX, 'rudder'),
+    ('duct_port', 'Ricochet_Duct_Port', 'carbon_satin', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('duct_stbd', 'Ricochet_Duct_Stbd', 'carbon_satin', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('reverse_bucket_port', 'Ricochet_Reverse_Bucket_Port', 'titanium_strut', True, REVERSE_BUCKET_HINGE_PORT_VTX, 'reverse_bucket_port'),
+    ('reverse_bucket_stbd', 'Ricochet_Reverse_Bucket_Stbd', 'titanium_strut', True, REVERSE_BUCKET_HINGE_STBD_VTX, 'reverse_bucket_stbd'),
+    ('fan_rotor_port', 'Ricochet_Fan_Rotor_Port', 'fan_rotor', True, FAN_CENTER_PORT_VTX, 'fan_rotor_port'),
+    ('fan_rotor_stbd', 'Ricochet_Fan_Rotor_Stbd', 'fan_rotor', True, (FAN_CENTER_PORT_VTX[0], -FAN_CENTER_PORT_VTX[1], FAN_CENTER_PORT_VTX[2]), 'fan_rotor_stbd'),
+    ('fan_spinner_port', 'Ricochet_Fan_Spinner_Port', 'vtx_gold', True, FAN_CENTER_PORT_VTX, 'fan_rotor_port'),
+    ('fan_spinner_stbd', 'Ricochet_Fan_Spinner_Stbd', 'vtx_gold', True, (FAN_CENTER_PORT_VTX[0], -FAN_CENTER_PORT_VTX[1], FAN_CENTER_PORT_VTX[2]), 'fan_rotor_stbd'),
+    ('canopy_glass', 'Ricochet_Canopy_Glass', 'canopy_glass', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('cockpit_interior', 'Ricochet_Cockpit_Interior', 'cockpit_detail', True, (0.0, 0.0, 0.0), 'airframe'),
+    ('avionics_display', 'Ricochet_Avionics_Display', 'avionics_glow', True, (0.0, 0.0, 0.0), 'airframe'),
 )
 
 
@@ -351,13 +367,14 @@ class HullGeometryRegistry:
                 if glb_target == CONCEPT_A_GLB:
                     spn_p = load_glb_watertight_mesh(glb_target, name='sponson_port_mesh', node_name='Ricochet_Sponson_Port')
                     spn_s = load_glb_watertight_mesh(glb_target, name='sponson_stbd_mesh', node_name='Ricochet_Sponson_Stbd')
-                    for part_key, node_name, mat_role, pin_mj, offset in CONCEPT_A_AIRFRAME_NODE_SPECS:
+                    for part_key, node_name, mat_role, pin_mj, offset, phys_body in CONCEPT_A_AIRFRAME_NODE_SPECS:
                         part_mesh = load_glb_watertight_mesh(glb_target, name=f'{part_key}_mesh', node_name=node_name)
                         airframe_meshes[part_key] = {
                             'mesh': part_mesh,
                             'material_role': mat_role,
                             'pin_to_mujoco': pin_mj,
                             'offset': list(offset),
+                            'body': phys_body,
                         }
                 else:
                     spn_p = build_uv_ellipsoid_mesh('sponson_port_mesh', SPONSON_RADII_M, source_id='F03_SPN_P')

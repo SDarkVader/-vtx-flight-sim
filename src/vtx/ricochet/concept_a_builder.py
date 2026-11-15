@@ -50,6 +50,38 @@ COL_AVIONICS = (0.050, 0.720, 0.880, 1.0)    # Dual MFD cyan-blue glow
 SPONSON_MOUNT_CONCEPT_A_VTX = (-0.34, 3.80, 0.48)
 FAN_CENTER_PORT_VTX = (-2.05, 0.78, 1.56)
 
+def _unit_vec(v: tuple[float, float, float] | np.ndarray) -> tuple[float, float, float]:
+    arr = np.asarray(v, dtype=np.float64)
+    n = float(np.linalg.norm(arr))
+    u = arr / max(1e-12, n)
+    return (float(u[0]), float(u[1]), float(u[2]))
+
+# Exact 3D hinge pivots (VTX frame) and unit hinge axes for articulated Concept A control surfaces.
+# Wing geometry over |y| in [0.52, 4.64]: t=(y-0.52)/4.12, chord=2.02*(1-0.45*t), x_le=1.15-1.07*t, z=0.875+0.255*t
+# At 73% chord hinge line from |y|=2.10 to |y|=4.24:
+_AIL_P0 = np.array([1.15 - 1.07 * ((2.10 - 0.52) / 4.12) - 0.73 * 2.02 * (1.0 - 0.45 * ((2.10 - 0.52) / 4.12)), 2.10, 0.875 + 0.255 * ((2.10 - 0.52) / 4.12)])
+_AIL_P1 = np.array([1.15 - 1.07 * ((4.24 - 0.52) / 4.12) - 0.73 * 2.02 * (1.0 - 0.45 * ((4.24 - 0.52) / 4.12)), 4.24, 0.875 + 0.255 * ((4.24 - 0.52) / 4.12)])
+_AIL_MID_P = 0.5 * (_AIL_P0 + _AIL_P1)
+AILERON_HINGE_PORT_VTX = (float(_AIL_MID_P[0]), float(_AIL_MID_P[1]), float(_AIL_MID_P[2]))
+AILERON_HINGE_STBD_VTX = (float(_AIL_MID_P[0]), float(-_AIL_MID_P[1]), float(_AIL_MID_P[2]))
+# Both axes point generally +Y (port-ward) so +q rotates trailing edge UP (+Z) and -q rotates TE DOWN (-Z).
+AILERON_AXIS_PORT = _unit_vec(_AIL_P1 - _AIL_P0)
+AILERON_AXIS_STBD = _unit_vec(np.array([-(_AIL_P1[0] - _AIL_P0[0]), +(_AIL_P1[1] - _AIL_P0[1]), -(_AIL_P1[2] - _AIL_P0[2])]))
+
+ELEVATOR_HINGE_VTX = (-3.14, 0.0, 2.302)
+ELEVATOR_AXIS = (0.0, 1.0, 0.0)  # +q moves TE up (-M_y = nose up pitch)
+
+_RUD_P0 = np.array([-2.12, 0.0, 0.96])
+_RUD_P1 = np.array([-3.06, 0.0, 2.20])
+_RUD_MID = 0.5 * (_RUD_P0 + _RUD_P1)
+RUDDER_HINGE_VTX = (float(_RUD_MID[0]), 0.0, float(_RUD_MID[2]))
+# Point axis downward along hinge post (-s) so +q swings TE toward +Y (port) -> +M_z (left yaw).
+RUDDER_AXIS = _unit_vec(_RUD_P0 - _RUD_P1)
+
+REVERSE_BUCKET_HINGE_PORT_VTX = (-2.33, 0.78, 1.56)
+REVERSE_BUCKET_HINGE_STBD_VTX = (-2.33, -0.78, 1.56)
+REVERSE_BUCKET_AXIS = (0.0, -1.0, 0.0)  # +q in [0, 85 deg] swings stowed upper deflector bucket DOWN across jet exit
+
 
 # ---------------------------------------------------------------------------
 # Low-level Watertight Manifold & Sharp-Seam Visual Builders
@@ -280,23 +312,23 @@ def _canopy_spine_and_sill(x: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.nd
     # Teardrop planform half-width: sleek pointed front entry, max shoulder width 0.45 m around u=0.52, tapers smoothly aft
     w_sill = 0.45 * (np.sin(math.pi * (u ** 0.82)) ** 0.78) * (1.0 - 0.16 * u)
     w_sill = np.maximum(w_sill, 0.030)
-    # High watertight cockpit coaming sill z(x): +0.28m dry freeboard forward (+2.85 -> 0.840m) to turtledeck (+1.06m @ -0.25)
-    z_sill = 0.840 + 0.220 * (u ** 1.15) - 0.030 * np.sin(math.pi * u)
-    # Teardrop bubble dome spine height: sleek ~22-deg rake at nose -> ~1.566m crown peak -> smooth aft spine merge
+    # High watertight cockpit coaming sill z(x): +0.32m dry freeboard above calm 0.56m WL -> turtledeck (+1.095m @ -0.25)
+    z_sill = 0.885 + 0.210 * (u ** 1.12) - 0.025 * np.sin(math.pi * u)
+    # Teardrop bubble dome spine height: sleek ~22-deg rake at nose -> ~1.61m crown peak -> smooth aft spine merge
     bump = np.sin(math.pi * (u ** 0.72)) ** 1.08
-    z_crown = z_sill + 0.015 + 0.665 * bump
+    z_crown = z_sill + 0.015 + 0.655 * bump
     return w_sill, z_sill, z_crown
 
 
 def build_pass3_hull_and_cabin(underwater_fullness: float = 0.74) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Build streamlined Pass 3 deep-V hull + sculpted dry cockpit + aerodynamic nose tip + crisp VTX livery.
+    """Build streamlined Pass 3 deep-V waterproof hull + dry cockpit well + aerodynamic nose + crisp VTX livery.
 
     Coordinates are in VTX frame (+X fwd, +Y port, +Z up).
     Hull spans x in [-1.75, +3.35] (nose tip @ +3.35; tail extends to -3.45 -> 6.80 m total length).
     At z_WL = 0.56 m, `underwater_fullness` tunes the deep-V deadrise concavity so:
     - T_design (900 kg) == 0.560 m, LCB_x aligned near CG_x (+0.48..0.52 m)
     - Hull-alone GM_T ~ 0.36-0.52 m (matching RC-01 sheet 0.35-0.55 m) + strong longitudinal GM_L
-    - High watertight foredeck & dry cockpit floor (>= 0.56 m) prevent bow-dive flooding under full thrust
+    - High watertight foredeck, raised gunwales & dry cockpit floor (>= 0.745 m > T_max 0.62 m) prevent swamping.
     """
     n_x = 76
     xs = np.linspace(-1.75, 3.35, n_x)
@@ -331,18 +363,18 @@ def build_pass3_hull_and_cabin(underwater_fullness: float = 0.74) -> tuple[np.nd
             xf = (x - 2.10) / (3.35 - 2.10)
             z_k = 0.575 * (xf ** 1.75)
 
-        # 3) Chine transition & upper deck profile (generous bow flare >= 0.62m chine -> wave-piercing reserve lift!)
-        z_chine = max(z_k + 0.035, 0.585 + 0.045 * max(0.0, (x - 1.50) / 1.85))
+        # 3) Chine transition & upper deck profile (waterline chine for GM_T 0.38-0.48 m + high watertight freeboard & bow flare)
+        z_chine = max(z_k + 0.035, 0.582 + 0.048 * max(0.0, (x - 1.45) / 1.90))
         if x > 2.75:
             xn = max(0.0, min(1.0, (3.35 - x) / 0.60))
-            z_chine = 0.630 + 0.015 * (xn ** 0.7)
+            z_chine = 0.630 + 0.018 * (xn ** 0.7)
 
         if x >= 2.85:
             xn = max(0.0, min(1.0, (3.35 - x) / 0.50))
-            z_deck_top = 0.650 + 0.190 * (xn ** 0.72)
+            z_deck_top = 0.690 + 0.195 * (xn ** 0.72)
         elif x <= -0.25:
             xa = (-0.25 - x) / 1.50
-            z_deck_top = 1.075 - 0.145 * (xa ** 0.90)
+            z_deck_top = 1.095 - 0.140 * (xa ** 0.90)
         else:
             w_c, z_sill, _ = _canopy_spine_and_sill(np.array([x]))
             z_deck_top = float(z_sill[0])
@@ -359,27 +391,27 @@ def build_pass3_hull_and_cabin(underwater_fullness: float = 0.74) -> tuple[np.nd
             pts_port[j] = [x, w_chine * py, z_k + (z_chine - z_k) * s]
 
         # j=7: flared chine spray rail stepping cleanly out to full 0.80 m half-beam above waterline!
-        pts_port[7] = [x, beam_top * 0.96, z_chine + 0.032]
-        z_sh = max(z_chine + 0.08, z_deck_top - 0.055) if (-0.25 <= x <= 2.85) else max(z_chine + 0.06, z_deck_top - 0.09)
-        pts_port[8]  = [x, beam_top * 1.00, z_chine + (z_sh - z_chine) * 0.26]
-        pts_port[9]  = [x, beam_top * 0.99, z_chine + (z_sh - z_chine) * 0.42]
-        pts_port[10] = [x, beam_top * 0.94, z_chine + (z_sh - z_chine) * 0.78]
+        pts_port[7] = [x, beam_top * 0.96, z_chine + 0.042]
+        z_sh = max(z_chine + 0.10, z_deck_top - 0.055) if (-0.25 <= x <= 2.85) else max(z_chine + 0.08, z_deck_top - 0.085)
+        pts_port[8]  = [x, beam_top * 1.00, z_chine + (z_sh - z_chine) * 0.28]
+        pts_port[9]  = [x, beam_top * 0.99, z_chine + (z_sh - z_chine) * 0.48]
+        pts_port[10] = [x, beam_top * 0.94, z_chine + (z_sh - z_chine) * 0.80]
 
         if -0.25 < x < 2.85:
-            # Open cockpit region with dry watertight floor (>= 0.56 m calm WL) sloping up to solid foredeck!
+            # Sealed coaming & dry watertight cockpit sole (>= 0.745 m, well clear of 0.56 m WL & waves)
             w_c_arr, z_s_arr, _ = _canopy_spine_and_sill(np.array([x]))
             wc = min(float(w_c_arr[0]), beam_top * 0.84)
             zs = float(z_s_arr[0])
-            pts_port[11] = [x, wc + 0.055, zs + 0.010]   # deck edge outside sill rim
-            pts_port[12] = [x, wc + 0.018, zs + 0.008]   # outer edge of gold sill rim
-            pts_port[13] = [x, wc - 0.005, zs - 0.002]   # inner edge of gold sill rim
-            z_floor_fwd = 0.565 + 0.235 * (max(0.0, (x - 1.75) / 1.10) ** 1.05)
-            z_floor = min(max(z_k + 0.30, z_floor_fwd), zs - 0.035)
+            pts_port[11] = [x, wc + 0.058, zs + 0.012]   # outer waterproof coaming flange
+            pts_port[12] = [x, wc + 0.018, zs + 0.010]   # gold canopy sill frame rim
+            pts_port[13] = [x, wc - 0.005, zs - 0.002]   # elastomeric canopy seal groove
+            z_floor_fwd = 0.745 + 0.135 * (max(0.0, (x - 1.65) / 1.20) ** 1.05)
+            z_floor = min(max(z_k + 0.34, z_floor_fwd), zs - 0.035)
             wc_in = max(0.02, wc - 0.055)
-            pts_port[14] = [x, wc - 0.025, max(z_floor + 0.02, zs - 0.055)]
-            pts_port[15] = [x, wc_in * 0.95, zs * 0.55 + z_floor * 0.45]
-            pts_port[16] = [x, wc_in * 0.86, z_floor + 0.05]
-            pts_port[17] = [x, wc_in * 0.65, z_floor + 0.012]
+            pts_port[14] = [x, wc - 0.025, max(z_floor + 0.02, zs - 0.050)]
+            pts_port[15] = [x, wc_in * 0.95, zs * 0.52 + z_floor * 0.48]
+            pts_port[16] = [x, wc_in * 0.86, z_floor + 0.045]
+            pts_port[17] = [x, wc_in * 0.65, z_floor + 0.010]
             pts_port[18] = [x, wc_in * 0.40, z_floor]
             pts_port[19] = [x, wc_in * 0.18, z_floor]
             pts_port[20] = [x, 0.0,          z_floor]
@@ -436,15 +468,26 @@ def build_pass3_hull_and_cabin(underwater_fullness: float = 0.74) -> tuple[np.nd
     parts = [(verts, faces, fc, fm)]
 
     def add_vtx_emblem(side: float) -> None:
-        # Three crisp inlaid 3D strokes forming 'V', 'T', 'X' on cheek x=[1.90..2.48] cleanly above racing stripe
-        letters = [
-            ((2.46, 0.865), (2.39, 0.770), 0.015),
-            ((2.32, 0.865), (2.39, 0.770), 0.015),
-            ((2.25, 0.865), (2.11, 0.865), 0.014),
-            ((2.18, 0.865), (2.18, 0.770), 0.015),
-            ((2.04, 0.865), (1.90, 0.770), 0.014),
-            ((1.90, 0.865), (2.04, 0.770), 0.014),
-        ]
+        # Three crisp inlaid 3D strokes forming 'V', 'T', 'X' reading left-to-right on BOTH sides:
+        # Port (+Y): +X is viewer-left, -X is viewer-right. Stbd (-Y): -X is viewer-left, +X is viewer-right!
+        if side >= 0.0:
+            letters = [
+                ((2.46, 0.905), (2.39, 0.805), 0.015),  # V left leg
+                ((2.32, 0.905), (2.39, 0.805), 0.015),  # V right leg
+                ((2.25, 0.905), (2.11, 0.905), 0.014),  # T top
+                ((2.18, 0.905), (2.18, 0.805), 0.015),  # T stem
+                ((2.04, 0.905), (1.90, 0.805), 0.014),  # X diag 1
+                ((1.90, 0.905), (2.04, 0.805), 0.014),  # X diag 2
+            ]
+        else:
+            letters = [
+                ((1.90, 0.905), (1.97, 0.805), 0.015),  # V left leg (-X viewer-left)
+                ((2.04, 0.905), (1.97, 0.805), 0.015),  # V right leg
+                ((2.11, 0.905), (2.25, 0.905), 0.014),  # T top
+                ((2.18, 0.905), (2.18, 0.805), 0.015),  # T stem
+                ((2.32, 0.905), (2.46, 0.805), 0.014),  # X diag 1
+                ((2.46, 0.905), (2.32, 0.805), 0.014),  # X diag 2
+            ]
         for (x0, z0), (x1, z1), w in letters:
             xm, zm = 0.5 * (x0 + x1), 0.5 * (z0 + z1)
             bt = _hull_beam_top(xm)
@@ -515,23 +558,23 @@ def build_pass3_cockpit_and_avionics() -> tuple[
 ]:
     """Build clean sculpted pilot bucket seat, glare-shield pod, stick & dual backlit MFD displays."""
     interior_parts = [
-        # Seat pan + reclined backrest (cleanly above 0.565 m dry cockpit floor & below 1.585 m canopy)
-        _add_box_part(1.16, 0.0, 0.61, 0.24, 0.22, 0.040, COL_SEAT, 5),
-        _add_box_part(0.91, 0.0, 0.87, 0.05, 0.21, 0.26, COL_SEAT, 5, rot_y=-0.32),
+        # Seat pan + reclined backrest (cleanly above 0.745 m dry cockpit floor & below 1.61 m canopy)
+        _add_box_part(1.16, 0.0, 0.790, 0.24, 0.22, 0.040, COL_SEAT, 5),
+        _add_box_part(0.91, 0.0, 1.030, 0.05, 0.21, 0.24, COL_SEAT, 5, rot_y=-0.32),
         # Headrest + VTX Gold harness shoulder trim straps
-        _add_box_part(0.80, 0.0, 1.14, 0.05, 0.12, 0.09, COL_CARBON_DARK, 5, rot_y=-0.20),
-        _add_box_part(0.95, +0.10, 0.92, 0.055, 0.026, 0.17, COL_GOLD, 1, rot_y=-0.32),
-        _add_box_part(0.95, -0.10, 0.92, 0.055, 0.026, 0.17, COL_GOLD, 1, rot_y=-0.32),
+        _add_box_part(0.80, 0.0, 1.280, 0.05, 0.12, 0.08, COL_CARBON_DARK, 5, rot_y=-0.20),
+        _add_box_part(0.95, +0.10, 1.070, 0.055, 0.026, 0.16, COL_GOLD, 1, rot_y=-0.32),
+        _add_box_part(0.95, -0.10, 1.070, 0.055, 0.026, 0.16, COL_GOLD, 1, rot_y=-0.32),
         # Center flight stick & pedestal
-        _add_box_part(1.42, 0.0, 0.68, 0.025, 0.025, 0.13, COL_CARBON_DARK, 5, rot_y=0.14),
-        _add_box_part(1.44, 0.0, 0.82, 0.032, 0.022, 0.042, COL_GOLD, 1),
+        _add_box_part(1.42, 0.0, 0.840, 0.025, 0.025, 0.12, COL_CARBON_DARK, 5, rot_y=0.14),
+        _add_box_part(1.44, 0.0, 0.970, 0.032, 0.022, 0.040, COL_GOLD, 1),
         # Glare-shield instrument console binnacle (under sloped curved windshield)
-        _add_box_part(1.88, 0.0, 0.90, 0.14, 0.29, 0.095, COL_CARBON_DARK, 5, rot_y=0.30),
+        _add_box_part(1.88, 0.0, 1.035, 0.14, 0.28, 0.092, COL_CARBON_DARK, 5, rot_y=0.30),
     ]
     avionics_parts = [
         # Left & right crisp illuminated MFD glass panels angled cleanly toward pilot
-        _add_box_part(1.755, +0.135, 0.91, 0.008, 0.105, 0.072, COL_AVIONICS, 6, rot_y=0.30),
-        _add_box_part(1.755, -0.135, 0.91, 0.008, 0.105, 0.072, COL_AVIONICS, 6, rot_y=0.30),
+        _add_box_part(1.755, +0.135, 1.045, 0.008, 0.105, 0.070, COL_AVIONICS, 6, rot_y=0.30),
+        _add_box_part(1.755, -0.135, 1.045, 0.008, 0.105, 0.070, COL_AVIONICS, 6, rot_y=0.30),
     ]
     return _merge_disjoint_parts(interior_parts), _merge_disjoint_parts(avionics_parts)
 
@@ -592,14 +635,12 @@ def build_pass3_sponson(side: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, 
 
 
 def build_pass3_wing(side: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Build port (side=+1) or stbd (side=-1) cambered NACA 2414 wing with crisp gold LE root accent."""
-    n_y = 26
+    """Build port (side=+1) or stbd (side=-1) cambered NACA 2414 wing with clean trailing cove for articulated aileron."""
+    ys = np.array([0.52, 0.90, 1.28, 1.66, 2.02, 2.08, 2.38, 2.74, 3.12, 3.50, 3.88, 4.24, 4.30, 4.48, 4.64], dtype=np.float64)
+    n_y = len(ys)
     n_af = 28  # points around airfoil (14 upper TE->LE, 14 lower LE->TE)
-    ys = np.linspace(0.52, 4.64, n_y)
-    # Cosine airfoil spacing for silky smooth leading edge
     ang = np.linspace(0.0, math.pi, n_af // 2 + 1)
     xc_half = 0.5 * (1.0 - np.cos(ang))  # 0 (LE) -> 1 (TE)
-    zu, zl = _naca_4digit(xc_half, thickness=0.145, camber=0.022)
 
     rings = []
     for y_abs in ys:
@@ -608,20 +649,22 @@ def build_pass3_wing(side: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.
         x_le = 1.15 - 1.07 * t
         z_root = 0.875 + 0.255 * t  # ~3.5 deg dihedral cleanly meeting hull shoulder & winglet!
         y = side * y_abs
+        cut = 0.715 if (2.08 <= y_abs <= 4.24) else 1.0
+        xc_eff = xc_half * cut
+        zu, zl = _naca_4digit(xc_eff, thickness=0.145, camber=0.022)
 
         pts = []
-        # Walk clockwise around airfoil in XZ plane: upper from TE->LE, lower from LE->TE
-        for j in range(len(xc_half) - 1, 0, -1):
-            pts.append([x_le - xc_half[j] * chord, y, z_root + zu[j] * chord])
+        # Walk clockwise around airfoil in XZ plane: upper from TE->LE, lower from LE->TE (no duplicate TE vertices!)
+        n_c = len(xc_eff)
+        for j in range(n_c - 1, 0, -1):
+            dz_te = 0.002 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, y, z_root + zu[j] * chord + dz_te])
         pts.append([x_le, y, z_root])  # LE tip (j=0)
-        for j in range(1, len(xc_half) - 1):
-            pts.append([x_le - xc_half[j] * chord, y, z_root + zl[j] * chord])
-        # Blunt crisp trailing edge thickness (3 mm) so mesh is strictly watertight non-zero-area
-        pts.append([x_le - chord, y, z_root + 0.002])
-        pts.append([x_le - chord, y, z_root - 0.002])
+        for j in range(1, n_c):
+            dz_te = -0.002 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, y, z_root + zl[j] * chord + dz_te])
         rings.append(np.asarray(pts, dtype=np.float64))
 
-    # Wait: ensure consistent point count m per ring
     m = rings[0].shape[0]
     verts, faces = _loft_closed_rings(rings, close_ends=True)
     n_f = faces.shape[0]
@@ -635,6 +678,50 @@ def build_pass3_wing(side: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.
         y_abs = 0.5 * (ys[strip_idx] + ys[strip_idx + 1])
         # Crisp VTX Gold racing leading-edge strip along inboard half (y < 2.2 m)
         if y_abs < 2.15 and abs(k_seg - le_idx) <= 2:
+            fc[fi] = COL_GOLD
+            fm[fi] = 1
+    return verts, faces, fc, fm
+
+
+def build_pass3_aileron(side: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build articulated NACA 2414 trailing aileron flap in local coordinates relative to its swept 3D hinge pivot."""
+    ys = np.linspace(2.11, 4.21, 14)
+    n_y = len(ys)
+    n_af = 20
+    ang = np.linspace(0.0, math.pi, n_af // 2 + 1)
+    xc_half = 0.5 * (1.0 - np.cos(ang))
+    hinge_origin = np.array(AILERON_HINGE_PORT_VTX if side >= 0 else AILERON_HINGE_STBD_VTX, dtype=np.float64)
+
+    rings = []
+    for y_abs in ys:
+        t = (y_abs - 0.52) / (4.64 - 0.52)
+        chord = 2.02 * (1.0 - 0.45 * t)
+        x_le = 1.15 - 1.07 * t
+        z_root = 0.875 + 0.255 * t
+        y = side * y_abs
+        xc_eff = 0.742 + 0.258 * xc_half
+        zu, zl = _naca_4digit(xc_eff, thickness=0.145, camber=0.022)
+        z_mid_nose = 0.5 * (float(zu[0]) + float(zl[0])) * chord
+        pts = []
+        n_c = len(xc_eff)
+        for j in range(n_c - 1, 0, -1):
+            dz_te = 0.002 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, y, z_root + zu[j] * chord + dz_te] - hinge_origin)
+        pts.append([x_le - 0.734 * chord, y, z_root + z_mid_nose] - hinge_origin)
+        for j in range(1, n_c):
+            dz_te = -0.002 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, y, z_root + zl[j] * chord + dz_te] - hinge_origin)
+        rings.append(np.asarray(pts, dtype=np.float64))
+
+    m = rings[0].shape[0]
+    verts, faces = _loft_closed_rings(rings, close_ends=True)
+    n_f = faces.shape[0]
+    fc = np.tile(np.array(COL_CARBON_DARK, dtype=np.float32), (n_f, 1))
+    fm = np.zeros(n_f, dtype=np.int32)
+    n_quad_faces = (n_y - 1) * m * 2
+    for fi in range(n_quad_faces):
+        k_seg = (fi % (m * 2)) // 2
+        if k_seg <= 2 or k_seg >= m - 4:  # crisp VTX gold trailing edge trim stripe!
             fc[fi] = COL_GOLD
             fm[fi] = 1
     return verts, faces, fc, fm
@@ -738,29 +825,34 @@ def build_pass3_strut(side: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np
 def build_pass3_tail_pylon_t_tail() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Build swept T-tail vertical fin, horizontal tailplane, and zero-pinch nacelle cross-arm.
 
-    Crucially: horizontal duct support arm spans ONLY y in [-0.285, +0.285] (embedded cleanly
-    inside shroud barrel wall y in [0.260, 0.330], NEVER intruding into Ø0.90 m inner airflow)!
+    Trailing coves on vertical fin and H-tail accommodate articulated rudder and elevator bodies.
+    Horizontal duct support arm spans ONLY y in [-0.288, +0.288] (zero airflow pinch).
     """
     parts = []
-    # 1. Swept vertical tail pylon fin (x_te goes to -3.45 -> overall length = 3.35 - (-3.45) = 6.80 m!)
-    n_z = 22
+    # 1. Swept vertical tail pylon fin (x_te goes to -3.45 -> overall length = 6.80 m!)
+    zs_fin = np.array([0.78, 0.90, 0.96, 1.15, 1.35, 1.56, 1.78, 1.98, 2.19, 2.24, 2.31], dtype=np.float64)
+    n_z = len(zs_fin)
     n_af = 20
     ang = np.linspace(0.0, math.pi, n_af // 2 + 1)
     xc_half = 0.5 * (1.0 - np.cos(ang))
-    zu, zl = _naca_4digit(xc_half, thickness=0.125, camber=0.0)
     rings_fin = []
-    for s in np.linspace(0.0, 1.0, n_z):
-        z = 0.78 + (2.31 - 0.78) * s
+    for z in zs_fin:
+        s = (z - 0.78) / (2.31 - 0.78)
         x_le = -0.92 - 1.56 * s
         chord = 1.18 * (1.0 - 0.25 * s)
+        # Straight hinge post line from (-2.12, z=0.96) to (-3.06, z=2.20): leave 1.5 cm cove ahead
+        cut = min(0.95, max(0.60, ((x_le - (-2.105 - 0.758 * max(0.0, z - 0.96))) / chord))) if (0.96 <= z <= 2.20) else 1.0
+        xc_eff = xc_half * cut
+        zu, zl = _naca_4digit(xc_eff, thickness=0.125, camber=0.0)
         pts = []
-        for j in range(len(xc_half) - 1, 0, -1):
-            pts.append([x_le - xc_half[j] * chord, +zu[j] * chord, z])
+        n_c = len(xc_eff)
+        for j in range(n_c - 1, 0, -1):
+            dy_te = 0.003 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, +zu[j] * chord + dy_te, z])
         pts.append([x_le, 0.0, z])
-        for j in range(1, len(xc_half) - 1):
-            pts.append([x_le - xc_half[j] * chord, +zl[j] * chord, z])
-        pts.append([x_le - chord, +0.004, z])
-        pts.append([x_le - chord, -0.004, z])
+        for j in range(1, n_c):
+            dy_te = -0.003 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, +zl[j] * chord + dy_te, z])
         rings_fin.append(np.asarray(pts, dtype=np.float64))
     vf, ff = _loft_closed_rings(rings_fin, close_ends=True)
     m_fin = rings_fin[0].shape[0]
@@ -774,24 +866,27 @@ def build_pass3_tail_pylon_t_tail() -> tuple[np.ndarray, np.ndarray, np.ndarray,
             fm_f[fi] = 1
     parts.append((vf, ff, fc_f, fm_f))
 
-    # 2. Horizontal T-Tailplane (y in [-1.45, +1.45], z=2.31..2.35 m -> 2.35 m overall height!)
-    n_y = 24
-    ys = np.linspace(-1.45, 1.45, n_y)
-    zu_h, zl_h = _naca_4digit(xc_half, thickness=0.11, camber=-0.01)  # inverted camber for downforce trim!
+    # 2. Horizontal T-Tailplane (y in [-1.45, +1.45], z=2.305 -> cove aft of x=-3.125 for straight Y-hinge elevator)
+    ys = np.array([-1.45, -1.36, -1.28, -1.24, -0.95, -0.60, -0.25, 0.0, 0.25, 0.60, 0.95, 1.24, 1.28, 1.36, 1.45], dtype=np.float64)
+    n_y = len(ys)
     rings_ht = []
     for y in ys:
         ayt = abs(y) / 1.45
         chord = 0.88 * (1.0 - 0.28 * ayt)
-        x_le = -2.56 - 0.24 * ayt
-        z_mid = 2.305 - 0.015 * ayt
+        x_le = -2.56 - 0.14 * ayt
+        z_mid = 2.302 - 0.004 * ayt
+        cut = min(0.95, max(0.55, (x_le - (-3.122)) / chord)) if abs(y) <= 1.245 else 1.0
+        xc_eff = xc_half * cut
+        zu_h, zl_h = _naca_4digit(xc_eff, thickness=0.11, camber=-0.01)
         pts = []
-        for j in range(len(xc_half) - 1, 0, -1):
-            pts.append([x_le - xc_half[j] * chord, y, z_mid + zu_h[j] * chord])
+        n_c = len(xc_eff)
+        for j in range(n_c - 1, 0, -1):
+            dz_te = 0.002 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, y, z_mid + zu_h[j] * chord + dz_te])
         pts.append([x_le, y, z_mid])
-        for j in range(1, len(xc_half) - 1):
-            pts.append([x_le - xc_half[j] * chord, y, z_mid + zl_h[j] * chord])
-        pts.append([x_le - chord, y, z_mid + 0.002])
-        pts.append([x_le - chord, y, z_mid - 0.002])
+        for j in range(1, n_c):
+            dz_te = -0.002 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, y, z_mid + zl_h[j] * chord + dz_te])
         rings_ht.append(np.asarray(pts, dtype=np.float64))
     vh, fh = _loft_closed_rings(rings_ht, close_ends=True)
     m_ht = rings_ht[0].shape[0]
@@ -804,14 +899,11 @@ def build_pass3_tail_pylon_t_tail() -> tuple[np.ndarray, np.ndarray, np.ndarray,
             fm_h[fi] = 1
     parts.append((vh, fh, fc_h, fm_h))
 
-    # 3. Horizontal Duct Nacelle Support Beam: STRICTLY spans y in [-0.285, +0.285]!
-    # Duct wall is r in [0.450, 0.522] centered at |y|=0.78 -> inner wall sits at |y| in [0.258, 0.330]!
-    # Stopping cleanly at |y|=0.288 welds directly into outer carbon shroud wall with ZERO inner airflow pinch!
+    # 3. Horizontal Duct Nacelle Support Beam: STRICTLY spans y in [-0.288, +0.288]!
     ys_arm = np.linspace(-0.288, 0.288, 12)
     zu_a, zl_a = _naca_4digit(xc_half, thickness=0.22, camber=0.0)
     rings_arm = []
     for y in ys_arm:
-        # Slight widening cuff fillet right next to pylon (|y|<0.09) and nacelle collar (|y|>0.22)
         flare = 1.0 + 0.18 * math.exp(-((abs(y)) / 0.06) ** 2) + 0.14 * math.exp(-((0.288 - abs(y)) / 0.05) ** 2)
         chord = 0.34 * flare
         x_le = -1.87 + 0.02 * (flare - 1.0)
@@ -830,6 +922,124 @@ def build_pass3_tail_pylon_t_tail() -> tuple[np.ndarray, np.ndarray, np.ndarray,
     fm_a = np.zeros(fa.shape[0], dtype=np.int32)
     parts.append((va, fa, fc_a, fm_a))
 
+    return _merge_disjoint_parts(parts)
+
+
+def build_pass3_elevator() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build articulated T-tail elevator in local coordinates around ELEVATOR_HINGE_VTX."""
+    ys = np.linspace(-1.22, 1.22, 16)
+    n_y = len(ys)
+    n_af = 20
+    ang = np.linspace(0.0, math.pi, n_af // 2 + 1)
+    xc_half = 0.5 * (1.0 - np.cos(ang))
+    hinge_origin = np.array(ELEVATOR_HINGE_VTX, dtype=np.float64)
+
+    rings = []
+    for y in ys:
+        ayt = abs(y) / 1.45
+        chord = 0.88 * (1.0 - 0.28 * ayt)
+        x_le = -2.56 - 0.14 * ayt
+        z_mid = 2.302 - 0.004 * ayt
+        f_start = min(0.84, max(0.58, (x_le - (-3.146)) / chord))
+        xc_eff = f_start + (1.0 - f_start) * xc_half
+        zu_h, zl_h = _naca_4digit(xc_eff, thickness=0.11, camber=-0.01)
+        z_nose = 0.5 * (float(zu_h[0]) + float(zl_h[0])) * chord
+        pts = []
+        n_c = len(xc_eff)
+        for j in range(n_c - 1, 0, -1):
+            dz_te = 0.002 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, y, z_mid + zu_h[j] * chord + dz_te] - hinge_origin)
+        pts.append([-3.136, y, z_mid + z_nose] - hinge_origin)
+        for j in range(1, n_c):
+            dz_te = -0.002 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, y, z_mid + zl_h[j] * chord + dz_te] - hinge_origin)
+        rings.append(np.asarray(pts, dtype=np.float64))
+
+    m = rings[0].shape[0]
+    verts, faces = _loft_closed_rings(rings, close_ends=True)
+    n_f = faces.shape[0]
+    fc = np.tile(np.array(COL_CARBON_DARK, dtype=np.float32), (n_f, 1))
+    fm = np.zeros(n_f, dtype=np.int32)
+    n_quad_faces = (n_y - 1) * m * 2
+    for fi in range(n_quad_faces):
+        k_seg = (fi % (m * 2)) // 2
+        if k_seg <= 2 or k_seg >= m - 4:
+            fc[fi] = COL_GOLD
+            fm[fi] = 1
+    return verts, faces, fc, fm
+
+
+def build_pass3_rudder() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build articulated swept vertical-fin rudder in local coordinates around RUDDER_HINGE_VTX."""
+    zs = np.linspace(0.98, 2.17, 12)
+    n_z = len(zs)
+    n_af = 20
+    ang = np.linspace(0.0, math.pi, n_af // 2 + 1)
+    xc_half = 0.5 * (1.0 - np.cos(ang))
+    hinge_origin = np.array(RUDDER_HINGE_VTX, dtype=np.float64)
+
+    rings = []
+    for z in zs:
+        s = (z - 0.78) / (2.31 - 0.78)
+        x_le = -0.92 - 1.56 * s
+        chord = 1.18 * (1.0 - 0.25 * s)
+        x_hinge_z = -2.12 - 0.758 * (z - 0.96)
+        f_start = min(0.84, max(0.58, (x_le - (x_hinge_z - 0.005)) / chord))
+        xc_eff = f_start + (1.0 - f_start) * xc_half
+        zu, zl = _naca_4digit(xc_eff, thickness=0.125, camber=0.0)
+        pts = []
+        n_c = len(xc_eff)
+        for j in range(n_c - 1, 0, -1):
+            dy_te = 0.003 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, +zu[j] * chord + dy_te, z] - hinge_origin)
+        pts.append([x_hinge_z + 0.008, 0.0, z] - hinge_origin)
+        for j in range(1, n_c):
+            dy_te = -0.003 if j == n_c - 1 else 0.0
+            pts.append([x_le - xc_eff[j] * chord, +zl[j] * chord + dy_te, z] - hinge_origin)
+        rings.append(np.asarray(pts, dtype=np.float64))
+
+    m = rings[0].shape[0]
+    verts, faces = _loft_closed_rings(rings, close_ends=True)
+    n_f = faces.shape[0]
+    fc = np.tile(np.array(COL_CARBON_DARK, dtype=np.float32), (n_f, 1))
+    fm = np.zeros(n_f, dtype=np.int32)
+    n_quad_faces = (n_z - 1) * m * 2
+    for fi in range(n_quad_faces):
+        k_seg = (fi % (m * 2)) // 2
+        if k_seg <= 2 or k_seg >= m - 4:
+            fc[fi] = COL_GOLD
+            fm[fi] = 1
+    return verts, faces, fc, fm
+
+
+def build_pass3_reverse_bucket(side: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build articulated Ti-6Al-4V clamshell thrust-reverser bucket around duct exit hinge pivot."""
+    # Local space around REVERSE_BUCKET_HINGE_PORT/STBD_VTX (-2.33, +-0.78, 1.56).
+    # At q=0 (stowed), upper shell arch hovers cleanly above duct shroud collar (r=0.495..0.525, x=[-0.28..+0.02]).
+    # Side pivot arms drop down smoothly at y_local = +-0.495 to pivot lugs (0, +-0.495, 0).
+    n_arc = 18
+    r_in, r_out = 0.495, 0.528
+    thetas = np.linspace(math.radians(24.0), math.radians(156.0), n_arc)
+    x_st = [-0.28, -0.02]
+    rings = []
+    for xl in x_st:
+        outer = [[xl, r_out * math.cos(th), r_out * math.sin(th)] for th in thetas]
+        inner = [[xl, r_in * math.cos(th), r_in * math.sin(th)] for th in reversed(thetas)]
+        rings.append(np.asarray(outer + inner, dtype=np.float64))
+    vc, fc_idx = _loft_closed_rings(rings, close_ends=True)
+    fc_c = np.tile(np.array(COL_TITANIUM, dtype=np.float32), (fc_idx.shape[0], 1))
+    fm_c = np.full(fc_idx.shape[0], 2, dtype=np.int32)
+    # Paint aft deflector lip with crisp VTX gold band
+    for fi in range(fc_idx.shape[0]):
+        if np.mean(vc[fc_idx[fi], 0]) < -0.20:
+            fc_c[fi] = COL_GOLD
+            fm_c[fi] = 1
+    parts = [(vc, fc_idx, fc_c, fm_c)]
+    for y_arm_sign in (-1.0, +1.0):
+        # Diagonal hinge arm connecting lug (0, y*0.505, 0) cleanly into bucket edge (-0.15, y*0.46, 0.21)
+        p_lug = np.array([0.0, y_arm_sign * 0.508, 0.0])
+        p_edge = np.array([-0.14, y_arm_sign * 0.468, 0.21])
+        parts.append(_streamline_strut(p_lug, p_edge, 0.065, 0.028, COL_CARBON_DARK, 0))
     return _merge_disjoint_parts(parts)
 
 
@@ -1139,13 +1349,19 @@ def build_concept_a_glb(out_path: Path = DEFAULT_CONCEPT_A_OUT, target_draft_m: 
 
     wing_p = build_pass3_wing(+1)
     wing_s = build_pass3_wing(-1)
+    ail_p = build_pass3_aileron(+1)
+    ail_s = build_pass3_aileron(-1)
     wlet_p = build_pass3_winglet(+1)
     wlet_s = build_pass3_winglet(-1)
     strut_p = build_pass3_strut(+1)
     strut_s = build_pass3_strut(-1)
     tail = build_pass3_tail_pylon_t_tail()
+    elev = build_pass3_elevator()
+    rud = build_pass3_rudder()
     duct_p = build_pass3_duct(+1)
     duct_s = build_pass3_duct(-1)
+    rev_p = build_pass3_reverse_bucket(+1)
+    rev_s = build_pass3_reverse_bucket(-1)
     rotor_p, spinner_p = build_pass3_fan_rotor_and_spinner()
     rotor_s, spinner_s = build_pass3_fan_rotor_and_spinner()
     canopy = build_pass3_canopy_glass()
@@ -1157,13 +1373,19 @@ def build_concept_a_glb(out_path: Path = DEFAULT_CONCEPT_A_OUT, target_draft_m: 
         ('Ricochet_Sponson_Stbd', (SPONSON_MOUNT_CONCEPT_A_VTX[0], -SPONSON_MOUNT_CONCEPT_A_VTX[1], SPONSON_MOUNT_CONCEPT_A_VTX[2]), (sp_stbd_v, sp_stbd_f, sp_stbd_fc, sp_stbd_fm)),
         ('Ricochet_Wing_Port', (0.0, 0.0, 0.0), wing_p),
         ('Ricochet_Wing_Stbd', (0.0, 0.0, 0.0), wing_s),
+        ('Ricochet_Aileron_Port', AILERON_HINGE_PORT_VTX, ail_p),
+        ('Ricochet_Aileron_Stbd', AILERON_HINGE_STBD_VTX, ail_s),
         ('Ricochet_Winglet_Port', (0.0, 0.0, 0.0), wlet_p),
         ('Ricochet_Winglet_Stbd', (0.0, 0.0, 0.0), wlet_s),
         ('Ricochet_Strut_Port', (0.0, 0.0, 0.0), strut_p),
         ('Ricochet_Strut_Stbd', (0.0, 0.0, 0.0), strut_s),
         ('Ricochet_Tail_Pylon_T_Tail', (0.0, 0.0, 0.0), tail),
+        ('Ricochet_Elevator', ELEVATOR_HINGE_VTX, elev),
+        ('Ricochet_Rudder', RUDDER_HINGE_VTX, rud),
         ('Ricochet_Duct_Port', (0.0, 0.0, 0.0), duct_p),
         ('Ricochet_Duct_Stbd', (0.0, 0.0, 0.0), duct_s),
+        ('Ricochet_Reverse_Bucket_Port', REVERSE_BUCKET_HINGE_PORT_VTX, rev_p),
+        ('Ricochet_Reverse_Bucket_Stbd', REVERSE_BUCKET_HINGE_STBD_VTX, rev_s),
         ('Ricochet_Fan_Rotor_Port', FAN_CENTER_PORT_VTX, rotor_p),
         ('Ricochet_Fan_Rotor_Stbd', (FAN_CENTER_PORT_VTX[0], -FAN_CENTER_PORT_VTX[1], FAN_CENTER_PORT_VTX[2]), rotor_s),
         ('Ricochet_Fan_Spinner_Port', FAN_CENTER_PORT_VTX, spinner_p),

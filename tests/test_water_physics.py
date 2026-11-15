@@ -396,3 +396,145 @@ def test_all_eight_operational_ricochet_scenarios():
     assert max(yaw_rates) > 5.0
     assert summaries['7_shallow_water_operation']['telemetry'][-1]['mean_water_depth_m'] < 3.0
     assert summaries['8_docking_and_ramp_recovery']['summary']['max_contact_force_n'] > 100.0
+
+
+def test_islands_whirlpool_fields_and_navigable_bypasses(lake_world: RicochetLakeWorld):
+    assert len(lake_world.islands) == 3
+    for isl in lake_world.islands:
+        assert isl['z_peak_actual_m'] > 1.5
+        assert isl['sign_title'] and len(isl['sign_lines']) >= 1
+        moat_x = isl['x'] + isl['radius_m'] + 35.0
+        assert lake_world.water_depth(moat_x, isl['y']) >= 1.5
+
+    assert len(lake_world.whirlpools) == 2
+    alpha, bravo = lake_world.whirlpools
+    assert alpha['spin'] * bravo['spin'] == -1
+
+    # Clear deep-water spawn has no active whirlpool hazard
+    clear_hz = lake_world.whirlpool_hazard_at(40.0, 0.0)
+    assert clear_hz['in_influence'] is False
+    assert clear_hz['swirl_mps'] == 0.0
+
+    # Near core throat of whirlpool_alpha exhibits strong orbital swirl, inward suction, and depression
+    throat_hz = lake_world.whirlpool_hazard_at(alpha['x'] + alpha['r_core_m'], alpha['y'])
+    assert throat_hz['in_influence'] is True
+    assert throat_hz['in_core'] is True
+    assert throat_hz['swirl_mps'] > 3.0
+    assert throat_hz['suction_mps'] > 1.0
+    assert throat_hz['funnel_drop_m'] < -0.5
+
+    # Disabled whirlpools suppress both hazard metrics and free-surface funnel depression
+    wf_on = HybridWaterField(lake_world, WaterEnvironmentConfig(wave_mode='still', whirlpools_enabled=True))
+    wf_off = HybridWaterField(lake_world, WaterEnvironmentConfig(wave_mode='still', whirlpools_enabled=False))
+    wx, wy = alpha['x'] + alpha['r_core_m'], alpha['y']
+    s_on = wf_on.evaluate(wx, wy, t=0.0)
+    s_off = wf_off.evaluate(wx, wy, t=0.0)
+    assert float(s_on.eta) < -0.45
+    assert abs(float(s_off.eta)) < 1e-6
+    assert np.hypot(float(s_on.velocity[0]), float(s_on.velocity[1])) > 3.0
+    assert np.hypot(float(s_off.velocity[0]), float(s_off.velocity[1])) < 1e-6
+
+
+def test_dynamic_kelvin_wake_and_momentum_disturbance(lake_world: RicochetLakeWorld):
+    wf = HybridWaterField(
+        lake_world,
+        WaterEnvironmentConfig(wave_mode='still', whirlpools_enabled=False, wake_enabled=True, current_speed_mps=0.0),
+    )
+    for step_idx in range(15):
+        wf.apply_vessel_disturbance(
+            x=40.0 + step_idx * 0.11,
+            y=0.0,
+            heading_rad=0.0,
+            vx_world=11.0,
+            vy_world=0.0,
+            heave_rate_mps=0.0,
+            draft_m=0.38,
+            submerged_vol_m3=0.9,
+            hydro_reaction_xy=(-1200.0, 0.0),
+            fan_thrust_n=2800.0,
+            dt=0.01,
+            t_s=step_idx * 0.01,
+        )
+        wf.step(0.01)
+    wake = wf.get_wake_state()
+    assert wake['active'] is True
+    assert wake['speed_mps'] == pytest.approx(11.0)
+
+    # Kelvin diverging wake ripples appear astern inside the ~19.47 deg wedge
+    astern_etas = [abs(float(wf.evaluate(41.5 - d, 0.35 * d, t=0.14).eta)) for d in (8.0, 14.0, 20.0)]
+    assert max(astern_etas) > 5e-3
+    assert wf.shallow.conservation_metrics()['relative_mass_error'] < 1e-10
+
+    wf_muted = HybridWaterField(
+        lake_world,
+        WaterEnvironmentConfig(wave_mode='still', whirlpools_enabled=False, wake_enabled=False),
+    )
+    wf_muted.apply_vessel_disturbance(
+        x=40.0,
+        y=0.0,
+        heading_rad=0.0,
+        vx_world=11.0,
+        vy_world=0.0,
+        heave_rate_mps=0.0,
+        draft_m=0.38,
+        submerged_vol_m3=0.9,
+        hydro_reaction_xy=(-1200.0, 0.0),
+        fan_thrust_n=2800.0,
+        dt=0.01,
+        t_s=0.14,
+    )
+    assert abs(float(wf_muted.evaluate(32.0, 2.8, t=0.14).eta)) < 1e-8
+
+
+def test_waterproof_flotation_breached_sinking_bilge_recovery_and_ballast_trim(lake_world: RicochetLakeWorld):
+    craft = RicochetCraft(world=lake_world, variant='ricochet-concept-a', hull_variant='concept_a', load_case='LC-03')
+    sponson_items = [c for c in craft.mass_register.active_items() if 'sponson' in c.component_id]
+    assert sponson_items and all(c.cg_f03_m[2] == pytest.approx(0.48) for c in sponson_items)
+
+    # 1. Sealed waterproof craft floats with positive reserve buoyancy
+    craft.spawn(40.0, 0.0, 0.0)
+    _step_craft(craft, 0.5)
+    mp_sealed = craft.mass_properties()
+    z_sealed = float(craft.data.xpos[craft.bids['airframe'], 2])
+    assert mp_sealed['waterproof'] is True
+    assert mp_sealed['flood_water_kg'] == pytest.approx(0.0)
+    assert mp_sealed['reserve_buoyancy_kg'] > 1500.0
+    assert craft.last_hydro is not None and craft.last_hydro.freeboard_min_m > 0.0
+    assert z_sealed > -0.80
+
+    # 2. Unsealing hull causes Torricelli bilge ingress while floating in water
+    craft.update_mass_properties(waterproof=False)
+    _step_craft(craft, 0.5)
+    mp_breach = craft.mass_properties()
+    assert mp_breach['waterproof'] is False
+    assert mp_breach['flood_water_kg'] > 50.0
+
+    # 3. Heavy flooded bilge exceeds max buoyancy -> negative reserve buoyancy & hull sinks below waterline
+    craft.update_mass_properties(waterproof=False, flood_water_kg=2250.0)
+    _step_craft(craft, 1.0)
+    mp_swamped = craft.mass_properties()
+    z_swamped = float(craft.data.xpos[craft.bids['airframe'], 2])
+    assert mp_swamped['reserve_buoyancy_kg'] < 0.0
+    assert z_swamped < z_sealed - 0.15
+
+    # 4. Re-sealing + activating bilge pump drains water & restores positive buoyancy / floatation
+    craft.update_mass_properties(waterproof=True, bilge_pump=True)
+    _step_craft(craft, 0.8)
+    mp_rescued = craft.mass_properties()
+    z_rescued = float(craft.data.xpos[craft.bids['airframe'], 2])
+    assert mp_rescued['flood_water_kg'] == pytest.approx(0.0)
+    assert mp_rescued['reserve_buoyancy_kg'] > 1500.0
+    assert z_rescued > z_swamped + 0.10
+
+    # 5. Trim ballast longitudinal shift tilts pitch angle predictably (+X forward -> negative/+Y pitch-down in X-fwd Z-up)
+    craft.spawn(40.0, 0.0, 0.0)
+    craft.update_mass_properties(ballast_mass_kg=180.0, ballast_x_m=1.4)
+    _step_craft(craft, 0.5)
+    pitch_fwd = Rotation.from_quat(craft.data.xquat[craft.bids['airframe']][[1, 2, 3, 0]]).as_euler('xyz', degrees=True)[1]
+
+    craft.spawn(40.0, 0.0, 0.0)
+    craft.update_mass_properties(ballast_mass_kg=180.0, ballast_x_m=-1.4)
+    _step_craft(craft, 0.5)
+    pitch_aft = Rotation.from_quat(craft.data.xquat[craft.bids['airframe']][[1, 2, 3, 0]]).as_euler('xyz', degrees=True)[1]
+    assert pitch_fwd > pitch_aft + 0.8
+

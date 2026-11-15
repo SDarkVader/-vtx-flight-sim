@@ -167,6 +167,40 @@ export class TacticalMinimap {
         g.fillStyle = s.color || '#78828c';
         g.fillRect(px(cx - ex), py(cy + ey), Math.max(2, scaleM(ex * 2)), Math.max(2, scaleM(ey * 2)));
       }
+      for (const isl of world.islands || []) {
+        const ir = Math.max(4, scaleM(isl.radius_m || 42));
+        g.fillStyle = 'rgba(71, 85, 105, 0.92)';
+        g.strokeStyle = 'rgba(132, 204, 22, 0.85)';
+        g.lineWidth = 1.5;
+        g.beginPath();
+        g.arc(px(isl.x), py(isl.y), ir, 0, Math.PI * 2);
+        g.fill();
+        g.stroke();
+        g.fillStyle = '#4d7c0f';
+        g.beginPath();
+        g.arc(px(isl.x), py(isl.y), Math.max(2.5, ir * 0.55), 0, Math.PI * 2);
+        g.fill();
+      }
+      for (const wp of world.whirlpools || []) {
+        const rx = px(wp.x), ry = py(wp.y);
+        const rInfl = Math.max(6, scaleM(wp.r_influence_m || 80));
+        const rCore = Math.max(3, scaleM(wp.r_core_m || 14));
+        g.save();
+        g.strokeStyle = 'rgba(245, 158, 11, 0.88)';
+        g.lineWidth = 1.4;
+        g.setLineDash([4, 3]);
+        g.beginPath();
+        g.arc(rx, ry, rInfl, 0, Math.PI * 2);
+        g.stroke();
+        g.setLineDash([]);
+        g.fillStyle = 'rgba(14, 165, 233, 0.35)';
+        g.strokeStyle = '#38bdf8';
+        g.beginPath();
+        g.arc(rx, ry, rCore, 0, Math.PI * 2);
+        g.fill();
+        g.stroke();
+        g.restore();
+      }
       for (const r of world.ramps || []) {
         g.fillStyle = 'rgba(205, 212, 220, 0.75)';
         g.fillRect(px(r.x_dry), py(r.y_center + r.width_m * 0.5), Math.max(3, scaleM(Math.abs(r.x_toe - r.x_dry))), Math.max(2, scaleM(r.width_m)));
