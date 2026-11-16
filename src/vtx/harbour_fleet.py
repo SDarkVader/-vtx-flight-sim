@@ -26,6 +26,7 @@ CADENCE = dict(
     rigid_dt_s=DT,
     hydro_hz=20,
     hydro_stride_steps=HYDRO_STRIDE,
+    hydro_force_reconstruction="causal-linear-midpoint-ab2-v1",
     swe_hz=10,
     swe_interval_s=0.1,
 )
@@ -555,11 +556,18 @@ class HarbourFleet:
                     ext_torque_m=torque,
                     update_stride_state=True,
                 )
-                phase = (craft.step_count % craft.hydro_stride + 1) / craft.hydro_stride
+                # Predict the current microstep midpoint from the two most
+                # recent actual samples. The old prev-to-current interpolation
+                # added a whole-sample delay and injected roll energy at 20 Hz.
+                # Constant/initial history stays constant; the interval mean is
+                # the causal Adams-Bashforth weights (3/2,-1/2), without damping.
+                phase = (
+                    craft.step_count % craft.hydro_stride + 0.5
+                ) / craft.hydro_stride
                 for bid, current in craft._curr_hydro_f.items():
-                    wrench = (1 - phase) * craft._prev_hydro_f.get(
-                        bid, current
-                    ) + phase * current
+                    wrench = current + phase * (
+                        current - craft._prev_hydro_f.get(bid, current)
+                    )
                     self.data.xfrc_applied[mapping["bodies"][bid]] += np.clip(
                         wrench, -8e4, 8e4
                     )

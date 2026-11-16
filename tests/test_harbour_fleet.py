@@ -354,3 +354,143 @@ def test_airport_crop_keeps_global_lattice_and_offset_sample_impulses_exact():
         snapshot["origin_xy_m"] == grid["origin_xy_m"]
         and snapshot["bounds_m"] == grid["bounds_m"]
     )
+
+
+@pytest.mark.parametrize("wave_mode", ["still", "regular", "irregular"])
+def test_shared_query_cache_is_exact_for_overlapping_wakes_shores_and_new_steps(
+    wave_mode,
+):
+    from vtx.harbour_water import HarbourWorld, HarbourWater
+    from vtx.water.shallow_water import HybridWaterField
+    from vtx.water.datum import WaterEnvironmentConfig
+
+    class UncachedWater(HarbourWater):
+        def _base_components(self, x, y, z, t, eta_only):
+            return HybridWaterField._base_components(self, x, y, z, t, eta_only)
+
+        @staticmethod
+        def _zero_wake_contribution(wake, x, y):
+            return False
+
+    world = harbour_world()
+    world.harbour["layout"]["islands"] = [
+        dict(ring=[[90.0, 90.0], [110.0, 90.0], [110.0, 110.0], [90.0, 110.0]])
+    ]
+    world = HarbourWorld(world)
+    config = WaterEnvironmentConfig(
+        water_level_m=7.0, wave_mode=wave_mode, wave_height_m=0.25, wind_speed_mps=1.0
+    )
+    cached = HarbourWater(world, config)
+    reference = UncachedWater(world, config)
+    x = np.array([-100.01, -99.99, -35.0, 0.0, 30.0, 99.99, 100.01, 115.0])
+    y = np.array([0.0, -45.0, 20.0, 0.0, -10.0, 35.0, 0.0, 0.0])
+    for separation in (30.0, 500.0):
+        wakes = {}
+        for key, wx in [("a", -20.0), ("b", separation)]:
+            wake = cached._default_wake_state()
+            wake.update(
+                active=True,
+                x=wx,
+                y=0.0,
+                speed_mps=2.0,
+                vx_mps=2.0,
+                vy_mps=0.0,
+                heave_rate_mps=0.2,
+                draft_m=0.5,
+            )
+            wakes[key] = wake
+        cached.wakes = deepcopy(wakes)
+        reference.wakes = deepcopy(wakes)
+        for _ in range(2):
+            for eta_only in (False, True):
+                actual = cached.evaluate(x, y, z=5.0, eta_only=eta_only)
+                expected = reference.evaluate(x, y, z=5.0, eta_only=eta_only)
+                for field in (
+                    "eta",
+                    "depth",
+                    "normal",
+                    "velocity",
+                    "acceleration",
+                    "dynamic_pressure",
+                    "wet_fraction",
+                ):
+                    assert (
+                        getattr(actual, field).tobytes()
+                        == getattr(expected, field).tobytes()
+                    ), field
+                assert cached._query_base_cache is None
+            cached.step(DT)
+            reference.step(DT)
+
+
+def test_water_query_cache_clears_after_interruption(monkeypatch):
+    from vtx.harbour_water import HarbourWorld, HarbourWater
+    from vtx.water.datum import WaterEnvironmentConfig
+
+    water = HarbourWater(
+        HarbourWorld(harbour_world()), WaterEnvironmentConfig(water_level_m=7.0)
+    )
+    original = water.open_water.evaluate
+
+    def interrupted(*args, **kwargs):
+        raise RuntimeError("injected query interruption")
+
+    monkeypatch.setattr(water.open_water, "evaluate", interrupted)
+    with pytest.raises(RuntimeError, match="query interruption"):
+        water.evaluate(-50.0, 50.0)
+    assert water._query_base_cache is None
+    monkeypatch.setattr(water.open_water, "evaluate", original)
+    assert float(water.evaluate(-50.0, 50.0).wet_fraction) > 0
+
+
+def test_calm_turn_has_bounded_roll_after_docking_release_and_native_restore():
+    from vtx.world import TestWorld
+    from vtx.harbour_fleet import CADENCE
+
+    fleet = HarbourFleet(TestWorld())
+    assert CADENCE["hydro_force_reconstruction"] == "causal-linear-midpoint-ab2-v1"
+    ids = list(fleet.crafts)
+    peak_roll = 0.0
+    peak_wrench = 0.0
+
+    def advance(count):
+        nonlocal peak_roll, peak_wrench
+        for _ in range(count):
+            fleet.step()
+            assert fleet.data.ncon == 0
+            for boat in ids:
+                r = fleet.data.xmat[fleet.mappings[boat]["bid"]].reshape(3, 3)
+                peak_roll = max(
+                    peak_roll, abs(float(np.degrees(np.arctan2(r[2, 1], r[2, 2]))))
+                )
+            peak_wrench = max(
+                peak_wrench, float(np.max(np.abs(fleet.data.xfrc_applied)))
+            )
+
+    advance(50)
+    assert not fleet.dock(ids[1], "airport-landing-ricochet")["ok"]
+    assert fleet.release(ids[0])["ok"]
+    assert fleet.dock(ids[0], "airport-landing-ricochet")["ok"]
+    advance(25)
+    for boat in ids:
+        assert fleet.release(boat)["ok"]
+        fleet.action(boat, dict(throttle=0.3, reverse_bucket=1.0, rudder_deg=0.0))
+    advance(1000)
+    for boat, sign in zip(ids, (1.0, -1.0)):
+        fleet.action(boat, dict(rudder_deg=sign * 8.0))
+    advance(500)
+    for boat, sign in zip(ids, (-1.0, 1.0)):
+        fleet.action(boat, dict(throttle=0.25, rudder_deg=sign * 5.0))
+    advance(503)
+    restored = HarbourFleet.restore(
+        TestWorld(), json.loads(json.dumps(fleet.serialize()))
+    )
+    for _ in range(12):
+        fleet.step()
+        restored.step()
+        np.testing.assert_array_equal(fleet.data.qpos, restored.data.qpos)
+        np.testing.assert_array_equal(fleet.data.qvel, restored.data.qvel)
+        np.testing.assert_array_equal(fleet.water.shallow.h, restored.water.shallow.h)
+    assert peak_roll < 0.1  # The delayed force interpolation grew past5deg here.
+    assert peak_wrench < 3e4
+    assert not any(c.crashed for c in fleet.crafts.values())

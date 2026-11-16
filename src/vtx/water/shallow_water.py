@@ -684,15 +684,12 @@ class HybridWaterField:
             self._swe_accum_s = 0.0
         self._state_version += 1
 
-    def evaluate(
-        self,
-        x: np.ndarray | float,
-        y: np.ndarray | float,
-        z: np.ndarray | float | None = None,
-        t: float | None = None,
-        *,
-        eta_only: bool = False,
-    ) -> HybridWaterSample:
+    def _base_components(self, x, y, z, t, eta_only):
+        """Immutable query primitives shared by the wave/wake overlays.
+
+        Default standalone evaluation computes these in the original order.
+        The harbour subclass can reuse them within one locked query only.
+        """
         t_eval = self.sim_time_s if t is None else float(t)
         xa = np.asarray(x, dtype=np.float64)
         ya = np.asarray(y, dtype=np.float64)
@@ -714,6 +711,20 @@ class HybridWaterField:
             local_depth=np.maximum(local_depth, 0.25),
             water_level_offset=0.0,
             eta_only=eta_only,
+        )
+        return t_eval, xa, ya, bed, eta_swe, h_swe, u_swe, v_swe, wave
+
+    def evaluate(
+        self,
+        x: np.ndarray | float,
+        y: np.ndarray | float,
+        z: np.ndarray | float | None = None,
+        t: float | None = None,
+        *,
+        eta_only: bool = False,
+    ) -> HybridWaterSample:
+        t_eval, xa, ya, bed, eta_swe, h_swe, u_swe, v_swe, wave = self._base_components(
+            x, y, z, t, eta_only
         )
 
         # Blend open-water orbital wave disturbance (zero-mean eta_wave = wave.eta)

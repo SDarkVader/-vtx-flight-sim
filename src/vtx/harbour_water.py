@@ -343,7 +343,57 @@ class HarbourWater(HybridWaterField):
     def get_wake_state(self):
         return dict(vessels=deepcopy(self.wakes))
 
+    @staticmethod
+    def _query_key(value):
+        if value is None:
+            return None
+        array = np.asarray(value)
+        return array.shape, array.dtype.str, array.tobytes()
+
+    def _base_components(self, x, y, z, t, eta_only):
+        cache = getattr(self, "_query_base_cache", None)
+        if cache is None:
+            return super()._base_components(x, y, z, t, eta_only)
+        key = tuple(self._query_key(v) for v in (x, y, z, t)) + (eta_only,)
+        if key not in cache:
+            cache[key] = super()._base_components(x, y, z, t, eta_only)
+        return cache[key]
+
+    @staticmethod
+    def _zero_wake_contribution(wake, x, y):
+        # Exact upstream amplitude and strict support-box gates. The near-wake
+        # equations and every individual shore clamp stay in the parent field.
+        speed = float(wake["speed_mps"])
+        draft = max(float(wake["draft_m"]), 0.15)
+        amp_k = min(0.36, 0.032 * draft * speed * min(speed / 2.0, 1.0))
+        amp_h = min(0.16, 0.055 * abs(float(wake["heave_rate_mps"]))) * min(
+            draft / 0.25, 1.0
+        )
+        if not (amp_k > 1e-4 or amp_h > 1e-4):
+            return True
+        xa, ya = np.asarray(x, dtype=np.float64), np.asarray(y, dtype=np.float64)
+        if not xa.size or not ya.size:
+            return True
+        wx, wy = float(wake["x"]), float(wake["y"])
+        return bool(
+            float(np.max(xa)) < wx - 115.0
+            or float(np.min(xa)) > wx + 115.0
+            or float(np.max(ya)) < wy - 115.0
+            or float(np.min(ya)) > wy + 115.0
+        )
+
     def evaluate(self, x, y, z=None, t=None, *, eta_only=False):
+        # One frozen query only: configuration, water clock and arrays cannot
+        # change under this guard. No cache survives a return or interruption.
+        with self._guard:
+            previous = getattr(self, "_query_base_cache", None)
+            self._query_base_cache = {}
+            try:
+                return self._evaluate_scoped(x, y, z=z, t=t, eta_only=eta_only)
+            finally:
+                self._query_base_cache = previous
+
+    def _evaluate_scoped(self, x, y, z=None, t=None, *, eta_only=False):
         with self._guard:
             self._vessel_wake = self._default_wake_state()
             base = super().evaluate(x, y, z=z, t=t, eta_only=eta_only)
@@ -362,7 +412,11 @@ class HarbourWater(HybridWaterField):
                     if not wake.get("active"):
                         continue
                     self._vessel_wake = wake
-                    sample = super().evaluate(x, y, z=z, t=t, eta_only=eta_only)
+                    sample = (
+                        base
+                        if self._zero_wake_contribution(wake, x, y)
+                        else super().evaluate(x, y, z=z, t=t, eta_only=eta_only)
+                    )
                     eta += sample.eta - base.eta
                     if not eta_only:
                         velocity += sample.velocity - base.velocity
@@ -375,7 +429,7 @@ class HarbourWater(HybridWaterField):
                         )
             self._vessel_wake = self._default_wake_state()
             wet = self.world.mask(x, y)
-            bed = self.world.terrain_z_array(x, y)
+            bed = self._base_components(x, y, z, t, eta_only)[3]
             eta = np.where(wet, np.maximum(eta, bed), bed)
             depth = np.where(wet, np.maximum(eta - bed, 0), 0)
             changes = dict(
