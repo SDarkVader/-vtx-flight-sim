@@ -1,7 +1,7 @@
 // Additive Main Airport harbour. Boat meshes follow the fleet's body poses;
 // no aircraft selection, flight command or independent motion is generated here.
 import * as THREE from 'three';
-import {harbourWorldPoint} from './harbour-map.js?v=20261116-harbour-1';
+import {harbourWorldPoint} from './harbour-map.js?v=20261116-harbour-3';
 
 const finiteArray = (values, length) => Array.isArray(values) && values.length === length && values.every(Number.isFinite);
 
@@ -200,34 +200,29 @@ function worldSurface(world, x, y) {
 }
 
 export function createHarbourControls({host, api, toast = () => {}, onState = () => {}, onFocus = () => {}, onRoutes = () => {}, document: doc = globalThis.document}) {
-  const panel = doc.createElement('details'); panel.id = 'harbour-panel'; panel.className = 'harbour-panel'; panel.hidden = true;
-  panel.innerHTML = `<summary>Airport harbour · boats and docks</summary>
-    <p class="harbour-intro">Choose a boat, then approach a free berth slowly and align with it.</p>
-    <div class="harbour-actions"><button type="button" data-harbour="activate">Initialize two Concept A boats</button><button type="button" data-harbour="lake">View harbour</button></div>
-    <label>Boat<select data-harbour="boat"><option value="">Choose a boat</option></select></label>
-    <p data-harbour="telemetry" class="harbour-readout">No boat selected.</p>
+  const panel = doc.createElement('details'); panel.id = 'harbour-panel'; panel.hidden = true;
+  panel.innerHTML = `<summary class="section-label">Airport harbour · boats and docks</summary>
+    <p class="muted">Choose a boat, then approach a free berth slowly and align with it.</p>
+    <div class="map-tools"><button type="button" data-harbour="activate">Initialize two Concept A boats</button><button type="button" data-harbour="lake">View harbour</button></div>
+    <label class="control-label">Boat<select data-harbour="boat"><option value="">Choose a boat</option></select></label>
+    <p data-harbour="telemetry" class="muted small">No boat selected.</p>
     <button type="button" data-harbour="focus">View selected boat</button>
-    <label>Berth<select data-harbour="berth"><option value="">Choose a berth</option></select></label>
-    <div class="harbour-actions"><button type="button" data-harbour="dock">Dock at berth</button><button type="button" data-harbour="undock">Release mooring</button></div>
-    <fieldset><legend>Helm</legend>
-      <label>Throttle <output data-value="throttle">0%</output><input data-command="throttle" aria-label="Boat throttle" type="range" min="0" max="1" step=".01" value="0"></label>
-      <label>Rudder <output data-value="rudder_deg">0°</output><input data-command="rudder_deg" aria-label="Boat rudder angle" type="range" min="-30" max="30" step=".5" value="0"></label>
-      <label>Reverse bucket <output data-value="reverse_bucket">0%</output><input data-command="reverse_bucket" aria-label="Boat reverse bucket" type="range" min="0" max="1" step=".05" value="0"></label>
+    <label class="control-label">Berth<select data-harbour="berth"><option value="">Choose a berth</option></select></label>
+    <div class="map-tools"><button type="button" data-harbour="dock">Dock at berth</button><button type="button" data-harbour="undock">Release mooring</button></div>
+    <div role="group" aria-label="Helm"><div class="section-label">Helm</div>
+      <label class="range-label">Throttle <output data-value="throttle">0%</output><input data-command="throttle" aria-label="Boat throttle" type="range" min="0" max="1" step=".01" value="0"></label>
+      <label class="range-label">Rudder <output data-value="rudder_deg">0°</output><input data-command="rudder_deg" aria-label="Boat rudder angle" type="range" min="-30" max="30" step=".5" value="0"></label>
+      <label class="range-label">Reverse bucket <output data-value="reverse_bucket">0%</output><input data-command="reverse_bucket" aria-label="Boat reverse bucket" type="range" min="0" max="1" step=".05" value="0"></label>
       <button type="button" data-harbour="cut">Cut throttle</button>
-      <details><summary>Surface trim</summary>
-        <label>Differential thrust <output data-value="differential_thrust">0%</output><input data-command="differential_thrust" aria-label="Boat differential thrust" type="range" min="-1" max="1" step=".02" value="0"></label>
-        <label>Elevator <output data-value="elevator_deg">0°</output><input data-command="elevator_deg" aria-label="Boat elevator angle" type="range" min="-20" max="20" step=".5" value="0"></label>
-        <label>Ailerons <output data-value="aileron_deg">0°</output><input data-command="aileron_deg" aria-label="Boat aileron angle" type="range" min="-25" max="25" step=".5" value="0"></label>
+      <details><summary class="section-label">Surface trim</summary>
+        <label class="range-label">Differential thrust <output data-value="differential_thrust">0%</output><input data-command="differential_thrust" aria-label="Boat differential thrust" type="range" min="-1" max="1" step=".02" value="0"></label>
+        <label class="range-label">Elevator <output data-value="elevator_deg">0°</output><input data-command="elevator_deg" aria-label="Boat elevator angle" type="range" min="-20" max="20" step=".5" value="0"></label>
+        <label class="range-label">Ailerons <output data-value="aileron_deg">0°</output><input data-command="aileron_deg" aria-label="Boat aileron angle" type="range" min="-25" max="25" step=".5" value="0"></label>
       </details>
-    </fieldset>
-    <label class="harbour-route-toggle"><input type="checkbox" data-harbour="routes" checked> Show marked boat routes</label>
-    <div class="harbour-actions"><button type="button" data-harbour="save">Save harbour</button><button type="button" data-harbour="restore">Restore saved harbour</button></div>
-    <p data-harbour="status" class="harbour-message" role="status" aria-live="polite">Harbour unavailable.</p>`;
-  if (!doc.getElementById('harbour-style')) {
-    const style = doc.createElement('style'); style.id = 'harbour-style';
-    style.textContent = `.harbour-panel{margin:1rem 0;padding:.8rem;border:1px solid #5b8276;border-radius:.6rem;background:#152d28;color:#e6f0e8;max-width:100%;box-sizing:border-box}.harbour-panel[hidden]{display:none!important}.harbour-panel>summary{cursor:pointer;font-weight:650;line-height:1.4}.harbour-panel p{font-size:.82rem;line-height:1.45;margin:.6rem 0}.harbour-panel label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.3rem;margin:.65rem 0;font-size:.85rem}.harbour-panel select,.harbour-panel input[type=range]{grid-column:1/-1;width:100%;min-width:0;box-sizing:border-box}.harbour-panel select{white-space:nowrap;text-overflow:ellipsis}.harbour-panel button{max-width:100%;min-width:0;white-space:normal;line-height:1.3}.harbour-panel fieldset{margin:.8rem 0;padding:.5rem .7rem;border:1px solid #56766b;min-width:0;border-radius:.4rem}.harbour-panel legend{font-size:.85rem;padding:0 .3rem}.harbour-panel details details{margin:.7rem 0}.harbour-panel .harbour-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem;margin:.6rem 0}.harbour-panel .harbour-route-toggle{display:flex;align-items:center;gap:.4rem}.harbour-panel .harbour-route-toggle input{width:auto}.harbour-readout{font-variant-numeric:tabular-nums}.harbour-message{min-height:2.4em;color:#c4dbcf}.harbour-panel button:disabled,.harbour-panel input:disabled,.harbour-panel select:disabled{opacity:.5}@media(max-width:420px){.harbour-panel{padding:.65rem}.harbour-panel .harbour-actions{gap:.3rem}.harbour-panel button{font-size:.78rem;padding:.5rem .35rem}}`;
-    doc.head.append(style);
-  }
+    </div>
+    <label><input type="checkbox" data-harbour="routes" checked> Show marked boat routes</label>
+    <div class="map-tools"><button type="button" data-harbour="save">Save harbour</button><button type="button" data-harbour="restore">Restore saved harbour</button></div>
+    <p data-harbour="status" class="muted small" role="status" aria-live="polite">Harbour unavailable.</p>`;
   host.append(panel);
   const el = name => panel.querySelector(`[data-harbour="${name}"]`), fields = [...panel.querySelectorAll('[data-command]')];
   let world = null, state = null, enabled = false, disposed = false, pendingActions = 0, pendingGets = 0;

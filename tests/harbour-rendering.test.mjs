@@ -4,9 +4,9 @@ import {harbourWorldPoint, drawHarbourMap, drawHarbourBoats} from '../public/vtx
 
 // Use the exact repository Three build headlessly; production uses its import map.
 const threeUrl = new URL('../public/vendor/three.module.js', import.meta.url).href;
-const mapUrl = new URL('../public/vtx-env/harbour-map.js?v=20261116-harbour-1', import.meta.url).href;
+const mapUrl = new URL('../public/vtx-env/harbour-map.js', import.meta.url).href;
 const source = (await readFile(new URL('../public/vtx-env/harbour.js', import.meta.url), 'utf8'))
-  .replace("from 'three'", `from '${threeUrl}'`).replace("from './harbour-map.js?v=20261116-harbour-1'", `from '${mapUrl}'`);
+  .replace("from 'three'", `from '${threeUrl}'`).replace(/from '\.\/harbour-map\.js(?:\?[^']*)?'/, `from '${mapUrl}'`);
 const {harbourWaterGeometry, harbourOverviewView, buildBoatRig, applyBoatPoses, buildHarbour} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const THREE = await import(threeUrl);
 const harbour = {origin: [100, -200], waterLevelM: 7,

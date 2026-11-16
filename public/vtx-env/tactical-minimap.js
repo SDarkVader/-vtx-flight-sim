@@ -4,7 +4,7 @@
 // Live aircraft pose is synchronized with MuJoCo truth frame (position, physical yaw, velocity).
 import { LAYOUT } from './layout.js';
 import {primaryRunwayCues} from './runway-layout.js?v=20261116-runway-1';
-import {drawHarbourMap, drawHarbourBoats} from './harbour-map.js?v=20261116-harbour-1';
+import {drawHarbourMap, drawHarbourBoats} from './harbour-map.js?v=20261116-harbour-3';
 
 function evalCubicBezier(p0, p1, p2, p3, t) {
   const mt = 1 - t, mt2 = mt * mt, mt3 = mt2 * mt, t2 = t * t, t3 = t2 * t;
@@ -15,6 +15,8 @@ function evalCubicBezier(p0, p1, p2, p3, t) {
 }
 
 const backgroundCache = new WeakMap();
+
+const facilityLabelFont = scaleM => `bold ${Math.max(9, Math.round(scaleM(12)))}px system-ui`;
 
 export class TacticalMinimap {
   constructor(canvas, { isLarge = false } = {}) {
@@ -127,7 +129,12 @@ export class TacticalMinimap {
       g.strokeRect(px(x - half_x), py(y + half_y), scaleM(half_x * 2), scaleM(half_y * 2));
     }
 
-    drawHarbourMap(g, proj, world?.harbour);
+    if (world?.harbour) {
+      g.save();
+      g.font = facilityLabelFont(scaleM);
+      drawHarbourMap(g, proj, world.harbour);
+      g.restore();
+    }
 
     // Grid covers the visible extent; spacing expands for the world view.
     const spacing = this.zoom < 0.3 ? 1000 : 200;
@@ -379,7 +386,7 @@ export class TacticalMinimap {
       g.strokeStyle = f.col; g.lineWidth = 1;
       g.strokeRect(fx - textW / 2, fy - 10, textW, 20);
       g.fillStyle = f.col;
-      g.font = `bold ${Math.max(9, Math.round(scaleM(12)))}px system-ui`;
+      g.font = facilityLabelFont(scaleM);
       g.textAlign = 'center'; g.textBaseline = 'middle';
       g.fillText(f.label, fx, fy);
     }

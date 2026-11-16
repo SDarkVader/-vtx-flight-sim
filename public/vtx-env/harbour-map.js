@@ -10,7 +10,7 @@ export function drawHarbourMap(context, projection, harbour) {
     const [x, y] = harbourWorldPoint(harbour, point);
     g[index ? 'lineTo' : 'moveTo'](px(x), py(y));
   });
-  g.save(); g.fillStyle = '#2f8296'; g.strokeStyle = '#91bec2'; g.lineWidth = 1.2;
+  g.save(); g.fillStyle = 'rgba(75, 140, 175, 0.75)'; g.strokeStyle = '#68b5d8'; g.lineWidth = 1;
   g.beginPath(); ring(harbour.layout.outer); g.closePath();
   for (const island of harbour.layout.islands || []) {ring(island.ring); g.closePath();}
   g.fill('evenodd'); g.stroke();
@@ -39,7 +39,7 @@ export function drawHarbourMap(context, projection, harbour) {
     const [x, y] = harbourWorldPoint(harbour, [berth.x, berth.y]);
     g.strokeStyle = '#8ce3c8'; g.lineWidth = 1; g.beginPath(); g.arc(px(x), py(y), Math.max(2, scaleM(7)), 0, Math.PI * 2); g.stroke();
   }
-  g.font = '600 10px system-ui'; g.textAlign = 'center'; g.fillStyle = '#e5f3e9';
+  g.textAlign = 'center'; g.fillStyle = '#e5f3e9';
   for (const mark of harbour.layout.landmarks || []) {
     if (!['marina', 'harbour', 'landing', 'cargo', 'dock'].includes(mark.kind)) continue;
     const [x, y] = harbourWorldPoint(harbour, [mark.x, mark.y]); g.fillText(mark.name, px(x), py(y) - 9);
