@@ -39,3 +39,5 @@ assert.doesNotMatch(traffic,/\$\('loading'\)|\$\('view-sync'\)/,'scenery loading
 const sceneryHud=app.slice(app.indexOf('  if(ridePose){'),app.indexOf(" }else if(visualTraffic&&now-"));
 assert.doesNotMatch(sceneryHud,/\$\('(?:cockpit-|alt|vs|speed|fuel|power|angles)/,'scenery cannot supply physical instruments');
 console.log('Scenery camera selection, passenger clearance and physical-ownship boundaries passed');
+assert.match(app,/if\(passengerRide&&!ridePaused&&rideRoute&&!replayFrames\)rideTime=/,
+  'The selected holiday flight must keep moving during a physical sortie');

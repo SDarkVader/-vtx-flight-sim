@@ -1161,7 +1161,7 @@ function animate(){
  const frameDt=rideLastFrame?Math.min(.25,(now-rideLastFrame)/1000):0;
  rideLastFrame=now;
  if(!ridePaused)sceneTime+=frameDt*sceneScale;
- if(passengerRide&&!ridePaused&&rideRoute&&!last?.active)rideTime=Math.min(rideRoute.duration+22,rideTime+frameDt*sceneScale);
+ if(passengerRide&&!ridePaused&&rideRoute&&!replayFrames)rideTime=Math.min(rideRoute.duration+22,rideTime+frameDt*sceneScale);
  if(replayFrames){if(visualTraffic)for(const actor of visualTraffic.actors)actor.root.visible=false;}else visualTraffic?.update(sceneTime);
  const requestedAsset=replayFrames?replayFrameAsset(truth,replayContext):truth?visualAsset(truth.provenance?.render_asset):null;
  if(truth&&!requestedAsset){$('loading').hidden=false;$('loading').textContent=replayFrames?'Recorded aircraft visual unavailable or does not match.':'Aircraft visual identity unavailable.';}
