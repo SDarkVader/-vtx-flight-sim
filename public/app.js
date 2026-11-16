@@ -195,7 +195,7 @@ const trafficPreviewEnabled=true;
   selectedVehicleId=choice.id;rideEnabled=choice.scenery;passengerRide=choice.passenger;
   $('airport-aircraft').value=choice.id;
   if(rideEnabled)showRideAircraft('chase');else setCameraMode('chase');
-  $('view-mode').textContent=rideEnabled?'SCENERY VIEW · PILOT CONTROLS YOUR AIRCRAFT':'PHYSICAL STATE · LIVE';
+  $('view-mode').textContent=rideEnabled?'SCENERY VIEW · PHYSICAL INSTRUMENTS & CONTROLS':'PHYSICAL STATE · LIVE';
  }
  $('ride-start').onclick=()=>{changeJourney();selectAirportView('a10-primary',{passenger:true});$('airport-ops').open=false;};
  $('airport-aircraft').onchange=()=>selectAirportView($('airport-aircraft').value);
@@ -1041,7 +1041,7 @@ function updateView(v){
  if(replayFrames&&v.active)stopReplay(false);
  if(replayFrames){last=v;latestTruthReceivedMs=performance.now();worldSynchronizer.reconcile();return;}
  $('r6-pilot-record').hidden=v.observation?.configuration?.airframe_variant!=='r6-argon-20261103';
- if(!rideEnabled && v.observation){
+ if(v.observation){
   const instruments=cockpitTelemetry(v.observation);
   $('cockpit-alt').textContent=instruments.altitude;
   $('cockpit-vs').textContent=instruments.verticalSpeed;
@@ -1224,12 +1224,8 @@ function animate(){
   }
   if(ridePose){
    const velocity=ridePose.velocity||[ridePose.speed*Math.cos(ridePose.heading),ridePose.speed*Math.sin(ridePose.heading),ridePose.speed*Math.sin(ridePose.pitch)];
-   const speed=Math.hypot(velocity[0],velocity[1]),clearance=Math.max(0,ridePose.position[2]-surfaceZ(...ridePose.position));
-   $('cockpit-speed').textContent=speed.toFixed(1);$('cockpit-alt').textContent=clearance.toFixed(1);$('cockpit-vs').textContent=velocity[2].toFixed(1);$('cockpit-fuel').textContent='—';
+   const speed=Math.hypot(velocity[0],velocity[1]);
    if(now-(animate.hudLast||0)>350){animate.hudLast=now;
-    $('alt').innerHTML=clearance.toFixed(1)+'<small>m</small>';$('vs').innerHTML=velocity[2].toFixed(1)+'<small>m/s</small>';$('speed').innerHTML=speed.toFixed(1)+'<small>m/s</small>';
-    $('power-label').textContent='SHAFT POWER · UNAVAILABLE';$('power').textContent='—';$('fuel').textContent='—';
-    $('angles').textContent='HDG '+((90-ridePose.heading*180/Math.PI+360)%360).toFixed(0)+'° · PITCH '+(ridePose.pitch*180/Math.PI).toFixed(1)+'° · BANK '+((ridePose.bank||0)*180/Math.PI).toFixed(1)+'°';
     $('ride-progress').textContent=(ridePose.operation||'scripted')+' · '+Math.floor(sceneTime)+' s';
     $('view-sync').textContent=(VEHICLE_MODELS[airportOperations?.actors.find(a=>a.id===selectedVehicleId)?.modelId]?.label||selectedVehicleId)+' · SCENERY · '+speed.toFixed(1)+' m/s';
    }
