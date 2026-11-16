@@ -11,8 +11,8 @@ scratch/
 tests/
 tools/
 engineering/
-docs/
-inputs/
+docs/*
+!docs/phantom/
 results/
 evidence/*.tar.gz
 evidence/*.zip
