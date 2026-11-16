@@ -4,12 +4,33 @@ This is a separately identified world definition for a historical experiment.
 It reproduces the recorded terrain and obstacles but does not select an aircraft
 or itself remove the later boundary floor.
 """
+from functools import lru_cache
+import hashlib
+import json
 import math
+from pathlib import Path
 import numpy as np
 from .world import TestWorld
 
 R6_HISTORICAL_VARIANT = 'r6-argon-20261103'
 R6_HISTORICAL_ENVIRONMENT = 'r6-valley-20261103'
+_RECORDED_SEED = 41031
+_GEOMETRY = Path(__file__).resolve().parents[2] / 'inputs/r6_historical_valley_20261103.npz'
+
+
+@lru_cache(maxsize=1)
+def _recorded_geometry():
+    # These are the recovered world's original binary64 values, not a new
+    # generation of its sin/cos recipe through the current platform's libm.
+    with np.load(_GEOMETRY, allow_pickle=False) as archive:
+        heights = archive['heights']
+        obstacles = archive['obstacles_json'].tobytes()
+    if (heights.shape != (101, 101) or heights.dtype != np.dtype('<f8') or
+        hashlib.sha256(heights.tobytes()).hexdigest() != 'de71fbb67da06357b1f92bd2fdc6c78a6c66f22cb06d3553382bd271653bb32e' or
+        hashlib.sha256(obstacles).hexdigest() != 'd2403b2dad7eee42c6b9d7a737b755c0d2464ddde2074651b69e8a004f6d9776'):
+        raise ValueError('Historical R6 geometry differs from the original recorded world')
+    heights.setflags(write=False)
+    return heights, obstacles
 
 
 class R6HistoricalValley(TestWorld):
@@ -27,23 +48,16 @@ class R6HistoricalValley(TestWorld):
 
     def __init__(self, seed=41031):
         self.seed = seed
-        xs = np.linspace(-self.half, self.half, self.n)
-        x, y = np.meshgrid(xs, xs)
-        edge = np.clip((np.maximum(abs(x), abs(y)) - 220) / 240, 0, 1)
-        edge = edge * edge * (3 - 2 * edge)
-        self.heights = edge * (22 + 14 * np.sin(x / 81) ** 2 + 21 * np.cos(y / 107) ** 2)
-        self.obstacles = [
-            dict(id='hangar',kind='box',center=[85.,45.,9.],half=[23.,17.,9.],color='#606f7a',landable=True),
-            dict(id='workshop',kind='box',center=[150.,-95.,5.],half=[23.,21.,5.],color='#627970',landable=True),
-            dict(id='tower',kind='box',center=[115.,115.,29.],half=[9.,9.,29.],color='#71838a',landable=False),
-            dict(id='freight',kind='box',center=[-100.,105.,4.],half=[18.,11.,4.],color='#ae735c',landable=True),
-            dict(id='ridge-block',kind='box',center=[-175.,-110.,12.],half=[14.,30.,12.],color='#747b76',landable=False),
-            dict(id='dispatch',kind='box',center=[45.,110.,12.],half=[14.,12.,12.],color='#355453',landable=True),
-            dict(id='arcade',kind='box',center=[185.,45.,6.],half=[15.,11.,6.],color='#634e56',landable=True),
-            dict(id='operations',kind='box',center=[50.,-145.,8.],half=[15.,12.,8.],color='#496c70',landable=True),
-            dict(id='terminal',kind='box',center=[-145.,100.,7.],half=[15.,12.,7.],color='#725d50',landable=True),
-        ]
+        heights, obstacles = _recorded_geometry()
+        self.heights = heights.copy()
+        self.obstacles = json.loads(obstacles)
+        self.water = dict(x=-265.,y=30.,half_x=28.,half_y=80.)
         rng = np.random.default_rng(seed)
+        if isinstance(seed, (int, np.integer)) and int(seed) == _RECORDED_SEED:
+            return
+        # Explicit alternate seeds retain their existing obstacle-generation
+        # behavior. The terrain itself never depended on the random seed.
+        self.obstacles = [o for o in self.obstacles if o['kind'] == 'box']
         for i in range(36):
             angle = rng.uniform(0, 2 * math.pi); radius = rng.uniform(125, 210)
             cx, cy = radius * np.cos(angle), radius * np.sin(angle)
@@ -52,4 +66,3 @@ class R6HistoricalValley(TestWorld):
             height = float(rng.uniform(5, 13)); tree_radius = float(rng.uniform(.7, 1.6))
             self.obstacles.append(dict(id=f'tree-{i}',kind='cylinder',center=[float(cx),float(cy),height/2],
                 half=[tree_radius,tree_radius,height/2],color='#536a55',landable=False))
-        self.water = dict(x=-265.,y=30.,half_x=28.,half_y=80.)

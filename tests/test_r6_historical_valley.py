@@ -11,6 +11,7 @@ from vtx.r6_historical_valley import R6HistoricalValley, R6_HISTORICAL_VARIANT, 
 from vtx.world import SandboxWorld, make_world, resolve_environment_key
 import asyncio
 from vtx import live_server as server
+from vtx import r6_historical_valley as historical
 
 
 def test_recovered_world_matches_preserved_historical_data():
@@ -30,6 +31,45 @@ def test_recovered_world_matches_preserved_historical_data():
     # world is reached only through its distinct explicit key.
     assert resolve_environment_key('stage1-valley')=='sandbox'
     assert isinstance(make_world(R6_HISTORICAL_ENVIRONMENT),R6HistoricalValley)
+
+
+def test_recorded_world_does_not_regenerate_platform_trigonometry(monkeypatch):
+    class WithoutPlatformTrig:
+        def __getattr__(self,name):
+            if name in ('sin','cos'):
+                raise AssertionError('Recorded historical geometry must use its original floats')
+            return getattr(np,name)
+    monkeypatch.setattr(historical,'np',WithoutPlatformTrig())
+    world=R6HistoricalValley()
+    assert hashlib.sha256(np.ascontiguousarray(world.heights,dtype='<f8').tobytes()).hexdigest()=='de71fbb67da06357b1f92bd2fdc6c78a6c66f22cb06d3553382bd271653bb32e'
+
+
+def test_recorded_world_instances_do_not_share_mutable_geometry():
+    original=R6HistoricalValley()
+    changed=R6HistoricalValley()
+    changed.heights[0,0]+=1
+    changed.obstacles[0]['center'][0]+=1
+    restored=R6HistoricalValley()
+    np.testing.assert_array_equal(original.heights,restored.heights)
+    assert original.obstacles==restored.obstacles
+    assert not np.array_equal(changed.heights,restored.heights)
+
+
+def test_changed_recorded_geometry_is_rejected(tmp_path,monkeypatch):
+    with np.load(historical._GEOMETRY,allow_pickle=False) as source:
+        heights=source['heights']
+        obstacles=source['obstacles_json']
+    heights[0,0]=np.nextafter(heights[0,0],np.inf)
+    path=tmp_path/'changed-historical-world.npz'
+    np.savez_compressed(path,heights=heights,obstacles_json=obstacles)
+    historical._recorded_geometry.cache_clear()
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(historical,'_GEOMETRY',path)
+            with pytest.raises(ValueError,match='differs from the original recorded world'):
+                R6HistoricalValley()
+    finally:
+        historical._recorded_geometry.cache_clear()
 
 
 def test_historical_xml_and_heightfield_are_reproducible_without_changing_default_floor():
