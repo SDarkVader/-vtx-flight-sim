@@ -51,7 +51,7 @@ def preview(name, project, branch, sha):
 
 def publish():
     if not os.environ.get("VERCEL_TOKEN"):
-        raise SystemExit("Set the VERCEL_TOKEN Actions secret for the linked Vercel team.")
+        raise SystemExit("Missing VERCEL_TOKEN. Set the VTX Actions secret for the linked Vercel team.")
     sha, branch = os.environ["GITHUB_SHA"], os.environ["GITHUB_REF_NAME"]
     pending = {name: preview(name, project, branch, sha) for name, project in PROJECTS.items()}
     while pending:

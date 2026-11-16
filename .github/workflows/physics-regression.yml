@@ -60,5 +60,5 @@ jobs:
       - name: Create previews of the tested commit
         if: steps.gate.outputs.publish == 'true'
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VTX }}
         run: python3 .github/scripts/vercel_previews.py
