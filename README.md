@@ -1,10 +1,18 @@
-# VTX — Vader's Taxis: Experimental Flight Laboratory
+# VTX — Vader's Taxis
 
-## Current reviewed integration — 15 November 2026
+**A flight and watercraft game in development.** Explore an airfield and its harbour, fly experimental aircraft, take a boat through the islands, and follow the progress of vehicles being developed in the Vader's Taxis world. This is an early playable development build, with aircraft, environments, controls, and missions still being tested and refined.
 
-The continuity integration is on `codex/vtx-continuity-20261115`. **Main Aircraft promotion is pending the owner's flight tests.** The two recovered Phantom candidates remain distinct under Experiments; A10-B is a pinned reference, not an automatically promoted default.
+![Phantom scenery aircraft at the airport, with harbour controls and navigation map](docs/readme-images/phantom-airport.png)
 
-Read the [project continuity record](docs/VTX_CONTINUITY.md) before engineering work. On Steve's PC its live authoritative copy is `C:/Users/steve/Documents/Github/-vtx-flight-sim/docs/VTX_CONTINUITY.md`; the repository copy is its publication snapshot. Original flights stay in their recorded local archive and are not replaced by test output.
+The current build brings together an 8 km square Main Airport, a 7,800 m runway with level approaches, and an airport-side harbour with islands, marked routes, docks and multiple Ricochet craft. The airport also has Argon and Phantom scenery traffic and passenger-view flights. Players can track their physical aircraft on the navigation map.
+
+Choose vehicle lists the current Phantom A10-C and Argon R6, the two Ricochets and passenger rides separately from earlier and experimental aircraft. At the Main Airport the Phantom's default mission starts at the extended runway's west threshold; a departure you choose yourself is retained. Startup waits for the aircraft's actual position before displaying the scene. These features are still being tested.
+
+## Current development
+
+Main Aircraft promotion is pending the owner's flight tests. The recovered Phantom runway and VTOL candidates remain distinct under Experiments. A10-B remains a pinned reference.
+
+On Steve's PC, the live project continuity record is `C:/Users/steve/Documents/Github/-vtx-flight-sim/docs/VTX_CONTINUITY.md`. Original flights stay in their recorded local archive and are not replaced by test output.
 
 | Candidate | Original evidence | Current verification |
 | --- | --- | --- |
@@ -18,15 +26,11 @@ The authored wheels and pod mounts are retained. Collision dimensions and visual
 
 Use **Save flight & switch** before changing aircraft. Flight records restores supported checkpoints paused; then choose **Take control** and **Resume existing mission**. Phantom inner checkpoint format 3 retains the radar ground-reference calibration. Missing or incompatible dependencies and older insufficient checkpoints remain preserved with an explicit recovery failure, rather than being silently reset. Camera preferences are stored separately in that browser profile.
 
+Saved flights are retained locally; persistence across cloud deployments is not implemented. On Windows, `Start-VTX.bat` launches the local game using the installed Python environment and preserves incompatible prior launch state in a recovery folder.
+
 The actual ground check saved a runway state, switched to the distinct VTOL candidate and restored the same runway run paused at 55.0175 s with identical checkpoint bytes and retained calibration. Full owner flight tests, Argon acceptance and promotion remain outstanding.
 
-> **"Build it. Fly it. Break it. Figure out why."**
-
-![Phantom A10-B Visual Pass](docs/phantom/img/a10-visual-pass.jpg)
-
-**VTX** is a physics-driven 3D aerospace flight-test game and engineering proving ground set in the experimental hangar of *Vader's Taxis*. Step into the shoes of a test pilot and flight-test engineer: configure cutting-edge vertical takeoff (VTOL) and transforming aircraft, command real fly-by-wire flight surfaces, take off from active international airfields or rugged mountain test ranges, collaborate with an evolving AI copilot, and analyze real black-box flight data when things go sideways.
-
-Every flight in VTX is governed by genuine **400 Hz Newton-Euler multibody physics** powered by MuJoCo. There are no invisible autopilot rails, scripted animations masquerading as flight, or rubber-band physics: mass, aerodynamic stall, rotor gyroscopic precession, actuator rate limits, tire friction, and structural loads decide whether your vehicle climbs out over the valley or impacts the tarmac.
+Aircraft flight uses a **400 Hz MuJoCo physics model** with aerodynamics, actuators, contact and vehicle mass. The harbour runs its craft alongside the aircraft simulation. AI pilot development uses vehicle telemetry and individual commands, while scheduled scenic flights provide background traffic.
 
 > [!IMPORTANT]
 > **Project Status & Proprietary Notice:** VTX is an experimental prototype and flight-test sandbox, **not a finished commercial release**. All original VTX game content, vehicle designs, CAD models, lore, and software code are proprietary. No commercial exploitation or unauthorized distribution is permitted without prior written consent. See [LICENSE](LICENSE).
@@ -35,7 +39,7 @@ Every flight in VTX is governed by genuine **400 Hz Newton-Euler multibody physi
 
 ## What You Can Do in VTX
 
-Experience the exhilaration, unpredictability, and technical precision of experimental aviation.
+Explore the current development features below. Their models and presentation will continue to change.
 
 ### 1. Drive, Transform, and Fly
 VTX lets you transition seamlessly across multiple operational modes in a single airframe:
@@ -51,20 +55,26 @@ VTX lets you transition seamlessly across multiple operational modes in a single
         tarmac tire grip               airspeeds > 25 m/s            0.8g vectored air brake
 ```
 
-![Phantom A10-B Wing Deployment Sequence](reference/phantom_a10b_20261109/images/01_deploy_1.png)
+The player controls the physical aircraft. The pictured Phantom on the airport scenery route is background traffic.
 
 ---
 
 ### 2. Choose Your Proving Ground (Selectable Live Worlds)
-Switch instantly between two distinct, high-fidelity physical environments directly from the cockpit header:
+Choose a world from the cockpit before starting a flight:
 
-* **Main Airport (8,000 × 8,000 m):** A full-scale commercial airfield featuring dual 3,000 m parallel runways, high-speed taxiways, terminal gate complexes, ramp areas, a central control tower, and procedural approach lighting. Ideal for high-speed transition runs, long climbs, and crosswind landings.
+* **Main Airport (8,000 × 8,000 m):** A 7,800 m runway, broad level approaches, taxiways and aprons, surrounded by retained terrain. The harbour beside the airport adds islands, marked water routes and docks.
 * **Test Sandbox — Stage 1 Valley (2,000 × 2,000 m):** Current valley test environment. The separate **Historical R6 valley (1,000 × 1,000 m)** preserves the 3 November terrain. They have different collision/heightfield identities; matching labels alone do not establish the same environment.
 
 > [!NOTE]
 > Environment switching in VTX is a **true physical terrain swap**, not a cosmetic skybox. Swapping between Airport and Sandbox reloads MuJoCo collision heightfields, rebuilds ground contact geometry, updates the 2D tactical radar minimap, and computes a fresh SHA-256 model fingerprint.
 
-![Live Cockpit and 3D Viewport](evidence/hosted-live.png)
+![Navigation map showing the airport runway, aircraft position, harbour islands and marked boat routes](docs/readme-images/airport-harbour-map.png)
+
+### Explore the harbour
+
+Choose either of two Ricochet Concept A craft, steer around the islands, and dock at Airport Landing or Lantern Marina. Save and restore keeps both boats, their controls and their berth ownership. Boats and the aircraft run together in the shared airport environment.
+
+![Ricochet craft alongside the docks at Lantern Marina](docs/readme-images/ricochet-marina.png)
 
 ---
 
@@ -73,7 +83,7 @@ Switch instantly between two distinct, high-fidelity physical environments direc
 | Aircraft Variant | Class / Architecture | Distinctive Flight Capabilities | Historic Milestone / Provenance |
 | :--- | :--- | :--- | :--- |
 | **Phantom A10-B** *(Pinned reference)* | Two-seat transforming aerocar (FX-A) | 7° wing incidence, active front-wheel steering, Munk hull lift, Moog 965 actuator models, rear boosters, DRS flap | Historical reference; Main promotion is not inferred from its pin |
-| **Phantom FX-A A10-C** *(Earlier development; PR #41)* | Fans-off, wing-borne A10-B derivative | Four PBS TJ150-class turbojets, rate-limited takeoff-stance setting, lift fans off in the runway study | Earlier study retained in its original documentation; the recovered 12 November configurations and timings are listed separately above |
+| **Phantom FX-A A10-C** *(Current development; PR #41)* | Fans-off, wing-borne A10-B derivative | Four PBS TJ150-class turbojets, rate-limited takeoff-stance setting, lift fans off in the runway study | Current development aircraft; the recovered 12 November candidates and timings are listed separately above |
 | **Phantom A10-A** | Baseline VTOL prototype | Retractable cassette wings, 4 wheel-pod fans, fixed P6 stabilator | 72-sortie November campaign benchmark (peak altitude 600.58 m) |
 | **R6 Argon** | Four-pod ducted quadrotor | 4 independently articulated ducted fan pods, annular primary structure | Foundation testbed; pure hover agility and dynamic station-keeping |
 | **Phantom A10 As-Drawn** | Scale CAD concept | Compact Ø0.49 m fan geometry (thrust-to-weight 0.52) | Educational study frame demonstrating hover deficit |
@@ -81,15 +91,13 @@ Switch instantly between two distinct, high-fidelity physical environments direc
 
 > **Historical model reference:** `phantom-a10b` config `3ecae1a9…` remains pinned in [aircraft identity](inputs/aircraft_identity.json). The original A10-C development variant came through [PR #41](https://github.com/SDarkVader/-vtx-flight-sim/pull/41). The two current recovered candidates have separate verified identities in [the revision registry](inputs/flight_revisions.json), while promotion remains pending. They preserve the B visual asset plus an explicitly optional schematic. [The takeoff study](docs/phantom/A10C_FANS_OFF_TAKEOFF.md) separates earlier studies from the verified 12 November recordings. Fans-off landing, endurance, crosswind and engine-out acceptance remain outstanding.
 
-![Phantom A10-B Vertical Takeoff](reference/phantom_a10b_20261109/images/06_vtol_1.png)
-
 ---
 
 ### 4. Fly with Colin (The Evolving AI Pilot) & Voice Control
 VTX is engineered around genuine human-machine collaboration:
-* **The AI Pilot Contract:** Meet **Colin**, an AI copilot that interacts with the aircraft through the exact same fly-by-wire controls and sensory observations available to a human pilot. Colin does not use cheat codes, invisible route followers, or pre-baked trajectories; he observes airspeed, pitch, roll, and altitude, issues actuator commands, experiences the physical consequences, and learns through trial, error, and recovery.
+* **The AI Pilot Contract:** The experimental pilot reads the aircraft's available instrument telemetry and sends individual commands. The simulator records the observation and command exchange. The external pilot determines how it learns.
 * **Push-to-Talk Voice Commands (🎙 Voice):** Speak naturally into your microphone (in Chrome or Edge) to issue tactical flight commands (*"gear down"*, *"deploy wings"*, *"rotate pods vertical"*, *"climb fifty meters"*). Voice audio is parsed against a deterministic aerospace grammar; critical safety maneuvers require a clear verbal *"confirm"* before execution.
-* **Dual Authority Handover:** Pass control authority back and forth seamlessly between human manual inputs and Colin during any phase of flight.
+* **Pilot Authority:** The cockpit shows the active control authority, and the operator can take control. Connection holds remain available during pilot experiments.
 
 ---
 
@@ -97,9 +105,7 @@ VTX is engineered around genuine human-machine collaboration:
 In VTX, a crash is not a "game over" screen—it is primary flight-test data.
 * **Timestamped Telemetry Black Box:** The solver runs at 400 Hz; channels retain their recorded rates, including the Phantom's 100 Hz step log. Runs retain control demands, actuator state, energy and contact evidence.
 * **2D Tactical Minimap:** Track your real-time ground track, velocity vector, altitude tape, and pad clearances on a custom vector radar canvas.
-* **The 7-Gate Flight Test Dashboard (`/dashboard/`):** Evaluate completed sorties against strict aerospace validation gates. Review post-crash structural failure points, pilot audit logs, and diagnostic telemetry to adjust your airframe parameters for the next flight.
-
-![Phantom A10-B High-Speed Deceleration Run](reference/phantom_a10b_20261109/images/09_decel_1.png)
+* **The 7-Gate Flight Test Dashboard (`/dashboard/`):** Review sortie records, pilot audit logs, and diagnostic telemetry while developing and testing the aircraft.
 
 ---
 
@@ -113,8 +119,8 @@ VTX integrates three complete operational workstations into a single high-perfor
 +====================================+==================================+===============================+
 | PANEL 1: LIVE COCKPIT              | PANEL 2: FLIGHT TEST DASHBOARD   | PANEL 3: PHYSICS EXPERIMENTS  |
 |                                    |                                  |                               |
-| • 60 FPS Three.js 3D Viewport      | • Embedded Suite (`/dashboard/`) | • Independent MuJoCo Kernel   |
-| • Tactical Minimap Radar (Canvas)  | • 7 Evidence Certification Gates | • Custom Mass/Inertia Sliders |
+| • Three.js 3D Viewport            | • Embedded Suite (`/dashboard/`) | • Independent MuJoCo Kernel   |
+| • Tactical Minimap Radar (Canvas)  | • 7 Flight Test Gates            | • Custom Mass/Inertia Sliders |
 | • Floating HUD Drawers:            | • Historical Sortie Archives     | • Aerodynamic Polar Overrides |
 |   - Mission: Origin & Destination  | • Black-Box JSONL Telemetry      | • Automated Batch Monte Carlo |
 |   - Controls: Fly-by-wire & Voice  | • Failure Cause Classification   | • Downloadable Evidence Packs |
@@ -123,7 +129,7 @@ VTX integrates three complete operational workstations into a single high-perfor
 ```
 
 1. **Live Cockpit (`/`):** The primary flight station. Direct WebGL window into the simulation with interactive camera views (Cockpit 1st-person, Chase, Orbit, Tower, Runway Threshold) and floating tactical HUD drawers.
-2. **Flight Test Dashboard (`/dashboard/`):** The flight operations center. Inspect every historical sortie, review certified evidence gates, download raw telemetry streams, and inspect pilot reasoning logs.
+2. **Flight Test Dashboard (`/dashboard/`):** Inspect available sortie records, flight-test gates, telemetry and pilot exchange logs.
 3. **Physics Experiments (`/experiments/`):** The engineering skunkworks. Run isolated simulation runs with experimental mass allocations, altered center-of-gravity offsets, custom aerofoil polars, and synthetic engine limits without corrupting active flight data.
 
 ---
@@ -163,7 +169,7 @@ flowchart TD
 
     subgraph Pilots["PILOT & OPERATOR STATIONS"]
         HumanPilot["Human Operator<br/>(Fly-by-Wire Sliders / Keyboard)"]
-        ColinPilot["Colin AI Pilot<br/>(Closed-Loop FBW Learning)"]
+        ColinPilot["Colin AI Pilot<br/>(Telemetry & Commands)"]
         AuditRecorder["Pilot Exchange Audit<br/>(Model Decision Ledger)"]
     end
 
@@ -226,13 +232,13 @@ To preserve scientific rigor, every component of VTX adheres to strict system-le
 * **Milestone 1 — Ducted Quad Foundations (October 2026):**
   Engineered the initial R4, R5, and R6 Argon testbeds. Implemented 400 Hz MuJoCo multibody kinematics, four independently articulated ducted fan pods, and baseline ground-effect contact mechanics.
 * **Milestone 2 — Digital Airframe & The Colin Experiment (Nov 1–3, 2026):**
-  Integrated the Blendstra P0-V4 CAD geometry into a unified physics model. Defined the [Live Fly-By-Wire Pilot Contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md), introducing Colin—an AI copilot that learns by physical experience without pre-baked path assists.
+  Integrated the Blendstra P0-V4 CAD geometry into a unified physics model. Defined the [Live Fly-By-Wire Pilot Contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md) for an AI pilot using instruments and physical controls.
 * **Milestone 3 — The 72-Sortie Phantom A10-A Campaign (Nov 4–7, 2026):**
   Executed a 72-flight automated test campaign with the initial Phantom prototype (`70089cca`), achieving a peak altitude record of 600.58 m. Validated cassette wing extension mechanics while uncovering low-speed hover power deficits and hub drive limits.
 * **Milestone 4 — Phantom A10-B Evolution (Nov 8–9, 2026):**
   Engineered the A10-B variant (`3ecae1a9`): added 7° wing incidence, active steer-by-wire front suspension, Munk hull lift polars, Moog Model 965 actuator dynamic models, and verified high-speed 0.8g fan-vectored deceleration.
-* **Milestone 5 — Unified Three-Panel Cockpit & Dual Environments (Current):**
-  Combined the 3D Live Cockpit, 7-Gate Flight Test Dashboard, and Independent Physics Experiments into a single-origin web workspace. Added real-time environment switching between the 8 km Main Airport and the 1 km Stage 1 Valley Sandbox with full MuJoCo terrain recreation.
+* **Milestone 5 — Airport, Harbour & Navigation (Current):**
+  The cockpit, flight dashboard and experiments share a workspace. Main Airport now has an extended runway and a harbour with two Ricochet craft, marked routes and docking. The current Sandbox and the separate historical R6 valley retain their own terrain identities.
 
 ---
 
@@ -262,7 +268,7 @@ Install `requirements.txt` in a dedicated environment when setting up a new PC. 
 
 ### Verification
 
-Current code passed 111 focused checkpoint/identity/replay tests and 29 cockpit checks, plus separate flight/actuator/contact/retry and startup/selection/world/view-preference regressions. Original-control reproduction uses [reproduce_recorded_phantom.py](tools/reproduce_recorded_phantom.py) with a new output directory outside the source checkout and original archive. Commands and local evidence paths are recorded in the continuity record; original logs remain local.
+The integration passed six aircraft comparisons and 8,700 recorded runway and VTOL control samples. The PR #59 Mathematics run passed 514 Python tests, and all five development previews returned Main Airport data. Original-control reproduction uses [reproduce_recorded_phantom.py](tools/reproduce_recorded_phantom.py) with a new output directory outside the source checkout and original archive. Commands and local evidence paths are recorded in the continuity record; original logs remain local.
 
 The local recovery package retains exact tested bytes. Runtime/public/input line endings are pinned for Git checkout so Windows conversion does not silently change their identity. A hash mismatch stops the reviewed launcher; it does not rewrite the pin.
 

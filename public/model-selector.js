@@ -1,4 +1,5 @@
 import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
+import {SCENERY_VEHICLES} from './scenery-view.js?v=20261116-passengers';
 
 const airframe = document.getElementById('airframe');
 const startConfiguration = document.getElementById('phantom-start');
@@ -46,7 +47,7 @@ async function currentView() {
   return response.json();
 }
 
-async function applyPreview(variant) {
+async function applyPreview(variant, {selecting = false} = {}) {
   if (pending) return;
   setBusy(true);
   status.textContent = 'Loading the selected aircraft…';
@@ -54,6 +55,9 @@ async function applyPreview(variant) {
     const envSelect = document.getElementById('environment-select');
     const payload = {airframe_variant: variant, start_configuration: startConfiguration.value,
       departure: document.getElementById('dep').value.split(',').map(Number)};
+    const departureChoice = {variant, departure: payload.departure};
+    if (selecting) document.dispatchEvent(new CustomEvent('vtx-aircraft-departure-request', {detail: departureChoice}));
+    payload.departure = departureChoice.departure;
     if (envSelect?.value) payload.environment = envSelect.value;
     const response = await fetch('/api/model-preview', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -62,6 +66,8 @@ async function applyPreview(variant) {
     const result = await response.json();
     if (!response.ok) throw Error(result.detail || `HTTP ${response.status}`);
     if (result.observation?.configuration?.airframe_variant !== variant) throw Error('Server returned a different aircraft.');
+    if (departureChoice.original) document.dispatchEvent(new CustomEvent('vtx-aircraft-departure-applied', {detail: departureChoice}));
+    if (selecting) document.dispatchEvent(new CustomEvent('vtx-aircraft-selected', {detail: result}));
     status.textContent = `Selected ${variant}; no flight started.`;
   } catch (error) {
     status.textContent = `Selection not applied: ${error.message}`;
@@ -78,11 +84,65 @@ async function applyPreview(variant) {
   }
 }
 
+const vehicleDialog = document.createElement('dialog');
+vehicleDialog.innerHTML = `<div class="dialog-head"><h2>Choose vehicle</h2><button type="button" data-vehicle-close>Close</button></div>
+  <label class="control-label">Vehicle<select data-vehicle-choice></select></label>
+  <p data-vehicle-status role="status"></p>
+  <button type="button" data-vehicle-select>Select vehicle</button>`;
+document.body.append(vehicleDialog);
+const vehicleChoice = vehicleDialog.querySelector('[data-vehicle-choice]');
+const vehicleStatus = vehicleDialog.querySelector('[data-vehicle-status]');
+const chooseButton = vehicleDialog.querySelector('[data-vehicle-select]');
+vehicleDialog.querySelector('[data-vehicle-close]').addEventListener('click', () => vehicleDialog.close());
 document.getElementById('models').addEventListener('click', () => {
-  airframe.focus();
-  airframe.scrollIntoView({block: 'center', behavior: 'smooth'});
+  const placeholder = new Option('Choose a vehicle', '');
+  placeholder.disabled = true;
+  const aircraft = document.createElement('optgroup');
+  aircraft.label = 'Current aircraft · in development';
+  const earlier = document.createElement('optgroup');
+  earlier.label = 'Earlier and experimental aircraft';
+  for (const option of airframe.options) {
+    if (!option.value) continue;
+    const item = option.cloneNode(true);
+    item.disabled = option.disabled || airframe.disabled;
+    (option.value === 'phantom-a10c' || option.value === 'r6' ? aircraft : earlier).append(item);
+  }
+  const boats = document.createElement('optgroup');
+  boats.label = 'Ricochet boats';
+  boats.append(new Option('Ricochet · Airport Landing', 'boat:ricochet-airport'),
+    new Option('Ricochet · Lantern Marina', 'boat:ricochet-marina'));
+  const passengers = document.createElement('optgroup');
+  passengers.label = 'Ride as passenger';
+  for (const vehicle of SCENERY_VEHICLES) passengers.append(new Option(vehicle.label, `scenery:${vehicle.id}`));
+  vehicleChoice.replaceChildren(placeholder, aircraft, boats, passengers, earlier);
+  vehicleChoice.value = '';
+  vehicleStatus.textContent = '';
+  vehicleDialog.showModal();
 });
-airframe.addEventListener('change', () => { void applyPreview(airframe.value); });
+chooseButton.addEventListener('click', async () => {
+  const value = vehicleChoice.value;
+  if (!value) {vehicleStatus.textContent = 'Choose a vehicle.'; return;}
+  if (!value.startsWith('boat:') && !value.startsWith('scenery:')) {
+    airframe.value = value;
+    airframe.dispatchEvent(new Event('change', {bubbles: true}));
+    vehicleDialog.close();
+    airframe.scrollIntoView({block: 'center', behavior: 'smooth'});
+    return;
+  }
+  chooseButton.disabled = true;
+  const scenic = value.startsWith('scenery:');
+  vehicleStatus.textContent = scenic ? 'Boarding passenger flight…' : 'Selecting boat…';
+  try {
+    await new Promise((resolve, reject) => document.dispatchEvent(new CustomEvent(scenic?'vtx-ride-scenery':'vtx-choose-boat',
+      {detail: scenic?{vehicleId:value.slice(8),resolve,reject}:{boatId:value.slice(5),resolve,reject}})));
+    vehicleDialog.close();
+  } catch (error) {
+    vehicleStatus.textContent = error.message;
+  } finally {
+    chooseButton.disabled = false;
+  }
+});
+airframe.addEventListener('change', () => { void applyPreview(airframe.value, {selecting: true}); });
 startConfiguration.addEventListener('change', () => {
   if (airframe.value.startsWith('phantom') && !airframe.disabled) void applyPreview(airframe.value);
 });

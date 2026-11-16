@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {airportViewSelection,sceneryPoseAt} from '../public/scenery-view.js';
+import {airportViewSelection,sceneryPoseAt,SCENERY_VEHICLES,sceneryPassengerSeat} from '../public/scenery-view.js';
 import {physicalAircraftPosition} from '../public/physical-camera-target.js';
 import {clearOfPhysicalAircraft} from '../public/vtx-env/visual-air-traffic.js';
 
@@ -9,6 +9,13 @@ assert.deepEqual(airportViewSelection('a10-primary'),{id:'a10-primary',scenery:t
 assert.equal(airportViewSelection('a10-primary',{passenger:true}).passenger,true);
 assert.equal(airportViewSelection('r6-training',{passenger:true}).passenger,false);
 assert.throws(()=>airportViewSelection('missing'));
+assert.equal(SCENERY_VEHICLES.length,5);
+for(const vehicle of SCENERY_VEHICLES){
+ assert.equal(airportViewSelection(vehicle.id).scenery,true);
+ assert.equal(sceneryPassengerSeat(vehicle.id).length,3);
+ assert.ok(sceneryPassengerSeat(vehicle.id).every(Number.isFinite));
+}
+assert.throws(()=>sceneryPassengerSeat('missing'));
 
 // Alternate passenger poses drive BOTH visibility clearance and presentation.
 const sampleOperations=()=>({position:[500,500,50],mode:'scripted'});
