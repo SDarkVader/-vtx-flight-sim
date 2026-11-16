@@ -2254,4 +2254,6 @@ install_experiment_routes(app, get_lab, Laboratory, Mission, parse_action, DT)
 
 app.mount('/docs/phantom',StaticFiles(directory=ROOT/'docs/phantom'),name='phantom_docs')
 app.mount('/evidence',StaticFiles(directory=ROOT/'evidence'),name='evidence')
-app.mount('/',StaticFiles(directory=ROOT/'public',html=True),name='frontend')
+# Vercel serves public/ as CDN assets and omits it from the function bundle.
+if not os.environ.get('VERCEL') or (ROOT/'public').is_dir():
+    app.mount('/',StaticFiles(directory=ROOT/'public',html=True),name='frontend')

@@ -152,4 +152,4 @@ def test_missing_optional_secret_fails_before_any_request(scripts, monkeypatch):
 
 def test_native_git_previews_do_not_bypass_ci():
     config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
-    assert config["git"]["deploymentEnabled"] == {"**": False, "main": True}
+    assert config["git"]["deploymentEnabled"] is False
