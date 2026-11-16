@@ -41,6 +41,19 @@ def _cross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return out
 
 
+def _norm3(a: np.ndarray) -> np.ndarray:
+    a0, a1, a2 = a[:, 0], a[:, 1], a[:, 2]
+    return np.sqrt(a0 * a0 + a1 * a1 + a2 * a2)
+
+
+def _sum_cross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    return np.array([
+        float(np.dot(a[:, 1], b[:, 2]) - np.dot(a[:, 2], b[:, 1])),
+        float(np.dot(a[:, 2], b[:, 0]) - np.dot(a[:, 0], b[:, 2])),
+        float(np.dot(a[:, 0], b[:, 1]) - np.dot(a[:, 1], b[:, 0])),
+    ], dtype=np.float64)
+
+
 def _triangle_signed_volume(verts: np.ndarray, faces: np.ndarray) -> float:
     v0 = verts[faces[:, 0]]
     v1 = verts[faces[:, 1]]
@@ -85,6 +98,9 @@ class WatertightMesh:
         self.length_m = float(self.bounds_max[0] - self.bounds_min[0])
         self.beam_m = float(self.bounds_max[1] - self.bounds_min[1])
         self.depth_m = float(self.bounds_max[2] - self.bounds_min[2])
+        self._f0 = np.ascontiguousarray(self.faces[:, 0])
+        self._f1 = np.ascontiguousarray(self.faces[:, 1])
+        self._f2 = np.ascontiguousarray(self.faces[:, 2])
 
         h = hashlib.sha256()
         h.update(np.round(self.vertices, 6).tobytes())
@@ -149,6 +165,10 @@ class HullComponentMesh:
     mesh: WatertightMesh
     role: str = 'hull'
     local_offset: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float64))
+
+    def __post_init__(self) -> None:
+        off = np.asarray(self.local_offset, dtype=np.float64)
+        self._verts_body = np.ascontiguousarray(self.mesh.vertices + off[None, :], dtype=np.float64)
 
 
 @dataclass
@@ -224,6 +244,9 @@ def _clip_submerged_triangles(
     verts_world: np.ndarray,
     faces: np.ndarray,
     s_verts: np.ndarray,
+    f0: np.ndarray | None = None,
+    f1: np.ndarray | None = None,
+    f2: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray | list[tuple[np.ndarray, np.ndarray]]]:
     """Vectorized triangle mesh clip against `s = eta - z >= 0`.
 
@@ -233,13 +256,18 @@ def _clip_submerged_triangles(
         src_face_idx: (K,) index into original `faces`.
         cap_segments: (C, 2, 3) oriented `(p_a, p_b)` waterline cap edges for Divergence Theorem closure.
     """
-    f_s = s_verts[faces]  # (M, 3)
-    all_dry = np.all(f_s <= 0.0, axis=1)
-    all_wet = (~all_dry) & np.all(f_s >= 0.0, axis=1)
+    c0 = faces[:, 0] if f0 is None else f0
+    c1 = faces[:, 1] if f1 is None else f1
+    c2 = faces[:, 2] if f2 is None else f2
+    pos_v = s_verts > 0.0
+    nonneg_v = s_verts >= 0.0
+    p0, p1, p2 = pos_v[c0], pos_v[c1], pos_v[c2]
+    any_pos = p0 | p1 | p2
+    all_wet = any_pos & nonneg_v[c0] & nonneg_v[c1] & nonneg_v[c2]
     bulk_idx = np.flatnonzero(all_wet)
     bulk_tris = verts_world[faces[bulk_idx]] if bulk_idx.size else np.zeros((0, 3, 3), dtype=np.float64)
 
-    straddle_idx = np.flatnonzero((~all_dry) & (~all_wet))
+    straddle_idx = np.flatnonzero(any_pos & (~all_wet))
     if straddle_idx.size == 0:
         if not bulk_idx.size:
             return (
@@ -256,8 +284,7 @@ def _clip_submerged_triangles(
         )
 
     s_faces = faces[straddle_idx]
-    sf_s = f_s[straddle_idx]
-    inside = sf_s > 0.0
+    inside = np.column_stack([p0[straddle_idx], p1[straddle_idx], p2[straddle_idx]])
     cnt = np.sum(inside, axis=1)
     rot = np.where(cnt == 1, np.argmax(inside, axis=1), np.argmax(~inside, axis=1))
     rows = np.arange(s_faces.shape[0])
@@ -331,12 +358,15 @@ def _submerged_volume_and_centroid(
     else:
         a0, a1, a2 = v0, v1, v2
 
-    tet_vol6 = np.einsum('ij,ij->i', a0, _cross3(a1, a2))
+    tet_vol6 = (
+        a0[:, 0] * (a1[:, 1] * a2[:, 2] - a1[:, 2] * a2[:, 1])
+        + a0[:, 1] * (a1[:, 2] * a2[:, 0] - a1[:, 0] * a2[:, 2])
+        + a0[:, 2] * (a1[:, 0] * a2[:, 1] - a1[:, 1] * a2[:, 0])
+    )
     vol = float(np.sum(tet_vol6) / 6.0)
     if vol <= 1e-10:
         return 0.0, origin.copy()
-    tet_centroids = 0.25 * (a0 + a1 + a2)
-    cob_rel = np.sum(tet_vol6[:, None] * tet_centroids, axis=0) / (6.0 * vol)
+    cob_rel = (tet_vol6 @ (a0 + a1 + a2)) * (0.25 / (6.0 * vol))
     return vol, origin + cob_rel
 
 
@@ -366,11 +396,16 @@ def evaluate_mesh_hydrodynamics(
     mesh = component.mesh
 
     # Transform mesh vertices from body frame -> world frame
-    verts_body = mesh.vertices + component.local_offset[None, :]
+    verts_body = getattr(component, '_verts_body', None)
+    if verts_body is None:
+        verts_body = mesh.vertices + component.local_offset[None, :]
     verts_world = body_pos_world[None, :] + verts_body @ body_rot_world.T
 
-    # Sample free surface at all hull vertices (typically 48..700 vertices -> fast vectorized call)
-    w_samp = water_field.evaluate(verts_world[:, 0], verts_world[:, 1], z=verts_world[:, 2], t=t)
+    # Sample free surface elevation & depth at all hull vertices (skipping unused vertex orbital tensors)
+    try:
+        w_samp = water_field.evaluate(verts_world[:, 0], verts_world[:, 1], z=verts_world[:, 2], t=t, eta_only=True)
+    except TypeError:
+        w_samp = water_field.evaluate(verts_world[:, 0], verts_world[:, 1], z=verts_world[:, 2], t=t)
     eta_v = w_samp.eta
     depth_v = w_samp.depth
     s_verts = eta_v - verts_world[:, 2]
@@ -418,7 +453,14 @@ def evaluate_mesh_hydrodynamics(
     if float(np.max(s_verts)) <= 0.0:
         return _zero_breakdown(0.0, max(0.0, keel_z_world - mean_eta))
 
-    wet_tris, _, _, cap_segments = _clip_submerged_triangles(verts_world, mesh.faces, s_verts)
+    wet_tris, _, _, cap_segments = _clip_submerged_triangles(
+        verts_world,
+        mesh.faces,
+        s_verts,
+        getattr(mesh, '_f0', None),
+        getattr(mesh, '_f1', None),
+        getattr(mesh, '_f2', None),
+    )
     if wet_tris.shape[0] == 0:
         return _zero_breakdown(draft_m, freeboard_min_m)
 
@@ -426,18 +468,19 @@ def evaluate_mesh_hydrodynamics(
     e1 = wet_tris[:, 1, :] - wet_tris[:, 0, :]
     e2 = wet_tris[:, 2, :] - wet_tris[:, 0, :]
     cross = _cross3(e1, e2)
-    tri_norm_len = np.linalg.norm(cross, axis=1)
+    tri_norm_len = _norm3(cross)
     tri_areas = 0.5 * tri_norm_len
     valid = tri_areas > 1e-10
     if not np.any(valid):
         return _zero_breakdown(draft_m, freeboard_min_m)
-    wet_tris = wet_tris[valid]
-    cross = cross[valid]
-    tri_norm_len = tri_norm_len[valid]
-    tri_areas = tri_areas[valid]
+    if not np.all(valid):
+        wet_tris = wet_tris[valid]
+        cross = cross[valid]
+        tri_norm_len = tri_norm_len[valid]
+        tri_areas = tri_areas[valid]
 
     tri_normals = cross / np.maximum(tri_norm_len[:, None], 1e-12)
-    tri_centers = np.mean(wet_tris, axis=1)
+    tri_centers = (wet_tris[:, 0, :] + wet_tris[:, 1, :] + wet_tris[:, 2, :]) * (1.0 / 3.0)
     wetted_area = float(np.sum(tri_areas))
 
     # Origin chosen inside hull (body_pos_world + mean vertex) for exact cancellation
@@ -452,7 +495,11 @@ def evaluate_mesh_hydrodynamics(
     eff_areas = tri_areas * wet_mask
 
     # Effective displaced volume & immersion fraction (scaled by local wet bed presence)
-    mean_wet_frac = float(np.average(wet_mask, weights=np.maximum(tri_areas, 1e-9))) if wetted_area > 0.0 else 0.0
+    if wetted_area > 0.0:
+        w_tri = np.maximum(tri_areas, 1e-9)
+        mean_wet_frac = float(np.dot(wet_mask, w_tri) / float(np.sum(w_tri)))
+    else:
+        mean_wet_frac = 0.0
     eff_sub_vol = sub_vol * mean_wet_frac
     sub_ratio = float(np.clip(eff_sub_vol / max(mesh.gross_volume_m3, 1e-6), 0.0, 1.0))
 
@@ -464,7 +511,7 @@ def evaluate_mesh_hydrodynamics(
     r_arms = tri_centers - ref_point_world[None, :]
     v_panel = vel_world[None, :] + _cross3(omega_world[None, :], r_arms)
     v_rel = v_panel - f_samp.velocity  # (K, 3) body relative to water
-    v_mag = np.linalg.norm(v_rel, axis=1)
+    v_mag = _norm3(v_rel)
 
     # 2. Resistance (ITTC-57 skin friction * (1+k) + normal pressure drag + shallow blockage factor)
     # Shallow water blockage factor (Schlichting/Lackenby style depth/draft correction >= 1.0)
@@ -480,27 +527,27 @@ def evaluate_mesh_hydrodynamics(
 
     v_n = np.einsum('ij,ij->i', v_rel, tri_normals)
     v_tan = v_rel - v_n[:, None] * tri_normals
-    v_tan_mag = np.linalg.norm(v_tan, axis=1)
+    v_tan_mag = _norm3(v_tan)
 
     # Viscous shear drag opposing tangential flow on each wetted triangle
-    f_visc_p = -0.5 * rho_water * cf_eff[:, None] * v_tan_mag[:, None] * v_tan * (eff_areas * smooth_immersion)[:, None]
+    w_shear = eff_areas * smooth_immersion
+    f_visc_p = (-0.5 * rho_water * cf_eff * v_tan_mag * w_shear)[:, None] * v_tan
 
     # Normal pressure drag (full Cd when panel advances into water v_n > 0; 0.35 base suction when v_n < 0)
     cd_n = np.where(v_n > 0.0, float(cal.pressure_drag_normal_cd), 0.35 * float(cal.pressure_drag_normal_cd))
     f_press_p = (
         -0.5
         * rho_water
-        * cd_n[:, None]
-        * np.abs(v_n)[:, None]
-        * v_n[:, None]
-        * tri_normals
-        * (eff_areas * smooth_immersion)[:, None]
+        * cd_n
+        * np.abs(v_n)
+        * v_n
+        * w_shear
         * shallow_mult
-    )
+    )[:, None] * tri_normals
 
     f_res_panels = f_visc_p + f_press_p
     f_res = np.sum(f_res_panels, axis=0)
-    tau_res = np.sum(_cross3(r_arms, f_res_panels), axis=0)
+    tau_res = _sum_cross3(r_arms, f_res_panels)
 
     # 3. Dynamic Lift & Planing Forces (strictly velocity-dependent hydrodynamic pressure)
     # Act on downward-facing wet surfaces (normals with negative world Z component) advancing into fluid
@@ -514,27 +561,34 @@ def evaluate_mesh_hydrodynamics(
         * impact_vel
         * v_mag
         * deadrise_up
-        * eff_areas
-        * smooth_immersion
+        * w_shear
     )
-    # Planing pressure acts inward (-tri_normals), decomposed cleanly so vertical lift is explicit
-    inward_up = np.stack([
-        -0.15 * tri_normals[:, 0],
-        -0.15 * tri_normals[:, 1],
-        np.maximum(-tri_normals[:, 2], 0.0),
-    ], axis=1)
-    inward_len = np.linalg.norm(inward_up, axis=1, keepdims=True)
-    inward_dir = np.where(inward_len > 1e-6, inward_up / np.maximum(inward_len, 1e-9), 0.0)
-    f_lift_panels = lift_mag[:, None] * inward_dir
-    f_lift = np.sum(f_lift_panels, axis=0)
-    tau_lift = np.sum(_cross3(r_arms, f_lift_panels), axis=0)
+    if np.any(lift_mag > 0.0):
+        # Planing pressure acts inward (-tri_normals), decomposed cleanly so vertical lift is explicit
+        inward_up = np.column_stack([
+            -0.15 * tri_normals[:, 0],
+            -0.15 * tri_normals[:, 1],
+            deadrise_up,
+        ])
+        inward_len = _norm3(inward_up)[:, None]
+        inward_dir = np.where(inward_len > 1e-6, inward_up / np.maximum(inward_len, 1e-9), 0.0)
+        f_lift_panels = lift_mag[:, None] * inward_dir
+        f_lift = np.sum(f_lift_panels, axis=0)
+        tau_lift = _sum_cross3(r_arms, f_lift_panels)
+    else:
+        f_lift = np.zeros(3, dtype=np.float64)
+        tau_lift = np.zeros(3, dtype=np.float64)
 
     # 4. Wave Excitation (Froude-Krylov dynamic pressure + diffraction wave-slope force)
     fk_scale = float(cal.wave_froude_krylov_scale)
-    # p_dyn acts inward (-tri_normals) on wetted shell
-    f_wave_panels = -fk_scale * f_samp.dynamic_pressure[:, None] * tri_normals * eff_areas[:, None]
-    f_wave = np.sum(f_wave_panels, axis=0)
-    tau_wave = np.sum(_cross3(r_arms, f_wave_panels), axis=0)
+    if fk_scale != 0.0 and np.any(f_samp.dynamic_pressure != 0.0):
+        # p_dyn acts inward (-tri_normals) on wetted shell
+        f_wave_panels = (-fk_scale * f_samp.dynamic_pressure * eff_areas)[:, None] * tri_normals
+        f_wave = np.sum(f_wave_panels, axis=0)
+        tau_wave = _sum_cross3(r_arms, f_wave_panels)
+    else:
+        f_wave = np.zeros(3, dtype=np.float64)
+        tau_wave = np.zeros(3, dtype=np.float64)
 
     # 5. Added-mass tensor parameters & Kirchhoff-Munk velocity terms
     m_disp = rho_water * eff_sub_vol
@@ -557,8 +611,14 @@ def evaluate_mesh_hydrodynamics(
         ma_body[2] *= min(keel_boost, 2.5)
         ia_body[1] *= min(0.5 + 0.5 * keel_boost, 2.0)
 
-    mean_water_vel = np.average(f_samp.velocity, axis=0, weights=np.maximum(eff_areas, 1e-9)) if wetted_area > 0 else np.zeros(3)
-    mean_water_acc = np.average(f_samp.acceleration, axis=0, weights=np.maximum(eff_areas, 1e-9)) if wetted_area > 0 else np.zeros(3)
+    if wetted_area > 0.0:
+        w_eff = np.maximum(eff_areas, 1e-9)
+        inv_weff = 1.0 / float(np.sum(w_eff))
+        mean_water_vel = (w_eff @ f_samp.velocity) * inv_weff
+        mean_water_acc = (w_eff @ f_samp.acceleration) * inv_weff
+    else:
+        mean_water_vel = np.zeros(3, dtype=np.float64)
+        mean_water_acc = np.zeros(3, dtype=np.float64)
 
     # 3b. Slender-body aft skeg / stepped-hull directional Kutta lift (opposes Munk directional divergence)
     if component.role == 'hull' and draft_m > 0.01 and mean_wet_frac > 0.01:

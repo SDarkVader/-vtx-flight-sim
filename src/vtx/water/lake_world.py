@@ -263,10 +263,12 @@ class RicochetLakeWorld:
         iy = np.minimum(np.floor(fy).astype(np.intp), self.ny - 2)
         tx = fx - ix
         ty = fy - iy
-        z00 = self.heights[iy, ix]
-        z10 = self.heights[iy, ix + 1]
-        z01 = self.heights[iy + 1, ix]
-        z11 = self.heights[iy + 1, ix + 1]
+        idx = iy * self.nx + ix
+        h_flat = self.heights.ravel()
+        z00 = h_flat[idx]
+        z10 = h_flat[idx + 1]
+        z01 = h_flat[idx + self.nx]
+        z11 = h_flat[idx + self.nx + 1]
         lower = (tx + ty) <= 1.0
         val_lower = z00 + tx * (z10 - z00) + ty * (z01 - z00)
         val_upper = z11 + (1.0 - tx) * (z01 - z11) + (1.0 - ty) * (z10 - z11)

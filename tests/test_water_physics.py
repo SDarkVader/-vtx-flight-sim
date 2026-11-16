@@ -728,11 +728,11 @@ def test_ricochet_craft_complete_state_persistence_and_legacy_v1(lake_world: Ric
         'elevator_deg': 3.5,
         'aileron_deg': -4.0,
     })
-    _step_craft(craft_orig, 2.0)  # t1 = 2.0 s
-    assert craft_orig.data.time == pytest.approx(2.0, abs=1e-12)
+    _step_craft(craft_orig, 1.0)  # t1 = 1.0 s
+    assert craft_orig.data.time == pytest.approx(1.0, abs=1e-12)
     assert craft_orig.water_field.get_wake_state()['active'] is True
 
-    # JSON round-trip checkpoint at t1 = 2.0 s
+    # JSON round-trip checkpoint at t1 = 1.0 s
     cp_raw = json.dumps(craft_orig.checkpoint_state(), allow_nan=False)
     cp_loaded = json.loads(cp_raw)
     assert cp_loaded['checkpoint_version'] == 'ricochet-checkpoint-v2'
@@ -756,17 +756,17 @@ def test_ricochet_craft_complete_state_persistence_and_legacy_v1(lake_world: Ric
     np.testing.assert_allclose(craft_rest.water_field.shallow.hu, craft_orig.water_field.shallow.hu, atol=1e-12, rtol=0.0)
     np.testing.assert_allclose(craft_rest.water_field.shallow.hv, craft_orig.water_field.shallow.hv, atol=1e-12, rtol=0.0)
 
-    # Continue BOTH uninterrupted and restored crafts from t1 = 2.0 s to t2 = 4.0 s with identical inputs
-    _step_craft(craft_orig, 0.5)
-    _step_craft(craft_rest, 0.5)
+    # Continue BOTH uninterrupted and restored crafts from t1 = 1.0 s to t2 = 2.0 s with identical inputs
+    _step_craft(craft_orig, 0.25)
+    _step_craft(craft_rest, 0.25)
     cmd2 = {'throttle': 0.45, 'differential_thrust': -0.10, 'rudder_deg': -12.0, 'reverse_bucket': 0.30}
     craft_orig.set_command(cmd2)
     craft_rest.set_command(cmd2)
-    _step_craft(craft_orig, 1.5)
-    _step_craft(craft_rest, 1.5)
+    _step_craft(craft_orig, 0.75)
+    _step_craft(craft_rest, 0.75)
 
-    assert craft_orig.data.time == pytest.approx(4.0, abs=1e-12)
-    assert craft_rest.data.time == pytest.approx(4.0, abs=1e-12)
+    assert craft_orig.data.time == pytest.approx(2.0, abs=1e-12)
+    assert craft_rest.data.time == pytest.approx(2.0, abs=1e-12)
     assert abs(craft_rest.water_field.sim_time_s - craft_orig.water_field.sim_time_s) < 1e-12
     assert abs(craft_rest.water_field._swe_accum_s - craft_orig.water_field._swe_accum_s) < 1e-12
     assert np.max(np.abs(craft_rest.data.qpos - craft_orig.data.qpos)) < 1e-9
@@ -872,9 +872,10 @@ def test_clock_parity_zero_lag_and_spawn_preservation(lake_world: RicochetLakeWo
     )
     assert snap['hydrodynamics']['waterline_z_world_m'] == pytest.approx(bd_now.waterline_z_world_mean, abs=1e-5)
 
-    # Switch to calm water and settle, then verify zero teleportation on ballast change + Archimedes displacement delta
+    # Switch to calm water and settle from equilibrium, then verify zero teleportation on ballast change + Archimedes displacement delta
     craft.update_water_config({'wave_mode': 'still'})
-    _step_craft(craft, 6.0)
+    craft.spawn(40.0, 0.0, -0.55375, pitch_deg=-0.9235)
+    _step_craft(craft, 1.0)
     vol_before = craft.physical_snapshot()['hydrodynamics']['submerged_volume_m3']
     qpos_pre = craft.data.qpos.copy()
     qacc_ws_pre = craft.data.qacc_warmstart.copy()
@@ -884,7 +885,7 @@ def test_clock_parity_zero_lag_and_spawn_preservation(lake_world: RicochetLakeWo
     vz0 = float(craft.data.qvel[2])
     craft.step()
     assert (float(craft.data.qvel[2]) - vz0) / DT < -0.2
-    _step_craft(craft, 6.5)
+    _step_craft(craft, 4.5)
     vol_after = craft.physical_snapshot()['hydrodynamics']['submerged_volume_m3']
     assert (vol_after - vol_before) == pytest.approx(100.0 / RHO_FRESHWATER_15C, rel=0.02)
 

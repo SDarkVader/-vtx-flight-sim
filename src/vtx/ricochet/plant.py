@@ -10,6 +10,7 @@ damping, and wave excitation forces and apply them physically via
 from __future__ import annotations
 
 import copy
+from dataclasses import replace as dc_replace
 import hashlib
 import math
 import xml.etree.ElementTree as ET
@@ -55,7 +56,7 @@ from vtx.water.datum import (
     HydroCalibrationProfile,
     WaterEnvironmentConfig,
 )
-from vtx.water.hydrodynamics import HydroBreakdown, evaluate_components_hydrodynamics, evaluate_mesh_hydrodynamics
+from vtx.water.hydrodynamics import HydroBreakdown, _cross3, evaluate_components_hydrodynamics, evaluate_mesh_hydrodynamics
 from vtx.water.shallow_water import HybridWaterField
 
 DT = 0.0025
@@ -766,7 +767,12 @@ class RicochetCraft:
         self._last_applied_flood_kg = 0.0
         self._mass_version = 0
         self._raw_hydro_cache: tuple[tuple[Any, ...], tuple[HydroBreakdown, HydroBreakdown, HydroBreakdown]] | None = None
+        self._last_ext_force_m = np.zeros(3, dtype=np.float64)
+        self._last_ext_torque_m = np.zeros(3, dtype=np.float64)
+        self._hydro_snapshot_dirty = False
         self.legacy_checkpoint_limitations: list[str] = []
+        self._model_xml_sha256 = hashlib.sha256(self.xml.encode('utf-8')).hexdigest()
+        self._pinned_mujoco_meshes = self.verify_pinned_geometry()
         self._last_whirlpool_hazard = (
             self.world.whirlpool_hazard_at(0.0, 0.0, config=self.water_config)
             if hasattr(self.world, 'whirlpool_hazard_at')
@@ -844,7 +850,14 @@ class RicochetCraft:
         self._last_applied_flood_kg = float(self.mass_register.flood_water_kg)
         self._mass_version += 1
         self._raw_hydro_cache = None
-        self._evaluate_and_cache_hydro(t=float(self.data.time), force_eval=True)
+        self._evaluate_and_cache_hydro(
+            t=float(self.data.time),
+            force_eval=True,
+            ext_force_m=self._last_ext_force_m,
+            ext_torque_m=self._last_ext_torque_m,
+            update_stride_state=True,
+        )
+        self._hydro_snapshot_dirty = False
 
     def update_mass_properties(
         self,
@@ -941,6 +954,8 @@ class RicochetCraft:
         cfg = self.water_field.reconfigure(payload)
         self.water_config = cfg
         self.wind = self._wind_vector_from_config()
+        self._raw_hydro_cache = None
+        self._hydro_snapshot_dirty = True
         return cfg
 
     def set_wind(self, wind) -> None:
@@ -986,6 +1001,8 @@ class RicochetCraft:
         self._curr_hydro_f.clear()
         self.legacy_checkpoint_limitations = []
         self._raw_hydro_cache = None
+        self._last_ext_force_m = np.zeros(3, dtype=np.float64)
+        self._last_ext_torque_m = np.zeros(3, dtype=np.float64)
         self.water_field.reset(water_level_m=wl)
         self._last_whirlpool_hazard = (
             self.world.whirlpool_hazard_at(float(x), float(y), config=self.water_config)
@@ -994,7 +1011,8 @@ class RicochetCraft:
         )
         mj.mj_forward(self.model, self.data)
         # Populate initial hydrostatic state telemetry cleanly at t=0.0
-        self._evaluate_and_cache_hydro(t=0.0, force_eval=True)
+        self._evaluate_and_cache_hydro(t=0.0, force_eval=True, update_stride_state=True)
+        self._hydro_snapshot_dirty = False
 
     def set_command(self, cmd: dict[str, Any]) -> None:
         for key, lim in RICOCHET_SURFACE_LIMITS.items():
@@ -1164,7 +1182,7 @@ class RicochetCraft:
 
         def _local_flow(ac_vtx: tuple[float, float, float], has_slipstream: bool = False) -> tuple[np.ndarray, np.ndarray, float, float, float]:
             arm = np.asarray(ac_vtx, dtype=np.float64) - r_cg
-            v_loc = v_air_b + np.cross(omega_b, arm)
+            v_loc = v_air_b + _cross3(omega_b, arm)
             if has_slipstream:
                 v_loc = np.array([v_loc[0] + 0.55 * slip_speed, v_loc[1], v_loc[2]], dtype=np.float64)
             spd_l = float(np.linalg.norm(v_loc))
@@ -1204,7 +1222,7 @@ class RicochetCraft:
             fx = -0.18 * q_loc * s_ail * (q_rad * q_rad) * (1.0 if v_loc[0] >= 0.0 else -1.0)
             f_vec = np.array([fx, 0.0, fz], dtype=np.float64)
             f_surf_total_b += f_vec
-            m_surf_total_b += np.cross(arm, f_vec)
+            m_surf_total_b += _cross3(arm, f_vec)
             hm = -0.055 * q_loc * s_ail * c_ail * (0.4 * a_loc + 0.75 * q_rad)
             hinge_moments[f'aileron_{side}'] = round(float(hm), 3)
             surfaces_telemetry[f'aileron_{side}'] = {
@@ -1226,7 +1244,7 @@ class RicochetCraft:
         fx_el = -0.22 * q_el * s_elev * (q_elev * q_elev)
         f_el = np.array([fx_el, 0.0, fz_el], dtype=np.float64)
         f_surf_total_b += f_el
-        m_surf_total_b += np.cross(arm_el, f_el)
+        m_surf_total_b += _cross3(arm_el, f_el)
         hm_el = -0.065 * q_el * s_elev * c_elev * (0.45 * a_el + 0.80 * q_elev)
         hinge_moments['elevator'] = round(float(hm_el), 3)
         surfaces_telemetry['elevator'] = {
@@ -1253,7 +1271,7 @@ class RicochetCraft:
         fy_fin = q_rd * s_rud * 1.45 * math.sin(b_rd) * (-0.5)
         f_rd = np.array([-0.20 * q_rd * s_rud * (q_rud * q_rud), fy_rud + fy_fin, 0.0], dtype=np.float64)
         f_surf_total_b += f_rd
-        m_surf_total_b += np.cross(arm_rd, f_rd)
+        m_surf_total_b += _cross3(arm_rd, f_rd)
         hm_rd = -0.065 * q_rd * s_rud * c_rud * (-0.45 * b_rd + 0.80 * q_rud)
         hinge_moments['rudder'] = round(float(hm_rd), 3)
         surfaces_telemetry['rudder'] = {
@@ -1273,7 +1291,7 @@ class RicochetCraft:
 
         # Pure aerodynamic slender-body Munk moment (rho_air = 1.225 kg/m^3); water Kirchhoff-Munk torque is computed inside hydrodynamics.py
         ma_air_diag = np.array([0.8, 3.8, 4.5], dtype=np.float64)
-        aero_munk_b = -np.cross(v_air_b, ma_air_diag * v_air_b)
+        aero_munk_b = -_cross3(v_air_b, ma_air_diag * v_air_b)
         self._last_aero_munk_nm = aero_munk_b
         hydro_munk_b = self.last_hydro.munk_torque_body if self.last_hydro is not None else np.zeros(3, dtype=np.float64)
         self.last_munk_moment_nm = aero_munk_b + hydro_munk_b
@@ -1350,12 +1368,20 @@ class RicochetCraft:
 
         return f_prop_w + f_aero_w, m_prop_w + m_aero_w
 
+    @staticmethod
+    def _clone_hydro_breakdown(bd: HydroBreakdown) -> HydroBreakdown:
+        cloned = dc_replace(bd)
+        if hasattr(bd, '_am_data'):
+            cloned._am_data = bd._am_data
+        return cloned
+
     def _evaluate_and_cache_hydro(
         self,
         t: float,
         force_eval: bool = False,
         ext_force_m: np.ndarray | None = None,
         ext_torque_m: np.ndarray | None = None,
+        update_stride_state: bool = True,
     ) -> None:
         d = self.data
         if force_eval or (self.step_count % self.hydro_stride == 0):
@@ -1383,7 +1409,10 @@ class RicochetCraft:
                 tuple(self.water_config.__dict__.values()),
             )
             if self._raw_hydro_cache is not None and self._raw_hydro_cache[0] == cache_key:
-                bd_m, bd_p, bd_s = copy.deepcopy(self._raw_hydro_cache[1])
+                cached_m, cached_p, cached_s = self._raw_hydro_cache[1]
+                bd_m = self._clone_hydro_breakdown(cached_m)
+                bd_p = self._clone_hydro_breakdown(cached_p)
+                bd_s = self._clone_hydro_breakdown(cached_s)
             else:
                 bd_m = evaluate_mesh_hydrodynamics(
                     self.hull_bundle.main_hull,
@@ -1436,7 +1465,14 @@ class RicochetCraft:
                     g=g_w,
                     include_inertial_am=False,
                 )
-                self._raw_hydro_cache = (cache_key, copy.deepcopy((bd_m, bd_p, bd_s)))
+                self._raw_hydro_cache = (
+                    cache_key,
+                    (
+                        self._clone_hydro_breakdown(bd_m),
+                        self._clone_hydro_breakdown(bd_p),
+                        self._clone_hydro_breakdown(bd_s),
+                    ),
+                )
 
             m_p = float(self.model.body_mass[bid_p])
             m_s = float(self.model.body_mass[bid_s])
@@ -1458,11 +1494,11 @@ class RicochetCraft:
                 + ext_f_m + np.array([0.0, 0.0, -m_tot * g_w], dtype=np.float64)
             )
             t_free_tot = (
-                bd_m.total_torque_world + np.cross(xipos_m - x_com_w, bd_m.total_force_world)
-                + np.cross(xipos_core - x_com_w, np.array([0.0, 0.0, -m_m * g_w]))
-                + bd_p.total_torque_world + np.cross(xipos_p - x_com_w, bd_p.total_force_world + np.array([0.0, 0.0, -m_p * g_w]))
-                + bd_s.total_torque_world + np.cross(xipos_s - x_com_w, bd_s.total_force_world + np.array([0.0, 0.0, -m_s * g_w]))
-                + ext_t_m + np.cross(xipos_m - x_com_w, ext_f_m)
+                bd_m.total_torque_world + _cross3(xipos_m - x_com_w, bd_m.total_force_world)
+                + _cross3(xipos_core - x_com_w, np.array([0.0, 0.0, -m_m * g_w]))
+                + bd_p.total_torque_world + _cross3(xipos_p - x_com_w, bd_p.total_force_world + np.array([0.0, 0.0, -m_p * g_w]))
+                + bd_s.total_torque_world + _cross3(xipos_s - x_com_w, bd_s.total_force_world + np.array([0.0, 0.0, -m_s * g_w]))
+                + ext_t_m + _cross3(xipos_m - x_com_w, ext_f_m)
             )
             zero3 = np.zeros(3, dtype=np.float64)
             ma_m, ia_m, aw_m, _, warea_m = getattr(bd_m, '_am_data', (zero3, zero3, zero3, 0.0, 0.0))
@@ -1506,7 +1542,7 @@ class RicochetCraft:
             ):
                 if float(np.sum(ma_i) + np.sum(ia_i)) <= 0.0:
                     continue
-                a_i_rel_b = a_veh_b + np.cross(alpha_veh_b, r_i_b) + rot_m.T @ (aw_tot - aw_i)
+                a_i_rel_b = a_veh_b + _cross3(alpha_veh_b, r_i_b) + rot_m.T @ (aw_tot - aw_i)
                 f_am_in = rot_m @ (-ma_i * a_i_rel_b)
                 t_am_in = rot_m @ (-ia_i * alpha_veh_b)
                 bd_i.added_mass_force_world = bd_i.added_mass_force_world + f_am_in
@@ -1514,16 +1550,17 @@ class RicochetCraft:
                 bd_i.total_force_world = bd_i.total_force_world + f_am_in
                 bd_i.total_torque_world = bd_i.total_torque_world + t_am_in
 
-            self._prev_hydro_f = dict(self._curr_hydro_f) if self._curr_hydro_f else {
-                bid_m: np.concatenate([bd_m.total_force_world, bd_m.total_torque_world]),
-                bid_p: np.concatenate([bd_p.total_force_world, bd_p.total_torque_world]),
-                bid_s: np.concatenate([bd_s.total_force_world, bd_s.total_torque_world]),
-            }
-            self._curr_hydro_f = {
-                bid_m: np.concatenate([bd_m.total_force_world, bd_m.total_torque_world]),
-                bid_p: np.concatenate([bd_p.total_force_world, bd_p.total_torque_world]),
-                bid_s: np.concatenate([bd_s.total_force_world, bd_s.total_torque_world]),
-            }
+            if update_stride_state:
+                self._prev_hydro_f = dict(self._curr_hydro_f) if self._curr_hydro_f else {
+                    bid_m: np.concatenate([bd_m.total_force_world, bd_m.total_torque_world]),
+                    bid_p: np.concatenate([bd_p.total_force_world, bd_p.total_torque_world]),
+                    bid_s: np.concatenate([bd_s.total_force_world, bd_s.total_torque_world]),
+                }
+                self._curr_hydro_f = {
+                    bid_m: np.concatenate([bd_m.total_force_world, bd_m.total_torque_world]),
+                    bid_p: np.concatenate([bd_p.total_force_world, bd_p.total_torque_world]),
+                    bid_s: np.concatenate([bd_s.total_force_world, bd_s.total_torque_world]),
+                }
 
             # Also assemble whole-vehicle combined breakdown referred to main-hull CoM for telemetry
             tot_vol = bd_m.submerged_volume_m3 + bd_p.submerged_volume_m3 + bd_s.submerged_volume_m3
@@ -1547,8 +1584,8 @@ class RicochetCraft:
                 fs = getattr(bd_s, f_attr)
                 fm = getattr(bd_m, f_attr)
                 tm = getattr(bd_m, t_attr)
-                tp = getattr(bd_p, t_attr) + np.cross(arm_p, fp)
-                ts = getattr(bd_s, t_attr) + np.cross(arm_s, fs)
+                tp = getattr(bd_p, t_attr) + _cross3(arm_p, fp)
+                ts = getattr(bd_s, t_attr) + _cross3(arm_s, fs)
                 return fm + fp + fs, tm + tp + ts
 
             b_f, b_t = comb('buoyancy_force_world', 'buoyancy_torque_world')
@@ -1682,13 +1719,16 @@ class RicochetCraft:
         # Compute aerodynamic (per-surface local airflow) + ducted-fan propulsion forces
         # from achieved MuJoCo joint positions & rotor angular speeds before virtual-mass hydro solve
         f_ap, m_ap = self._compute_aero_and_propulsion()
+        self._last_ext_force_m = np.asarray(f_ap, dtype=np.float64).copy()
+        self._last_ext_torque_m = np.asarray(m_ap, dtype=np.float64).copy()
 
-        # Evaluate hydrodynamic forces at current d.time (matching water_field.sim_time_s)
+        # Evaluate hydrodynamic forces at current d.time (respecting hydro_stride = 4 -> 100 Hz)
         self._evaluate_and_cache_hydro(
             t=t_pre,
             force_eval=(self.step_count == 0),
             ext_force_m=f_ap,
             ext_torque_m=m_ap,
+            update_stride_state=True,
         )
         if self.last_hydro is not None:
             self.last_munk_moment_nm = self._last_aero_munk_nm + self.last_hydro.munk_torque_body
@@ -1783,15 +1823,22 @@ class RicochetCraft:
             else {}
         )
         self._update_bilge_flooding(dt, rot_m)
-        # Refresh hydro at exact post-step d.time so physical_snapshot() and last_hydro have zero 1-step lag
+        # Mark snapshot hydro stale so physical_snapshot() / ground_clearance() refresh lazily at post-step t_post (zero 1-step lag without 400 Hz re-evaluation)
+        self._hydro_snapshot_dirty = True
+
+    def _ensure_hydro_snapshot_fresh(self) -> None:
+        if not self._hydro_snapshot_dirty:
+            return
         self._evaluate_and_cache_hydro(
-            t=t_post,
+            t=float(self.data.time),
             force_eval=True,
-            ext_force_m=f_ap,
-            ext_torque_m=m_ap,
+            ext_force_m=self._last_ext_force_m,
+            ext_torque_m=self._last_ext_torque_m,
+            update_stride_state=False,
         )
         if self.last_hydro is not None:
             self.last_munk_moment_nm = self._last_aero_munk_nm + self.last_hydro.munk_torque_body
+        self._hydro_snapshot_dirty = False
 
     def _update_bilge_flooding(self, dt: float, rot_m: np.ndarray) -> None:
         """Progressive Torricelli water ingress when hull waterproof seal is disabled."""
@@ -1839,6 +1886,7 @@ class RicochetCraft:
         return out
 
     def ground_clearance(self) -> float | None:
+        self._ensure_hydro_snapshot_fresh()
         if self.last_hydro is not None:
             return float(self.last_hydro.ground_clearance_m)
         bid = self.bids['airframe']
@@ -1877,9 +1925,9 @@ class RicochetCraft:
             'hull_variant': self.hull_bundle.variant_id,
             'hull_provenance': self.hull_bundle.provenance,
             'hull_geometry_sha256': self.hull_bundle.main_hull.mesh.geometry_sha256,
-            'pinned_mujoco_meshes': self.verify_pinned_geometry(),
+            'pinned_mujoco_meshes': self._pinned_mujoco_meshes,
             'solver_version': self.SOLVER_VERSION,
-            'model_xml_sha256': hashlib.sha256(self.xml.encode('utf-8')).hexdigest(),
+            'model_xml_sha256': self._model_xml_sha256,
             'calibration': self.calibration.to_dict(),
         }
 
@@ -2030,6 +2078,7 @@ class RicochetCraft:
         }
 
     def physical_snapshot(self) -> dict[str, Any]:
+        self._ensure_hydro_snapshot_fresh()
         d = self.data
         bid = self.bids['airframe']
         pos = d.xpos[bid]
@@ -2163,7 +2212,7 @@ class RicochetCraft:
             'hull_variant': self.hull_bundle.variant_id,
             'hull_geometry_sha256': self.hull_bundle.main_hull.mesh.geometry_sha256,
             'solver_version': self.SOLVER_VERSION,
-            'model_xml_sha256': hashlib.sha256(self.xml.encode('utf-8')).hexdigest(),
+            'model_xml_sha256': self._model_xml_sha256,
             # Full MuJoCo integration state
             'time': float(d.time),
             'qpos': d.qpos.astype(np.float64, copy=False).tolist(),
@@ -2200,6 +2249,9 @@ class RicochetCraft:
             '_last_whirlpool_hazard': copy.deepcopy(self._last_whirlpool_hazard),
             '_prev_hydro_f': {str(bid): np.asarray(vec, dtype=np.float64).tolist() for bid, vec in self._prev_hydro_f.items()},
             '_curr_hydro_f': {str(bid): np.asarray(vec, dtype=np.float64).tolist() for bid, vec in self._curr_hydro_f.items()},
+            '_last_ext_force_m': self._last_ext_force_m.astype(np.float64, copy=False).tolist(),
+            '_last_ext_torque_m': self._last_ext_torque_m.astype(np.float64, copy=False).tolist(),
+            '_hydro_snapshot_dirty': bool(self._hydro_snapshot_dirty),
             'last_propulsion_n': self.last_propulsion_n.astype(np.float64, copy=False).tolist(),
             'last_propulsion_torque_nm': self.last_propulsion_torque_nm.astype(np.float64, copy=False).tolist(),
             'last_aero_force_n': self.last_aero_force_n.astype(np.float64, copy=False).tolist(),
@@ -2360,18 +2412,31 @@ class RicochetCraft:
 
         self._raw_hydro_cache = None
         mj.mj_forward(self.model, d)
-        f_ap = self.last_propulsion_n + self.last_aero_force_n
-        m_ap = self.last_propulsion_torque_nm + self.last_aero_torque_nm
+        if '_last_ext_force_m' in st and st['_last_ext_force_m'] is not None:
+            f_ap = np.asarray(st['_last_ext_force_m'], dtype=np.float64)
+        else:
+            f_ap = self.last_propulsion_n + self.last_aero_force_n
+        if '_last_ext_torque_m' in st and st['_last_ext_torque_m'] is not None:
+            m_ap = np.asarray(st['_last_ext_torque_m'], dtype=np.float64)
+        else:
+            m_ap = self.last_propulsion_torque_nm + self.last_aero_torque_nm
+        self._last_ext_force_m = f_ap.copy()
+        self._last_ext_torque_m = m_ap.copy()
+        has_stride_buffers = bool(st.get('_curr_hydro_f') and st.get('_prev_hydro_f'))
+        if '_prev_hydro_f' in st and st['_prev_hydro_f'] is not None:
+            self._prev_hydro_f = {int(k): np.asarray(v, dtype=np.float64) for k, v in st['_prev_hydro_f'].items()}
+        if '_curr_hydro_f' in st and st['_curr_hydro_f'] is not None:
+            self._curr_hydro_f = {int(k): np.asarray(v, dtype=np.float64) for k, v in st['_curr_hydro_f'].items()}
         self._evaluate_and_cache_hydro(
             t=float(d.time),
             force_eval=True,
             ext_force_m=f_ap,
             ext_torque_m=m_ap,
+            update_stride_state=not has_stride_buffers,
         )
-        if '_prev_hydro_f' in st and st['_prev_hydro_f'] is not None:
-            self._prev_hydro_f = {int(k): np.asarray(v, dtype=np.float64) for k, v in st['_prev_hydro_f'].items()}
-        if '_curr_hydro_f' in st and st['_curr_hydro_f'] is not None:
-            self._curr_hydro_f = {int(k): np.asarray(v, dtype=np.float64) for k, v in st['_curr_hydro_f'].items()}
+        if self.last_hydro is not None:
+            self.last_munk_moment_nm = self._last_aero_munk_nm + self.last_hydro.munk_torque_body
+        self._hydro_snapshot_dirty = False
 
         if is_v2:
             self.legacy_checkpoint_limitations = []

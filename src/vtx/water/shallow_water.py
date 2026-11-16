@@ -356,7 +356,13 @@ class ShallowWaterSolver:
         self.hu = hu_new
         self.hv = hv_new
 
-    def sample(self, x: np.ndarray | float, y: np.ndarray | float) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def sample(
+        self,
+        x: np.ndarray | float,
+        y: np.ndarray | float,
+        *,
+        eta_only: bool = False,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Bilinearly sample SWE (eta, depth, u, v) at world (x, y) coordinates."""
         xa = np.asarray(x, dtype=np.float64)
         ya = np.asarray(y, dtype=np.float64)
@@ -369,17 +375,25 @@ class ShallowWaterSolver:
         iy = np.minimum(np.floor(fy).astype(np.intp), self.ny - 2)
         tx = fx - ix
         ty = fy - iy
+        omx = 1.0 - tx
+        omy = 1.0 - ty
+        w00 = omy * omx
+        w10 = omy * tx
+        w01 = ty * omx
+        w11 = ty * tx
+        nx = self.nx
+        idx = iy * nx + ix
 
         def bilerp(field: np.ndarray) -> np.ndarray:
-            v00 = field[iy, ix]
-            v10 = field[iy, ix + 1]
-            v01 = field[iy + 1, ix]
-            v11 = field[iy + 1, ix + 1]
-            return ((1 - ty) * ((1 - tx) * v00 + tx * v10) + ty * ((1 - tx) * v01 + tx * v11)).reshape(shape)
+            f = field.ravel()
+            return (w00 * f[idx] + w10 * f[idx + 1] + w01 * f[idx + nx] + w11 * f[idx + nx + 1]).reshape(shape)
 
         h = bilerp(self.h)
         bed = bilerp(self.bed)
         eta = bed + h
+        if eta_only:
+            empty = np.empty(0, dtype=np.float64)
+            return eta, h, empty, empty
         hu = bilerp(self.hu)
         hv = bilerp(self.hv)
         wet = h > self.h_vel_damp
@@ -676,6 +690,8 @@ class HybridWaterField:
         y: np.ndarray | float,
         z: np.ndarray | float | None = None,
         t: float | None = None,
+        *,
+        eta_only: bool = False,
     ) -> HybridWaterSample:
         t_eval = self.sim_time_s if t is None else float(t)
         xa = np.asarray(x, dtype=np.float64)
@@ -687,7 +703,7 @@ class HybridWaterField:
         else:
             bed = np.vectorize(self.world.terrain_z)(xa, ya)
 
-        eta_swe, h_swe, u_swe, v_swe = self.shallow.sample(xa, ya)
+        eta_swe, h_swe, u_swe, v_swe = self.shallow.sample(xa, ya, eta_only=eta_only)
         # Depth relative to local shallow water surface
         local_depth = np.maximum(0.0, eta_swe - bed)
         wave = self.open_water.evaluate(
@@ -697,6 +713,7 @@ class HybridWaterField:
             t=t_eval,
             local_depth=np.maximum(local_depth, 0.25),
             water_level_offset=0.0,
+            eta_only=eta_only,
         )
 
         # Blend open-water orbital wave disturbance (zero-mean eta_wave = wave.eta)
@@ -706,92 +723,117 @@ class HybridWaterField:
         wave_blend = np.clip((h_swe - 0.08) / 0.35, 0.0, 1.0)
         eta_delta = wave.eta * wave_blend
 
-        vel = wave.velocity.copy()
-        vel[..., 0] = (vel[..., 0] - self.open_water.current_xy[0]) * wave_blend + u_swe
-        vel[..., 1] = (vel[..., 1] - self.open_water.current_xy[1]) * wave_blend + v_swe
-        vel[..., 2] = vel[..., 2] * wave_blend
+        if not eta_only:
+            vel = wave.velocity.copy()
+            vel[..., 0] = (vel[..., 0] - self.open_water.current_xy[0]) * wave_blend + u_swe
+            vel[..., 1] = (vel[..., 1] - self.open_water.current_xy[1]) * wave_blend + v_swe
+            vel[..., 2] = vel[..., 2] * wave_blend
 
-        acc = wave.acceleration * wave_blend[..., None]
-        p_dyn = wave.dynamic_pressure * wave_blend
+            acc = wave.acceleration * wave_blend[..., None]
+            p_dyn = wave.dynamic_pressure * wave_blend
 
-        # Recover total free-surface slope gradients (d_eta / dx, d_eta / dy)
-        nz_safe = np.maximum(wave.normal[..., 2], 1e-6)
-        dhdx_tot = -(wave.normal[..., 0] / nz_safe) * wave_blend
-        dhdy_tot = -(wave.normal[..., 1] / nz_safe) * wave_blend
+            # Recover total free-surface slope gradients (d_eta / dx, d_eta / dy)
+            nz_safe = np.maximum(wave.normal[..., 2], 1e-6)
+            dhdx_tot = -(wave.normal[..., 0] / nz_safe) * wave_blend
+            dhdy_tot = -(wave.normal[..., 1] / nz_safe) * wave_blend
+            has_slope = self.open_water.amp.size > 0
 
         # Overlay analytical Kelvin V-wake & heave rings strictly aft/outside hull center when underway
         wake = self._vessel_wake
-        if getattr(self.config, 'wake_enabled', True) and wake.get('active'):
-            wx, wy = float(wake['x']), float(wake['y'])
-            dx_w = xa - wx
-            dy_w = ya - wy
-            r_w = np.hypot(dx_w, dy_w)
-            w_mask = r_w < 115.0
-            if np.any(w_mask):
-                psi = float(wake['heading_rad'])
-                c_p, s_p = math.cos(psi), math.sin(psi)
-                # Track direction follows velocity vector when moving fast, else craft heading
-                spd = float(wake['speed_mps'])
-                if spd >= 0.4:
-                    u_dir = float(wake['vx_mps']) / spd
-                    v_dir = float(wake['vy_mps']) / spd
-                else:
-                    u_dir, v_dir = c_p, s_p
-                # s_aft > 0 behind stern; y_lat signed offset port/starboard from wake axis
-                s_aft = -(dx_w * u_dir + dy_w * v_dir)
-                y_lat = -dx_w * v_dir + dy_w * u_dir
-                s_abs = np.maximum(s_aft, 0.0)
+        if getattr(self.config, 'wake_enabled', True) and wake.get('active') and xa.size > 0:
+            spd = float(wake['speed_mps'])
+            draft_eff = max(float(wake['draft_m']), 0.15)
+            amp_k = min(0.36, 0.032 * draft_eff * spd * min(spd / 2.0, 1.0))
+            h_rate = float(wake['heave_rate_mps'])
+            amp_h = min(0.16, 0.055 * abs(h_rate)) * min(draft_eff / 0.25, 1.0)
+            if amp_k > 1e-4 or amp_h > 1e-4:
+                wx, wy = float(wake['x']), float(wake['y'])
+                if not (
+                    float(np.max(xa)) < wx - 115.0
+                    or float(np.min(xa)) > wx + 115.0
+                    or float(np.max(ya)) < wy - 115.0
+                    or float(np.min(ya)) > wy + 115.0
+                ):
+                    dx_w = xa - wx
+                    dy_w = ya - wy
+                    r_w_sq = dx_w * dx_w + dy_w * dy_w
+                    if np.any(r_w_sq < 13225.0):
+                        r_w = np.sqrt(r_w_sq)
+                        if amp_k > 1e-4:
+                            psi = float(wake['heading_rad'])
+                            c_p, s_p = math.cos(psi), math.sin(psi)
+                            # Track direction follows velocity vector when moving fast, else craft heading
+                            if spd >= 0.4:
+                                u_dir = float(wake['vx_mps']) / spd
+                                v_dir = float(wake['vy_mps']) / spd
+                            else:
+                                u_dir, v_dir = c_p, s_p
+                            # s_aft > 0 behind stern; y_lat signed offset port/starboard from wake axis
+                            s_aft = -(dx_w * u_dir + dy_w * v_dir)
+                            y_lat = -dx_w * v_dir + dy_w * u_dir
+                            s_abs = np.maximum(s_aft, 0.0)
 
-                # Smooth Kelvin 19.47 deg half-wedge window beginning behind midship (s_aft >= 0)
-                aft_gate = np.clip((s_aft - 0.8) / 2.2, 0.0, 1.0) * (1.0 - np.clip((s_aft - 80.0) / 30.0, 0.0, 1.0))
-                wedge_half = np.maximum(1.2, 0.36 * s_abs + 1.6)
-                in_wedge = np.exp(-0.5 * np.maximum(0.0, np.abs(y_lat) - 0.72 * wedge_half) ** 2 / np.maximum(0.18 * wedge_half, 1.2) ** 2)
-                g_val = float(self.config.g_m_s2)
-                draft_eff = max(float(wake['draft_m']), 0.15)
-                amp_k = min(0.36, 0.032 * draft_eff * spd * min(spd / 2.0, 1.0))
-                if amp_k > 1e-4:
-                    lam_k = max(4.5, min(28.0, 2.0 * math.pi * max(spd, 2.5) ** 2 / g_val))
-                    k_k = 2.0 * math.pi / lam_k
-                    phase_div = k_k * (s_abs - 2.35 * np.abs(y_lat)) - 0.65 * spd * t_eval
-                    phase_tr = k_k * s_abs - 0.55 * spd * t_eval
-                    env = aft_gate * in_wedge / np.sqrt(1.0 + 0.055 * s_abs) * wave_blend
-                    eta_wake = amp_k * env * (0.72 * np.cos(phase_div) + 0.28 * np.cos(phase_tr))
-                    eta_delta = eta_delta + eta_wake
-                    # Approximate slope gradient for tilted Kelvin facets
-                    d_phase_s = k_k * amp_k * env * (-0.72 * np.sin(phase_div) - 0.28 * np.sin(phase_tr))
-                    dhdx_tot = dhdx_tot + (-u_dir) * d_phase_s
-                    dhdy_tot = dhdy_tot + (-v_dir) * d_phase_s
-                    # Orbital velocity under Kelvin surface wave
-                    vel[..., 0] = vel[..., 0] + eta_wake * 0.65 * u_dir
-                    vel[..., 1] = vel[..., 1] + eta_wake * 0.65 * v_dir
+                            # Smooth Kelvin 19.47 deg half-wedge window beginning behind midship (s_aft >= 0)
+                            aft_gate = np.clip((s_aft - 0.8) / 2.2, 0.0, 1.0) * (1.0 - np.clip((s_aft - 80.0) / 30.0, 0.0, 1.0))
+                            wedge_half = np.maximum(1.2, 0.36 * s_abs + 1.6)
+                            in_wedge = np.exp(-0.5 * np.maximum(0.0, np.abs(y_lat) - 0.72 * wedge_half) ** 2 / np.maximum(0.18 * wedge_half, 1.2) ** 2)
+                            g_val = float(self.config.g_m_s2)
+                            lam_k = max(4.5, min(28.0, 2.0 * math.pi * max(spd, 2.5) ** 2 / g_val))
+                            k_k = 2.0 * math.pi / lam_k
+                            phase_div = k_k * (s_abs - 2.35 * np.abs(y_lat)) - 0.65 * spd * t_eval
+                            phase_tr = k_k * s_abs - 0.55 * spd * t_eval
+                            env = aft_gate * in_wedge / np.sqrt(1.0 + 0.055 * s_abs) * wave_blend
+                            eta_wake = amp_k * env * (0.72 * np.cos(phase_div) + 0.28 * np.cos(phase_tr))
+                            eta_delta = eta_delta + eta_wake
+                            if not eta_only:
+                                # Approximate slope gradient for tilted Kelvin facets
+                                d_phase_s = k_k * amp_k * env * (-0.72 * np.sin(phase_div) - 0.28 * np.sin(phase_tr))
+                                dhdx_tot = dhdx_tot + (-u_dir) * d_phase_s
+                                dhdy_tot = dhdy_tot + (-v_dir) * d_phase_s
+                                has_slope = True
+                                # Orbital velocity under Kelvin surface wave
+                                vel[..., 0] = vel[..., 0] + eta_wake * 0.65 * u_dir
+                                vel[..., 1] = vel[..., 1] + eta_wake * 0.65 * v_dir
 
-                # Circular heave radiation ring outside r > 1.8 m (eliminates self-excitation loop)
-                h_rate = float(wake['heave_rate_mps'])
-                amp_h = min(0.16, 0.055 * abs(h_rate)) * min(draft_eff / 0.25, 1.0)
-                if amp_h > 1e-4:
-                    outer = np.clip((r_w - 1.8) / 1.8, 0.0, 1.0) * (1.0 - np.clip((r_w - 35.0) / 15.0, 0.0, 1.0))
-                    eta_h = amp_h * outer * np.cos(0.95 * r_w - 3.6 * t_eval) / np.sqrt(1.0 + 0.12 * r_w) * wave_blend
-                    eta_delta = eta_delta + eta_h
+                        # Circular heave radiation ring outside r > 1.8 m (eliminates self-excitation loop)
+                        if amp_h > 1e-4:
+                            outer = np.clip((r_w - 1.8) / 1.8, 0.0, 1.0) * (1.0 - np.clip((r_w - 35.0) / 15.0, 0.0, 1.0))
+                            eta_h = amp_h * outer * np.cos(0.95 * r_w - 3.6 * t_eval) / np.sqrt(1.0 + 0.12 * r_w) * wave_blend
+                            eta_delta = eta_delta + eta_h
 
         # Overlay Burgers-Rott whirlpools (compact support strictly zero outside r_influence_m)
         wp_enabled = getattr(self.config, 'whirlpools_enabled', True)
         wp_intensity = max(0.0, float(getattr(self.config, 'whirlpool_intensity', 1.0)))
-        whirlpools = getattr(self.world, 'whirlpools', ()) if (wp_enabled and wp_intensity > 1e-4) else ()
+        whirlpools = getattr(self.world, 'whirlpools', ()) if (wp_enabled and wp_intensity > 1e-4 and xa.size > 0) else ()
         rho_w = float(self.config.rho_water_kg_m3)
         for wp in whirlpools:
             cx, cy = float(wp['x']), float(wp['y'])
             r_core = max(float(wp['r_core_m']), 1.0)
             r_infl = max(float(wp['r_influence_m']), r_core + 5.0)
+            if (
+                float(np.max(xa)) < cx - r_infl
+                or float(np.min(xa)) > cx + r_infl
+                or float(np.max(ya)) < cy - r_infl
+                or float(np.min(ya)) > cy + r_infl
+            ):
+                continue
             dx_v = xa - cx
             dy_v = ya - cy
-            r_v = np.hypot(dx_v, dy_v)
-            if not np.any(r_v < r_infl):
+            r_v_sq = dx_v * dx_v + dy_v * dy_v
+            if not np.any(r_v_sq < r_infl * r_infl):
                 continue
+            r_v = np.sqrt(r_v_sq)
             r_safe = np.maximum(r_v, 1e-3)
             xi = r_v / r_core
             # Smooth C^2 compact window: 1 in core, 0 for r >= r_infl
             tw = np.clip((r_v - 0.62 * r_infl) / (0.38 * r_infl), 0.0, 1.0)
             taper = (1.0 - tw * tw * (3.0 - 2.0 * tw)) * np.clip((h_swe - 0.15) / 0.5, 0.0, 1.0)
+
+            r_f = 1.45 * r_core
+            eta_wp = wp_intensity * float(wp['core_drop_m']) * np.exp(-0.5 * (r_v / r_f) ** 2) * taper
+            eta_delta = eta_delta + eta_wp
+            if eta_only:
+                continue
 
             spin = float(wp.get('spin', 1))
             v_theta = spin * wp_intensity * float(wp['max_swirl_mps']) * ((1.0 - np.exp(-(xi * xi))) / np.maximum(xi * 0.6382, 1e-3)) * taper
@@ -810,13 +852,11 @@ class HybridWaterField:
             vel[..., 1] = vel[..., 1] + uy_v
             vel[..., 2] = vel[..., 2] + w_down
 
-            # Funnel depression and analytical spatial slope
-            r_f = 1.45 * r_core
-            eta_wp = wp_intensity * float(wp['core_drop_m']) * np.exp(-0.5 * (r_v / r_f) ** 2) * taper
+            # Analytical spatial slope for funnel depression
             d_eta_dr = eta_wp * (-r_v / (r_f * r_f))
-            eta_delta = eta_delta + eta_wp
             dhdx_tot = dhdx_tot + np.where(r_v > 0.05, d_eta_dr * er_x, 0.0)
             dhdy_tot = dhdy_tot + np.where(r_v > 0.05, d_eta_dr * er_y, 0.0)
+            has_slope = True
 
             # Centripetal fluid acceleration a_c = -v_theta^2 / r * e_r
             ac_mag = np.where(r_v > 0.2, -(v_theta * v_theta) / r_safe, 0.0)
@@ -832,13 +872,28 @@ class HybridWaterField:
             bed,
         )
         depth_hybrid = np.maximum(0.0, eta_hybrid - bed)
+        wet_frac = np.clip(depth_hybrid / 0.04, 0.0, 1.0)
+
+        if eta_only:
+            empty = np.empty(0, dtype=np.float64)
+            return HybridWaterSample(
+                eta=eta_hybrid,
+                depth=depth_hybrid,
+                normal=empty,
+                velocity=empty,
+                acceleration=empty,
+                dynamic_pressure=empty,
+                wet_fraction=wet_frac,
+            )
 
         # Effective surface normal blends total free-surface slope in wet regions toward vertical when dry
-        norm = np.stack([-dhdx_tot, -dhdy_tot, np.ones_like(dhdx_tot)], axis=-1)
-        n_len = np.linalg.norm(norm, axis=-1, keepdims=True)
-        norm = norm / np.maximum(n_len, 1e-12)
+        if not has_slope:
+            norm = np.zeros(xa.shape + (3,), dtype=np.float64)
+            norm[..., 2] = 1.0
+        else:
+            inv_n = 1.0 / np.sqrt(dhdx_tot * dhdx_tot + dhdy_tot * dhdy_tot + 1.0)
+            norm = np.stack([-dhdx_tot * inv_n, -dhdy_tot * inv_n, inv_n], axis=-1)
 
-        wet_frac = np.clip(depth_hybrid / 0.04, 0.0, 1.0)
         return HybridWaterSample(
             eta=eta_hybrid,
             depth=depth_hybrid,
@@ -856,7 +911,7 @@ class HybridWaterField:
         xs = np.linspace(-hx, hx, int(nx), dtype=np.float64)
         ys = np.linspace(-hy, hy, int(ny), dtype=np.float64)
         xg, yg = np.meshgrid(xs, ys)
-        samp = self.evaluate(xg, yg, t=t)
+        samp = self.evaluate(xg, yg, t=t, eta_only=True)
         return {
             't': self.sim_time_s if t is None else float(t),
             'nx': int(nx),
