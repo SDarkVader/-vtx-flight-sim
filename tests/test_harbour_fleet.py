@@ -12,7 +12,10 @@ def harbour_world():
     variants = ["ricochet-concept-a", "ricochet-rc01-f03"]
     berths = []
     piers = []
-    for key, x, y in [("airport-landing", 50.0, 50.0), ("lantern-marina", 150.0, 150.0)]:
+    for key, x, y in [
+        ("airport-landing", 50.0, 50.0),
+        ("lantern-marina", 150.0, 150.0),
+    ]:
         bid = key + "-ricochet"
         berths.append(
             dict(
@@ -71,7 +74,9 @@ def test_two_actual_current_boats_native_json_restore_next_steps_exact():
         c.variant == "ricochet-concept-a" for c in fleet.crafts.values()
     )
     assert fleet.release("ricochet-airport")["ok"]
-    fleet.action("ricochet-airport", dict(throttle=0.12, rudder_deg=4.0, reverse_bucket=0.3))
+    fleet.action(
+        "ricochet-airport", dict(throttle=0.12, rudder_deg=4.0, reverse_bucket=0.3)
+    )
     fleet.select("ricochet-marina")
     for _ in range(7):
         fleet.step()
@@ -79,15 +84,24 @@ def test_two_actual_current_boats_native_json_restore_next_steps_exact():
     restored = HarbourFleet.restore(world, state)
     assert restored.selectedId == "ricochet-marina"
     assert restored.occupancy == fleet.occupancy and restored.moorings == fleet.moorings
-    assert restored.crafts["ricochet-airport"].command == fleet.crafts["ricochet-airport"].command
-    np.testing.assert_array_equal(fleet._integration_state(), restored._integration_state())
+    assert (
+        restored.crafts["ricochet-airport"].command
+        == fleet.crafts["ricochet-airport"].command
+    )
+    np.testing.assert_array_equal(
+        fleet._integration_state(), restored._integration_state()
+    )
     np.testing.assert_array_equal(fleet.water.shallow.h, restored.water.shallow.h)
     assert restored.water.wakes == fleet.water.wakes
     for _ in range(13):
         fleet.step()
         restored.step()
-        np.testing.assert_allclose(fleet.data.qpos, restored.data.qpos, atol=1e-13, rtol=0)
-        np.testing.assert_allclose(fleet.data.qvel, restored.data.qvel, atol=1e-12, rtol=0)
+        np.testing.assert_allclose(
+            fleet.data.qpos, restored.data.qpos, atol=1e-13, rtol=0
+        )
+        np.testing.assert_allclose(
+            fleet.data.qvel, restored.data.qvel, atol=1e-12, rtol=0
+        )
         np.testing.assert_array_equal(fleet.water.shallow.h, restored.water.shallow.h)
         np.testing.assert_array_equal(fleet.water.shallow.hu, restored.water.shallow.hu)
         assert fleet.occupancy == restored.occupancy
@@ -142,7 +156,7 @@ def test_explicit_historical_and_single_boat_identity_remain_exact():
     assert list(restored.crafts) == ["explicit-f03"]
     assert restored.crafts["explicit-f03"].variant == "ricochet-rc01-f03"
     assert restored.selectedId == "explicit-f03"
-    with pytest.raises(ValueError, match="Unsupported"):
+    with pytest.raises(ValueError, match="incompatible development dynamics"):
         HarbourFleet.restore(world, {"schema": "ricochet-1"})
 
 
@@ -168,12 +182,17 @@ def test_water_mask_two_wakes_reset_restore_and_reconfigure():
         )
     assert len(water.wakes) == 2
     state = json.loads(json.dumps(water.checkpoint_state()))
-    before = water.evaluate(np.array([-65.0, 35.0, 150.0]), np.array([50.0, 50.0, 150.0])).eta
+    before = water.evaluate(
+        np.array([-65.0, 35.0, 150.0]), np.array([50.0, 50.0, 150.0])
+    ).eta
     water.reset()
     assert not water.wakes
     water.restore_state(state)
     np.testing.assert_array_equal(
-        before, water.evaluate(np.array([-65.0, 35.0, 150.0]), np.array([50.0, 50.0, 150.0])).eta
+        before,
+        water.evaluate(
+            np.array([-65.0, 35.0, 150.0]), np.array([50.0, 50.0, 150.0])
+        ).eta,
     )
     water.reconfigure(dict(wind_speed_mps=1.0))
     water.step(DT)
@@ -196,4 +215,142 @@ def test_nonflat_bathymetry_matches_actual_mujoco_triangle_diagonal():
         (-50.0, 70.0),
         (10.0, -190.0),
     ]:
-        assert adapter.terrain_z(x, y) == pytest.approx(TestWorld.terrain_z(world, x, y), abs=1e-12)
+        assert adapter.terrain_z(x, y) == pytest.approx(
+            TestWorld.terrain_z(world, x, y), abs=1e-12
+        )
+
+
+def test_selected_cadence_is_fleet_only_and_checkpoint_phase_is_validated():
+    from vtx.harbour_fleet import CADENCE, HYDRO_STRIDE
+    from vtx.ricochet.plant import RicochetCraft, DT as ORIGINAL_DT
+
+    world = harbour_world()
+    fleet = HarbourFleet(world)
+    assert ORIGINAL_DT == RicochetCraft.DT == 0.0025
+    assert fleet.model.opt.timestep == DT == 0.01
+    assert all(
+        c.DT == c.model.opt.timestep == DT and c.hydro_stride == HYDRO_STRIDE == 5
+        for c in fleet.crafts.values()
+    )
+    original = RicochetCraft(
+        fleet.world, variant="ricochet-concept-a", hull_variant="concept_a"
+    )
+    assert original.model.opt.timestep == original.DT == 0.0025
+    for _ in range(17):
+        fleet.step()
+    state = fleet.serialize()
+    assert state["cadence"] == CADENCE and state["step_count"] == 17
+    assert fleet.water.shallow.t == pytest.approx(0.1)
+    assert fleet.water._swe_accum_s == pytest.approx(0.07)
+    before = fleet._integration_state().copy()
+    for edit in ("cadence", "counter", "boat_counter", "phase", "grid", "v1"):
+        bad = deepcopy(state)
+        if edit == "cadence":
+            bad["cadence"]["hydro_stride_steps"] = 4
+        elif edit == "counter":
+            bad["step_count"] += 1
+        elif edit == "boat_counter":
+            bad["boats"]["ricochet-airport"]["native"]["step_count"] += 1
+        elif edit == "phase":
+            bad["water"]["native"]["shallow"]["t"] += 0.01
+            bad["water"]["native"]["_swe_accum_s"] -= 0.01
+        elif edit == "grid":
+            bad["water"]["grid"]["origin_xy_m"][0] += 5
+        else:
+            bad["schema"] = "vtx-airport-harbour-fleet-v1"
+        with pytest.raises(ValueError):
+            HarbourFleet.restore(world, bad)
+        np.testing.assert_array_equal(before, fleet._integration_state())
+
+
+def test_interrupted_tick_cannot_be_saved_or_silently_continued(monkeypatch):
+    fleet = HarbourFleet(harbour_world())
+
+    def interrupted():
+        raise RuntimeError("injected interruption during force update")
+
+    monkeypatch.setattr(
+        fleet.crafts["ricochet-airport"], "_compute_aero_and_propulsion", interrupted
+    )
+    with pytest.raises(RuntimeError, match="injected"):
+        fleet.step()
+    with pytest.raises(ValueError, match="interrupted"):
+        fleet.serialize()
+    with pytest.raises(ValueError, match="interrupted"):
+        fleet.step()
+
+
+def test_disabled_shallow_water_checkpoint_keeps_scheduled_phase():
+    world = harbour_world()
+    fleet = HarbourFleet(
+        world,
+        water_config=dict(
+            water_level_m=7.0, wave_mode="still", shallow_water_enabled=False
+        ),
+    )
+    for _ in range(17):
+        fleet.step()
+    restored = HarbourFleet.restore(world, json.loads(json.dumps(fleet.serialize())))
+    for _ in range(14):
+        fleet.step()
+        restored.step()
+        np.testing.assert_array_equal(fleet.data.qpos, restored.data.qpos)
+        np.testing.assert_array_equal(fleet.water.shallow.h, restored.water.shallow.h)
+    assert restored.water.shallow.t == pytest.approx(0.3)
+    assert restored.water._swe_accum_s == pytest.approx(0.01)
+
+
+def test_airport_crop_keeps_global_lattice_and_offset_sample_impulses_exact():
+    from vtx.harbour_water import HarbourWorld, HarbourWater
+    from vtx.water.datum import WaterEnvironmentConfig
+    from vtx.water.shallow_water import ShallowWaterSolver
+    from vtx.world import TestWorld
+
+    source = TestWorld()
+    terrain = source.heights.copy()
+    world = HarbourWorld(source)
+    water = HarbourWater(world, WaterEnvironmentConfig(water_level_m=7.0))
+    s = water.shallow
+    grid = water.grid_identity
+    assert grid["shape"] == [127, 209]
+    assert grid["bounds_m"] == [-3040.0, 1120.0, -3020.0, -500.0]
+    assert grid["cell_spacing_m"] == [20.0, 20.0]
+    assert grid["origin_xy_m"] == [-960.0, -1760.0]
+    assert (s.half_x, s.half_y) == (2080.0, 1260.0)
+    np.testing.assert_array_equal(source.heights, terrain)
+    full = ShallowWaterSolver(world, water.config, nx=source.n, ny=source.n)
+    xx, yy = np.meshgrid(full.xs, full.ys)
+    mask = world.mask(xx, yy)
+    full.bed[~mask] = 27.0
+    full.reset(water_level_m=7.0)
+    j0, i0 = grid["slice_start"]
+    ny, nx = grid["shape"]
+    for x, y in [(157.0, -655.0), (853.0, -1223.0)]:
+        full.apply_momentum_impulse(x, y, 250.0, -80.0, DT)
+        s.apply_momentum_impulse(x, y, 250.0, -80.0, DT)
+    np.testing.assert_array_equal(s.hu, full.hu[j0 : j0 + ny, i0 : i0 + nx])
+    np.testing.assert_array_equal(s.hv, full.hv[j0 : j0 + ny, i0 : i0 + nx])
+    # Compare the gather with the previous full-grid masked interpolation.
+    rng = np.random.default_rng(57)
+    x = rng.uniform(-3000, 1100, 300)
+    y = rng.uniform(-3000, -520, 300)
+    fx = np.clip((x + full.half_x) / full.dx, 0, full.nx - 1.000001)
+    fy = np.clip((y + full.half_y) / full.dy, 0, full.ny - 1.000001)
+    ix = fx.astype(int)
+    iy = fy.astype(int)
+    tx = fx - ix
+    ty = fy - iy
+    ids = iy * full.nx + ix
+    ids = np.stack((ids, ids + 1, ids + full.nx, ids + full.nx + 1), axis=1)
+    weights = (
+        np.stack(((1 - tx) * (1 - ty), tx * (1 - ty), (1 - tx) * ty, tx * ty), axis=1)
+        * mask.ravel()[ids]
+    )
+    weights /= np.maximum(weights.sum(axis=1)[:, None], 1e-12)
+    expected = np.sum((full.bed + full.h).ravel()[ids] * weights, axis=1)
+    np.testing.assert_array_equal(s.sample(x, y, eta_only=True)[0], expected)
+    snapshot = water.elevation_grid(nx=7, ny=5)
+    assert (
+        snapshot["origin_xy_m"] == grid["origin_xy_m"]
+        and snapshot["bounds_m"] == grid["bounds_m"]
+    )

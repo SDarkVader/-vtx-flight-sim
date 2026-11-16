@@ -57,7 +57,9 @@ export function buildBoatRig(payload) {
   return {root, bodies, geometrySha256: payload.geometry_sha256};
 }
 
-export function applyBoatPoses(rig, poses) {
+const previousPosition = new THREE.Vector3(), previousRotation = new THREE.Quaternion();
+
+export function applyBoatPoses(rig, poses, previous = null, fraction = 1) {
   const missing = [];
   for (const [name, node] of rig.bodies) {
     const pose = poses?.[name], p = pose?.position || pose?.position_world_m, q = pose?.quaternion_wxyz;
@@ -65,6 +67,11 @@ export function applyBoatPoses(rig, poses) {
     node.visible = valid;
     if (!valid) {missing.push(name); continue;}
     node.position.set(...p); node.quaternion.set(q[1], q[2], q[3], q[0]).normalize();
+    const before = previous?.[name], bp = before?.position || before?.position_world_m, bq = before?.quaternion_wxyz;
+    if (fraction < 1 && finiteArray(bp, 3) && finiteArray(bq, 4) && Math.abs(Math.hypot(...bq) - 1) < .01) {
+      node.position.lerp(previousPosition.fromArray(bp), 1 - fraction);
+      node.quaternion.slerp(previousRotation.set(bq[1], bq[2], bq[3], bq[0]).normalize(), 1 - fraction);
+    }
   }
   return missing;
 }
@@ -133,13 +140,16 @@ export function buildHarbour(world, {fetchModel, onError = () => {}} = {}) {
       const previous = boats.get(boat.id); if (previous) disposeTree(previous.root);
       boats.set(boat.id, rig); root.add(rig.root);
       const current = latest.boats.find(b => b.id === boat.id);
-      applyBoatPoses(rig, current.body_poses); rig.root.visible = boatsVisible && !!latest?.available;
+      rig.poses = current.body_poses;
+      applyBoatPoses(rig, rig.poses); rig.root.visible = boatsVisible && !!latest?.available;
     } catch (error) {retryAt.set(boat.id, Date.now() + 5000); if (!disposed) onError(boat.id, error);}
     finally {if (pending.get(boat.id) === identity) pending.delete(boat.id);}
   };
   return {
     root, water, routes, boats, berthNodes, structureNodes,
-    update(state) {
+    update(state, {snap = false, now = performance.now()} = {}) {
+      const advancing = latest?.available && latest.generation === state?.generation &&
+        Number.isFinite(latest.t_s) && state?.t_s > latest.t_s;
       latest = state;
       if (Number.isFinite(state?.water_level_m)) {
         water.position.z = state.water_level_m; routes.position.z = state.water_level_m - harbour.waterLevelM;
@@ -156,9 +166,23 @@ export function buildHarbour(world, {fetchModel, onError = () => {}} = {}) {
         const rig = boats.get(boat.id), identity = boatIdentity(boat);
         if (!state.available) {if (rig) rig.root.visible = false; continue;}
         if (!rig || rig.identity !== identity) {if (rig) rig.root.visible = false; void load(boat);}
-        else {rig.missingBodies = applyBoatPoses(rig, boat.body_poses); rig.root.visible = boatsVisible && state.available;}
+        else {
+          const interval = now - rig.receivedAt;
+          rig.previous = !snap && advancing && interval > 0 && interval < 300 ? rig.poses : null;
+          rig.poses = boat.body_poses; rig.receivedAt = now; rig.interval = interval;
+          rig.missingBodies = applyBoatPoses(rig, rig.poses, rig.previous, rig.previous ? 0 : 1);
+          rig.root.visible = boatsVisible && state.available;
+        }
       }
       for (const [id, mark] of berthNodes) mark.material.color.set(state?.occupancy?.[id] ? '#e5b56d' : '#8ce3c8');
+    },
+    animate(now) {
+      for (const rig of boats.values()) {
+        if (!rig.previous || !rig.root.visible) continue;
+        const fraction = THREE.MathUtils.clamp((now - rig.receivedAt) / rig.interval, 0, 1);
+        applyBoatPoses(rig, rig.poses, rig.previous, fraction);
+        if (fraction === 1) rig.previous = null;
+      }
     },
     setBoatsVisible(visible) {boatsVisible = visible; for (const rig of boats.values()) rig.root.visible = visible && !!latest?.available;},
     setRoutesVisible(visible) {routes.visible = !!visible;},
@@ -249,13 +273,13 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     el('telemetry').textContent = boat ? `${boat.name || boat.id} · ${Number.isFinite(boat.speed_mps) ? boat.speed_mps.toFixed(2) + ' m/s' : 'speed unavailable'} · ${boat.dockedAt ? 'Moored at ' + (state.berths?.find(b => b.id === boat.dockedAt)?.name || boat.dockedAt) : 'Under way'}` : 'No boat selected.';
     el('status').textContent = !enabled ? 'Boat controls are unavailable in this view.' : state?.error ? 'Harbour stopped: ' + state.error : Date.now() - lastSuccess >= 2000 && state?.initialized ? 'Harbour data is stale. Controls unavailable.' : status || (state?.initialized ? 'Boat positions and moorings are retained when you switch boats.' : 'Initialize the two boats to use the harbour.');
   };
-  const refresh = async () => {
+  const refresh = async ({snap = false} = {}) => {
     if (!enabled || !world?.harbour || disposed) return;
     const ticket = ++revision; pendingGets++;
     try {
       const next = await api('/api/harbour');
       if (ticket !== revision || disposed || !enabled) return;
-      state = next; lastSuccess = Date.now(); onState(state); render();
+      state = next; lastSuccess = Date.now(); onState(state, {snap}); render();
     } catch (error) {
       if (ticket === revision) {status = 'Harbour unavailable: ' + error.message; render();}
     } finally {pendingGets--;}
@@ -269,11 +293,14 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
         const response = await api('/api/harbour/action', payload);
         if (response?.ok === false) throw Error(response.reason || 'Harbour action refused');
         status = response?.reason || ({save: 'Harbour saved.', restore: 'Saved harbour restored.', dock: 'Mooring secured.', undock: 'Mooring released.'}[payload.action] || '');
-        await refresh();
+        await refresh({snap: payload.action === 'restore' || payload.action === 'dock'});
       } catch (error) {status = error.message; toast(error.message);}
       finally {pendingActions--; render();}
     });
     return chain;
+  };
+  const discardHelm = () => {
+    clearTimeout(helmTimer); helmTimer = null; helmPatch = {}; helmBoat = null; dirty.clear();
   };
   const flushHelm = () => {
     clearTimeout(helmTimer); helmTimer = null;
@@ -289,7 +316,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     if (helmBoat && helmBoat !== boat.id) flushHelm();
     const key = input.dataset.command; helmBoat = boat.id; helmPatch[key] = Number(input.value); dirty.set(key, (dirty.get(key) || 0) + 1);
     panel.querySelector(`[data-value="${key}"]`).textContent = format(key, Number(input.value));
-    clearTimeout(helmTimer); helmTimer = setTimeout(flushHelm, 60);
+    if (helmTimer === null) helmTimer = setTimeout(flushHelm, 60);
   });
   el('boat').addEventListener('change', () => {flushHelm(); if (el('boat').value) void send({action: 'select', boatId: el('boat').value});});
   el('berth').addEventListener('change', render);
@@ -298,7 +325,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
   el('undock').addEventListener('click', () => void send({action: 'undock', boatId: state.selectedId}));
   el('cut').addEventListener('click', () => {flushHelm(); void send({action: 'command', boatId: state.selectedId, command: {throttle: 0}});});
   el('save').addEventListener('click', () => {flushHelm(); void send({action: 'save'});});
-  el('restore').addEventListener('click', () => {clearTimeout(helmTimer); helmPatch = {}; helmBoat = null; dirty.clear(); void send({action: 'restore'});});
+  el('restore').addEventListener('click', () => {discardHelm(); void send({action: 'restore'});});
   el('focus').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat');});
   el('lake').addEventListener('click', () => {
     const h = world.harbour; onFocus([...harbourWorldPoint(h, [2200, 1300]), h.waterLevelM], 'harbour');
@@ -306,11 +333,14 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
   el('routes').addEventListener('change', () => onRoutes(el('routes').checked));
   panel.addEventListener('keydown', event => event.stopPropagation());
   panel.addEventListener('keyup', event => event.stopPropagation());
-  const timer = setInterval(() => {if (!pendingGets && !pendingActions) void refresh(); if (state && Date.now() - lastSuccess >= 2000) {onState({...state, available: false}); render();}}, 300);
+  const timer = setInterval(() => {
+    if (!pendingGets && !pendingActions && (state?.initialized || Date.now() - lastSuccess >= 1000)) void refresh();
+    if (state && Date.now() - lastSuccess >= 2000) {onState({...state, available: false}); render();}
+  }, 100);
   return {
     panel, refresh, get state() {return enabled && Date.now() - lastSuccess < 2000 ? state : null;},
-    setWorld(next) {worldEpoch++; revision++; clearTimeout(helmTimer); helmPatch = {}; helmBoat = null; dirty.clear(); world = next; state = null; status = ''; lastSuccess = 0; onRoutes(el('routes').checked); render(); if (enabled) void refresh();},
-    setEnabled(next) {if (enabled === !!next) return; enabled = !!next; revision++; if (!enabled) {worldEpoch++; clearTimeout(helmTimer); helmPatch = {}; helmBoat = null; dirty.clear(); onState(null);} else void refresh(); render();},
+    setWorld(next) {worldEpoch++; revision++; discardHelm(); world = next; state = null; status = ''; lastSuccess = 0; onRoutes(el('routes').checked); render(); if (enabled) void refresh();},
+    setEnabled(next) {if (enabled === !!next) return; enabled = !!next; revision++; if (!enabled) {worldEpoch++; discardHelm(); onState(null);} else void refresh(); render();},
     dispose() {disposed = true; revision++; clearInterval(timer); clearTimeout(helmTimer); panel.remove();},
   };
 }

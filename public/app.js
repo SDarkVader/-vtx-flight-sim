@@ -20,7 +20,7 @@ import {buildSky} from './vtx-env/sky.js?v=1';
 import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
 import {buildAirfield} from './vtx-env/airfield.js?v=20261116-runway-1';
-import {buildHarbour,createHarbourControls,harbourOverviewView} from './vtx-env/harbour.js?v=20261116-harbour-1';
+import {buildHarbour,createHarbourControls,harbourOverviewView} from './vtx-env/harbour.js?v=20261116-harbour-2';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=phantom-no-white-exterior-lenses-20261113';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
@@ -200,19 +200,21 @@ $('airport-camera').onchange=()=>{const mode=$('airport-camera').value;if(mode==
 const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);post?.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 const worldGroup=new THREE.Group();worldGroup.name='vtx-world';scene.add(worldGroup);
-let harbourLayer=null,harbourOverviewState=null;
+let harbourLayer=null,harbourOverviewState=null,harbourViewActive=false;
 function restoreHarbourOverview(){
+ harbourViewActive=false;
  if(!harbourOverviewState)return;
  const saved=harbourOverviewState;harbourOverviewState=null;
  if(saved.fog)Object.assign(saved.fog,saved.fogValues);
  camera.near=saved.near;camera.far=saved.far;camera.updateProjectionMatrix();
 }
 const harbourControls=createHarbourControls({host:document.querySelector('.mission-panel'),api,toast,
- onState:state=>{harbourLayer?.update(state);drawMaps(true);},
+ onState:(state,options)=>{harbourLayer?.update(state,options);drawMaps();},
  onRoutes:visible=>harbourLayer?.setRoutesVisible(visible),
  onFocus:(point,kind)=>{
   if(!point?.every(Number.isFinite))return;
   setCameraMode('free');
+  harbourViewActive=true;
   const [x,y,z]=point;
   if(kind==='harbour'&&world?.harbour){
    const view=harbourOverviewView(world.harbour,camera),fog=scene.fog;
@@ -1126,8 +1128,16 @@ api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
 if(new URLSearchParams(location.search).has('debug'))window.__vtx={post,timeOfDay,scene,worldGroup,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,switchEnvironment,get currentEnvironment(){return currentEnvironment;},get model(){return model;},get loadedAsset(){return loadedAsset;},get modelReady(){return modelReady;},get last(){return last;},get world(){return world;},get harbourState(){return harbourControls.state;},get harbourLayer(){return harbourLayer;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
-function animate(){requestAnimationFrame(animate);if(document.hidden)return;const now=performance.now();if(now-lastFrameMs<(lightweightView?67:(quality.frameMs??50)))return;lastFrameMs=now;const truth=replayFrames?replayFrames[replayFrame]:last?.rendering_truth;
+function animate(){
+ requestAnimationFrame(animate);
+ if(document.hidden)return;
+ const now=performance.now();
+ const frameMs=lightweightView?67:(quality.frameMs??(harbourViewActive&&quality.name==='high'?15:50));
+ if(now-lastFrameMs<frameMs)return;
+ lastFrameMs=now;
+ const truth=replayFrames?replayFrames[replayFrame]:last?.rendering_truth;
  harbourControls.setEnabled(!!world?.harbour&&!replayFrames&&!worldUnavailable);
+ if(!replayFrames)harbourLayer?.animate(now);
  if(replayFrames)showAttitude(truth,'REPLAY');
  const frameDt=rideLastFrame?Math.min(.25,(now-rideLastFrame)/1000):0;
  rideLastFrame=now;

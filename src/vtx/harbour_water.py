@@ -5,12 +5,16 @@ from copy import deepcopy
 from dataclasses import replace
 import hashlib
 import json
+import math
 import threading
 import types
 import numpy as np
 
 from .water.shallow_water import HybridWaterField
 from .water.datum import WaterEnvironmentConfig
+
+SWE_INTERVAL_S = 0.1
+DRY_HALO_CELLS = 3
 
 
 def contains(points, ring):
@@ -77,7 +81,11 @@ class HarbourWorld:
                     dict(
                         id=f"{access['id']}-{i}",
                         center=[*self.to_world((a + b) / 2), level + 0.6],
-                        half_extents=[float(np.linalg.norm(delta)) / 2, access["width"] / 2, 0.6],
+                        half_extents=[
+                            float(np.linalg.norm(delta)) / 2,
+                            access["width"] / 2,
+                            0.6,
+                        ],
                         yaw_deg=-np.degrees(np.arctan2(delta[1], delta[0])),
                         collidable=True,
                     )
@@ -93,7 +101,9 @@ class HarbourWorld:
             obstacles=self.obstacles,
         )
         digest = hashlib.sha256(
-            json.dumps(meta, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+            json.dumps(
+                meta, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode()
         )
         digest.update(np.ascontiguousarray(self.heights, dtype="<f8").tobytes())
         self.fingerprint = digest.hexdigest()
@@ -106,7 +116,9 @@ class HarbourWorld:
         source_mask = getattr(self.source, "harbour_water_mask", None)
         if callable(source_mask):
             return np.asarray(source_mask(x, y), dtype=bool)
-        x, y = np.broadcast_arrays(np.asarray(x, dtype=float), np.asarray(y, dtype=float))
+        x, y = np.broadcast_arrays(
+            np.asarray(x, dtype=float), np.asarray(y, dtype=float)
+        )
         shape = x.shape
         origin = self.harbour["origin"]
         points = np.column_stack((x.ravel() - origin[0], origin[1] - y.ravel()))
@@ -116,15 +128,21 @@ class HarbourWorld:
             ring = np.asarray(island["ring"])
             lo = ring.min(axis=0)
             hi = ring.max(axis=0)
-            ids = np.flatnonzero(wet & np.all(points >= lo, axis=1) & np.all(points <= hi, axis=1))
+            ids = np.flatnonzero(
+                wet & np.all(points >= lo, axis=1) & np.all(points <= hi, axis=1)
+            )
             if len(ids):
                 wet[ids] &= ~contains(points[ids], ring)
         return wet.reshape(shape)
 
     def terrain_z_array(self, x, y):
         x, y = np.broadcast_arrays(np.asarray(x, float), np.asarray(y, float))
-        u = np.clip((x + self.half) / (2 * self.half) * (self.n - 1), 0, self.n - 1.000001)
-        v = np.clip((y + self.half) / (2 * self.half) * (self.n - 1), 0, self.n - 1.000001)
+        u = np.clip(
+            (x + self.half) / (2 * self.half) * (self.n - 1), 0, self.n - 1.000001
+        )
+        v = np.clip(
+            (y + self.half) / (2 * self.half) * (self.n - 1), 0, self.n - 1.000001
+        )
         i = u.astype(int)
         j = v.astype(int)
         a = u - i
@@ -146,34 +164,97 @@ class HarbourWater(HybridWaterField):
     def __init__(self, world, config):
         self._guard = threading.RLock()
         self.wakes = {}
-        super().__init__(world, config, swe_nx=world.n, swe_ny=world.n)
+        super().__init__(
+            world,
+            config,
+            swe_nx=world.n,
+            swe_ny=world.n,
+            swe_step_interval_s=SWE_INTERVAL_S,
+        )
         xx, yy = np.meshgrid(self.shallow.xs, self.shallow.ys)
         self.grid_mask = world.mask(xx, yy)
         self.shallow.bed[~self.grid_mask] = float(config.water_level_m) + 20.0
+        self._crop_to_basin()
         self.shallow._harbour_mask = self.grid_mask
         self.shallow.sample = types.MethodType(self._sample, self.shallow)
+        self.shallow.apply_momentum_impulse = types.MethodType(
+            self._impulse, self.shallow
+        )
         self.reset(water_level_m=config.water_level_m)
+
+    def _crop_to_basin(self):
+        """Keep the original cell spacing/lattice and an inactive shore halo.
+
+        The full Airport collision heightfield is unchanged. Only work on dry
+        water cells far beyond the basin is removed from the marine solver.
+        """
+        s = self.shallow
+        rows, columns = np.where(self.grid_mask)
+        if not len(rows):
+            raise ValueError("Harbour has no wet water-solver cells")
+        global_nx, global_ny = s.nx, s.ny
+        j0 = max(0, int(rows.min()) - DRY_HALO_CELLS)
+        j1 = min(s.ny, int(rows.max()) + DRY_HALO_CELLS + 1)
+        i0 = max(0, int(columns.min()) - DRY_HALO_CELLS)
+        i1 = min(s.nx, int(columns.max()) + DRY_HALO_CELLS + 1)
+        s._global_nx, s._global_ny = global_nx, global_ny
+        s._global_half_x, s._global_half_y = s.half_x, s.half_y
+        s._crop_i0, s._crop_j0 = i0, j0
+        for key in ("h", "hu", "hv", "bed"):
+            setattr(s, key, getattr(s, key)[j0:j1, i0:i1].copy())
+        s.xs = s.xs[i0:i1].copy()
+        s.ys = s.ys[j0:j1].copy()
+        s.nx = i1 - i0
+        s.ny = j1 - j0
+        s.half_x = float((s.xs[-1] - s.xs[0]) / 2)
+        s.half_y = float((s.ys[-1] - s.ys[0]) / 2)
+        s.origin_x = float((s.xs[0] + s.xs[-1]) / 2)
+        s.origin_y = float((s.ys[0] + s.ys[-1]) / 2)
+        self.grid_mask = self.grid_mask[j0:j1, i0:i1].copy()
+        self.grid_identity = dict(
+            scheme="airport-global-lattice-crop-v1",
+            global_shape=[global_ny, global_nx],
+            global_half_m=[s._global_half_x, s._global_half_y],
+            slice_start=[j0, i0],
+            shape=[s.ny, s.nx],
+            cell_spacing_m=[s.dx, s.dy],
+            origin_xy_m=[s.origin_x, s.origin_y],
+            bounds_m=[float(s.xs[0]), float(s.xs[-1]), float(s.ys[0]), float(s.ys[-1])],
+            dry_halo_cells=DRY_HALO_CELLS,
+        )
 
     @staticmethod
     def _sample(s, x, y, eta_only=False):
         x, y = np.broadcast_arrays(np.asarray(x, float), np.asarray(y, float))
         shape = x.shape
-        fx = np.clip((x.ravel() + s.half_x) / s.dx, 0, s.nx - 1.000001)
-        fy = np.clip((y.ravel() + s.half_y) / s.dy, 0, s.ny - 1.000001)
-        ix = fx.astype(int)
-        iy = fy.astype(int)
-        tx = fx - ix
-        ty = fy - iy
+        fx = np.clip((x.ravel() + s._global_half_x) / s.dx, 0, s._global_nx - 1.000001)
+        fy = np.clip((y.ravel() + s._global_half_y) / s.dy, 0, s._global_ny - 1.000001)
+        gx = fx.astype(int)
+        gy = fy.astype(int)
+        tx = fx - gx
+        ty = fy - gy
+        ix = gx - s._crop_i0
+        iy = gy - s._crop_j0
+        valid = (ix >= 0) & (ix < s.nx - 1) & (iy >= 0) & (iy < s.ny - 1)
+        ix = np.clip(ix, 0, s.nx - 2)
+        iy = np.clip(iy, 0, s.ny - 2)
         ids = iy * s.nx + ix
         ids = np.stack((ids, ids + 1, ids + s.nx, ids + s.nx + 1), axis=1)
         weights = (
-            np.stack(((1 - tx) * (1 - ty), tx * (1 - ty), (1 - tx) * ty, tx * ty), axis=1)
+            np.stack(
+                ((1 - tx) * (1 - ty), tx * (1 - ty), (1 - tx) * ty, tx * ty), axis=1
+            )
             * s._harbour_mask.ravel()[ids]
+            * valid[:, None]
         )
         weights /= np.maximum(weights.sum(axis=1)[:, None], 1e-12)
         interp = lambda a: np.sum(a.ravel()[ids] * weights, axis=1).reshape(shape)
         h = interp(s.h)
-        eta = interp(s.bed + s.h)
+        # Gather first: exact same per-cell addition/reduction, without making
+        # a whole-grid temporary for each small hull sample.
+        eta = np.sum((s.bed.ravel()[ids] + s.h.ravel()[ids]) * weights, axis=1).reshape(
+            shape
+        )
         if eta_only:
             return eta, h, np.empty(0), np.empty(0)
         return (
@@ -182,6 +263,55 @@ class HarbourWater(HybridWaterField):
             np.where(h > s.h_vel_damp, interp(s.hu) / np.maximum(h, s.h_vel_damp), 0),
             np.where(h > s.h_vel_damp, interp(s.hv) / np.maximum(h, s.h_vel_damp), 0),
         )
+
+    @staticmethod
+    def _impulse(s, cx, cy, fx_n, fy_n, dt, radius_m=5.0):
+        """Original PR momentum equation on the unchanged global cell lattice."""
+        if (
+            dt <= 0
+            or not s.config.shallow_water_enabled
+            or abs(fx_n) + abs(fy_n) < 1e-3
+        ):
+            return
+        sigma = max(float(radius_m), 0.75 * max(s.dx, s.dy))
+        span = 3 * sigma
+        ix0 = max(
+            0, int(math.floor((cx - span + s._global_half_x) / s.dx)) - s._crop_i0
+        )
+        ix1 = min(
+            s.nx, int(math.ceil((cx + span + s._global_half_x) / s.dx)) + 1 - s._crop_i0
+        )
+        iy0 = max(
+            0, int(math.floor((cy - span + s._global_half_y) / s.dy)) - s._crop_j0
+        )
+        iy1 = min(
+            s.ny, int(math.ceil((cy + span + s._global_half_y) / s.dy)) + 1 - s._crop_j0
+        )
+        if ix1 <= ix0 or iy1 <= iy0:
+            return
+        h = s.h[iy0:iy1, ix0:ix1]
+        wet = h > s.h_vel_damp
+        if not np.any(wet):
+            return
+        xg, yg = np.meshgrid(s.xs[ix0:ix1], s.ys[iy0:iy1])
+        r2 = ((xg - cx) ** 2 + (yg - cy) ** 2) / (sigma * sigma)
+        weights = np.where(wet, np.exp(-0.5 * r2), 0.0)
+        total = float(np.sum(weights))
+        if total <= 1e-12:
+            return
+        rho = max(float(s.config.rho_water_kg_m3), 100.0)
+        g = float(s.config.g_m_s2)
+        scale = float(dt) / (rho * total * s.cell_area)
+        hu = s.hu[iy0:iy1, ix0:ix1] + float(fx_n) * scale * weights
+        hv = s.hv[iy0:iy1, ix0:ix1] + float(fy_n) * scale * weights
+        max_q = np.where(
+            wet, h * np.minimum(5.5, 0.55 * np.sqrt(g * np.maximum(h, 0.0))), 0.0
+        )
+        magnitude = np.hypot(hu, hv)
+        cap = np.where(magnitude > max_q, max_q / np.maximum(magnitude, 1e-12), 1.0)
+        s.hu[iy0:iy1, ix0:ix1] = np.where(wet, hu * cap, 0.0)
+        s.hv[iy0:iy1, ix0:ix1] = np.where(wet, hv * cap, 0.0)
+        s._state_version += 1
 
     def _enforce(self):
         if hasattr(self, "grid_mask"):
@@ -197,6 +327,10 @@ class HarbourWater(HybridWaterField):
     def step(self, dt):
         with self._guard:
             super().step(dt)
+            # The original SWE intentionally skips advancement when disabled.
+            # Retain a consistent scheduled clock without evolving its arrays.
+            if not self.config.shallow_water_enabled:
+                self.shallow.t = self.sim_time_s - self._swe_accum_s
             self._enforce()
 
     def apply_for(self, vessel_id, **kwargs):
@@ -220,7 +354,8 @@ class HarbourWater(HybridWaterField):
             slope = (
                 None
                 if eta_only
-                else -base.normal[..., :2] / np.maximum(base.normal[..., 2, None], 1e-12)
+                else -base.normal[..., :2]
+                / np.maximum(base.normal[..., 2, None], 1e-12)
             )
             if self.config.wake_enabled:
                 for wake in self.wakes.values():
@@ -235,17 +370,23 @@ class HarbourWater(HybridWaterField):
                         pressure += sample.dynamic_pressure - base.dynamic_pressure
                         slope += -sample.normal[..., :2] / np.maximum(
                             sample.normal[..., 2, None], 1e-12
-                        ) + base.normal[..., :2] / np.maximum(base.normal[..., 2, None], 1e-12)
+                        ) + base.normal[..., :2] / np.maximum(
+                            base.normal[..., 2, None], 1e-12
+                        )
             self._vessel_wake = self._default_wake_state()
             wet = self.world.mask(x, y)
             bed = self.world.terrain_z_array(x, y)
             eta = np.where(wet, np.maximum(eta, bed), bed)
             depth = np.where(wet, np.maximum(eta - bed, 0), 0)
             changes = dict(
-                eta=eta, depth=depth, wet_fraction=np.where(wet, np.clip(depth / 0.04, 0, 1), 0)
+                eta=eta,
+                depth=depth,
+                wet_fraction=np.where(wet, np.clip(depth / 0.04, 0, 1), 0),
             )
             if not eta_only:
-                normal = np.concatenate((-slope, np.ones(slope.shape[:-1] + (1,))), axis=-1)
+                normal = np.concatenate(
+                    (-slope, np.ones(slope.shape[:-1] + (1,))), axis=-1
+                )
                 normal /= np.linalg.norm(normal, axis=-1)[..., None]
                 changes.update(
                     normal=normal,
@@ -258,23 +399,61 @@ class HarbourWater(HybridWaterField):
     def checkpoint_state(self):
         with self._guard:
             return dict(
-                schema="airport-harbour-water-v1",
+                schema="airport-harbour-water-v2",
                 world_sha256=self.world.fingerprint,
+                grid=deepcopy(self.grid_identity),
                 native=super().checkpoint_state(),
                 wakes=deepcopy(self.wakes),
+            )
+
+    def elevation_grid(self, nx=81, ny=49, t=None):
+        """Publish actual world bounds for the offset water-solver domain."""
+        if (
+            type(nx) is not int
+            or type(ny) is not int
+            or not 2 <= nx <= 401
+            or not 2 <= ny <= 401
+        ):
+            raise ValueError(
+                "Harbour elevation grid dimensions must be integers from 2 to 401"
+            )
+        with self._guard:
+            s = self.shallow
+            xx, yy = np.meshgrid(
+                np.linspace(s.xs[0], s.xs[-1], nx), np.linspace(s.ys[0], s.ys[-1], ny)
+            )
+            sample = self.evaluate(xx, yy, t=t, eta_only=True)
+            return dict(
+                t=self.sim_time_s if t is None else float(t),
+                nx=nx,
+                ny=ny,
+                half_x=s.half_x,
+                half_y=s.half_y,
+                origin_xy_m=[s.origin_x, s.origin_y],
+                bounds_m=deepcopy(self.grid_identity["bounds_m"]),
+                water_level_m=float(self.config.water_level_m),
+                eta=np.round(sample.eta, 3).tolist(),
+                depth=np.round(sample.depth, 3).tolist(),
             )
 
     def restore_state(self, state):
         # Called only on a fresh unpublished fleet, never on an active instance.
         if (
-            state.get("schema") != "airport-harbour-water-v1"
+            not isinstance(state, dict)
+            or state.get("schema") != "airport-harbour-water-v2"
             or state.get("world_sha256") != self.world.fingerprint
         ):
             raise ValueError("Harbour water environment differs from saved state")
+        if state.get("grid") != self.grid_identity:
+            raise ValueError("Harbour water grid/dynamics differ from saved state")
         json.dumps(state, allow_nan=False)
         native = state.get("native")
         wakes = state.get("wakes")
-        if not isinstance(native, dict) or not isinstance(wakes, dict) or len(wakes) > 4:
+        if (
+            not isinstance(native, dict)
+            or not isinstance(wakes, dict)
+            or len(wakes) > 4
+        ):
             raise ValueError("Invalid harbour water checkpoint")
         for key in ("sim_time_s", "_swe_accum_s", "swe_step_interval_s"):
             value = native.get(key)
@@ -282,18 +461,26 @@ class HarbourWater(HybridWaterField):
                 isinstance(value, bool)
                 or not isinstance(value, (int, float))
                 or not np.isfinite(value)
-                or value < 0
+                or value < -1e-10
             ):
                 raise ValueError("Invalid water clock " + key)
         if (
-            native["swe_step_interval_s"] < 0.0025
+            abs(native["swe_step_interval_s"] - SWE_INTERVAL_S) > 1e-15
             or native["_swe_accum_s"] >= native["swe_step_interval_s"] + 1e-9
         ):
             raise ValueError("Invalid water integration phase")
         shallow = native.get("shallow")
-        if not isinstance(shallow, dict) or shallow.get("config") != native.get("config"):
+        if not isinstance(shallow, dict) or shallow.get("config") != native.get(
+            "config"
+        ):
             raise ValueError("Inconsistent shallow-water configuration")
-        for key in ("t", "water_level_m", "initial_volume_m3", "_expected_volume_m3", "manning_n"):
+        for key in (
+            "t",
+            "water_level_m",
+            "initial_volume_m3",
+            "_expected_volume_m3",
+            "manning_n",
+        ):
             value = shallow.get(key)
             if (
                 isinstance(value, bool)
@@ -301,11 +488,22 @@ class HarbourWater(HybridWaterField):
                 or not np.isfinite(value)
             ):
                 raise ValueError("Invalid shallow-water scalar " + key)
+        if abs(
+            shallow["t"] + native["_swe_accum_s"] - native["sim_time_s"]
+        ) > 1e-8 + 2e-9 * abs(native["sim_time_s"]):
+            raise ValueError("Water checkpoint clock/phase mismatch")
+        if (
+            type(shallow.get("substep_count")) is not int
+            or shallow["substep_count"] < 0
+        ):
+            raise ValueError("Invalid shallow-water integration counter")
         for key in ("h", "hu", "hv"):
             array = np.asarray(shallow.get(key), dtype=float)
             if array.shape != self.grid_mask.shape or not np.isfinite(array).all():
                 raise ValueError("Invalid water array " + key)
-            if np.any(array[~self.grid_mask] != 0) or (key == "h" and np.any(array < 0)):
+            if np.any(array[~self.grid_mask] != 0) or (
+                key == "h" and np.any(array < 0)
+            ):
                 raise ValueError("Checkpoint contains water outside its basin")
         default = self._default_wake_state()
         if native.get("_vessel_wake") != default:

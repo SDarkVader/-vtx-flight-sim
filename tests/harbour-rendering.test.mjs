@@ -50,6 +50,21 @@ resolve(payload); await new Promise(r => setTimeout(r, 0)); assert.equal(layer.b
 layer.update({available: true, boats: [boat], structures: [{id: 'pier', center: [110, -220, 7.6], half_extents: [5, 1, .6], yaw_deg: -90}], water_level_m: 7});
 assert.deepEqual(layer.structureNodes.get('pier').position.toArray(), [110, -220, 7.6]);
 assert.deepEqual(layer.structureNodes.get('pier').scale.toArray(), [10, 2, 1.2], 'structure renderer must use authoritative physical extents');
+const sample = (time, x) => ({
+  available: true, t_s: time,
+  boats: [{...boat, body_poses: {rudder: {position: [x, 20, 7], quaternion_wxyz: [1, 0, 0, 0]}}}]
+});
+const rudder = layer.boats.get('actual').bodies.get('rudder');
+layer.update(sample(1, 10), {now: 1000});
+layer.update(sample(1.1, 12), {now: 1100});
+layer.animate(1150);
+assert.equal(rudder.position.x, 11, 'draw intermediate positions between measured boat snapshots');
+layer.animate(1400);
+assert.equal(rudder.position.x, 12, 'never extrapolate beyond the last physical sample');
+layer.update(sample(.5, 8), {now: 1410});
+assert.equal(rudder.position.x, 8, 'restoring an earlier simulation time must snap to the saved boat');
+layer.update(sample(2, 13), {now: 1460, snap: true});
+assert.equal(rudder.position.x, 13, 'an explicit restore must also snap when its saved time is newer');
 layer.update({available: true, boats: [{...boat, body_poses: {}}]}); assert.equal(layer.boats.get('actual').bodies.get('rudder').visible, false);
 layer.update({available: false, boats: [boat]}); assert.equal(layer.boats.get('actual').root.visible, false, 'stale fleet cannot appear current');
 layer.dispose();

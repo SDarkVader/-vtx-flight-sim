@@ -19,8 +19,17 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import mujoco as mj
 
-DT = 0.0025
-SCHEMA = "vtx-airport-harbour-fleet-v1"
+DT = 0.01
+HYDRO_STRIDE = 5
+CADENCE = dict(
+    rigid_hz=100,
+    rigid_dt_s=DT,
+    hydro_hz=20,
+    hydro_stride_steps=HYDRO_STRIDE,
+    swe_hz=10,
+    swe_interval_s=0.1,
+)
+SCHEMA = "vtx-airport-harbour-fleet-v2"
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -53,7 +62,9 @@ def _unpack(value):
 def dependency_fingerprint():
     source = Path(__file__).parent
     paths = [Path(__file__), source / "harbour_water.py"]
-    paths += list((source / "ricochet").glob("*.py")) + list((source / "water").glob("*.py"))
+    paths += list((source / "ricochet").glob("*.py")) + list(
+        (source / "water").glob("*.py")
+    )
     paths += [
         ROOT / "experiments/ricochet/rc01_f03/model/RC01_F03_cad_stations.npz",
         ROOT / "public/assets/ricochet-concept-a.glb",
@@ -96,7 +107,9 @@ class HarbourFleet:
         self.world = HarbourWorld(world)
         self.world_sha256 = self.world.fingerprint
         self.dependencies_sha256 = dependency_fingerprint()
-        self.berths = {b["id"]: deepcopy(b) for b in self.world.harbour["docks"]["berths"]}
+        self.berths = {
+            b["id"]: deepcopy(b) for b in self.world.harbour["docks"]["berths"]
+        }
         if len(self.berths) != len(self.world.harbour["docks"]["berths"]):
             raise ValueError("Duplicate berth identity")
         if vessels is None:
@@ -127,7 +140,8 @@ class HarbourFleet:
             not 1 <= len(vessels) <= 4
             or len(set(ids)) != len(ids)
             or any(
-                not isinstance(i, str) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", i)
+                not isinstance(i, str)
+                or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", i)
                 for i in ids
             )
         ):
@@ -138,6 +152,8 @@ class HarbourFleet:
         self.events = []
         self.crafts = {}
         self.mappings = {}
+        self.step_count = 0
+        self._interrupted_step = False
         config = water_config or dict(
             water_level_m=self.world.harbour["waterLevelM"],
             wave_mode="still",
@@ -146,29 +162,42 @@ class HarbourFleet:
             wake_enabled=True,
             whirlpools_enabled=False,
         )
-        config = WaterEnvironmentConfig.from_dict(config) if isinstance(config, dict) else config
+        config = (
+            WaterEnvironmentConfig.from_dict(config)
+            if isinstance(config, dict)
+            else config
+        )
         self.water = HarbourWater(self.world, config)
         for definition in self.definitions:
             variant = definition.get("variant")
             if variant not in ("ricochet-concept-a", "ricochet-rc01-f03"):
-                raise ValueError("Unknown harbour vessel variant; no substitution allowed")
+                raise ValueError(
+                    "Unknown harbour vessel variant; no substitution allowed"
+                )
             berth_id = definition.get("berth_id")
             berth = self.berths.get(berth_id)
             if berth is None or variant not in berth["compatibleProfileIds"]:
-                raise ValueError("Vessel requires a compatible, explicitly identified berth")
+                raise ValueError(
+                    "Vessel requires a compatible, explicitly identified berth"
+                )
             if berth_id in self.occupancy:
                 raise ValueError("Two vessels cannot occupy one berth")
             craft = RicochetCraft(
                 self.world,
                 variant=variant,
-                hull_variant="concept_a" if variant == "ricochet-concept-a" else "f03_baseline",
+                hull_variant="concept_a"
+                if variant == "ricochet-concept-a"
+                else "f03_baseline",
                 water_config=config,
                 load_case="LC-01",
-                hydro_stride=4,
+                hydro_stride=HYDRO_STRIDE,
             )
+            self._retime_adapter(craft)
             craft.water_field = self.water
             x, y = self.world.to_world([berth["x"], berth["y"]])
-            craft.spawn(x, y, config.water_level_m, yaw_deg=-math.degrees(berth["heading"]))
+            craft.spawn(
+                x, y, config.water_level_m, yaw_deg=-math.degrees(berth["heading"])
+            )
             self.crafts[definition["id"]] = craft
             self.occupancy[berth_id] = definition["id"]
         self._build_shared_scene()
@@ -179,6 +208,42 @@ class HarbourFleet:
                 berth_id=definition["berth_id"], xy=p[:2].tolist(), heading=h
             )
         self._geometry = {}
+        identity = dict(
+            cadence=CADENCE,
+            water_grid=self.water.grid_identity,
+            model_xml_sha256=self.model_xml_sha256,
+        )
+        self.dynamics_id = hashlib.sha256(
+            json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+
+    @staticmethod
+    def _retime_adapter(craft):
+        """Retiming belongs to this fleet, never the original 400Hz plant.
+
+        Compile the fleet's own adapter XML at 100Hz, keeping measured masses,
+        inertial frames and exact collision meshes. The original Ricochet
+        module/class defaults and standalone checkpoint contract are intact.
+        """
+        original = craft.model
+        root = ET.fromstring(craft.xml)
+        root.find("option").set("timestep", str(DT))
+        craft.xml = ET.tostring(root, encoding="unicode")
+        craft.model = mj.MjModel.from_xml_string(craft.xml)
+        craft.data = mj.MjData(craft.model)
+        if (craft.model.nbody, craft.model.njnt, craft.model.nu) != (
+            original.nbody,
+            original.njnt,
+            original.nu,
+        ):
+            raise ValueError("Retimed adapter topology differs")
+        craft.model.hfield_data[:] = original.hfield_data
+        for key in ("body_mass", "body_inertia", "body_ipos", "body_iquat"):
+            getattr(craft.model, key)[:] = getattr(original, key)
+        mj.mj_setConst(craft.model, craft.data)
+        mj.mj_forward(craft.model, craft.data)
+        craft._model_xml_sha256 = hashlib.sha256(craft.xml.encode()).hexdigest()
+        craft.DT = DT
 
     def _build_shared_scene(self):
         craft_list = list(self.crafts.values())
@@ -241,7 +306,9 @@ class HarbourFleet:
             attrs = (
                 dict(type="box", size=" ".join(map(str, obstacle["half"])))
                 if obstacle["kind"] == "box"
-                else dict(type="cylinder", size=f"{obstacle['half'][0]} {obstacle['half'][2]}")
+                else dict(
+                    type="cylinder", size=f"{obstacle['half'][0]} {obstacle['half'][2]}"
+                )
             )
             ET.SubElement(
                 base.find("worldbody"),
@@ -326,7 +393,10 @@ class HarbourFleet:
     def _set_integration_state(self, state):
         kind = mj.mjtState.mjSTATE_INTEGRATION
         state = np.asarray(state, dtype=float)
-        if state.shape != (mj.mj_stateSize(self.model, kind),) or not np.isfinite(state).all():
+        if (
+            state.shape != (mj.mj_stateSize(self.model, kind),)
+            or not np.isfinite(state).all()
+        ):
             raise ValueError("Invalid shared MuJoCo integration state")
         mj.mj_setState(self.model, self.data, state, kind)
         mj.mj_forward(self.model, self.data)
@@ -368,7 +438,9 @@ class HarbourFleet:
 
         with self._lock:
             self._require(craft_id)
-            if not isinstance(command, dict) or set(command) - set(RICOCHET_SURFACE_LIMITS):
+            if not isinstance(command, dict) or set(command) - set(
+                RICOCHET_SURFACE_LIMITS
+            ):
                 raise ValueError("Unknown harbour control channel")
             for key, value in command.items():
                 limits = RICOCHET_SURFACE_LIMITS[key]
@@ -404,13 +476,17 @@ class HarbourFleet:
                 return dict(ok=False, reason="Move within 2 m of the berth centre")
             if np.linalg.norm(v[3:5]) > 0.5:
                 return dict(ok=False, reason="Slow below 0.5 m/s before mooring")
-            angle = math.atan2(math.sin(h + berth["heading"]), math.cos(h + berth["heading"]))
+            angle = math.atan2(
+                math.sin(h + berth["heading"]), math.cos(h + berth["heading"])
+            )
             if abs(angle) > math.radians(15):
                 return dict(ok=False, reason="Align with the berth approach heading")
             if craft.command["throttle"] > 0.02:
                 return dict(ok=False, reason="Set propulsion to idle before mooring")
             self.occupancy[berth_id] = craft_id
-            self.moorings[craft_id] = dict(berth_id=berth_id, xy=p[:2].tolist(), heading=h)
+            self.moorings[craft_id] = dict(
+                berth_id=berth_id, xy=p[:2].tolist(), heading=h
+            )
             self._event("moored", craft_id=craft_id, berth_id=berth_id)
             return dict(ok=True, reason="Moored", berth_id=berth_id)
 
@@ -430,15 +506,27 @@ class HarbourFleet:
         p, h, v = self._pose(boat_id)
         moor = self.moorings[boat_id]
         force = np.r_[
-            np.clip(1200 * (np.asarray(moor["xy"]) - p[:2]) - 1400 * v[3:5], -2500, 2500), 0.0
+            np.clip(
+                1200 * (np.asarray(moor["xy"]) - p[:2]) - 1400 * v[3:5], -2500, 2500
+            ),
+            0.0,
         ]
         angle = math.atan2(math.sin(moor["heading"] - h), math.cos(moor["heading"] - h))
-        return force, np.array([0.0, 0.0, np.clip(1500 * angle - 1300 * v[2], -1800, 1800)])
+        return force, np.array(
+            [0.0, 0.0, np.clip(1500 * angle - 1300 * v[2], -1800, 1800)]
+        )
 
     def step(self, dt=DT):
         if not math.isfinite(dt) or abs(dt - DT) > 1e-12:
-            raise ValueError("Harbour rigid-body timestep is fixed at 400 Hz")
+            raise ValueError(
+                "Harbour rigid-body timestep is fixed at 100 Hz; aircraft remain at 400 Hz"
+            )
         with self._lock:
+            if self._interrupted_step:
+                raise ValueError(
+                    "Harbour step was interrupted; restore a complete checkpoint"
+                )
+            self._interrupted_step = True
             self.data.qfrc_applied[:] = 0.0
             self.data.xfrc_applied[:] = 0.0
             for boat_id, craft in self.crafts.items():
@@ -469,8 +557,12 @@ class HarbourFleet:
                 )
                 phase = (craft.step_count % craft.hydro_stride + 1) / craft.hydro_stride
                 for bid, current in craft._curr_hydro_f.items():
-                    wrench = (1 - phase) * craft._prev_hydro_f.get(bid, current) + phase * current
-                    self.data.xfrc_applied[mapping["bodies"][bid]] += np.clip(wrench, -8e4, 8e4)
+                    wrench = (1 - phase) * craft._prev_hydro_f.get(
+                        bid, current
+                    ) + phase * current
+                    self.data.xfrc_applied[mapping["bodies"][bid]] += np.clip(
+                        wrench, -8e4, 8e4
+                    )
                 self.data.xfrc_applied[mapping["bid"], :3] += force
                 self.data.xfrc_applied[mapping["bid"], 3:] += torque
                 for oq, sq, nq, ov, sv, nv in mapping["joints"]:
@@ -487,7 +579,9 @@ class HarbourFleet:
                 power = float(craft.power.get("total_w", 0))
                 burn = power * 1.15e-7
                 craft.fuel[0] = max(0.0, float(craft.fuel[0]) - burn * DT)
-                consumed = float(craft.energy.get("consumed_kwh", 0)) + power * DT / 3600000
+                consumed = (
+                    float(craft.energy.get("consumed_kwh", 0)) + power * DT / 3600000
+                )
                 craft.energy.update(
                     consumed_kwh=round(consumed, 6),
                     remaining_kwh=round(max(0.0, 20 - consumed), 6),
@@ -544,8 +638,15 @@ class HarbourFleet:
                             self._event("impact", craft_id=boat_id, force_n=magnitude)
             if masses_changed:
                 self._copy_masses()
-            if not np.isfinite(self.data.qpos).all() or not np.isfinite(self.data.qvel).all():
-                raise FloatingPointError("Non-finite harbour state; retain checkpoint and inspect")
+            self.step_count += 1
+            if (
+                not np.isfinite(self.data.qpos).all()
+                or not np.isfinite(self.data.qvel).all()
+            ):
+                raise FloatingPointError(
+                    "Non-finite harbour state; retain checkpoint and inspect"
+                )
+            self._interrupted_step = False
 
     def visual_geometry(self, craft_id):
         with self._lock:
@@ -563,7 +664,9 @@ class HarbourFleet:
                 p, h, v = self._pose(boat_id)
                 poses = {
                     name: dict(
-                        position=self.data.xpos[self.mappings[boat_id]["bodies"][old]].tolist(),
+                        position=self.data.xpos[
+                            self.mappings[boat_id]["bodies"][old]
+                        ].tolist(),
                         quaternion_wxyz=self.data.xquat[
                             self.mappings[boat_id]["bodies"][old]
                         ].tolist(),
@@ -615,7 +718,11 @@ class HarbourFleet:
                 structures=deepcopy(self.world.structures),
                 water_level_m=self.water.config.water_level_m,
                 physics=dict(
-                    rigid_body_hz=400,
+                    rigid_body_hz=100,
+                    hydrodynamic_hz=20,
+                    shallow_water_hz=10,
+                    dynamics_id=self.dynamics_id,
+                    water_grid=deepcopy(self.water.grid_identity),
                     water_domain="shared polygon-masked airport basin",
                     aircraft_collision_coupling=False,
                 ),
@@ -623,6 +730,7 @@ class HarbourFleet:
 
     def serialize(self):
         with self._lock:
+            self._validate_clocks()
             boats = {}
             for boat_id, craft in self.crafts.items():
                 water = craft.water_field
@@ -636,7 +744,9 @@ class HarbourFleet:
                     None
                     if hydro is None
                     else dict(
-                        values=_pack({f.name: getattr(hydro, f.name) for f in fields(hydro)}),
+                        values=_pack(
+                            {f.name: getattr(hydro, f.name) for f in fields(hydro)}
+                        ),
                         am_data=_pack(getattr(hydro, "_am_data", None)),
                     )
                 )
@@ -648,6 +758,9 @@ class HarbourFleet:
                 )
             state = dict(
                 schema=SCHEMA,
+                cadence=deepcopy(CADENCE),
+                dynamics_id=self.dynamics_id,
+                step_count=self.step_count,
                 world_sha256=self.world_sha256,
                 dependencies_sha256=self.dependencies_sha256,
                 model_xml_sha256=self.model_xml_sha256,
@@ -671,34 +784,52 @@ class HarbourFleet:
         from .water.hydrodynamics import HydroBreakdown
 
         if not isinstance(state, dict) or state.get("schema") != SCHEMA:
-            raise ValueError("Unsupported harbour fleet checkpoint; retained")
+            raise ValueError(
+                "Harbour checkpoint uses incompatible development dynamics; record retained without conversion"
+            )
         json.dumps(state, allow_nan=False)
+        if state.get("cadence") != CADENCE:
+            raise ValueError("Harbour checkpoint dynamics cadence differs")
+        if type(state.get("step_count")) is not int or state["step_count"] < 0:
+            raise ValueError("Invalid harbour clock tick counter")
         if state.get("dependencies_sha256") != dependency_fingerprint():
-            raise ValueError("Harbour physics/assets differ from checkpoint; no substitution")
+            raise ValueError(
+                "Harbour physics/assets differ from checkpoint; no substitution"
+            )
         if state.get("world_sha256") != HarbourWorld(world).fingerprint:
             raise ValueError("Harbour environment differs from checkpoint")
         if state.get("mujoco_version") != mj.__version__:
             raise ValueError("Harbour MuJoCo version differs from checkpoint")
         result = cls(
-            world, vessels=state["definitions"], water_config=state["water"]["native"]["config"]
+            world,
+            vessels=state["definitions"],
+            water_config=state["water"]["native"]["config"],
         )
         if result.model_xml_sha256 != state.get("model_xml_sha256"):
             raise ValueError("Harbour shared model differs from checkpoint")
-        if set(state["boats"]) != set(result.crafts) or state["selectedId"] not in result.crafts:
+        if result.dynamics_id != state.get("dynamics_id"):
+            raise ValueError("Harbour selected dynamics/grid identity differs")
+        if (
+            set(state["boats"]) != set(result.crafts)
+            or state["selectedId"] not in result.crafts
+        ):
             raise ValueError("Checkpoint vessel identities differ")
         result.water.restore_state(state["water"])
         for boat_id, craft in result.crafts.items():
             saved = state["boats"][boat_id]
             if (
                 saved["native"]["variant"] != craft.variant
-                or saved["native"]["model_xml_sha256"] != craft.provenance["model_xml_sha256"]
+                or saved["native"]["model_xml_sha256"]
+                != craft.provenance["model_xml_sha256"]
             ):
                 raise ValueError("Checkpoint boat model identity differs")
             from .ricochet.plant import RICOCHET_SURFACE_LIMITS
 
             for channel_set in ("command", "targets"):
                 commands = saved["native"].get(channel_set)
-                if not isinstance(commands, dict) or set(commands) != set(RICOCHET_SURFACE_LIMITS):
+                if not isinstance(commands, dict) or set(commands) != set(
+                    RICOCHET_SURFACE_LIMITS
+                ):
                     raise ValueError("Invalid saved vessel controls")
                 for key, value in commands.items():
                     limit = RICOCHET_SURFACE_LIMITS[key]
@@ -716,7 +847,9 @@ class HarbourFleet:
                 raise ValueError("Invalid vessel integration counter")
             for channel_set in ("_curr_hydro_f", "_prev_hydro_f"):
                 for body_id, wrench in saved["native"].get(channel_set, {}).items():
-                    if int(body_id) not in craft.bids.values() or np.asarray(wrench).shape != (6,):
+                    if int(body_id) not in craft.bids.values() or np.asarray(
+                        wrench
+                    ).shape != (6,):
                         raise ValueError("Invalid vessel hydrodynamic force buffer")
             water = craft.water_field
             craft.water_field = _WaterReference(water)
@@ -730,20 +863,24 @@ class HarbourFleet:
                     value = getattr(hydro, field.name)
                     if isinstance(value, np.ndarray):
                         if value.shape != (3,) or not np.isfinite(value).all():
-                            raise ValueError("Invalid saved hydrodynamic vector " + field.name)
+                            raise ValueError(
+                                "Invalid saved hydrodynamic vector " + field.name
+                            )
                     elif field.name != "component_loads" and (
                         isinstance(value, bool)
                         or not isinstance(value, (int, float))
                         or not math.isfinite(value)
                     ):
-                        raise ValueError("Invalid saved hydrodynamic scalar " + field.name)
+                        raise ValueError(
+                            "Invalid saved hydrodynamic scalar " + field.name
+                        )
                 if saved["hydro"]["am_data"] is not None:
                     hydro._am_data = _unpack(saved["hydro"]["am_data"])
                 craft.last_hydro = hydro
             craft._mass_version = int(saved["mass_version"])
             craft.hydro_stride = int(saved["hydro_stride"])
             craft._raw_hydro_cache = None
-            if craft.hydro_stride != 4:
+            if craft.hydro_stride != HYDRO_STRIDE:
                 raise ValueError("Checkpoint hydro stride differs")
         result._copy_masses()
         result._set_integration_state(state["integration"])
@@ -756,11 +893,13 @@ class HarbourFleet:
         ):
             raise ValueError("Duplicate or unknown berth occupant")
         for boat_id, mooring in moors.items():
-            if not isinstance(mooring, dict) or set(mooring) != set(("berth_id", "xy", "heading")):
-                raise ValueError("Invalid checkpoint mooring")
-            if occupancy.get(mooring["berth_id"]) != boat_id or np.asarray(mooring["xy"]).shape != (
-                2,
+            if not isinstance(mooring, dict) or set(mooring) != set(
+                ("berth_id", "xy", "heading")
             ):
+                raise ValueError("Invalid checkpoint mooring")
+            if occupancy.get(mooring["berth_id"]) != boat_id or np.asarray(
+                mooring["xy"]
+            ).shape != (2,):
                 raise ValueError("Inconsistent checkpoint mooring ownership")
             if any(
                 isinstance(v, bool) or not isinstance(v, (int, float))
@@ -771,7 +910,8 @@ class HarbourFleet:
             if (
                 result.crafts[boat_id].variant not in berth["compatibleProfileIds"]
                 or np.linalg.norm(
-                    np.asarray(mooring["xy"]) - result.world.to_world([berth["x"], berth["y"]])
+                    np.asarray(mooring["xy"])
+                    - result.world.to_world([berth["x"], berth["y"]])
                 )
                 > 2.000001
             ):
@@ -784,10 +924,53 @@ class HarbourFleet:
         result.occupancy = occupancy
         result.selectedId = state["selectedId"]
         result.events = deepcopy(state["events"])
+        result.step_count = state["step_count"]
         if not isinstance(result.events, list) or len(result.events) > 256:
             raise ValueError("Invalid harbour event history")
         if abs(float(result.data.time) - result.water.sim_time_s) > 1e-9:
             raise ValueError("Checkpoint boat and water clocks differ")
-        if any(abs(c.data.time - result.data.time) > 1e-9 for c in result.crafts.values()):
+        if any(
+            abs(c.data.time - result.data.time) > 1e-9 for c in result.crafts.values()
+        ):
             raise ValueError("Checkpoint vessel clocks differ")
+        result._validate_clocks()
         return result
+
+    def _validate_clocks(self):
+        """Refuse partial ticks or altered phase instead of publishing a bad save."""
+        if self._interrupted_step:
+            raise ValueError(
+                "Harbour step was interrupted; restore a complete checkpoint"
+            )
+        t = float(self.data.time)
+        tolerance = 1e-8 + 2e-9 * abs(t)
+        if self.model.opt.timestep != DT or any(
+            c.model.opt.timestep != DT or c.hydro_stride != HYDRO_STRIDE
+            for c in self.crafts.values()
+        ):
+            raise ValueError("Harbour runtime cadence differs")
+        if abs(t - self.step_count * DT) > tolerance or any(
+            c.step_count != self.step_count or abs(c.data.time - t) > tolerance
+            for c in self.crafts.values()
+        ):
+            raise ValueError(
+                "Harbour checkpoint tick/time phase mismatch or interrupted step"
+            )
+        if (
+            abs(self.water.swe_step_interval_s - CADENCE["swe_interval_s"]) > 1e-15
+            or abs(self.water.sim_time_s - t) > tolerance
+        ):
+            raise ValueError("Harbour checkpoint shared water clock mismatch")
+        if (
+            abs(self.water.shallow.t + self.water._swe_accum_s - self.water.sim_time_s)
+            > tolerance
+        ):
+            raise ValueError("Harbour checkpoint water integration phase mismatch")
+        swe_stride = round(CADENCE["swe_interval_s"] / DT)
+        expected_swe_t = (self.step_count // swe_stride) * CADENCE["swe_interval_s"]
+        expected_accum = (self.step_count % swe_stride) * DT
+        if (
+            abs(self.water.shallow.t - expected_swe_t) > tolerance
+            or abs(self.water._swe_accum_s - expected_accum) > tolerance
+        ):
+            raise ValueError("Harbour checkpoint water cadence phase differs")

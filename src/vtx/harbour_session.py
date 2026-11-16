@@ -76,6 +76,7 @@ def _run(connection, rate, seed, snapshot):
                         result = fleet.visual_geometry(body)
                     elif action == "status":
                         result = fleet.public()
+                        result["physics"]["scheduler_backlog_s"] = max(0.0, due)
                         if fault:
                             result["error"] = fault
                     else:
@@ -106,7 +107,7 @@ def _run(connection, rate, seed, snapshot):
                 last = now
                 due = 0.0
                 continue
-            due = min(0.1, due + (now - last) * speed)
+            due += (now - last) * speed
             last = now
             try:
                 # Check the pipe between steps even if the water solver is behind wall time.
@@ -129,6 +130,7 @@ def _run(connection, rate, seed, snapshot):
 class FleetWorker:
     def __init__(self, seed, payload):
         ctx = multiprocessing.get_context("spawn")
+        self.generation = uuid.uuid4().hex
         self.rate = ctx.Value("d", 0.0, lock=False)
         self.pipe, child = ctx.Pipe()
         self.process = ctx.Process(target=_run, args=(child, self.rate, seed, payload), daemon=True)
@@ -235,6 +237,7 @@ class HarbourSession:
                 status,
                 available=available,
                 initialized=bool(available and self.worker),
+                generation=self.worker.generation if available and self.worker else None,
                 saved=self.saved.is_file(),
             )
 
