@@ -23,7 +23,7 @@ PORT=8765
 
 def server_alive(url):
     try:
-        with urlopen(url+"/api/view",timeout=2) as response:
+        with urlopen(url+"/api/pilot/status",timeout=2) as response:
             return response.status==200
     except (OSError, ValueError):
         return False

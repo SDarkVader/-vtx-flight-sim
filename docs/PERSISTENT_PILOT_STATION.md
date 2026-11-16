@@ -7,14 +7,10 @@ launcher for the current single cockpit** and must not be started alongside
 it: the supervisor can create a server on port 8765 with another data root.
 Use the [README's current local launch procedure](../README.md) and the
 runtime/data locations in the authoritative record named by `AGENTS.md`.
-Starting an automated pilot or enabling retries still requires explicit owner
-authorization; the current Phantom candidates await owner flight tests and
-promotion.
+The current Phantom candidates await owner flight tests and promotion.
 
-The station maintains a connection to the real MuJoCo simulator, preserves
-instrument/action evidence, and retries an **actually crashed** Colin sortie.
-It does not fabricate a flight, navigate a route, or replay successful inputs.
-All actuator setpoints are explicitly supplied in `tools/pilot_controls.json`.
+The station maintains a connection to the simulator and records instrument readings and
+commands. Each control decision supplies individual actuator setpoints in `tools/pilot_controls.json`.
 
 ## Start / stop
 
@@ -32,20 +28,18 @@ startup service.
 
 To **hold**, set `enabled: false`, `armed: false` in
 `tools/pilot_controls.json`; then set `paused: true` via `/api/operator`.
-An operator hold always takes precedence over retries. The version committed
-to Git is disabled and disarmed. Re-enable only when explicitly instructed.
+The committed control file starts disarmed.
 
 ## Run-bound commands
 
-When ready to permit commands, set `enabled: true`, `armed: true`,
-`arm_run_id` to the exact current `/api/view.run_id`, increase integer
-`serial`, and supply the reason, engine, collective and nacelle targets.
-Write the complete JSON atomically. No run ID match means neutral idle command
-instead of flight; the same command is **never** re-armed on a retry. The pilot
-fetches a fresh `/api/observe` for each action.
+To enable commands, set `enabled: true` and `armed: true`.
+Read `/api/observe` and use that sample to choose the settings. Put its `run_id` in
+`arm_run_id` and its `observation_id` in the control file. Increase `serial` and supply
+the reason, engine, collective and nacelle targets. Write the complete JSON atomically.
+The server records the cited instrument sample with the command. The station keeps
+monitoring while a run or observation is missing.
 
-Cabin levelling is forced off. Selecting that UI control while Colin is
-piloting will not seize manual authority. To take over, use the explicit
+The `cabin_level` setting defaults to on. To take over from Colin, use the cockpit’s
 **Take manual authority** button.
 
 The temporary experimental assist wire is opt-in per flight and is applied to
@@ -55,9 +49,7 @@ as beneficial, and does not control yaw. Its application is reported by
 
 ## Recovery boundaries
 
-- A recorded crash permits up to five automatic restarts by default, with
-  a cooldown. Each retries the retained mission at departure in neutral idle.
-- The legacy station's retry is a fresh departure, not an exact continuation.
+- A recorded crash stops pilot commands. The operator can start a new attempt from the cockpit.
   Current cockpit checkpoint recovery is separate: supported R6 state and
   Phantom inner format 3 retain the integration, controller/actuator,
   fuel/energy, environment, identity and sensor calibration required by the

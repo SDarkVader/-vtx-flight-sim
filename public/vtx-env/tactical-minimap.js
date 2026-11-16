@@ -1,7 +1,7 @@
 // Authoritative Live Minimap & Tactical Display for VTX Flight Simulator.
 // Renders the genuine mathematical geometry graph of runways, curved Bézier taxiways,
 // aprons, stands, holding points, and facility complexes from LAYOUT with sub-millimetre parity.
-// Live aircraft pose is synchronized with MuJoCo truth frame (position, physical yaw, velocity).
+// The user's navigation overlay uses the active vehicle's GNSS and attitude sensors.
 import { LAYOUT } from './layout.js';
 import {primaryRunwayCues} from './runway-layout.js?v=20261116-runway-1';
 import {drawHarbourMap, drawHarbourBoats} from './harbour-map.js?v=20261116-harbour-3';
@@ -17,6 +17,93 @@ function evalCubicBezier(p0, p1, p2, p3, t) {
 const backgroundCache = new WeakMap();
 
 const facilityLabelFont = scaleM => `bold ${Math.max(9, Math.round(scaleM(12)))}px system-ui`;
+
+export function liveMapObservation(view, ageMs, replaying) {
+  return view?.active && ageMs <= 2000 && !replaying ? view.observation : null;
+}
+
+// Phantom reports the yaw of its +X nose. The R6's forward datum is -Y.
+// Both use counterclockwise world yaw. Compass headings increase clockwise from north.
+export function aircraftMapFix(observation) {
+  const position = observation?.gnss_xy_m;
+  if (!Number.isFinite(position?.[0]) || !Number.isFinite(position?.[1])) return null;
+  const phantom = observation.attitude_deg;
+  const yaw = phantom ? phantom.yaw : observation.attitude_xyz_deg?.[2];
+  let bearing = null;
+  if (phantom && Number.isFinite(yaw)) bearing = 90 - yaw;
+  else if (Number.isFinite(yaw)) {
+    const [roll, pitch] = observation.attitude_xyz_deg.map(deg => deg * Math.PI / 180);
+    const lateral = Math.sin(pitch) * Math.sin(roll), forward = Math.cos(roll);
+    if (Math.hypot(lateral, forward) > 1e-6) bearing = 180 - yaw + Math.atan2(lateral, forward) * 180 / Math.PI;
+  }
+  const heading = bearing === null ? null : (bearing % 360 + 360) % 360;
+  const measured = observation.velocity_world_m_s ?? observation.gnss_velocity_mps;
+  const velocity = Number.isFinite(measured?.[0]) && Number.isFinite(measured?.[1]) ? measured : null;
+  return {position, heading, velocity};
+}
+
+function drawAircraftMarker(ctx, canvas, proj, fix) {
+  const bounds = canvas.getBoundingClientRect();
+  if (bounds.width <= 0 || bounds.height <= 0) return;
+  const sx = canvas.width / bounds.width, sy = canvas.height / bounds.height;
+  const w = bounds.width, h = bounds.height;
+  const x = proj.px(fix.position[0]) / sx, y = proj.py(fix.position[1]) / sy;
+  const outside = x < 0 || x > w || y < 0 || y > h;
+  let markerX = x, markerY = y, angle = fix.heading === null ? null : fix.heading * Math.PI / 180;
+  if (outside) {
+    const dx = x - w / 2, dy = y - h / 2;
+    const fraction = Math.min((w / 2 - 12) / Math.abs(dx), (h / 2 - 12) / Math.abs(dy));
+    markerX = w / 2 + dx * fraction;
+    markerY = h / 2 + dy * fraction;
+    angle = Math.atan2(dx, -dy);
+  }
+  ctx.save();
+  ctx.scale(sx, sy);
+  ctx.translate(markerX, markerY);
+  if (!outside && fix.velocity && Math.hypot(...fix.velocity.slice(0, 2)) > .5) {
+    ctx.save();
+    ctx.strokeStyle = '#2fe3ffcc';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(proj.scaleM(2 * fix.velocity[0]) / sx, -proj.scaleM(2 * fix.velocity[1]) / sy);
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.fillStyle = '#2fe3ff';
+  ctx.strokeStyle = '#0a1a24';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  if (angle === null) {
+    ctx.arc(0, 0, 5, 0, Math.PI * 2);
+  } else {
+    ctx.rotate(angle);
+    ctx.moveTo(0, -11);
+    ctx.lineTo(7, 8);
+    ctx.lineTo(0, 5);
+    ctx.lineTo(-7, 8);
+    ctx.closePath();
+  }
+  ctx.stroke();
+  ctx.fill();
+  ctx.restore();
+
+  const label = outside ? 'Aircraft off map' : 'Your aircraft';
+  ctx.font = 'bold 11px system-ui';
+  const right = markerX + 13 + ctx.measureText(label).width <= w;
+  ctx.textAlign = right ? 'left' : 'right';
+  ctx.textBaseline = 'middle';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#0a1a24';
+  ctx.fillStyle = '#2fe3ff';
+  const labelY = Math.max(8, Math.min(h - 8, markerY)) - markerY;
+  ctx.strokeText(label, right ? 13 : -13, labelY);
+  ctx.fillText(label, right ? 13 : -13, labelY);
+  ctx.restore();
+}
 
 export class TacticalMinimap {
   constructor(canvas, { isLarge = false } = {}) {
@@ -394,7 +481,7 @@ export class TacticalMinimap {
     return layer;
   }
 
-  render(world, { last, track, departure, destination, harbourState }) {
+  render(world, { observation, track, departure, destination, harbourState }) {
     if (!world) return;
     this.worldHalf = world.half_m;
     const isSandbox = world.environment === 'sandbox' || world.id === 'stage1-valley';
@@ -441,70 +528,12 @@ export class TacticalMinimap {
       this.ctx.fillText(label, x, y + 0.5);
     }
 
-    // Authoritative Live Aircraft Glyph (Physical Yaw, Ducted Fans, Velocity Vector)
-    if (last && last.observation) {
-      const p = last.observation.gnss_xy_m;
-      const vel = last.observation.gnss_velocity_mps || [0, 0, 0];
-      const ax = px(p[0]), ay = py(p[1]);
-      const yawDeg = last.observation.attitude_xyz_deg ? last.observation.attitude_xyz_deg[2] : 0;
-      const yawRad = -(yawDeg * Math.PI / 180); // Canvas Y is inverted
-
-      this.ctx.save();
-      this.ctx.translate(ax, ay);
-      this.ctx.rotate(yawRad);
-
-      // Velocity projection line
-      const speed = Math.hypot(vel[0], vel[1]);
-      if (speed > 0.5) {
-        this.ctx.strokeStyle = '#2fe3ff88';
-        this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([3, 3]);
-        this.ctx.beginPath();
-        this.ctx.moveTo(0, 0);
-        this.ctx.lineTo(0, -scaleM(speed * 2.0));
-        this.ctx.stroke();
-        this.ctx.setLineDash([]);
-      }
-
-      // Aircraft 4-duct eVTOL glyph
-      const gR = Math.max(8, scaleM(3.8));
-      this.ctx.fillStyle = 'rgba(12, 18, 22, 0.95)';
-      this.ctx.strokeStyle = '#2fe3ff';
-      this.ctx.lineWidth = 1.5;
-
-      // Central cabin
-      this.ctx.beginPath();
-      this.ctx.arc(0, 0, gR * 0.45, 0, Math.PI * 2);
-      this.ctx.fill(); this.ctx.stroke();
-
-      // 4 Ducted fan nacelles
-      const fanOffset = gR * 0.72;
-      const fanR = gR * 0.38;
-      for (const [fx, fy] of [[-fanOffset, -fanOffset], [fanOffset, -fanOffset], [-fanOffset, fanOffset], [fanOffset, fanOffset]]) {
-        this.ctx.beginPath();
-        this.ctx.arc(fx, fy, fanR, 0, Math.PI * 2);
-        this.ctx.fillStyle = '#0a1a24';
-        this.ctx.fill();
-        this.ctx.strokeStyle = '#2fe3ff';
-        this.ctx.stroke();
-        // Cyan spinning rotor center dot
-        this.ctx.fillStyle = '#2fe3ff';
-        this.ctx.beginPath();
-        this.ctx.arc(fx, fy, fanR * 0.4, 0, Math.PI * 2);
-        this.ctx.fill();
-      }
-
-      // Forward direction arrow
-      this.ctx.fillStyle = '#f5b800';
-      this.ctx.beginPath();
-      this.ctx.moveTo(0, -gR * 1.3);
-      this.ctx.lineTo(gR * 0.35, -gR * 0.6);
-      this.ctx.lineTo(-gR * 0.35, -gR * 0.6);
-      this.ctx.closePath();
-      this.ctx.fill();
-
-      this.ctx.restore();
-
+    const fix = aircraftMapFix(observation);
+    if (fix) {
+      const p = fix.position;
+      const velocity = fix.velocity;
+      const speed = velocity ? Math.hypot(velocity[0], velocity[1]).toFixed(1) : '—';
+      const heading = fix.heading === null ? '—' : String(Math.round(fix.heading) % 360).padStart(3, '0');
       // Tactical HUD Telemetry Overlay (Top & Bottom Readouts)
       this.ctx.fillStyle = 'rgba(8, 12, 16, 0.85)';
       this.ctx.fillRect(8, 8, 210, 48);
@@ -515,8 +544,8 @@ export class TacticalMinimap {
       this.ctx.font = 'bold 11px monospace';
       this.ctx.textAlign = 'left';
       this.ctx.fillText(`POS X: ${p[0].toFixed(1)}m  Y: ${p[1].toFixed(1)}m`, 14, 23);
-      this.ctx.fillText(`HDG: ${((yawDeg % 360 + 360) % 360).toFixed(0).padStart(3, '0')}°  SPD: ${speed.toFixed(1)}m/s`, 14, 37);
-      const clearance = last.observation.radar_clearance_m ?? (last.observation.radar_altimeter_m != null ? Math.max(0, last.observation.radar_altimeter_m - (last.observation.radar_altimeter_ground_reference_m || 0)) : null);
+      this.ctx.fillText(`HDG: ${heading}°  SPD: ${speed}m/s`, 14, 37);
+      const clearance = observation.radar_clearance_m ?? (observation.radar_altimeter_m != null ? Math.max(0, observation.radar_altimeter_m - (observation.radar_altimeter_ground_reference_m || 0)) : null);
       this.ctx.fillText(`ALT: ${clearance == null ? 'unavailable' : clearance.toFixed(1) + 'm AGL'}`, 14, 50);
 
       // Tactical Mode Indicator & Zoom Pill
@@ -527,6 +556,7 @@ export class TacticalMinimap {
       this.ctx.fillText(this.tacticalMode ? 'WORLD' : (isSandbox ? 'SANDBOX' : 'AIRPORT'), w - 10, 18);
       this.ctx.fillStyle = 'rgba(255,255,255,0.45)';
       this.ctx.fillText('DBL-CLICK / PINCH ZOOM', w - 10, 32);
+      drawAircraftMarker(this.ctx, this.canvas, proj, fix);
     }
   }
 }

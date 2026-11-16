@@ -1,4 +1,4 @@
-// Opt-in, render-only airport traffic preview. Never enters the pilot observation or physics API.
+// Render-only scenic airport traffic. Never enters pilot observations or the physics API.
 import {buildTrafficRoute, sampleTrafficRoute} from './traffic-path.js';
 import {sampleRideTrajectory} from './ride-trajectory.js';
 const sampleRoute=(route,time)=>route.kind==='smooth-ride'?sampleRideTrajectory(route,time):sampleTrafficRoute(route,time);
@@ -25,6 +25,7 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
     const route = spec.waypoints ? buildTrafficRoute(spec.waypoints) : null;
     const root = new THREE.Group();
     root.name = 'visual-traffic-' + spec.id;
+    root.userData={...root.userData,role:'scenery',vehicleId:spec.id};
     scene.add(root);
     const pivot = new THREE.Group();
     root.add(pivot);

@@ -9,11 +9,10 @@ conversation without writing scripts. It holds no aircraft state and starts no s
 
 | Tool | Simulator endpoint |
 |---|---|
-| `vtx_status` | `/api/view`, `/api/identity` |
+| `vtx_status` | `/api/pilot/status`, `/api/observe` |
 | `vtx_observe` | `/api/observe` |
 | `vtx_take_seat` | `/api/pilot/handover` (run-scoped; the previous pilot is fenced off) |
 | `vtx_command` | `/api/action` (phantom-fbw-1), then `/api/observe` |
-| `vtx_instruct` | `/api/pilot/command` |
 | `vtx_set_objective` | `/api/objective` |
 
 ## Set-up on the PC
@@ -22,7 +21,7 @@ Start the simulator, then register the connector with the assistant. The command
 
 ```text
 command: C:\Users\steve\Documents\Github\-vtx-flight-sim\.venv\Scripts\python.exe
-args:    C:\Users\steve\Documents\Github\vtx-three-panel-20261110\tools\vtx_pilot_mcp.py
+args:    <path-to-this-checkout>\tools\vtx_pilot_mcp.py
 env:     VTX_LAB_URL=http://127.0.0.1:18911      (the port the simulator is running on)
 ```
 
@@ -36,4 +35,5 @@ the simulator reachable over HTTPS with `VTX_CLOUD_ACCESS_TOKEN` set on both sid
 
 * Authority, run ID, pilot ownership and schema checks are the server's own; a refused command returns the server's reason.
 * The simulator holds the last accepted command, so the aircraft keeps flying while the conversation continues or reconnects.
+* Read the instruments, then pass their `run_id` and `observation_id` with each `vtx_command`. The navigation chart belongs to the cockpit display.
 * Every decision is recorded in the flight's `events.jsonl` with its reason and the observation it used.

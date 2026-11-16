@@ -87,6 +87,7 @@ class Supervisor:
         self.call, self.factory = call, provider_factory
         self.index = -1
         self.provider = None
+        self.last_sent_observation_id = None
         self.epoch = None
         self.failure = None
         self.state = 'connecting'
@@ -104,6 +105,7 @@ class Supervisor:
                 self.last_error = f'Provider {child.id} could not start: {exc}'
                 continue
             self.provider = child
+            self.last_sent_observation_id = None
             self.epoch = None
             return True
         self.provider = None
@@ -112,7 +114,7 @@ class Supervisor:
 
     def tick(self):
         """One nonblocking step. Transport errors propagate and are retried by the caller."""
-        view = self.api('/api/view')
+        view = self.api('/api/pilot/status')
         if view.get('run_id') != self.run_id or not view.get('active'):
             self.state = 'flight_ended_or_changed'
             return False
@@ -130,7 +132,7 @@ class Supervisor:
             self.provider = None
             self.epoch = None
             if not self._start_next(): return False
-            view = self.api('/api/view')
+            view = self.api('/api/pilot/status')
         if self.provider is None and not self._start_next(): return False
         child = self.provider
         if child.process.poll() is not None:
@@ -164,8 +166,10 @@ class Supervisor:
             self.state = 'paused'
             return True
         observation = self.api('/api/observe')
-        child.send_latest(dict(type='state', run_id=self.run_id, objective=view.get('objective'),
-                               observation=observation))
+        if observation['observation_id'] != self.last_sent_observation_id:
+            child.send_latest(dict(type='state', run_id=self.run_id, objective=view.get('objective'),
+                                   observation=observation))
+            self.last_sent_observation_id = observation['observation_id']
         try: packet = child.outbox.get_nowait()
         except queue.Empty:
             self.state = 'awaiting_provider'

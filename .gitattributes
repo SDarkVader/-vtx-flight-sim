@@ -147,6 +147,8 @@ src/vtx/airport_harbour.py text eol=lf
 src/vtx/harbour_fleet.py text eol=lf
 src/vtx/harbour_session.py text eol=lf
 src/vtx/harbour_water.py text eol=lf
+src/vtx/pilot_policy.py text eol=lf
+public/scenery-view.js text eol=lf
 src/vtx/ricochet/*.py text eol=crlf
 src/vtx/water/*.py text eol=crlf
 *.npz binary

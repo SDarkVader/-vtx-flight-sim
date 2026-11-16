@@ -121,12 +121,12 @@ def test_invalid_raw_actuation_rejected(field,value):
     with pytest.raises(ValidationError):Action(**data)
 
 def test_control_authority_and_observation_boundary():
-    lab=Laboratory();lab.active=True;lab.authority='colin'
+    lab=Laboratory();lab.active=True;lab.authority='colin';lab.run_id='boundary-run'
     cmd=dict(engine=0,collective_deg=[0]*4,tilt_deg=[[0,0]]*4,reason='Boundary bench')
     with pytest.raises(HTTPException):lab.accept_action(Action(authority='manual',**cmd))
     with pytest.raises(HTTPException):lab.accept_action(Action(authority='colin',observation_id=-1,**cmd))
     obs=lab.sensor_observation()
-    accepted=lab.accept_action(Action(authority='colin',observation_id=obs['observation_id'],**cmd))
+    accepted=lab.accept_action(Action(authority='colin',expected_run_id=lab.run_id,observation_id=obs['observation_id'],**cmd))
     assert accepted['accepted'] and accepted['apply_t_s']==pytest.approx(.02)
     assert not {'qpos','qvel','forces','cg','inertia','contact_manifold'}&obs.keys()
 

@@ -1120,7 +1120,23 @@ class Laboratory:
         if isinstance(a,PhantomAction)!=bool(getattr(self.aircraft,'is_phantom',False)):
             raise HTTPException(409,'Action schema does not match the active airframe (Phantom requires schema phantom-fbw-1)')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
-        if self.authority=='colin' and a.observation_id not in self.observations:raise HTTPException(409,'Colin action requires an actual permitted observation ID')
+        if a.authority=='colin' and getattr(a,'pti',None) is not None and a.pti.command!='abort':
+            raise HTTPException(409,'Timed test excitation is offline only; pilot decisions must be individual telemetry-based commands')
+        if self.authority=='colin':
+            from .pilot_policy import observation_error
+            prior=None
+            # The existing feedback hold is a server-owned connection hold,
+            # not a new external pilot decision or waypoint navigator.
+            feedback_hold=(self.fallback_controller is not None and self.pilot_owner=='r6-deterministic-hold'
+                           and a.pilot_id==self.pilot_owner)
+            if not feedback_hold:
+                prior=next((row['issued'].get('observation_id') for row in reversed(self.action_log)
+                            if not row.get('cancelled') and row['issued'].get('authority')=='colin'
+                            and row['issued'].get('pilot_id')==a.pilot_id
+                            and row['issued'].get('pilot_epoch')==a.pilot_epoch),None)
+            error=observation_error(self.observations.get(a.observation_id),self.aircraft.data.time,
+                                    self.run_id,a.expected_run_id,a.pilot_run_id,a.observation_id,prior)
+            if error:raise HTTPException(409,error)
         takeover=(a.authority=='colin' and self.pending_pilot is not None and a.pilot_id==self.pending_pilot
                   and a.pilot_epoch==self.pilot_epoch and a.pilot_run_id==self.run_id)
         if takeover:
@@ -1324,6 +1340,13 @@ class Laboratory:
                                       previous_power_limit_kw=old.get('engine_power_limit_kw'),new_power_limit_kw=m.engine_power_limit_kw))
         return result
 
+    def pilot_status(self):
+        observation = self.sensor_observation()
+        return dict(run_id=self.run_id, active=self.active, paused=self.paused, authority=self.authority,
+                    pilot_owner=self.pilot_owner, pending_pilot=self.pending_pilot, pilot_epoch=self.pilot_epoch,
+                    objective=self.objective, airframe_variant=observation['configuration']['airframe_variant'],
+                    warning_lamps=observation['warning_lamps'], outcome=(self.end_summary or {}).get('outcome'))
+
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
                     runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
@@ -1472,7 +1495,11 @@ async def observe():
         get_recorder(lab.data_root).emit(dict(schema_version=1,run_id=lab.run_id,
             decision_id=None,wall_utc=datetime.now(timezone.utc).isoformat(),
             kind='pilot_observation_served',payload=observation))
-    return observation
+    return {**observation, 'run_id': lab.run_id}
+
+@app.get('/api/pilot/status')
+async def pilot_status():
+    return lab.pilot_status()
 
 class PilotPrompt(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -1549,13 +1576,16 @@ async def pilot_command(c:PilotCommand):
     base=dict(heard=c.text,source=c.source,understood=False,accepted=False,executed=False,run_id=lab.run_id,authority=lab.authority)
     def done(**kw):
         out={**base,**kw,'latency_ms':round((time.perf_counter()-t0)*1000,1)}
-        if lab.active and lab.run_id:lab.log('pilot_command',out)
+        if lab.active and lab.run_id==base['run_id']:lab.log('pilot_command',out)
         return out
     if not getattr(lab.aircraft,'is_phantom',False):
         return done(intent='refused',say='Voice and text commands fly the Phantom only. Choose a Phantom first.')
     before=lab.sensor_observation()
     r=pc.parse(c.text,before)
     if r['intent']=='status':return done(understood=True,intent='status',say=pc.status_readback(before),telemetry=pc.telemetry_excerpt(before))
+    if c.source=='ai':
+        return done(intent='refused',rejected='AI text macros are disabled',
+                    say='Observe the aircraft and send an explicit telemetry-based pilot action. Plain-language AI instructions do not execute built-in flight commands.')
     if r['intent'] in ('unknown','refused','confirm','cancel') or not r['patch']:
         return done(understood=r['intent'] in ('refused','confirm','cancel'),intent=r['intent'],say=r['say'])
     base.update(understood=True,intent=r['intent'],patch=r['patch'])
@@ -1574,15 +1604,20 @@ async def pilot_command(c:PilotCommand):
     base.update(accepted=True,sequence=result['sequence'],apply_t_s=result['apply_t_s'],observation_id=before['observation_id'])
     get_recorder(lab.data_root).emit(dict(schema_version=1,run_id=lab.run_id,decision_id=None,wall_utc=datetime.now(timezone.utc).isoformat(),
         kind='pilot_action_accepted',payload=dict(action=a.model_dump(by_alias=True,exclude_none=True),result=result)))
-    run=lab.run_id;deadline=time.perf_counter()+2.0;applied_ms=None
+    run=lab.run_id;deadline=time.perf_counter()+2.0;applied_ms=None;cancelled=False
     while time.perf_counter()<deadline and lab.active and lab.run_id==run and not lab.paused:
-        if float(lab.aircraft.data.time)>=result['apply_t_s'] and pc.held(lab.aircraft.fcc.cmd,r['patch']):
+        queued=next((row for row in lab.action_log if row.get('sequence')==result['sequence']),None)
+        if queued and queued.get('cancelled'):
+            cancelled=True;break
+        if queued and queued.get('applied') and float(lab.aircraft.data.time)>=result['apply_t_s'] and pc.held(lab.aircraft.fcc.cmd,r['patch']):
             applied_ms=round((time.perf_counter()-t0)*1000,1);break
         await asyncio.sleep(.005)
     if applied_ms is None:
-        why='the simulation is paused' if lab.paused else 'the flight ended' if not lab.active or lab.run_id!=run else 'the physics loop did not apply it within 2 seconds'
+        why='the command was cancelled before application' if cancelled else 'the simulation is paused' if lab.paused else 'the flight ended' if not lab.active or lab.run_id!=run else 'the physics loop did not apply it within 2 seconds'
         return done(say=f'Command accepted but not yet applied: {why}.',not_applied=why,telemetry_before=pc.telemetry_excerpt(before))
     await asyncio.sleep(.25)   # let the plant respond so the reply quotes telemetry from after the command
+    if lab.run_id!=run:
+        return done(executed=True,applied_latency_ms=applied_ms,say='Command applied; the flight changed before telemetry readback.',telemetry_before=pc.telemetry_excerpt(before))
     lab.last_obs=None;after=lab.sensor_observation()
     return done(executed=True,applied_latency_ms=applied_ms,say=r['say'],telemetry_before=pc.telemetry_excerpt(before),telemetry_after=pc.telemetry_excerpt(after))
 
