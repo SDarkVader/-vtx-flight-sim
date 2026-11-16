@@ -1135,12 +1135,32 @@ export function createRicochetPanel({ api, toast, onZoneSelect }) {
     <div class="section-label">MASS, BALLAST, CG &amp; WATERTIGHT INTEGRITY</div>
     <label class="control-label">LOAD CASE
       <select id="rico-load-case">
-        <option value="LC-01">LC-01 · Empty hull (~815 kg)</option>
-        <option value="LC-02">LC-02 · Unoccupied stowed</option>
-        <option value="LC-03" selected>LC-03 · Pilot nominal (~900 kg)</option>
-        <option value="LC-04">LC-04 · Pilot + cargo (~960 kg)</option>
+        <option value="LC-01" selected>LC-01 · Passenger aboard, underway (~900 kg)</option>
+        <option value="LC-02">LC-02 · Unoccupied &amp; stowed, propulsion off (~815 kg)</option>
+        <option value="LC-03">LC-03 · Empty-payload flotation, no passenger (~815 kg + fuel)</option>
+        <option value="LC-04">LC-04 · Propulsion installation comparison</option>
+        <option value="LC-MAX">LC-MAX · Max water-loading envelope (~1050 kg)</option>
       </select>
     </label>
+    <div class="vector-controls">
+      <label class="control-label">PROPULSION INSTALL
+        <select id="rico-propulsion-installation">
+          <option value="baseline_pack" selected>Baseline forward pack (1.62 m)</option>
+          <option value="fuel_cell_paired">Paired fuel cells (-1.05, ±0.23 m)</option>
+          <option value="energy_pack_alternate">Alternate aft pack (-1.02 m)</option>
+        </select>
+      </label>
+      <label class="control-label">FUEL STATE
+        <select id="rico-fuel-state">
+          <option value="dry" selected>Dry (0.0 kg)</option>
+          <option value="short_test">Short test (5.0 kg)</option>
+          <option value="nominal">Nominal (10.0 kg)</option>
+          <option value="full">Full (20.0 kg)</option>
+          <option value="custom" disabled>Custom (API)</option>
+        </select>
+      </label>
+    </div>
+    <div id="rico-loading-meta" class="muted small" style="margin:.15rem 0 .4rem;font:11px/1.35 ui-monospace,monospace">rc01-f03-lc-v2 · LC-01 · baseline_pack · dry (0.0 kg) · PROP ARMED</div>
     <div class="coordinates">
       <label>TOTAL MASS (kg)<input id="rico-mass-kg" type="number" min="400" max="3500" step="5" value="900"></label>
       <label>PAYLOAD (kg)<input id="rico-payload-kg" type="number" min="0" max="500" step="5" value="0"></label>
@@ -1322,23 +1342,105 @@ export function createRicochetPanel({ api, toast, onZoneSelect }) {
   el('rico-cgx').addEventListener('input', updateLabels);
   el('rico-cgz').addEventListener('input', updateLabels);
 
+  const syncMassPropertiesUI = (mp, force = false) => {
+    if (!mp) return;
+    const activeId = document.activeElement?.id || '';
+    if (mp.load_case && el('rico-load-case') && (force || activeId !== 'rico-load-case')) {
+      const lcSel = el('rico-load-case');
+      const lcVal = String(mp.load_case);
+      if ([...lcSel.options].some((opt) => opt.value === lcVal)) {
+        lcSel.value = lcVal;
+      }
+    }
+    if (mp.propulsion_installation && el('rico-propulsion-installation') && (force || activeId !== 'rico-propulsion-installation')) {
+      const instSel = el('rico-propulsion-installation');
+      const instVal = String(mp.propulsion_installation);
+      if ([...instSel.options].some((opt) => opt.value === instVal)) {
+        instSel.value = instVal;
+      }
+    }
+    if (el('rico-fuel-state') && (force || activeId !== 'rico-fuel-state')) {
+      const fsSel = el('rico-fuel-state');
+      const fsVal = mp.fuel_state ? String(mp.fuel_state) : 'dry';
+      if ([...fsSel.options].some((opt) => opt.value === fsVal)) {
+        fsSel.value = fsVal;
+      }
+    }
+    if (mp.passenger_aboard != null && el('rico-passenger') && (force || activeId !== 'rico-passenger')) {
+      el('rico-passenger').checked = Boolean(mp.passenger_aboard);
+    }
+    if (mp.payload_mass_kg != null && el('rico-payload-kg') && (force || (!totalMassEdited && activeId !== 'rico-payload-kg'))) {
+      el('rico-payload-kg').value = Math.round(Number(mp.payload_mass_kg || 0));
+    }
+    if (mp.total_mass_kg != null && (force || (!totalMassEdited && !['rico-mass-kg', 'rico-ballast-kg', 'rico-ballast-x', 'rico-payload-kg'].includes(activeId)))) {
+      lastServerTotalMass = Math.round(Number(mp.total_mass_kg));
+      el('rico-mass-kg').value = lastServerTotalMass;
+      if (mp.ballast_mass_kg != null) el('rico-ballast-kg').value = Math.round(Number(mp.ballast_mass_kg));
+      if (mp.ballast_x_m != null) el('rico-ballast-x').value = Number(mp.ballast_x_m);
+      if (mp.waterproof != null) el('rico-waterproof').checked = Boolean(mp.waterproof);
+      updateLabels();
+    }
+    const metaNode = el('rico-loading-meta');
+    if (metaNode) {
+      const regVer = mp.register_version || 'rc01-f03-lc-v2';
+      const lc = mp.load_case || 'LC-01';
+      const inst = mp.propulsion_installation || 'baseline_pack';
+      const fs = mp.fuel_state || 'dry';
+      const fm = Number(mp.fuel_mass_kg ?? 0).toFixed(1);
+      const propMode = mp.propulsion_off ? 'PROP OFF' : 'PROP ARMED';
+      metaNode.textContent = `${regVer} · ${lc} · ${inst} · fuel ${fs} (${fm} kg) · ${propMode}`;
+    }
+  };
+
   el('rico-load-case').addEventListener('change', async () => {
     try {
       const res = await api('/api/water/mass', { load_case: el('rico-load-case').value });
       if (res?.mass_properties) {
         totalMassEdited = false;
-        lastServerTotalMass = Math.round(res.mass_properties.total_mass_kg);
-        el('rico-mass-kg').value = lastServerTotalMass;
-        el('rico-payload-kg').value = Math.round(res.mass_properties.payload_mass_kg || 0);
-        el('rico-ballast-kg').value = Math.round(res.mass_properties.ballast_mass_kg || 0);
-        el('rico-ballast-x').value = res.mass_properties.ballast_x_m ?? -0.15;
-        el('rico-passenger').checked = Boolean(res.mass_properties.passenger_aboard);
-        el('rico-waterproof').checked = res.mass_properties.waterproof !== false;
-        updateLabels();
-        toast?.(`Applied ${res.mass_properties.load_case} (${res.mass_properties.total_mass_kg.toFixed(1)} kg)`);
+        syncMassPropertiesUI(res.mass_properties, true);
+        toast?.(`Applied ${res.mass_properties.load_case} (${res.mass_properties.total_mass_kg.toFixed(1)} kg, ${res.mass_properties.propulsion_installation || 'baseline_pack'})`);
       }
     } catch (e) {
       toast?.(`Load case update failed: ${e.message}`);
+    }
+  });
+
+  el('rico-propulsion-installation').addEventListener('change', async () => {
+    try {
+      const inst = el('rico-propulsion-installation').value;
+      const body = { propulsion_installation: inst };
+      const clearedFuel = inst === 'energy_pack_alternate' && el('rico-fuel-state').value !== 'dry';
+      if (clearedFuel) {
+        body.fuel_state = 'dry';
+        body.fuel_mass_kg = 0.0;
+      }
+      const res = await api('/api/water/mass', body);
+      if (res?.mass_properties) {
+        totalMassEdited = false;
+        syncMassPropertiesUI(res.mass_properties, true);
+        toast?.(
+          `Installation ${res.mass_properties.propulsion_installation} (${res.mass_properties.total_mass_kg.toFixed(1)} kg)${clearedFuel ? '; fuel reset to dry (F02 mutually exclusive)' : ''}`
+        );
+      }
+    } catch (e) {
+      toast?.(`Propulsion installation update failed: ${e.message}`);
+    }
+  });
+
+  el('rico-fuel-state').addEventListener('change', async () => {
+    const fs = el('rico-fuel-state').value;
+    if (fs === 'custom') return;
+    try {
+      const res = await api('/api/water/mass', { fuel_state: fs });
+      if (res?.mass_properties) {
+        totalMassEdited = false;
+        syncMassPropertiesUI(res.mass_properties, true);
+        toast?.(`Fuel state ${res.mass_properties.fuel_state} (${Number(res.mass_properties.fuel_mass_kg || 0).toFixed(1)} kg)`);
+      }
+    } catch (e) {
+      toast?.(`Fuel state update failed: ${e.message}`);
+      const prevMp = lastView?.rendering_truth?.mass_properties || lastView?.observation;
+      if (prevMp) syncMassPropertiesUI(prevMp, true);
     }
   });
 
@@ -1359,8 +1461,7 @@ export function createRicochetPanel({ api, toast, onZoneSelect }) {
       const res = await api('/api/water/mass', payload);
       if (res?.mass_properties) {
         totalMassEdited = false;
-        lastServerTotalMass = Math.round(res.mass_properties.total_mass_kg);
-        el('rico-mass-kg').value = lastServerTotalMass;
+        syncMassPropertiesUI(res.mass_properties, true);
         toast?.(
           `Mass ${res.mass_properties.total_mass_kg.toFixed(1)} kg (ballast ${Number(res.mass_properties.ballast_mass_kg || 0).toFixed(0)} kg, ${res.mass_properties.waterproof ? 'SEALED' : 'UNSEALED'})`
         );
@@ -1376,8 +1477,7 @@ export function createRicochetPanel({ api, toast, onZoneSelect }) {
     try {
       const res = await api('/api/water/mass', { bilge_pump: true });
       if (res?.mass_properties) {
-        lastServerTotalMass = Math.round(res.mass_properties.total_mass_kg);
-        el('rico-mass-kg').value = lastServerTotalMass;
+        syncMassPropertiesUI(res.mass_properties, true);
       }
       toast?.('Bilge pump activated: ingressed flood water drained to 0 kg.');
     } catch (e) {
@@ -1521,14 +1621,16 @@ export function createRicochetPanel({ api, toast, onZoneSelect }) {
         syncingFromServer = false;
       }
 
-      if (mp.total_mass_kg != null && !totalMassEdited && !['rico-mass-kg', 'rico-ballast-kg', 'rico-ballast-x'].includes(document.activeElement?.id || '')) {
-        lastServerTotalMass = Math.round(mp.total_mass_kg);
-        el('rico-mass-kg').value = lastServerTotalMass;
-        if (mp.ballast_mass_kg != null) el('rico-ballast-kg').value = Math.round(mp.ballast_mass_kg);
-        if (mp.ballast_x_m != null) el('rico-ballast-x').value = Number(mp.ballast_x_m);
-        if (mp.waterproof != null) el('rico-waterproof').checked = Boolean(mp.waterproof);
-        updateLabels();
-      }
+      const mpSync = {
+        load_case: o.load_case ?? o.configuration?.load_case,
+        register_version: o.register_version ?? o.configuration?.register_version,
+        fuel_state: o.fuel_state ?? o.configuration?.fuel_state,
+        fuel_mass_kg: o.fuel_mass_kg ?? o.configuration?.fuel_mass_kg,
+        propulsion_installation: o.propulsion_installation ?? o.configuration?.propulsion_installation,
+        propulsion_off: o.propulsion_off ?? o.configuration?.propulsion_off,
+        ...mp,
+      };
+      syncMassPropertiesUI(mpSync, false);
 
       const banner = el('rico-warning-banner');
       if (banner) {
@@ -1544,7 +1646,7 @@ export function createRicochetPanel({ api, toast, onZoneSelect }) {
 
       const hullVariant = o.configuration?.hull_variant || 'f03';
       el('rico-hull-badge').textContent = hullVariant.toUpperCase();
-      if (mp.load_case) {
+      if (mpSync.load_case) {
         el('rico-load-case').disabled = false;
         el('rico-mass-kg').disabled = false;
       }
@@ -1566,6 +1668,7 @@ export function createRicochetPanel({ api, toast, onZoneSelect }) {
         `Draft: ${(o.hull_draft_m ?? h.draft_m)?.toFixed(3) ?? '—'} m | Freeboard: ${(o.freeboard_min_m ?? h.freeboard_min_m)?.toFixed(3) ?? '—'} m`,
         `Depth: ${(o.water_depth_m ?? h.mean_water_depth_m)?.toFixed(2) ?? '—'} m | Keel clr: ${(o.radar_clearance_m ?? h.ground_clearance_m)?.toFixed(2) ?? '—'} m`,
         `Displaced Vol: ${h.submerged_volume_m3?.toFixed(4) ?? '—'} m³ | Wetted: ${h.wetted_area_m2?.toFixed(2) ?? '—'} m²`,
+        `Load: ${mpSync.load_case || '—'} (${mpSync.register_version || '—'}) | Inst: ${mpSync.propulsion_installation || '—'} | Fuel: ${mpSync.fuel_state || 'dry'} (${Number(mpSync.fuel_mass_kg ?? 0).toFixed(1)} kg)`,
         `Mass: ${mp.total_mass_kg?.toFixed(1) ?? '—'} kg | Resv Buoy: ${mp.reserve_buoyancy_kg?.toFixed(0) ?? '—'} kg (Max ${mp.max_buoyancy_kg?.toFixed(0) ?? '—'})`,
         `Seal: ${sealStr} | Flood: ${Number(floodKg ?? 0).toFixed(1)} kg | Ballast: ${Number(mp.ballast_mass_kg ?? 0).toFixed(0)} kg @ X=${Number(mp.ballast_x_m ?? 0).toFixed(2)} m`,
         `Whirlpool: ${whirlStr}`,

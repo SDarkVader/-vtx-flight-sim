@@ -16,6 +16,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 from scipy.spatial.transform import Rotation
 
+from vtx.ricochet.mass_register import DEFAULT_REGISTER_VERSION, PropulsionInstallation
 from vtx.ricochet.plant import RICOCHET_SURFACE_LIMITS, RicochetCraft
 from vtx.water.datum import WaterEnvironmentConfig
 from vtx.water.lake_world import RicochetLakeWorld
@@ -282,8 +283,13 @@ def make_aircraft(
     world: Any,
     airframe_variant: str = 'ricochet-rc01-f03',
     water_config: WaterEnvironmentConfig | None = None,
-    load_case: str = 'LC-03',
+    load_case: str | None = 'LC-01',
     wind_world_mps: list[float] | tuple[float, float, float] | None = None,
+    register_version: str = DEFAULT_REGISTER_VERSION,
+    fuel_state: str | None = None,
+    fuel_mass_kg: float | None = None,
+    propulsion_installation: PropulsionInstallation | None = None,
+    propulsion_off: bool | None = None,
 ) -> RicochetCraft:
     if not isinstance(world, RicochetLakeWorld):
         raise ValueError('Ricochet craft requires the ricochet_lake environment')
@@ -299,6 +305,11 @@ def make_aircraft(
         hull_variant=hull_variant_for_airframe(airframe_variant),
         load_case=load_case,
         water_config=cfg,
+        register_version=register_version,
+        fuel_state=fuel_state,
+        fuel_mass_kg=fuel_mass_kg,
+        propulsion_installation=propulsion_installation,
+        propulsion_off=propulsion_off,
     )
     return craft
 
@@ -407,6 +418,12 @@ def sensor_observation(lab: Any) -> dict[str, Any]:
         waterproof=bool(mp.get('waterproof', True)),
         flood_water_kg=round(float(mp.get('flood_water_kg', 0.0)), 1),
         reserve_buoyancy_kg=round(float(mp.get('reserve_buoyancy_kg', 0.0)), 1),
+        load_case=mp.get('load_case', p.mass_register.load_case),
+        register_version=mp.get('register_version', p.mass_register.register_version),
+        fuel_state=mp.get('fuel_state', p.mass_register.fuel_state),
+        fuel_mass_kg=round(float(mp.get('fuel_mass_kg', p.mass_register.fuel_mass_kg)), 4),
+        propulsion_installation=mp.get('propulsion_installation', p.mass_register.propulsion_installation),
+        propulsion_off=bool(mp.get('propulsion_off', p.mass_register.propulsion_off)),
         wave_height_m=round(float(water_cfg.get('wave_height_m', 0.0)), 3),
         wave_period_s=round(float(water_cfg.get('wave_period_s', 0.0)), 2),
         wave_direction_deg=round(float(water_cfg.get('wave_direction_deg', 0.0)), 1),
@@ -422,7 +439,12 @@ def sensor_observation(lab: Any) -> dict[str, Any]:
             hull_variant=p.hull_bundle.variant_id,
             hull_geometry_sha256=p.provenance['hull_geometry_sha256'],
             solver_version=p.provenance['solver_version'],
-            load_case=p.mass_register.load_case,
+            register_version=mp.get('register_version', p.mass_register.register_version),
+            load_case=mp.get('load_case', p.mass_register.load_case),
+            fuel_state=mp.get('fuel_state', p.mass_register.fuel_state),
+            fuel_mass_kg=round(float(mp.get('fuel_mass_kg', p.mass_register.fuel_mass_kg)), 4),
+            propulsion_installation=mp.get('propulsion_installation', p.mass_register.propulsion_installation),
+            propulsion_off=bool(mp.get('propulsion_off', p.mass_register.propulsion_off)),
         ),
         scheduler_backlog_s=round(lab.clock_lag_s, 3),
         mission=lab.mission,

@@ -5,12 +5,18 @@ from __future__ import annotations
 import asyncio
 import json
 from pathlib import Path
+import shutil
 
+import numpy as np
 import pytest
 from fastapi import HTTPException
 
 import vtx.live_server as live_server
-from vtx.live_server import Laboratory, Mission, parse_action
+from vtx.live_server import Action, Laboratory, Mission, mission_dump, parse_action
+from vtx.phantom.controls import PhantomAction
+from vtx.ricochet.mass_register import DEFAULT_REGISTER_VERSION, LEGACY_REGISTER_VERSION
+from vtx.ricochet.plant import RicochetCraft
+from vtx.water.lake_world import RicochetLakeWorld
 
 
 def test_ricochet_server_routes_controls_mission_and_checkpoint(tmp_path, monkeypatch):
@@ -35,13 +41,19 @@ def test_ricochet_server_routes_controls_mission_and_checkpoint(tmp_path, monkey
     assert lp is not None and lp['nx'] == 65 and lp['ny'] == 65
     assert len(lp['elevation_m']) == 65 and len(lp['u_mps']) == 65 and len(lp['v_mps']) == 65
 
-    # 2. Pinned geometry endpoint matches Concept A SHA-256
+    # 2. Pinned geometry endpoint matches Concept A SHA-256 and supports ?variant=
     model_payload = asyncio.run(live_server.get_water_model())
     assert model_payload['hull_variant'] == 'concept_a'
     assert model_payload['geometry_sha256'] == env_res['view']['observation']['configuration']['hull_geometry_sha256']
     assert len(model_payload['meshes']) == 25
     assert all(m.get('pinned') is True for m in model_payload['meshes'])
     assert model_payload['boxes'] == []
+    f03_model = asyncio.run(live_server.get_water_model(variant='ricochet-rc01-f03'))
+    assert f03_model['hull_variant'] == 'f03_baseline'
+    assert len(f03_model['boxes']) >= 14
+    with pytest.raises(HTTPException) as bad_var_exc:
+        asyncio.run(live_server.get_water_model(variant='not-a-ricochet-hull'))
+    assert bad_var_exc.value.status_code == 422
     truth = env_res['view']['rendering_truth']
     for key in ('cg_body_m', 'cb_body_m', 'cn_yaw', 'cn_beta_per_rad', 'munk_moment_nm', 'fan_rpm', 'aero', 'mass', 'propulsors'):
         assert key in truth
@@ -66,15 +78,25 @@ def test_ricochet_server_routes_controls_mission_and_checkpoint(tmp_path, monkey
     wf = asyncio.run(live_server.get_water_state())
     assert wf['nx'] == 41 and wf['ny'] == 25
 
-    # 5. Update mass, CG & passenger state
+    # 5. Update mass, CG, passenger state, fuel_state & propulsion_installation
     mp_res = asyncio.run(live_server.update_water_mass({
         'passenger_aboard': False,
         'payload_mass_kg': 45.0,
         'cg_shift_vtx_m': [0.15, 0.0, 0.02],
+        'propulsion_installation': 'fuel_cell_paired',
+        'fuel_state': 'nominal',
     }))
     assert mp_res['ok'] is True
     assert mp_res['mass_properties']['passenger_aboard'] is False
     assert mp_res['mass_properties']['payload_mass_kg'] == pytest.approx(45.0)
+    assert mp_res['mass_properties']['propulsion_installation'] == 'fuel_cell_paired'
+    assert mp_res['mass_properties']['fuel_state'] == 'nominal'
+    assert mp_res['mass_properties']['fuel_mass_kg'] == pytest.approx(10.0)
+    assert mp_res['observation']['propulsion_installation'] == 'fuel_cell_paired'
+    assert mp_res['observation']['fuel_state'] == 'nominal'
+    with pytest.raises(HTTPException) as bad_inst_exc:
+        asyncio.run(live_server.update_water_mass({'propulsion_installation': 'energy_pack_alternate'}))
+    assert bad_inst_exc.value.status_code == 422
 
     # 6. Model preview switch to F03 baseline
     preview_res = asyncio.run(live_server.model_preview({
@@ -84,7 +106,7 @@ def test_ricochet_server_routes_controls_mission_and_checkpoint(tmp_path, monkey
     }))
     assert preview_res['observation']['configuration']['hull_variant'] == 'f03_baseline'
 
-    # 7. Start Ricochet Lake mission, reject legacy action with 409, accept ricochet-1
+    # 7. Start Ricochet Lake mission (defaults to LC-01), reject legacy action with 409, accept ricochet-1
     mission_res = lab.start(Mission(
         environment='ricochet_lake',
         airframe_variant='ricochet-concept-a',
@@ -92,7 +114,6 @@ def test_ricochet_server_routes_controls_mission_and_checkpoint(tmp_path, monkey
         destination=[350.0, 0.0],
         authority='manual',
         time_scale=1.0,
-        ricochet_load_case='LC-03',
     ))
     run_id = mission_res['run_id']
     start_view = lab.view()
@@ -100,8 +121,15 @@ def test_ricochet_server_routes_controls_mission_and_checkpoint(tmp_path, monkey
     assert start_view['rendering_truth']['body_poses']['airframe']['position'][2] > -1.0
     assert start_view['rendering_truth']['hydrodynamics']['freeboard_min_m'] > 0.15
 
-    # Pilot sensor observation exposes full ROM + achieved surfaces without leaking raw truth solver internals
+    # Pilot sensor observation exposes full ROM + loading contract + achieved surfaces without leaking raw truth solver internals
     pilot_obs = start_view['observation']
+    assert pilot_obs['load_case'] == 'LC-01'
+    assert pilot_obs['register_version'] == DEFAULT_REGISTER_VERSION
+    assert pilot_obs['fuel_state'] == 'dry'
+    assert pilot_obs['propulsion_installation'] == 'baseline_pack'
+    assert pilot_obs['propulsion_off'] is False
+    assert pilot_obs['configuration']['load_case'] == 'LC-01'
+    assert pilot_obs['configuration']['register_version'] == DEFAULT_REGISTER_VERSION
     assert pilot_obs['command_mode'] == 'hold_until_changed'
     assert 'surface_limits' in pilot_obs and 'rudder_deg' in pilot_obs['surface_limits']
     assert 'control_surfaces' in pilot_obs and 'rudder' in pilot_obs['control_surfaces']
@@ -210,6 +238,12 @@ def test_frontend_ricochet_assets_present():
     for marker in (
         'vaderland_caldera_rim',
         'vaderland_dock_yard',
+        'rico-load-case',
+        'LC-MAX',
+        'rico-propulsion-installation',
+        'rico-fuel-state',
+        'rico-loading-meta',
+        'syncMassPropertiesUI',
         'rico-waterproof',
         'rico-bilge-pump',
         'rico-ballast-kg',
@@ -277,3 +311,305 @@ def test_ricochet_whirlpool_wake_ballast_waterproof_endpoints(tmp_path, monkeypa
     obs_whirl = preview_wp['observation']
     assert obs_whirl['whirlpool_hazard']['in_influence'] is True
     assert {'WHIRLPOOL_CAPTURE', 'WHIRLPOOL_SHEAR'} & set(obs_whirl['warning_lamps'])
+
+
+def test_laboratory_ricochet_complete_persistence_determinism_and_v1_limitations(tmp_path, monkeypatch):
+    orig_root = tmp_path / 'orig'
+    rest_root = tmp_path / 'rest'
+    v1_root = tmp_path / 'v1'
+
+    monkeypatch.setenv('VTX_DATA_ROOT', str(orig_root))
+    lab_orig = Laboratory(data_root=orig_root)
+    mission = Mission(
+        environment='ricochet_lake',
+        airframe_variant='ricochet-concept-a',
+        departure=[40.0, 0.0],
+        destination=[350.0, 0.0],
+        authority='manual',
+        ricochet_load_case='LC-01',
+        water_config={
+            'wave_mode': 'irregular',
+            'wave_height_m': 0.45,
+            'wave_period_s': 3.8,
+            'wave_direction_deg': 170.0,
+            'wave_seed': 41031,
+            'wind_speed_mps': 6.0,
+            'wind_direction_deg': 200.0,
+            'current_speed_mps': 0.70,
+            'current_direction_deg': 60.0,
+            'wake_enabled': True,
+            'whirlpools_enabled': True,
+        },
+    )
+    started = lab_orig.start(mission)
+    run_id = started['run_id']
+    lab_orig.accept_action(parse_action({
+        'schema': 'ricochet-1',
+        'authority': 'manual',
+        'expected_run_id': run_id,
+        'throttle': 0.68,
+        'differential_thrust': 0.20,
+        'rudder_deg': 15.0,
+        'elevator_deg': 2.5,
+        'reason': 'Persistence phase 1 manoeuvre',
+    }))
+    for _ in range(800):  # t1 = 2.0 s
+        lab_orig.integrate()
+    assert lab_orig.aircraft.data.time == pytest.approx(2.0, abs=1e-12)
+
+    lab_orig.checkpoint(force=True)
+    if lab_orig.audit_file:
+        lab_orig.audit_file.close()
+        lab_orig.audit_file = None
+
+    shutil.copytree(orig_root, rest_root)
+    lab_orig.audit_file = (lab_orig.log_path / 'events.jsonl').open('a', encoding='utf-8')
+
+    lab_rest = Laboratory(data_root=rest_root)
+    assert lab_rest.active is True
+    assert lab_rest.paused is True
+    assert lab_rest.run_id == run_id
+    assert lab_rest.recovery_notice is None
+    assert lab_rest.aircraft.legacy_checkpoint_limitations == []
+    lab_rest.paused = False
+
+    # Run both uninterrupted and restored Laboratory instances from t1=2.0 s to t2=4.0 s
+    for _ in range(200):
+        lab_orig.integrate()
+        lab_rest.integrate()
+
+    act2 = {
+        'schema': 'ricochet-1',
+        'authority': 'manual',
+        'expected_run_id': run_id,
+        'throttle': 0.45,
+        'rudder_deg': -12.0,
+        'reverse_bucket': 0.35,
+        'reason': 'Persistence phase 2 manoeuvre',
+    }
+    lab_orig.accept_action(parse_action(act2))
+    lab_rest.accept_action(parse_action(act2))
+    for _ in range(600):  # t2 = 4.0 s
+        lab_orig.integrate()
+        lab_rest.integrate()
+
+    ao = lab_orig.aircraft
+    ar = lab_rest.aircraft
+    assert ao.data.time == pytest.approx(4.0, abs=1e-12)
+    assert ar.data.time == pytest.approx(4.0, abs=1e-12)
+    assert abs(ar.water_field.sim_time_s - ao.water_field.sim_time_s) < 1e-12
+    assert abs(ar.water_field._swe_accum_s - ao.water_field._swe_accum_s) < 1e-12
+    assert np.max(np.abs(ar.data.qpos - ao.data.qpos)) < 1e-9
+    assert np.max(np.abs(ar.data.qvel - ao.data.qvel)) < 1e-9
+    assert np.max(np.abs(ar.data.qacc_warmstart - ao.data.qacc_warmstart)) < 1e-9
+    assert np.max(np.abs(ar.water_field.shallow.h - ao.water_field.shallow.h)) < 1e-9
+    assert np.max(np.abs(ar.water_field.shallow.hu - ao.water_field.shallow.hu)) < 1e-9
+    assert np.max(np.abs(ar.water_field.shallow.hv - ao.water_field.shallow.hv)) < 1e-9
+    assert ar.water_field._vessel_wake == ao.water_field._vessel_wake
+
+    so = ao.physical_snapshot()
+    sr = ar.physical_snapshot()
+    assert sr['t_s'] == so['t_s']
+    assert sr['position_world_m'] == pytest.approx(so['position_world_m'], abs=1e-9)
+    assert sr['velocity_world_mps'] == pytest.approx(so['velocity_world_mps'], abs=1e-9)
+    assert sr['hydrodynamics']['submerged_volume_m3'] == pytest.approx(so['hydrodynamics']['submerged_volume_m3'], abs=1e-9)
+    lab_orig.stop('Uninterrupted persistence check done')
+    lab_rest.stop('Restored persistence check done')
+
+    # Historical v1 checkpoint restoration into Laboratory preserves rc01-lc-v1 semantics & reports limitations
+    lab_v1 = Laboratory(data_root=v1_root)
+    lab_v1.start(Mission(
+        environment='ricochet_lake',
+        airframe_variant='ricochet-concept-a',
+        departure=[40.0, 0.0],
+        destination=[350.0, 0.0],
+        authority='manual',
+    ))
+    for _ in range(40):
+        lab_v1.integrate()
+    lab_v1.checkpoint(force=True)
+    v1_run_id = lab_v1.run_id
+    if lab_v1.audit_file:
+        lab_v1.audit_file.close()
+        lab_v1.audit_file = None
+
+    meta_path = v1_root / 'evidence' / 'flights' / v1_run_id / 'metadata.json'
+    meta = json.loads(meta_path.read_text(encoding='utf-8'))
+    meta['request'].pop('ricochet_load_case', None)
+    meta_path.write_text(json.dumps(meta, indent=2), encoding='utf-8')
+
+    v1_ref_craft = RicochetCraft(
+        RicochetLakeWorld(),
+        variant='ricochet-concept-a',
+        hull_variant='concept_a',
+        load_case='LC-03',
+        register_version=LEGACY_REGISTER_VERSION,
+    )
+    cp_data = json.loads(lab_v1.checkpoint_path.read_text(encoding='utf-8'))
+    cp_data['model_xml_sha256'] = v1_ref_craft.provenance['model_xml_sha256']
+    plant_v1 = cp_data['plant']
+    for k in (
+        'checkpoint_version',
+        'water_field',
+        'qacc_warmstart',
+        'act',
+        'qfrc_applied',
+        'xfrc_applied',
+        'register_version',
+        'load_case',
+        'fuel_state',
+        'fuel_mass_kg',
+        'propulsion_installation',
+        'propulsion_off',
+    ):
+        plant_v1.pop(k, None)
+    plant_v1['mass_load_case'] = 'LC-03'
+    lab_v1.checkpoint_path.write_text(json.dumps(cp_data), encoding='utf-8')
+
+    restored_v1 = Laboratory(data_root=v1_root)
+    assert restored_v1.active is True
+    assert restored_v1.aircraft.mass_register.register_version == LEGACY_REGISTER_VERSION
+    assert restored_v1.aircraft.mass_register.load_case == 'LC-03'
+    assert restored_v1.aircraft.mass_properties()['total_mass_kg'] == pytest.approx(900.0)
+    assert restored_v1.recovery_notice is not None
+    assert 'shallow-water' in restored_v1.recovery_notice
+    assert 'rc01-lc-v1' in restored_v1.recovery_notice
+    restored_v1.stop('Legacy v1 limitation check done')
+
+
+def test_r6_and_phantom_isolation_and_422_compatibility(tmp_path, monkeypatch):
+    dep = dict(departure=[13.7, -28.4], destination=[-45, 18], authority='manual')
+    m_dep = Mission(**dep)
+    dumped_model = m_dep.model_dump()
+    dumped_fn = mission_dump(m_dep)
+    assert 'water_config' not in dumped_model and 'ricochet_load_case' not in dumped_model
+    assert 'water_config' not in dumped_fn and 'ricochet_load_case' not in dumped_fn
+    assert 'phantom' not in dumped_fn
+
+    monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(live_server, 'ROOT', tmp_path)
+    lab = Laboratory(data_root=tmp_path)
+    monkeypatch.setattr(live_server, 'lab', lab)
+
+    # Incompatible (environment, airframe_variant) rejections with HTTP 422 before mutating state
+    orig_aircraft = lab.aircraft
+    orig_world = lab.world
+    orig_gen = lab.preview_generation
+
+    for bad_mission in (
+        Mission(environment='airport', airframe_variant='ricochet-concept-a', departure=[40.0, 0.0], destination=[350.0, 0.0]),
+        Mission(environment='sandbox', airframe_variant='ricochet-rc01-f03', departure=[40.0, 0.0], destination=[350.0, 0.0]),
+        Mission(environment='ricochet_lake', airframe_variant='r6', departure=[40.0, 0.0], destination=[350.0, 0.0]),
+        Mission(environment='ricochet_lake', airframe_variant='phantom-a10b', departure=[40.0, 0.0], destination=[350.0, 0.0]),
+    ):
+        with pytest.raises(HTTPException) as exc:
+            lab.start(bad_mission)
+        assert exc.value.status_code == 422
+        assert lab.aircraft is orig_aircraft
+        assert lab.world is orig_world
+        assert lab.preview_generation == orig_gen
+
+    for bad_preview in (
+        {'environment': 'airport', 'airframe_variant': 'ricochet-concept-a'},
+        {'environment': 'sandbox', 'airframe_variant': 'ricochet-rc01-f03'},
+        {'environment': 'ricochet_lake', 'airframe_variant': 'r6'},
+        {'environment': 'ricochet_lake', 'airframe_variant': 'phantom-fx'},
+    ):
+        with pytest.raises(HTTPException) as exc:
+            asyncio.run(live_server.model_preview(bad_preview))
+        assert exc.value.status_code == 422
+        assert lab.aircraft is orig_aircraft
+        assert lab.world is orig_world
+        assert lab.preview_generation == orig_gen
+
+    for bad_env_req in (
+        {'environment': 'airport', 'airframe_variant': 'ricochet-concept-a'},
+        {'environment': 'ricochet_lake', 'airframe_variant': 'r6'},
+        {'environment': 'ricochet_lake', 'airframe_variant': 'phantom-a10b'},
+    ):
+        with pytest.raises(HTTPException) as exc:
+            asyncio.run(live_server.set_environment(bad_env_req))
+        assert exc.value.status_code == 422
+        assert lab.aircraft is orig_aircraft
+        assert lab.world is orig_world
+        assert lab.preview_generation == orig_gen
+
+    # Non-Ricochet model_preview from ricochet_lake without explicit environment switches cleanly to airport
+    asyncio.run(live_server.set_environment({'environment': 'ricochet_lake', 'airframe_variant': 'ricochet-concept-a'}))
+    assert lab.world.environment_key == 'ricochet_lake'
+    prev_r6 = asyncio.run(live_server.model_preview({'airframe_variant': 'r6'}))
+    assert prev_r6['environment']['key'] == 'airport'
+    assert prev_r6['observation']['configuration']['airframe_variant'] == 'r6'
+
+    asyncio.run(live_server.set_environment({'environment': 'ricochet_lake', 'airframe_variant': 'ricochet-rc01-f03'}))
+    prev_ph = asyncio.run(live_server.model_preview({'airframe_variant': 'phantom-a10b'}))
+    assert prev_ph['environment']['key'] == 'airport'
+    assert prev_ph['observation']['configuration']['airframe_variant'] == 'phantom-a10b'
+
+    # Full preservation of all R6 & Phantom variants across environments, controls, checkpoints, and retries
+    r6_variants = ('r6', 'r6_variator', 'light', 'baseline')
+    phantom_variants = ('phantom-a10b', 'phantom-fx', 'phantom', 'phantom-a9', 'phantom-fx-a9')
+
+    for env_key in ('airport', 'sandbox'):
+        for var in r6_variants:
+            v_root = tmp_path / f'{env_key}_{var}'
+            monkeypatch.setenv('VTX_DATA_ROOT', str(v_root))
+            v_lab = Laboratory(data_root=v_root)
+            v_lab.start(Mission(**dep, environment=env_key, airframe_variant=var))
+            assert v_lab.world.environment_key == env_key
+            assert v_lab.aircraft.airframe_variant == var
+            meta = json.loads((v_lab.log_path / 'metadata.json').read_text(encoding='utf-8'))
+            assert 'water_config' not in meta['request'] and 'ricochet_load_case' not in meta['request']
+            obs = v_lab.sensor_observation()
+            assert v_lab.accept_action(Action(
+                authority='manual',
+                observation_id=obs['observation_id'],
+                engine=0.5,
+                collective_deg=[2.0] * 4,
+                tilt_deg=[[0.0, 0.0]] * 4,
+                reason='R6 isolation check',
+            ))['accepted']
+            for _ in range(10):
+                v_lab.integrate()
+            v_lab.checkpoint(force=True)
+            if v_lab.audit_file:
+                v_lab.audit_file.close()
+                v_lab.audit_file = None
+            v_rest = Laboratory(data_root=v_root)
+            assert v_rest.active and v_rest.aircraft.airframe_variant == var
+            v_rest.stop('R6 check done')
+            ret = v_rest.retry({'authority': 'manual'})
+            assert ret['run_id'] and v_rest.aircraft.airframe_variant == var
+            v_rest.stop('R6 retry done')
+
+    for var in phantom_variants:
+        v_root = tmp_path / f'phantom_{var}'
+        monkeypatch.setenv('VTX_DATA_ROOT', str(v_root))
+        v_lab = Laboratory(data_root=v_root)
+        v_lab.start(Mission(**dep, environment='airport', airframe_variant=var))
+        assert getattr(v_lab.aircraft, 'is_phantom', False)
+        assert v_lab.aircraft.variant == var
+        meta = json.loads((v_lab.log_path / 'metadata.json').read_text(encoding='utf-8'))
+        assert 'water_config' not in meta['request'] and 'ricochet_load_case' not in meta['request']
+        obs = v_lab.sensor_observation()
+        assert v_lab.accept_action(PhantomAction(
+            schema='phantom-fbw-1',
+            authority='manual',
+            observation_id=obs['observation_id'],
+            collective=0.1,
+            reason='Phantom isolation check',
+        ))['accepted']
+        for _ in range(10):
+            v_lab.integrate()
+        v_lab.checkpoint(force=True)
+        if getattr(v_lab.aircraft, 'step_log', None):
+            v_lab.aircraft.step_log.close()
+        if v_lab.audit_file:
+            v_lab.audit_file.close()
+            v_lab.audit_file = None
+        v_rest = Laboratory(data_root=v_root)
+        assert v_rest.active and v_rest.aircraft.variant == var
+        v_rest.stop('Phantom check done')
+        ret = v_rest.retry({'authority': 'manual'})
+        assert ret['run_id'] and v_rest.aircraft.variant == var
+        v_rest.stop('Phantom retry done')

@@ -128,6 +128,7 @@ class ShallowWaterSolver:
         else:
             self.bed = np.vectorize(world.terrain_z)(xg, yg).astype(np.float64)
 
+        self._state_version = 0
         self.reset(water_level_m=self.config.water_level_m)
 
     def reset(self, water_level_m: float | None = None) -> None:
@@ -140,6 +141,7 @@ class ShallowWaterSolver:
         self.substep_count = 0
         self.initial_volume_m3 = float(np.sum(self.h) * self.cell_area)
         self._expected_volume_m3 = self.initial_volume_m3
+        self._state_version = getattr(self, '_state_version', 0) + 1
 
     def set_water_level(self, new_water_level_m: float) -> None:
         """Adjust target water datum uniformly across all currently/newly wetted cells."""
@@ -160,6 +162,7 @@ class ShallowWaterSolver:
         self.hv[dry] = 0.0
         self.water_level_m = new_wl
         self._expected_volume_m3 = float(np.sum(self.h) * self.cell_area)
+        self._state_version += 1
 
     def inject_solitary_pulse(self, cx: float, cy: float, amp_m: float, sigma_m: float) -> None:
         """Add a conservative zero-net-check or deterministic free-surface pulse (tests/waves)."""
@@ -168,6 +171,7 @@ class ShallowWaterSolver:
         dh = amp_m * np.exp(-0.5 * r2) * (self.h > 0.2)
         self.h = np.maximum(0.0, self.h + dh)
         self._expected_volume_m3 += float(np.sum(dh) * self.cell_area)
+        self._state_version += 1
 
     def apply_momentum_impulse(
         self,
@@ -217,6 +221,7 @@ class ShallowWaterSolver:
         cap = np.where(q_mag > max_q, max_q / np.maximum(q_mag, 1e-12), 1.0)
         self.hu[iy0:iy1, ix0:ix1] = np.where(wet, hu_next * cap, 0.0)
         self.hv[iy0:iy1, ix0:ix1] = np.where(wet, hv_next * cap, 0.0)
+        self._state_version += 1
 
     def max_stable_dt(self, cfl: float = 0.42) -> float:
         g = float(self.config.g_m_s2)
@@ -245,6 +250,7 @@ class ShallowWaterSolver:
             remaining -= dt_sub
             self.t += dt_sub
             self.substep_count += 1
+        self._state_version += 1
 
     def _advance_substep(self, dt: float) -> None:
         g = float(self.config.g_m_s2)
@@ -411,6 +417,61 @@ class ShallowWaterSolver:
             ),
         }
 
+    def checkpoint_state(self) -> dict[str, Any]:
+        """Serialize complete float64 shallow-water solver state into JSON-safe types."""
+        return {
+            'nx': int(self.nx),
+            'ny': int(self.ny),
+            'half_x': float(self.half_x),
+            'half_y': float(self.half_y),
+            'manning_n': float(self.manning_n),
+            'water_level_m': float(self.water_level_m),
+            'initial_volume_m3': float(self.initial_volume_m3),
+            'h': self.h.astype(np.float64, copy=False).tolist(),
+            'hu': self.hu.astype(np.float64, copy=False).tolist(),
+            'hv': self.hv.astype(np.float64, copy=False).tolist(),
+            't': float(self.t),
+            'substep_count': int(self.substep_count),
+            '_expected_volume_m3': float(self._expected_volume_m3),
+            'config': self.config.to_dict(),
+        }
+
+    def restore_state(self, state: dict[str, Any]) -> None:
+        """Restore complete float64 shallow-water solver state from a checkpoint."""
+        if int(state['nx']) != self.nx or int(state['ny']) != self.ny:
+            raise ValueError(
+                f"ShallowWaterSolver grid mismatch: expected ({self.nx}, {self.ny}), "
+                f"got ({state['nx']}, {state['ny']})"
+            )
+        if abs(float(state['half_x']) - self.half_x) > 1e-6 or abs(float(state['half_y']) - self.half_y) > 1e-6:
+            raise ValueError(
+                f"ShallowWaterSolver domain mismatch: expected ({self.half_x}, {self.half_y}), "
+                f"got ({state['half_x']}, {state['half_y']})"
+            )
+
+        expected_shape = (self.ny, self.nx)
+        restored_arrays: dict[str, np.ndarray] = {}
+        for key in ('h', 'hu', 'hv'):
+            arr = np.asarray(state[key], dtype=np.float64)
+            if arr.shape != expected_shape or not np.all(np.isfinite(arr)):
+                raise ValueError(f'Invalid shallow-water checkpoint array {key!r}: shape={arr.shape}')
+            restored_arrays[key] = arr.copy()
+
+        if 'config' in state and state['config'] is not None:
+            cfg = state['config']
+            self.config = cfg if isinstance(cfg, WaterEnvironmentConfig) else WaterEnvironmentConfig.from_dict(cfg)
+        if 'manning_n' in state:
+            self.manning_n = float(state['manning_n'])
+        self.water_level_m = float(state.get('water_level_m', self.config.water_level_m))
+        self.h = restored_arrays['h']
+        self.hu = restored_arrays['hu']
+        self.hv = restored_arrays['hv']
+        self.t = float(state['t'])
+        self.substep_count = int(state['substep_count'])
+        self._expected_volume_m3 = float(state['_expected_volume_m3'])
+        self.initial_volume_m3 = float(state.get('initial_volume_m3', self._expected_volume_m3))
+        self._state_version += 1
+
 
 @dataclass
 class HybridWaterSample:
@@ -441,7 +502,12 @@ class HybridWaterField:
         self.sim_time_s = 0.0
         self.swe_step_interval_s = max(float(swe_step_interval_s), 0.0025)
         self._swe_accum_s = 0.0
-        self._vessel_wake: dict[str, Any] = {
+        self._vessel_wake: dict[str, Any] = self._default_wake_state()
+        self._state_version = 0
+
+    @staticmethod
+    def _default_wake_state() -> dict[str, Any]:
+        return {
             'active': False,
             'x': 40.0,
             'y': 0.0,
@@ -457,6 +523,71 @@ class HybridWaterField:
             'length_m': 6.8,
             't_s': 0.0,
         }
+
+    def reset(self, water_level_m: float | None = None) -> None:
+        """Reset water clock, SWE accumulator, wake overlay, and shallow-water fields."""
+        if water_level_m is not None:
+            wl = float(water_level_m)
+            if abs(wl - float(self.config.water_level_m)) > 1e-12:
+                merged = self.config.to_dict()
+                merged['water_level_m'] = wl
+                self.config = WaterEnvironmentConfig.from_dict(merged)
+                self.open_water.reconfigure(self.config)
+                self.shallow.config = self.config
+        self.shallow.reset(water_level_m=water_level_m)
+        self.sim_time_s = 0.0
+        self._swe_accum_s = 0.0
+        self._vessel_wake = self._default_wake_state()
+        self._state_version += 1
+
+    def checkpoint_state(self) -> dict[str, Any]:
+        """Serialize complete float64 hybrid water field and SWE solver state."""
+        wake_copy = {
+            k: (
+                bool(v)
+                if isinstance(v, (bool, np.bool_))
+                else (float(v) if isinstance(v, (int, float, np.integer, np.floating)) else v)
+            )
+            for k, v in self._vessel_wake.items()
+        }
+        return {
+            'sim_time_s': float(self.sim_time_s),
+            '_swe_accum_s': float(self._swe_accum_s),
+            'swe_step_interval_s': float(self.swe_step_interval_s),
+            '_vessel_wake': wake_copy,
+            'config': self.config.to_dict(),
+            'shallow': self.shallow.checkpoint_state(),
+        }
+
+    def restore_state(self, state: dict[str, Any]) -> None:
+        """Restore complete hybrid water field and SWE solver state from a checkpoint."""
+        cfg_data = state.get('config')
+        if cfg_data is not None:
+            cfg = cfg_data if isinstance(cfg_data, WaterEnvironmentConfig) else WaterEnvironmentConfig.from_dict(cfg_data)
+            self.config = cfg
+            self.open_water.reconfigure(cfg)
+            self.shallow.config = cfg
+
+        self.sim_time_s = float(state['sim_time_s'])
+        self._swe_accum_s = float(state['_swe_accum_s'])
+        if 'swe_step_interval_s' in state:
+            self.swe_step_interval_s = max(float(state['swe_step_interval_s']), 0.0025)
+
+        wake_raw = state.get('_vessel_wake')
+        wake_restored = self._default_wake_state()
+        if isinstance(wake_raw, dict):
+            for k, v in wake_raw.items():
+                if k == 'active':
+                    wake_restored[k] = bool(v)
+                elif isinstance(v, (int, float, np.integer, np.floating)):
+                    wake_restored[k] = float(v)
+                else:
+                    wake_restored[k] = v
+        self._vessel_wake = wake_restored
+
+        if 'shallow' in state and state['shallow'] is not None:
+            self.shallow.restore_state(state['shallow'])
+        self._state_version += 1
 
     def apply_vessel_disturbance(
         self,
@@ -496,6 +627,7 @@ class HybridWaterField:
             'length_m': float(length_m),
             't_s': self.sim_time_s if t_s is None else float(t_s),
         }
+        self._state_version += 1
         if not active or not getattr(self.config, 'wake_enabled', True):
             return
         # Opposing hull hydrodynamic drag/lift + aft ducted-fan slipstream wash (-cos(psi), -sin(psi))
@@ -526,6 +658,7 @@ class HybridWaterField:
         self.shallow.config = cfg
         if abs(cfg.water_level_m - old_wl) > 1e-9:
             self.shallow.set_water_level(cfg.water_level_m)
+        self._state_version += 1
         return cfg
 
     def step(self, dt: float) -> None:
@@ -535,6 +668,7 @@ class HybridWaterField:
         if self._swe_accum_s >= self.swe_step_interval_s - 1e-9:
             self.shallow.step(self._swe_accum_s)
             self._swe_accum_s = 0.0
+        self._state_version += 1
 
     def evaluate(
         self,

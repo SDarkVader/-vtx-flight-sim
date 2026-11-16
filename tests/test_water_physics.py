@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import math
 
 import mujoco as mj
@@ -13,7 +14,14 @@ from vtx.ricochet.hull_geometry import (
     CONCEPT_A_GLB,
     HullGeometryRegistry,
 )
-from vtx.ricochet.mass_register import axial_f03_to_vtx, polar_f03_to_vtx
+from vtx.ricochet.mass_register import (
+    DEFAULT_REGISTER_VERSION,
+    LEGACY_REGISTER_VERSION,
+    MassPropertiesRegister,
+    axial_f03_to_vtx,
+    compare_propulsion_installations,
+    polar_f03_to_vtx,
+)
 
 
 def _make_closed_box_mesh(name: str, center: tuple[float, float, float], half_extents: tuple[float, float, float]) -> WatertightMesh:
@@ -39,7 +47,11 @@ def _make_closed_box_mesh(name: str, center: tuple[float, float, float], half_ex
     ], dtype=np.int32)
     return WatertightMesh(name=name, vertices=verts, faces=faces, source_id='test_box')
 from vtx.ricochet.plant import DT, RicochetCraft
-from vtx.ricochet.scenarios import SCENARIO_CATALOG, run_ricochet_scenario
+from vtx.ricochet.scenarios import (
+    SCENARIO_CATALOG,
+    run_propulsion_installation_comparison,
+    run_ricochet_scenario,
+)
 from vtx.water.datum import G_SI, RHO_FRESHWATER_15C, VERTICAL_DATUM, WaterEnvironmentConfig
 from vtx.water.hydrodynamics import (
     HullComponentMesh,
@@ -123,24 +135,28 @@ def test_archimedes_equilibrium_and_center_of_buoyancy_analytical(lake_world: Ri
 
 def test_mass_cg_inertia_sensitivity_and_runtime_override(lake_world: RicochetLakeWorld):
     cfg = WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0)
-    c_light = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-01', water_config=cfg)
+    c_light = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-03', water_config=cfg)
     c_light.spawn(40.0, 0.0, 0.0)
     _step_craft(c_light, 2.5)
     s_light = c_light.physical_snapshot()
 
-    c_heavy = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-04', water_config=cfg)
+    c_heavy = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-MAX', water_config=cfg)
     c_heavy.spawn(40.0, 0.0, 0.0)
     _step_craft(c_heavy, 2.5)
     s_heavy = c_heavy.physical_snapshot()
 
     # Heavier load case must displace more water volume & ride deeper
-    assert s_heavy['mass_properties']['total_mass_kg'] > s_light['mass_properties']['total_mass_kg'] + 100.0
-    assert s_heavy['hydrodynamics']['submerged_volume_m3'] > s_light['hydrodynamics']['submerged_volume_m3'] + 0.10
+    assert s_light['mass_properties']['total_mass_kg'] == pytest.approx(815.0)
+    assert s_heavy['mass_properties']['total_mass_kg'] == pytest.approx(1050.0)
+    assert s_heavy['mass_properties']['total_mass_kg'] > s_light['mass_properties']['total_mass_kg'] + 200.0
+    assert s_heavy['hydrodynamics']['submerged_volume_m3'] > s_light['hydrodynamics']['submerged_volume_m3'] + 0.20
     assert s_heavy['hydrodynamics']['draft_m'] > s_light['hydrodynamics']['draft_m']
 
     # Forward CG shift (+0.45 m in +X bow direction) pitches bow down (+Y MuJoCo pitch rotation > 0)
     pitch_nominal = s_light['pitch_deg']
+    pos_before = c_light.data.qpos.copy()
     mp = c_light.update_mass_properties(cg_shift_vtx_m=[0.45, 0.0, 0.0])
+    np.testing.assert_array_equal(c_light.data.qpos, pos_before)
     assert mp['cg_vtx_m'][0] > c_light.mass_register.aggregate()['cg_vtx_m'][0] - 1e-6
     _step_craft(c_light, 2.0)
     assert c_light.physical_snapshot()['pitch_deg'] > pitch_nominal + 1.0
@@ -366,6 +382,18 @@ def test_published_planing_and_resistance_benchmark_trend(lake_world: RicochetLa
 def test_all_eight_operational_ricochet_scenarios():
     catalog = SCENARIO_CATALOG
     assert len(catalog) == 8
+    assert catalog['1_empty_static_flotation'].load_case == 'LC-03'
+    assert catalog['2_unoccupied_stowed_waves'].load_case == 'LC-02'
+    assert catalog['2_unoccupied_stowed_waves'].propulsion_off is True
+    for sid in (
+        '3_passenger_aboard_underway',
+        '4_accel_decel',
+        '5_turning_lateral_drift',
+        '6_head_following_beam_waves',
+        '7_shallow_water_operation',
+        '8_docking_and_ramp_recovery',
+    ):
+        assert catalog[sid].load_case == 'LC-01'
 
     durations = {
         '1_empty_static_flotation': 2.0,
@@ -381,6 +409,8 @@ def test_all_eight_operational_ricochet_scenarios():
     for sid in catalog:
         res = run_ricochet_scenario(sid, hull_variant='concept_a', duration_override_s=durations[sid])
         summaries[sid] = res
+        assert res['register_version'] == DEFAULT_REGISTER_VERSION
+        assert res['load_case'] == catalog[sid].load_case
         telem = res['telemetry']
         assert len(telem) >= 10
         fin = telem[-1]
@@ -390,6 +420,7 @@ def test_all_eight_operational_ricochet_scenarios():
         assert 'sponson_port' in fin['attachment_loads']
 
     assert summaries['1_empty_static_flotation']['summary']['final_speed_mps'] < 0.25
+    assert summaries['2_unoccupied_stowed_waves']['summary']['propulsion_off'] is True
     assert summaries['3_passenger_aboard_underway']['summary']['peak_speed_mps'] > 2.0
     assert summaries['4_accel_decel']['summary']['final_speed_mps'] < summaries['4_accel_decel']['summary']['peak_speed_mps']
     yaw_rates = [abs(math.degrees(r['omega_world_rad_s'][2])) for r in summaries['5_turning_lateral_drift']['telemetry']]
@@ -537,4 +568,323 @@ def test_waterproof_flotation_breached_sinking_bilge_recovery_and_ballast_trim(l
     _step_craft(craft, 0.5)
     pitch_aft = Rotation.from_quat(craft.data.xquat[craft.bids['airframe']][[1, 2, 3, 0]]).as_euler('xyz', degrees=True)[1]
     assert pitch_fwd > pitch_aft + 0.8
+
+
+def test_f03_loading_contract_v2_and_v1_backward_compat(lake_world: RicochetLakeWorld):
+    # 1. LC-01: Passenger aboard, underway (900 kg, seat track (1.30, 0.0, 0.80), propulsion armed)
+    mr_lc01 = MassPropertiesRegister.for_load_case('LC-01')
+    agg_lc01 = mr_lc01.aggregate()
+    assert agg_lc01['register_version'] == DEFAULT_REGISTER_VERSION
+    assert agg_lc01['load_case'] == 'LC-01'
+    assert agg_lc01['passenger_aboard'] is True
+    assert agg_lc01['passenger_mass_kg'] == pytest.approx(85.0)
+    assert agg_lc01['propulsion_off'] is False
+    assert agg_lc01['total_mass_kg'] == pytest.approx(900.0)
+    pax_item = next(i for i in agg_lc01['items'] if i['component_id'] == 'passenger_pilot')
+    assert pax_item['cg_f03_m'] == pytest.approx([1.30, 0.0, 0.80])
+
+    # 2. LC-02: Unoccupied stowed, propulsion off (815 kg, propulsion physically locked out)
+    mr_lc02 = MassPropertiesRegister.for_load_case('LC-02')
+    agg_lc02 = mr_lc02.aggregate()
+    assert agg_lc02['load_case'] == 'LC-02'
+    assert agg_lc02['passenger_aboard'] is False
+    assert agg_lc02['payload_mass_kg'] == pytest.approx(0.0)
+    assert agg_lc02['total_mass_kg'] == pytest.approx(815.0)
+    assert agg_lc02['propulsion_off'] is True
+    assert agg_lc02['propulsion_stowed'] is True
+
+    craft_stowed = RicochetCraft(
+        lake_world,
+        hull_variant='concept_a',
+        load_case='LC-02',
+        water_config=WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0),
+    )
+    craft_stowed.spawn(40.0, 0.0, 0.0)
+    craft_stowed.set_command({'throttle': 1.0, 'differential_thrust': 0.5})
+    _step_craft(craft_stowed, 0.25)
+    snap_stowed = craft_stowed.physical_snapshot()
+    assert snap_stowed['mass_properties']['propulsion_off'] is True
+    assert snap_stowed['fan_rpm'] == pytest.approx([0.0, 0.0], abs=1e-6)
+    assert snap_stowed['thrust_per_fan_n'] == pytest.approx([0.0, 0.0], abs=1e-6)
+    assert snap_stowed['propulsors'][0]['torque_nm'] == pytest.approx(0.0, abs=1e-9)
+    assert snap_stowed['propulsors'][1]['torque_nm'] == pytest.approx(0.0, abs=1e-9)
+
+    # 3. LC-03: Empty-payload flotation without passenger + declared fuel states conserving y=0
+    expected_fuel = {'dry': 0.0, 'short_test': 5.0, 'nominal': 10.0, 'full': 20.0}
+    for fstate, fmass in expected_fuel.items():
+        mr = MassPropertiesRegister.for_load_case('LC-03', fuel_state=fstate)
+        agg = mr.aggregate()
+        assert agg['load_case'] == 'LC-03'
+        assert agg['passenger_aboard'] is False
+        assert agg['payload_mass_kg'] == pytest.approx(0.0)
+        assert agg['fuel_state'] == fstate
+        assert agg['fuel_mass_kg'] == pytest.approx(fmass)
+        assert agg['total_mass_kg'] == pytest.approx(815.0 + fmass)
+        assert agg['status'] == 'provisional_unverified'
+        assert agg['cg_f03_m'][1] == pytest.approx(0.0, abs=1e-12)
+        if fmass > 0.0:
+            items_by_id = {it['component_id']: it for it in agg['items']}
+            assert items_by_id['fuel_cell_port']['cg_f03_m'] == pytest.approx([-1.05, -0.23, 0.55])
+            assert items_by_id['fuel_cell_starboard']['cg_f03_m'] == pytest.approx([-1.05, 0.23, 0.55])
+            assert items_by_id['fuel_cell_port']['mass_kg'] == pytest.approx(0.5 * fmass)
+            assert items_by_id['fuel_cell_starboard']['mass_kg'] == pytest.approx(0.5 * fmass)
+            assert items_by_id['fuel_cell_port']['status'] == 'provisional_unverified'
+
+    mr_custom_fuel = MassPropertiesRegister.for_load_case('LC-03', fuel_mass_kg=12.5)
+    agg_custom = mr_custom_fuel.aggregate()
+    assert agg_custom['fuel_state'] == 'custom'
+    assert agg_custom['fuel_mass_kg'] == pytest.approx(12.5)
+    assert agg_custom['total_mass_kg'] == pytest.approx(827.5)
+    assert agg_custom['cg_f03_m'][1] == pytest.approx(0.0, abs=1e-12)
+
+    # 4. LC-04: Distinct mutually exclusive F02 propulsion installations
+    mr_lc04_def = MassPropertiesRegister.for_load_case('LC-04')
+    assert mr_lc04_def.propulsion_installation == 'energy_pack_alternate'
+    assert mr_lc04_def.aggregate()['status'] == 'provisional_unverified'
+    with pytest.raises(ValueError, match='mutually exclusive'):
+        MassPropertiesRegister.for_load_case('LC-04', propulsion_installation='energy_pack_alternate', fuel_mass_kg=10.0)
+    with pytest.raises(ValueError, match='mutually exclusive'):
+        mr_lc04_def.set_runtime_override(fuel_state='nominal')
+
+    comp = compare_propulsion_installations(load_case='LC-04', fuel_state='nominal', sponson_z_m=0.48)
+    assert comp['status'] == 'provisional_unverified'
+    insts = comp['installations']
+    assert set(insts) == {'baseline_pack', 'fuel_cell_paired', 'energy_pack_alternate'}
+    assert insts['baseline_pack']['total_mass_kg'] == pytest.approx(900.0)
+    assert insts['energy_pack_alternate']['total_mass_kg'] == pytest.approx(900.0)
+    assert insts['fuel_cell_paired']['total_mass_kg'] == pytest.approx(910.0)
+    assert insts['baseline_pack']['cg_f03_m'][0] > insts['energy_pack_alternate']['cg_f03_m'][0] + 0.4
+    assert insts['fuel_cell_paired']['cg_f03_m'][2] < insts['energy_pack_alternate']['cg_f03_m'][2]
+    assert insts['fuel_cell_paired']['inertia_diag_vtx_kg_m2'] != pytest.approx(insts['baseline_pack']['inertia_diag_vtx_kg_m2'], abs=1.0)
+    assert insts['energy_pack_alternate']['inertia_diag_vtx_kg_m2'] != pytest.approx(insts['fuel_cell_paired']['inertia_diag_vtx_kg_m2'], abs=0.5)
+
+    sim_cmp = run_propulsion_installation_comparison(hull_variant='concept_a', duration_s=0.5, simulate=True)
+    assert sim_cmp['simulated'] is True
+    assert set(sim_cmp['simulation']) == {'baseline_pack', 'fuel_cell_paired', 'energy_pack_alternate'}
+    assert sim_cmp['simulation']['energy_pack_alternate']['pitch_deg'] < sim_cmp['simulation']['baseline_pack']['pitch_deg']
+
+    # 5. LC-MAX & aliases (1050.0 kg)
+    for alias in ('LC-MAX', 'LC-05_MAX_PAYLOAD', 'LC-05'):
+        mr_max = MassPropertiesRegister.for_load_case(alias)
+        agg_max = mr_max.aggregate()
+        assert agg_max['load_case'] == 'LC-MAX'
+        assert agg_max['total_mass_kg'] == pytest.approx(1050.0)
+        assert agg_max['passenger_mass_kg'] == pytest.approx(85.0)
+        assert agg_max['payload_mass_kg'] == pytest.approx(150.0)
+
+    # 6. Runtime override serialization roundtrip
+    mr_rt = MassPropertiesRegister.for_load_case('LC-01')
+    mr_rt.set_runtime_override(
+        propulsion_installation='fuel_cell_paired',
+        fuel_state='short_test',
+        propulsion_off=True,
+    )
+    agg_rt = mr_rt.aggregate()
+    assert agg_rt['register_version'] == DEFAULT_REGISTER_VERSION
+    assert agg_rt['propulsion_installation'] == 'fuel_cell_paired'
+    assert agg_rt['fuel_state'] == 'short_test'
+    assert agg_rt['fuel_mass_kg'] == pytest.approx(5.0)
+    assert agg_rt['propulsion_off'] is True
+
+    # 7. Legacy rc01-lc-v1 backward compatibility
+    v1_lc01 = MassPropertiesRegister.for_load_case('LC-01', register_version=LEGACY_REGISTER_VERSION).aggregate()
+    v1_lc02 = MassPropertiesRegister.for_load_case('LC-02', register_version=LEGACY_REGISTER_VERSION).aggregate()
+    v1_lc03 = MassPropertiesRegister.for_load_case('LC-03', register_version=LEGACY_REGISTER_VERSION).aggregate()
+    v1_lc04 = MassPropertiesRegister.for_load_case('LC-04', register_version=LEGACY_REGISTER_VERSION).aggregate()
+    assert v1_lc01['register_version'] == LEGACY_REGISTER_VERSION and v1_lc01['total_mass_kg'] == pytest.approx(815.0) and v1_lc01['passenger_aboard'] is False
+    assert v1_lc02['total_mass_kg'] == pytest.approx(815.0) and v1_lc02['propulsion_off'] is False
+    assert v1_lc03['total_mass_kg'] == pytest.approx(900.0) and v1_lc03['passenger_aboard'] is True
+    v1_pax = next(i for i in v1_lc03['items'] if i['component_id'] == 'passenger_pilot')
+    assert v1_pax['cg_f03_m'][2] == pytest.approx(0.82)
+    assert v1_lc04['total_mass_kg'] == pytest.approx(1050.0)
+
+
+def test_ricochet_craft_complete_state_persistence_and_legacy_v1(lake_world: RicochetLakeWorld):
+    wcfg = WaterEnvironmentConfig(
+        wave_mode='irregular',
+        wave_height_m=0.45,
+        wave_period_s=3.8,
+        wave_direction_deg=170.0,
+        wave_seed=918273,
+        wind_speed_mps=6.0,
+        wind_direction_deg=195.0,
+        current_speed_mps=0.75,
+        current_direction_deg=45.0,
+        whirlpools_enabled=True,
+        wake_enabled=True,
+    )
+    craft_orig = RicochetCraft(
+        lake_world,
+        variant='ricochet-concept-a',
+        hull_variant='concept_a',
+        load_case='LC-01',
+        water_config=wcfg,
+    )
+    craft_orig.spawn(40.0, 0.0, 0.0)
+    craft_orig.set_command({
+        'throttle': 0.72,
+        'differential_thrust': 0.15,
+        'rudder_deg': 14.0,
+        'elevator_deg': 3.5,
+        'aileron_deg': -4.0,
+    })
+    _step_craft(craft_orig, 2.0)  # t1 = 2.0 s
+    assert craft_orig.data.time == pytest.approx(2.0, abs=1e-12)
+    assert craft_orig.water_field.get_wake_state()['active'] is True
+
+    # JSON round-trip checkpoint at t1 = 2.0 s
+    cp_raw = json.dumps(craft_orig.checkpoint_state(), allow_nan=False)
+    cp_loaded = json.loads(cp_raw)
+    assert cp_loaded['checkpoint_version'] == 'ricochet-checkpoint-v2'
+
+    # Restore into fresh craft initialized with unrelated defaults
+    craft_rest = RicochetCraft(
+        lake_world,
+        variant='ricochet-concept-a',
+        hull_variant='concept_a',
+        load_case='LC-03',
+        water_config=WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0),
+    )
+    craft_rest.restore_state(cp_loaded)
+    assert craft_rest.legacy_checkpoint_limitations == []
+
+    # Immediate t1 equality
+    np.testing.assert_allclose(craft_rest.data.qpos, craft_orig.data.qpos, atol=1e-12, rtol=0.0)
+    np.testing.assert_allclose(craft_rest.data.qvel, craft_orig.data.qvel, atol=1e-12, rtol=0.0)
+    np.testing.assert_allclose(craft_rest.data.qacc_warmstart, craft_orig.data.qacc_warmstart, atol=1e-12, rtol=0.0)
+    np.testing.assert_allclose(craft_rest.water_field.shallow.h, craft_orig.water_field.shallow.h, atol=1e-12, rtol=0.0)
+    np.testing.assert_allclose(craft_rest.water_field.shallow.hu, craft_orig.water_field.shallow.hu, atol=1e-12, rtol=0.0)
+    np.testing.assert_allclose(craft_rest.water_field.shallow.hv, craft_orig.water_field.shallow.hv, atol=1e-12, rtol=0.0)
+
+    # Continue BOTH uninterrupted and restored crafts from t1 = 2.0 s to t2 = 4.0 s with identical inputs
+    _step_craft(craft_orig, 0.5)
+    _step_craft(craft_rest, 0.5)
+    cmd2 = {'throttle': 0.45, 'differential_thrust': -0.10, 'rudder_deg': -12.0, 'reverse_bucket': 0.30}
+    craft_orig.set_command(cmd2)
+    craft_rest.set_command(cmd2)
+    _step_craft(craft_orig, 1.5)
+    _step_craft(craft_rest, 1.5)
+
+    assert craft_orig.data.time == pytest.approx(4.0, abs=1e-12)
+    assert craft_rest.data.time == pytest.approx(4.0, abs=1e-12)
+    assert abs(craft_rest.water_field.sim_time_s - craft_orig.water_field.sim_time_s) < 1e-12
+    assert abs(craft_rest.water_field._swe_accum_s - craft_orig.water_field._swe_accum_s) < 1e-12
+    assert np.max(np.abs(craft_rest.data.qpos - craft_orig.data.qpos)) < 1e-9
+    assert np.max(np.abs(craft_rest.data.qvel - craft_orig.data.qvel)) < 1e-9
+    assert np.max(np.abs(craft_rest.data.qacc_warmstart - craft_orig.data.qacc_warmstart)) < 1e-9
+    assert np.max(np.abs(craft_rest.water_field.shallow.h - craft_orig.water_field.shallow.h)) < 1e-9
+    assert np.max(np.abs(craft_rest.water_field.shallow.hu - craft_orig.water_field.shallow.hu)) < 1e-9
+    assert np.max(np.abs(craft_rest.water_field.shallow.hv - craft_orig.water_field.shallow.hv)) < 1e-9
+    assert craft_rest.water_field._vessel_wake == craft_orig.water_field._vessel_wake
+
+    snap_orig = craft_orig.physical_snapshot()
+    snap_rest = craft_rest.physical_snapshot()
+    assert snap_rest['t_s'] == snap_orig['t_s']
+    assert snap_rest['position_world_m'] == pytest.approx(snap_orig['position_world_m'], abs=1e-9)
+    assert snap_rest['velocity_world_mps'] == pytest.approx(snap_orig['velocity_world_mps'], abs=1e-9)
+    assert snap_rest['hydrodynamics']['submerged_volume_m3'] == pytest.approx(
+        snap_orig['hydrodynamics']['submerged_volume_m3'], abs=1e-9
+    )
+
+    # Legacy v1 checkpoint backward compatibility & explicit limitation reporting
+    legacy_v1_cp = {
+        'time': float(craft_orig.data.time),
+        'qpos': craft_orig.data.qpos.tolist(),
+        'qvel': craft_orig.data.qvel.tolist(),
+        'ctrl': craft_orig.data.ctrl.tolist(),
+        'step_count': int(craft_orig.step_count),
+        'command': dict(craft_orig.command),
+        'targets': dict(craft_orig._targets),
+        'fuel': craft_orig.fuel.tolist(),
+        'energy': dict(craft_orig.energy),
+        'flags': sorted(craft_orig.flags),
+        'water_config': wcfg.to_dict(),
+        'mass_load_case': 'LC-03',
+        'passenger_aboard': True,
+        'passenger_mass_kg': 85.0,
+        'payload_mass_kg': 0.0,
+        'ballast_mass_kg': 0.0,
+        'ballast_x_m': -0.15,
+        'ballast_y_m': 0.0,
+        'waterproof': True,
+        'flood_water_kg': 0.0,
+    }
+    craft_v1 = RicochetCraft(lake_world, variant='ricochet-concept-a', hull_variant='concept_a')
+    craft_v1.restore_state(legacy_v1_cp)
+    assert craft_v1.mass_register.register_version == LEGACY_REGISTER_VERSION
+    assert craft_v1.mass_register.load_case == 'LC-03'
+    assert craft_v1.mass_properties()['total_mass_kg'] == pytest.approx(900.0)
+    assert len(craft_v1.legacy_checkpoint_limitations) >= 3
+    lim_text = ' '.join(craft_v1.legacy_checkpoint_limitations)
+    assert 'shallow-water' in lim_text and 'qacc_warmstart' in lim_text and 'rc01-lc-v1' in lim_text
+
+
+def test_clock_parity_zero_lag_and_spawn_preservation(lake_world: RicochetLakeWorld):
+    cfg = WaterEnvironmentConfig(
+        wave_mode='regular',
+        wave_height_m=0.20,
+        wave_period_s=4.0,
+        wave_direction_deg=180.0,
+        wind_speed_mps=0.0,
+    )
+    craft = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-03', water_config=cfg)
+
+    # Explicit non-datum spawn z must NOT be overwritten
+    craft.spawn(40.0, 0.0, -0.35)
+    assert float(craft.data.qpos[2]) == pytest.approx(-0.35, abs=1e-9)
+    craft.spawn(40.0, 0.0, 0.25)
+    assert float(craft.data.qpos[2]) == pytest.approx(0.25, abs=1e-9)
+
+    # Waterline spawn resets water_field clock and checks step-by-step clock parity + zero lag
+    craft.spawn(40.0, 0.0, 0.0)
+    assert float(craft.data.time) == pytest.approx(0.0, abs=1e-12)
+    assert craft.water_field.sim_time_s == pytest.approx(0.0, abs=1e-12)
+    assert craft.water_field._swe_accum_s == pytest.approx(0.0, abs=1e-12)
+    assert craft.water_field.get_wake_state()['active'] is False
+
+    for _ in range(80):
+        craft.step()
+        assert float(craft.data.time) == pytest.approx(craft.water_field.sim_time_s, abs=1e-12)
+
+    snap = craft.physical_snapshot()
+    assert snap['t_s'] == pytest.approx(round(float(craft.data.time), 4), abs=1e-9)
+    # Verify last_hydro matches post-step evaluation at exact post-step d.time & pose (zero 1-step lag)
+    bid_m = craft.bids['airframe']
+    bd_now = evaluate_mesh_hydrodynamics(
+        craft.hull_bundle.main_hull,
+        craft.data.xpos[bid_m].copy(),
+        craft.data.xmat[bid_m].reshape(3, 3).copy(),
+        np.zeros(3),
+        np.zeros(3),
+        np.zeros(3),
+        np.zeros(3),
+        craft.data.xipos[bid_m].copy(),
+        craft.water_field,
+        float(craft.data.time),
+        calibration=craft.calibration,
+        rho_water=craft.water_config.rho_water_kg_m3,
+        nu_water=craft.water_config.nu_water_m2_s,
+        g=craft.water_config.g_m_s2,
+        include_inertial_am=False,
+    )
+    assert snap['hydrodynamics']['component_loads']['main_hull']['submerged_volume_m3'] == pytest.approx(
+        bd_now.submerged_volume_m3, abs=1e-5
+    )
+    assert snap['hydrodynamics']['waterline_z_world_m'] == pytest.approx(bd_now.waterline_z_world_mean, abs=1e-5)
+
+    # Switch to calm water and settle, then verify zero teleportation on ballast change + Archimedes displacement delta
+    craft.update_water_config({'wave_mode': 'still'})
+    _step_craft(craft, 6.0)
+    vol_before = craft.physical_snapshot()['hydrodynamics']['submerged_volume_m3']
+    qpos_pre = craft.data.qpos.copy()
+    qacc_ws_pre = craft.data.qacc_warmstart.copy()
+    craft.update_mass_properties(ballast_mass_kg=100.0, ballast_x_m=-0.15)
+    np.testing.assert_array_equal(craft.data.qpos, qpos_pre)
+    np.testing.assert_array_equal(craft.data.qacc_warmstart, qacc_ws_pre)
+    vz0 = float(craft.data.qvel[2])
+    craft.step()
+    assert (float(craft.data.qvel[2]) - vz0) / DT < -0.2
+    _step_craft(craft, 6.5)
+    vol_after = craft.physical_snapshot()['hydrodynamics']['submerged_volume_m3']
+    assert (vol_after - vol_before) == pytest.approx(100.0 / RHO_FRESHWATER_15C, rel=0.02)
 

@@ -195,7 +195,7 @@ def test_component_spec_rigidity_solid_rock_vs_elastic_flexure(lake_world: Ricoc
     # Live MuJoCo sponson flex telemetry across load cases: must flex smoothly in water and scale with load
     cfg = WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0)
     flex_by_lc = {}
-    for lc in ('LC-01', 'LC-03', 'LC-04'):
+    for lc in ('LC-03', 'LC-01', 'LC-MAX'):
         craft = RicochetCraft(lake_world, hull_variant='concept_a', load_case=lc, water_config=cfg)
         craft.spawn(40.0, 0.0, 0.0)
         _step_seconds(craft, 2.5)
@@ -208,12 +208,12 @@ def test_component_spec_rigidity_solid_rock_vs_elastic_flexure(lake_world: Ricoc
         assert 0.005 <= qp <= 0.030 and 0.005 <= qs <= 0.030
         flex_by_lc[lc] = 0.5 * (qp + qs)
 
-    assert flex_by_lc['LC-04'] > flex_by_lc['LC-03'] > flex_by_lc['LC-01']
+    assert flex_by_lc['LC-MAX'] > flex_by_lc['LC-01'] > flex_by_lc['LC-03']
 
 
 def test_hydrostatic_draft_envelope_and_side_stabiliser_immersion_across_load_cases(lake_world: RicochetLakeWorld):
     bundle = HullGeometryRegistry.build_variant('concept_a')
-    mr = MassPropertiesRegister.for_load_case('LC-03')
+    mr = MassPropertiesRegister.for_load_case('LC-01')
     cg_z = float(mr.aggregate()['cg_vtx_m'][2])
 
     h900 = evaluate_mesh_curve_stability(
@@ -240,10 +240,10 @@ def test_hydrostatic_draft_envelope_and_side_stabiliser_immersion_across_load_ca
     assert h900['sponson_immersion_m'] >= 0.15
     assert h1050['draft_m'] > h900['draft_m'] + 0.015
 
-    # Coupled 400 Hz MuJoCo Archimedes settle across LC-01, LC-03, LC-04
+    # Coupled 400 Hz MuJoCo Archimedes settle across LC-03 (815 kg), LC-01 (900 kg), LC-MAX (1050 kg)
     cfg = WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0)
     drafts = {}
-    for lc in ('LC-01', 'LC-03', 'LC-04'):
+    for lc in ('LC-03', 'LC-01', 'LC-MAX'):
         craft = RicochetCraft(lake_world, hull_variant='concept_a', load_case=lc, water_config=cfg)
         craft.spawn(40.0, 0.0, 0.0)
         _step_seconds(craft, 4.0)
@@ -265,8 +265,8 @@ def test_hydrostatic_draft_envelope_and_side_stabiliser_immersion_across_load_ca
         assert comp['sponson_stbd']['buoyancy_z_n'] >= 550.0
         drafts[lc] = hydro['draft_m']
 
-    assert 0.54 <= drafts['LC-03'] <= 0.59
-    assert drafts['LC-04'] > drafts['LC-03'] > drafts['LC-01']
+    assert 0.54 <= drafts['LC-01'] <= 0.59
+    assert drafts['LC-MAX'] > drafts['LC-01'] > drafts['LC-03']
 
 
 def test_dynamic_roll_restoring_with_immersed_sponsons_and_full_throttle_pitch_stability(lake_world: RicochetLakeWorld):
@@ -306,7 +306,7 @@ def test_dynamic_roll_restoring_with_immersed_sponsons_and_full_throttle_pitch_s
 
 def test_articulated_mechanics_rotors_surfaces_fuel_and_vtx_standard(lake_world: RicochetLakeWorld):
     cfg = WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0)
-    craft = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-03', water_config=cfg)
+    craft = RicochetCraft(lake_world, hull_variant='concept_a', load_case='LC-01', water_config=cfg)
     craft.spawn(40.0, 0.0, 0.0)
     _step_seconds(craft, 0.5)
     q0 = {
@@ -356,3 +356,27 @@ def test_articulated_mechanics_rotors_surfaces_fuel_and_vtx_standard(lake_world:
     q_rot = np.array(snap['body_poses']['fan_rotor_port']['quaternion_wxyz'])
     assert np.linalg.norm(q_rud - q_af) > 0.05
     assert np.linalg.norm(q_rot - q_af) > 0.01
+
+
+def test_f03_baseline_child_body_visuals_in_visual_geometry(lake_world: RicochetLakeWorld):
+    cfg = WaterEnvironmentConfig(wave_mode='still', wind_speed_mps=0.0)
+    craft = RicochetCraft(lake_world, hull_variant='f03_baseline', load_case='LC-01', water_config=cfg)
+    vg = craft.visual_geometry()
+    assert vg['hull_variant'] == 'f03_baseline'
+    box_by_name = {b['name']: b for b in vg['boxes']}
+    expected_child_bodies = (
+        'fan_rotor_port',
+        'fan_rotor_stbd',
+        'aileron_port',
+        'aileron_stbd',
+        'elevator',
+        'rudder',
+        'reverse_bucket_port',
+        'reverse_bucket_stbd',
+    )
+    for bname in expected_child_bodies:
+        assert bname in box_by_name, f'Missing articulated child visual box {bname!r} in f03_baseline'
+        assert box_by_name[bname]['body'] == bname
+    snap = craft.physical_snapshot()
+    for bname in expected_child_bodies:
+        assert bname in snap['body_poses']

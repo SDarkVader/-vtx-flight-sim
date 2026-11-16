@@ -9,6 +9,7 @@ damping, and wave excitation forces and apply them physically via
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import math
 import xml.etree.ElementTree as ET
@@ -39,7 +40,14 @@ from vtx.ricochet.hull_geometry import (
     HullVariantBundle,
     HullGeometryRegistry,
 )
-from vtx.ricochet.mass_register import MassPropertiesRegister
+from vtx.ricochet.mass_register import (
+    DEFAULT_REGISTER_VERSION,
+    LEGACY_REGISTER_VERSION,
+    MassPropertiesRegister,
+    PropulsionInstallation,
+    normalize_load_case,
+    normalize_register_version,
+)
 from vtx.ricochet.spec_math import canopy_and_craft_cd0, compute_structural_loads_snapshot
 from vtx.water.datum import (
     G_SI,
@@ -641,13 +649,18 @@ class RicochetCraft:
         world,
         variant: str = 'ricochet-rc01-dev',
         hull_variant: str = 'f03_baseline',
-        load_case: str = 'LC-03',
+        load_case: str | None = None,
         water_config: WaterEnvironmentConfig | None = None,
         calibration: HydroCalibrationProfile | None = None,
         subdivide_levels: int = 0,
         hydro_stride: int = 1,
         ignore_scenery_collisions: bool = False,
         concept_a_glb_path: str | None = None,
+        register_version: str = DEFAULT_REGISTER_VERSION,
+        fuel_state: str | None = None,
+        fuel_mass_kg: float | None = None,
+        propulsion_installation: PropulsionInstallation | None = None,
+        propulsion_off: bool | None = None,
     ):
         self.world = world
         self.variant = variant
@@ -664,6 +677,11 @@ class RicochetCraft:
         self.mass_register = MassPropertiesRegister.for_load_case(
             load_case=load_case,
             sponson_z_m=0.48 if self.hull_bundle.variant_id == 'concept_a' else 0.42,
+            register_version=register_version,
+            fuel_state=fuel_state,
+            fuel_mass_kg=fuel_mass_kg,
+            propulsion_installation=propulsion_installation,
+            propulsion_off=propulsion_off,
         )
         self.water_config = water_config or WaterEnvironmentConfig()
         self.water_field = HybridWaterField(world, self.water_config)
@@ -746,6 +764,9 @@ class RicochetCraft:
         self._last_fan_aero_torque_nm = [0.0, 0.0]
         self._last_servo_saturated: dict[str, bool] = {}
         self._last_applied_flood_kg = 0.0
+        self._mass_version = 0
+        self._raw_hydro_cache: tuple[tuple[Any, ...], tuple[HydroBreakdown, HydroBreakdown, HydroBreakdown]] | None = None
+        self.legacy_checkpoint_limitations: list[str] = []
         self._last_whirlpool_hazard = (
             self.world.whirlpool_hazard_at(0.0, 0.0, config=self.water_config)
             if hasattr(self.world, 'whirlpool_hazard_at')
@@ -768,7 +789,20 @@ class RicochetCraft:
         ang = math.radians(float(self.water_config.wind_direction_deg))
         return np.array([spd * math.cos(ang), spd * math.sin(ang), 0.0], dtype=np.float64)
 
-    def _apply_mass_to_mujoco(self) -> None:
+    def _apply_mass_to_mujoco(
+        self,
+        register_version: str | None = None,
+        fuel_state: str | None = None,
+        fuel_mass_kg: float | None = None,
+        propulsion_installation: PropulsionInstallation | None = None,
+    ) -> None:
+        if any(v is not None for v in (register_version, fuel_state, fuel_mass_kg, propulsion_installation)):
+            self.mass_register.set_runtime_override(
+                register_version=register_version,
+                fuel_state=fuel_state,
+                fuel_mass_kg=fuel_mass_kg,
+                propulsion_installation=propulsion_installation,
+            )
         agg = self.mass_register.aggregate(include_sponsons=False)
         bid = self.bids['airframe']
         m_af, cg_af, iner = _subtract_child_inertias(
@@ -791,6 +825,9 @@ class RicochetCraft:
         qvel_saved = self.data.qvel.copy()
         act_saved = self.data.act.copy() if self.model.na > 0 else None
         ctrl_saved = self.data.ctrl.copy() if self.model.nu > 0 else None
+        qacc_ws_saved = self.data.qacc_warmstart.copy()
+        qfrc_saved = self.data.qfrc_applied.copy()
+        xfrc_saved = self.data.xfrc_applied.copy()
         time_saved = float(self.data.time)
         mj.mj_setConst(self.model, self.data)
         self.data.qpos[:] = qpos_saved
@@ -799,9 +836,15 @@ class RicochetCraft:
             self.data.act[:] = act_saved
         if ctrl_saved is not None:
             self.data.ctrl[:] = ctrl_saved
+        self.data.qacc_warmstart[:] = qacc_ws_saved
+        self.data.qfrc_applied[:] = qfrc_saved
+        self.data.xfrc_applied[:] = xfrc_saved
         self.data.time = time_saved
         mj.mj_forward(self.model, self.data)
         self._last_applied_flood_kg = float(self.mass_register.flood_water_kg)
+        self._mass_version += 1
+        self._raw_hydro_cache = None
+        self._evaluate_and_cache_hydro(t=float(self.data.time), force_eval=True)
 
     def update_mass_properties(
         self,
@@ -817,17 +860,34 @@ class RicochetCraft:
         waterproof: bool | None = None,
         flood_water_kg: float | None = None,
         bilge_pump: bool = False,
+        register_version: str | None = None,
+        fuel_state: str | None = None,
+        fuel_mass_kg: float | None = None,
+        propulsion_installation: PropulsionInstallation | None = None,
+        propulsion_off: bool | None = None,
+        passenger_x_offset_m: float | None = None,
+        extra_mass_kg: float | None = None,
     ) -> dict[str, Any]:
         if bilge_pump:
             flood_water_kg = 0.0
-        if load_case is not None and load_case.upper() != self.mass_register.load_case:
+        target_ver = (
+            normalize_register_version(register_version)
+            if register_version is not None
+            else self.mass_register.register_version
+        )
+        target_lc = (
+            normalize_load_case(load_case, register_version=target_ver)
+            if load_case is not None
+            else self.mass_register.load_case
+        )
+        if target_lc != self.mass_register.load_case or target_ver != self.mass_register.register_version:
             prev_ballast = self.mass_register.ballast_mass_kg if ballast_mass_kg is None else ballast_mass_kg
             prev_bx = self.mass_register.ballast_x_m if ballast_x_m is None else ballast_x_m
             prev_by = self.mass_register.ballast_y_m if ballast_y_m is None else ballast_y_m
             prev_wp = self.mass_register.waterproof if waterproof is None else waterproof
             prev_fw = self.mass_register.flood_water_kg if flood_water_kg is None else flood_water_kg
             self.mass_register = MassPropertiesRegister.for_load_case(
-                load_case=load_case,
+                load_case=target_lc,
                 passenger_aboard=passenger_aboard,
                 passenger_mass_kg=passenger_mass_kg,
                 payload_mass_kg=payload_mass_kg,
@@ -836,14 +896,27 @@ class RicochetCraft:
                 ballast_x_m=prev_bx,
                 ballast_y_m=prev_by,
                 waterproof=prev_wp,
+                register_version=target_ver,
+                fuel_state=fuel_state,
+                fuel_mass_kg=fuel_mass_kg,
+                propulsion_installation=propulsion_installation,
+                propulsion_off=propulsion_off,
             )
             self.mass_register.flood_water_kg = max(0.0, float(prev_fw))
+            if passenger_x_offset_m is not None:
+                self.mass_register.passenger_x_offset_m = float(passenger_x_offset_m)
+            if extra_mass_kg is not None:
+                self.mass_register.extra_mass_kg = max(0.0, float(extra_mass_kg))
             if total_mass_kg is not None or cg_shift_vtx_m is not None:
                 self.mass_register.set_runtime_override(
                     total_mass_kg=total_mass_kg,
                     cg_shift_vtx_m=cg_shift_vtx_m,
                 )
         else:
+            if passenger_x_offset_m is not None:
+                self.mass_register.passenger_x_offset_m = float(passenger_x_offset_m)
+            if extra_mass_kg is not None:
+                self.mass_register.extra_mass_kg = max(0.0, float(extra_mass_kg))
             self.mass_register.set_runtime_override(
                 total_mass_kg=total_mass_kg,
                 cg_shift_vtx_m=cg_shift_vtx_m,
@@ -855,6 +928,11 @@ class RicochetCraft:
                 ballast_y_m=ballast_y_m,
                 waterproof=waterproof,
                 flood_water_kg=flood_water_kg,
+                register_version=register_version,
+                fuel_state=fuel_state,
+                fuel_mass_kg=fuel_mass_kg,
+                propulsion_installation=propulsion_installation,
+                propulsion_off=propulsion_off,
             )
         self._apply_mass_to_mujoco()
         return self.mass_properties()
@@ -874,11 +952,11 @@ class RicochetCraft:
             self._apply_mass_to_mujoco()
         mj.mj_resetData(self.model, self.data)
         # When spawning at surface_z (or accidentally passed submerged lakebed terrain_z)
-        # over navigable water, initialize near calm draft; explicit elevated drop z (> wl + 0.05) stays verbatim.
+        # over navigable water, initialize near calm draft; explicit test z stays verbatim.
         wl = float(self.water_config.water_level_m)
         bed = float(self.world.terrain_z(x, y))
         target_draft = 0.56 if self.hull_bundle.variant_id == 'concept_a' else 0.37
-        if bed < wl - 0.25 and (abs(z - max(bed, wl)) < 0.05 or z <= wl - 0.05):
+        if bed < wl - 0.25 and (abs(z - wl) < 0.05 or abs(z - bed) < 0.05):
             spawn_z = max(bed + 0.02, wl - target_draft)
         else:
             spawn_z = max(z, bed + 0.02)
@@ -906,15 +984,17 @@ class RicochetCraft:
         self.flags.clear()
         self._prev_hydro_f.clear()
         self._curr_hydro_f.clear()
-        self.water_field._vessel_wake['active'] = False
+        self.legacy_checkpoint_limitations = []
+        self._raw_hydro_cache = None
+        self.water_field.reset(water_level_m=wl)
         self._last_whirlpool_hazard = (
             self.world.whirlpool_hazard_at(float(x), float(y), config=self.water_config)
             if hasattr(self.world, 'whirlpool_hazard_at')
             else {}
         )
         mj.mj_forward(self.model, self.data)
-        # Populate initial hydrostatic state telemetry cleanly at t=0
-        self._evaluate_and_cache_hydro(t=float(self.data.time), force_eval=True)
+        # Populate initial hydrostatic state telemetry cleanly at t=0.0
+        self._evaluate_and_cache_hydro(t=0.0, force_eval=True)
 
     def set_command(self, cmd: dict[str, Any]) -> None:
         for key, lim in RICOCHET_SURFACE_LIMITS.items():
@@ -992,7 +1072,7 @@ class RicochetCraft:
                 dadr = int(self.model.jnt_dofadr[jid])
                 d.qfrc_applied[dadr] -= float(tau_aero_i)
 
-            if not has_power:
+            if not has_power or getattr(self.mass_register, 'propulsion_off', False):
                 tau_cmd = 0.0
             elif throt > 0.01:
                 omega_ref = omega_max * math.sqrt(max(sc * inflow_lapse, 0.0))
@@ -1289,57 +1369,74 @@ class RicochetCraft:
 
             # Evaluate non-inertial hydro forces first, then couple rigid-assembly virtual mass (M_tot + Ma_tot)^{-1}
             g_w = self.water_config.g_m_s2
-            bd_m = evaluate_mesh_hydrodynamics(
-                self.hull_bundle.main_hull,
-                pos_m,
-                rot_m,
-                vel_m,
-                om_m,
-                acc_m,
-                al_m,
-                xipos_m,
-                self.water_field,
-                t,
-                calibration=self.calibration,
-                rho_water=self.water_config.rho_water_kg_m3,
-                nu_water=self.water_config.nu_water_m2_s,
-                g=g_w,
-                include_inertial_am=False,
+            cache_key = (
+                float(t),
+                d.qpos.tobytes(),
+                d.qvel.tobytes(),
+                d.xpos.tobytes(),
+                d.cvel.tobytes(),
+                self._mass_version,
+                float(self.water_field.sim_time_s),
+                getattr(self.water_field, '_state_version', None),
+                getattr(self.water_field.shallow, '_state_version', None),
+                tuple(self.calibration.__dict__.values()),
+                tuple(self.water_config.__dict__.values()),
             )
-            bd_p = evaluate_mesh_hydrodynamics(
-                self.hull_bundle.port_sponson,
-                pos_p,
-                rot_p,
-                vel_p,
-                om_p,
-                acc_p,
-                al_p,
-                xipos_p,
-                self.water_field,
-                t,
-                calibration=self.calibration,
-                rho_water=self.water_config.rho_water_kg_m3,
-                nu_water=self.water_config.nu_water_m2_s,
-                g=g_w,
-                include_inertial_am=False,
-            )
-            bd_s = evaluate_mesh_hydrodynamics(
-                self.hull_bundle.stbd_sponson,
-                pos_s,
-                rot_s,
-                vel_s,
-                om_s,
-                acc_s,
-                al_s,
-                xipos_s,
-                self.water_field,
-                t,
-                calibration=self.calibration,
-                rho_water=self.water_config.rho_water_kg_m3,
-                nu_water=self.water_config.nu_water_m2_s,
-                g=g_w,
-                include_inertial_am=False,
-            )
+            if self._raw_hydro_cache is not None and self._raw_hydro_cache[0] == cache_key:
+                bd_m, bd_p, bd_s = copy.deepcopy(self._raw_hydro_cache[1])
+            else:
+                bd_m = evaluate_mesh_hydrodynamics(
+                    self.hull_bundle.main_hull,
+                    pos_m,
+                    rot_m,
+                    vel_m,
+                    om_m,
+                    acc_m,
+                    al_m,
+                    xipos_m,
+                    self.water_field,
+                    t,
+                    calibration=self.calibration,
+                    rho_water=self.water_config.rho_water_kg_m3,
+                    nu_water=self.water_config.nu_water_m2_s,
+                    g=g_w,
+                    include_inertial_am=False,
+                )
+                bd_p = evaluate_mesh_hydrodynamics(
+                    self.hull_bundle.port_sponson,
+                    pos_p,
+                    rot_p,
+                    vel_p,
+                    om_p,
+                    acc_p,
+                    al_p,
+                    xipos_p,
+                    self.water_field,
+                    t,
+                    calibration=self.calibration,
+                    rho_water=self.water_config.rho_water_kg_m3,
+                    nu_water=self.water_config.nu_water_m2_s,
+                    g=g_w,
+                    include_inertial_am=False,
+                )
+                bd_s = evaluate_mesh_hydrodynamics(
+                    self.hull_bundle.stbd_sponson,
+                    pos_s,
+                    rot_s,
+                    vel_s,
+                    om_s,
+                    acc_s,
+                    al_s,
+                    xipos_s,
+                    self.water_field,
+                    t,
+                    calibration=self.calibration,
+                    rho_water=self.water_config.rho_water_kg_m3,
+                    nu_water=self.water_config.nu_water_m2_s,
+                    g=g_w,
+                    include_inertial_am=False,
+                )
+                self._raw_hydro_cache = (cache_key, copy.deepcopy((bd_m, bd_p, bd_s)))
 
             m_p = float(self.model.body_mass[bid_p])
             m_s = float(self.model.body_mass[bid_s])
@@ -1569,11 +1666,12 @@ class RicochetCraft:
     def step(self) -> None:
         """Advance coupled SWE/wave field and 400 Hz MuJoCo rigid-body step."""
         d = self.data
-        t = float(d.time)
+        dt = float(self.model.opt.timestep)
+        t_pre = float(d.time)
         bid_af = self.bids['airframe']
 
         # Slew control targets smoothly toward held commands and clear external/joint forces
-        self._slew_targets(DT)
+        self._slew_targets(dt)
         d.qfrc_applied[:] = 0.0
         d.xfrc_applied[:] = 0.0
 
@@ -1585,10 +1683,9 @@ class RicochetCraft:
         # from achieved MuJoCo joint positions & rotor angular speeds before virtual-mass hydro solve
         f_ap, m_ap = self._compute_aero_and_propulsion()
 
-        # Advance water solver step cleanly
-        self.water_field.step(DT)
+        # Evaluate hydrodynamic forces at current d.time (matching water_field.sim_time_s)
         self._evaluate_and_cache_hydro(
-            t=t,
+            t=t_pre,
             force_eval=(self.step_count == 0),
             ext_force_m=f_ap,
             ext_torque_m=m_ap,
@@ -1609,14 +1706,17 @@ class RicochetCraft:
         d.xfrc_applied[bid_af, :3] += f_ap
         d.xfrc_applied[bid_af, 3:] += m_ap
 
+        # Advance MuJoCo rigid-body integrator and HybridWaterField together
         mj.mj_step(self.model, d)
+        self.water_field.step(dt)
         self.step_count += 1
+        t_post = float(d.time)
 
         # Fuel & energy depletion strictly tied to propulsion + servo shaft work
         p_tot_w = float(self.power.get('total_w', 0.0))
         fuel_burn_kg_s = p_tot_w * 1.15e-7
-        self.fuel[0] = max(0.0, float(self.fuel[0]) - fuel_burn_kg_s * DT)
-        consumed_kwh = float(self.energy.get('consumed_kwh', 0.0)) + p_tot_w * DT / 3_600_000.0
+        self.fuel[0] = max(0.0, float(self.fuel[0]) - fuel_burn_kg_s * dt)
+        consumed_kwh = float(self.energy.get('consumed_kwh', 0.0)) + p_tot_w * dt / 3_600_000.0
         self.energy['consumed_kwh'] = round(consumed_kwh, 6)
         self.energy['remaining_kwh'] = round(max(0.0, 20.0 - consumed_kwh), 6)
         self.energy['fuel_burn_kg_s'] = round(fuel_burn_kg_s, 6)
@@ -1634,15 +1734,16 @@ class RicochetCraft:
         else:
             self.flags.discard('SERVO_SATURATED')
 
-        # Track contacts & ground clearance
-        alt = float(d.xpos[bid_af, 2])
-        self.max_alt = max(self.max_alt, alt)
+        # Track contacts from the step, then synchronize derived MuJoCo kinematics/velocities/sensors to post-step t_post
         for ci in range(d.ncon):
             cf = np.zeros(6, dtype=np.float64)
             mj.mj_contactForce(self.model, d, ci, cf)
             n_force = float(np.linalg.norm(cf[:3]))
             self.max_impact_n = max(self.max_impact_n, n_force)
             self.max_gear_load_n = self.max_impact_n
+        mj.mj_forward(self.model, d)
+        alt = float(d.xpos[bid_af, 2])
+        self.max_alt = max(self.max_alt, alt)
 
         # Couple simulated vessel motion -> SWE momentum & Kelvin wake + whirlpool/bilge status
         bid_m = bid_af
@@ -1673,15 +1774,24 @@ class RicochetCraft:
             submerged_vol_m3=sub_vol_now,
             hydro_reaction_xy=hydro_react_xy,
             fan_thrust_n=float(self.last_thrust_per_fan_n[0] + self.last_thrust_per_fan_n[1]),
-            dt=DT,
-            t_s=float(d.time),
+            dt=dt,
+            t_s=t_post,
         )
         self._last_whirlpool_hazard = (
             self.world.whirlpool_hazard_at(float(pos_m[0]), float(pos_m[1]), config=self.water_config)
             if hasattr(self.world, 'whirlpool_hazard_at')
             else {}
         )
-        self._update_bilge_flooding(DT, rot_m)
+        self._update_bilge_flooding(dt, rot_m)
+        # Refresh hydro at exact post-step d.time so physical_snapshot() and last_hydro have zero 1-step lag
+        self._evaluate_and_cache_hydro(
+            t=t_post,
+            force_eval=True,
+            ext_force_m=f_ap,
+            ext_torque_m=m_ap,
+        )
+        if self.last_hydro is not None:
+            self.last_munk_moment_nm = self._last_aero_munk_nm + self.last_hydro.munk_torque_body
 
     def _update_bilge_flooding(self, dt: float, rot_m: np.ndarray) -> None:
         """Progressive Torricelli water ingress when hull waterproof seal is disabled."""
@@ -1900,6 +2010,14 @@ class RicochetCraft:
                 {'body': 'airframe', 'name': 'h_tail', 'pos': [-2.62, 0.0, 2.28], 'half': [0.36, 1.25, 0.05], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#cfd9e2'},
                 {'body': 'airframe', 'name': 'duct_port', 'pos': [-2.22, 1.22, 1.70], 'half': [0.22, 0.32, 0.32], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#f59e0b'},
                 {'body': 'airframe', 'name': 'duct_stbd', 'pos': [-2.22, -1.22, 1.70], 'half': [0.22, 0.32, 0.32], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#f59e0b'},
+                {'body': 'fan_rotor_port', 'name': 'fan_rotor_port', 'pos': [0.0, 0.0, 0.0], 'half': [0.025, 0.38, 0.05], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#94a3b8'},
+                {'body': 'fan_rotor_stbd', 'name': 'fan_rotor_stbd', 'pos': [0.0, 0.0, 0.0], 'half': [0.025, 0.38, 0.05], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#94a3b8'},
+                {'body': 'aileron_port', 'name': 'aileron_port', 'pos': [-0.18, 0.0, 0.0], 'half': [0.16, 0.95, 0.03], 'euler_deg': [3.5, 0.0, 5.6], 'color': '#f4b41a'},
+                {'body': 'aileron_stbd', 'name': 'aileron_stbd', 'pos': [-0.18, 0.0, 0.0], 'half': [0.16, 0.95, 0.03], 'euler_deg': [-3.5, 0.0, -5.6], 'color': '#f4b41a'},
+                {'body': 'elevator', 'name': 'elevator', 'pos': [-0.14, 0.0, 0.0], 'half': [0.13, 1.15, 0.025], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#f4b41a'},
+                {'body': 'rudder', 'name': 'rudder', 'pos': [-0.18, 0.0, 0.0], 'half': [0.16, 0.03, 0.52], 'euler_deg': [0.0, -37.2, 0.0], 'color': '#f4b41a'},
+                {'body': 'reverse_bucket_port', 'name': 'reverse_bucket_port', 'pos': [-0.14, 0.0, 0.42], 'half': [0.14, 0.36, 0.04], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#8b95a5'},
+                {'body': 'reverse_bucket_stbd', 'name': 'reverse_bucket_stbd', 'pos': [-0.14, 0.0, 0.42], 'half': [0.14, 0.36, 0.04], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#8b95a5'},
             ]
             if self.hull_bundle.variant_id != 'concept_a':
                 boxes.append({'body': 'airframe', 'name': 'cabin_canopy', 'pos': [0.84, 0.0, 1.30], 'half': [0.85, 0.42, 0.22], 'euler_deg': [0.0, 0.0, 0.0], 'color': '#263848'})
@@ -2037,55 +2155,239 @@ class RicochetCraft:
         }
 
     def checkpoint_state(self) -> dict[str, Any]:
+        """Serialize complete RicochetCraft + MuJoCo + HybridWaterField float64 state (v2)."""
+        d = self.data
         return {
-            'time': float(self.data.time),
-            'qpos': self.data.qpos.tolist(),
-            'qvel': self.data.qvel.tolist(),
-            'ctrl': self.data.ctrl.tolist(),
+            'checkpoint_version': 'ricochet-checkpoint-v2',
+            'variant': self.variant,
+            'hull_variant': self.hull_bundle.variant_id,
+            'hull_geometry_sha256': self.hull_bundle.main_hull.mesh.geometry_sha256,
+            'solver_version': self.SOLVER_VERSION,
+            'model_xml_sha256': hashlib.sha256(self.xml.encode('utf-8')).hexdigest(),
+            # Full MuJoCo integration state
+            'time': float(d.time),
+            'qpos': d.qpos.astype(np.float64, copy=False).tolist(),
+            'qvel': d.qvel.astype(np.float64, copy=False).tolist(),
+            'act': d.act.astype(np.float64, copy=False).tolist(),
+            'ctrl': d.ctrl.astype(np.float64, copy=False).tolist(),
+            'qacc_warmstart': d.qacc_warmstart.astype(np.float64, copy=False).tolist(),
+            'qfrc_applied': d.qfrc_applied.astype(np.float64, copy=False).tolist(),
+            'xfrc_applied': d.xfrc_applied.astype(np.float64, copy=False).tolist(),
+            # Actuator / plant state
             'step_count': int(self.step_count),
-            'command': dict(self.command),
-            'targets': dict(self._targets),
-            'fuel': self.fuel.tolist(),
+            'command': {k: float(v) for k, v in self.command.items()},
+            'targets': {k: float(v) for k, v in self._targets.items()},
+            'rotors': [dict(r) for r in self.rotors],
+            'power': dict(self.power),
             'energy': dict(self.energy),
+            'fuel': self.fuel.astype(np.float64, copy=False).tolist(),
+            'fuel_initial': self.fuel_initial.astype(np.float64, copy=False).tolist(),
+            'wind': self.wind.astype(np.float64, copy=False).tolist(),
+            'events': copy.deepcopy(self.events),
             'flags': sorted(self.flags),
-            'water_config': self.water_config.to_dict(),
+            'crashed': bool(self.crashed),
+            'max_alt': float(self.max_alt),
+            'max_impact_n': float(self.max_impact_n),
+            'max_gear_load_n': float(self.max_gear_load_n),
+            'max_nongear_impact_n': float(self.max_nongear_impact_n),
+            'last_collision': copy.deepcopy(self.last_collision),
+            'last_fan_rpm': [float(x) for x in self.last_fan_rpm],
+            'last_thrust_per_fan_n': [float(x) for x in self.last_thrust_per_fan_n],
+            '_last_fan_motor_torque_nm': [float(x) for x in self._last_fan_motor_torque_nm],
+            '_last_fan_aero_torque_nm': [float(x) for x in self._last_fan_aero_torque_nm],
+            '_last_servo_saturated': {str(k): bool(v) for k, v in self._last_servo_saturated.items()},
+            '_last_applied_flood_kg': float(self._last_applied_flood_kg),
+            '_last_whirlpool_hazard': copy.deepcopy(self._last_whirlpool_hazard),
+            '_prev_hydro_f': {str(bid): np.asarray(vec, dtype=np.float64).tolist() for bid, vec in self._prev_hydro_f.items()},
+            '_curr_hydro_f': {str(bid): np.asarray(vec, dtype=np.float64).tolist() for bid, vec in self._curr_hydro_f.items()},
+            'last_propulsion_n': self.last_propulsion_n.astype(np.float64, copy=False).tolist(),
+            'last_propulsion_torque_nm': self.last_propulsion_torque_nm.astype(np.float64, copy=False).tolist(),
+            'last_aero_force_n': self.last_aero_force_n.astype(np.float64, copy=False).tolist(),
+            'last_aero_torque_nm': self.last_aero_torque_nm.astype(np.float64, copy=False).tolist(),
+            'last_aero_detail': copy.deepcopy(self.last_aero_detail),
+            '_last_aero_munk_nm': self._last_aero_munk_nm.astype(np.float64, copy=False).tolist(),
+            'last_munk_moment_nm': self.last_munk_moment_nm.astype(np.float64, copy=False).tolist(),
+            'last_cn_yaw': float(self.last_cn_yaw),
+            'last_cn_beta': float(self.last_cn_beta),
+            'stability_assist': float(self.stability_assist),
+            # Complete mass_register state
+            'register_version': self.mass_register.register_version,
+            'load_case': self.mass_register.load_case,
             'mass_load_case': self.mass_register.load_case,
-            'passenger_aboard': self.mass_register.passenger_aboard,
-            'passenger_mass_kg': self.mass_register.passenger_mass_kg,
-            'payload_mass_kg': self.mass_register.payload_mass_kg,
-            'ballast_mass_kg': self.mass_register.ballast_mass_kg,
-            'ballast_x_m': self.mass_register.ballast_x_m,
-            'ballast_y_m': self.mass_register.ballast_y_m,
-            'waterproof': self.mass_register.waterproof,
-            'flood_water_kg': self.mass_register.flood_water_kg,
+            'passenger_aboard': bool(self.mass_register.passenger_aboard),
+            'passenger_mass_kg': float(self.mass_register.passenger_mass_kg),
+            'passenger_x_offset_m': float(self.mass_register.passenger_x_offset_m),
+            'payload_mass_kg': float(self.mass_register.payload_mass_kg),
+            'extra_mass_kg': float(self.mass_register.extra_mass_kg),
+            'cg_shift_vtx_m': [float(v) for v in self.mass_register.cg_shift_vtx_m],
+            'ballast_mass_kg': float(self.mass_register.ballast_mass_kg),
+            'ballast_x_m': float(self.mass_register.ballast_x_m),
+            'ballast_y_m': float(self.mass_register.ballast_y_m),
+            'waterproof': bool(self.mass_register.waterproof),
+            'flood_water_kg': float(self.mass_register.flood_water_kg),
+            'fuel_state': self.mass_register.fuel_state,
+            'fuel_mass_kg': float(self.mass_register.fuel_mass_kg),
+            'propulsion_installation': self.mass_register.propulsion_installation,
+            'propulsion_off': bool(self.mass_register.propulsion_off),
+            # Water config & complete evolving water field state
+            'water_config': self.water_config.to_dict(),
+            'water_field': self.water_field.checkpoint_state(),
         }
 
     def restore_state(self, st: dict[str, Any]) -> None:
-        self.update_water_config(st['water_config'])
-        self.update_mass_properties(
-            load_case=st['mass_load_case'],
-            passenger_aboard=st['passenger_aboard'],
-            passenger_mass_kg=st['passenger_mass_kg'],
-            payload_mass_kg=st['payload_mass_kg'],
-            ballast_mass_kg=st.get('ballast_mass_kg'),
-            ballast_x_m=st.get('ballast_x_m'),
-            ballast_y_m=st.get('ballast_y_m'),
-            waterproof=st.get('waterproof'),
-            flood_water_kg=st.get('flood_water_kg', 0.0),
+        """Restore complete v2 checkpoint deterministically, or legacy v1 checkpoint with limitation flags."""
+        is_v2 = (st.get('checkpoint_version') == 'ricochet-checkpoint-v2') and ('water_field' in st)
+        if is_v2:
+            if 'hull_variant' in st and st['hull_variant'] != self.hull_bundle.variant_id:
+                raise ValueError(
+                    f"Checkpoint hull_variant {st['hull_variant']!r} differs from {self.hull_bundle.variant_id!r}"
+                )
+            if 'hull_geometry_sha256' in st and st['hull_geometry_sha256'] != self.hull_bundle.main_hull.mesh.geometry_sha256:
+                raise ValueError('Checkpoint hull geometry SHA-256 differs from current RicochetCraft model')
+
+        # 1. Restore water_field / water_config
+        if st.get('water_field') is not None:
+            self.water_field.restore_state(st['water_field'])
+            self.water_config = self.water_field.config
+            self.wind = self._wind_vector_from_config()
+        else:
+            if 'water_config' in st and st['water_config'] is not None:
+                self.update_water_config(st['water_config'])
+            self.water_field.reset(water_level_m=float(self.water_config.water_level_m))
+            self.water_field.sim_time_s = float(st['time'])
+
+        # 2. Restore complete mass_register state (defaulting legacy v1 to 'rc01-lc-v1')
+        reg_ver = st.get('register_version') or (DEFAULT_REGISTER_VERSION if is_v2 else LEGACY_REGISTER_VERSION)
+        lc = st.get('load_case', st.get('mass_load_case'))
+        sponson_z = 0.48 if self.hull_bundle.variant_id == 'concept_a' else 0.42
+        self.mass_register = MassPropertiesRegister.for_load_case(
+            load_case=lc,
+            passenger_aboard=st.get('passenger_aboard'),
+            passenger_mass_kg=st.get('passenger_mass_kg'),
+            payload_mass_kg=st.get('payload_mass_kg'),
+            sponson_z_m=sponson_z,
+            ballast_mass_kg=float(st.get('ballast_mass_kg') or 0.0),
+            ballast_x_m=float(-0.15 if st.get('ballast_x_m') is None else st['ballast_x_m']),
+            ballast_y_m=float(0.0 if st.get('ballast_y_m') is None else st['ballast_y_m']),
+            waterproof=True if st.get('waterproof') is None else bool(st['waterproof']),
+            register_version=reg_ver,
+            fuel_state=st.get('fuel_state'),
+            fuel_mass_kg=st.get('fuel_mass_kg'),
+            propulsion_installation=st.get('propulsion_installation'),
+            propulsion_off=st.get('propulsion_off'),
         )
-        self.data.time = float(st['time'])
-        self.data.qpos[:] = np.asarray(st['qpos'], dtype=np.float64)
-        self.data.qvel[:] = np.asarray(st['qvel'], dtype=np.float64)
-        if 'ctrl' in st and len(st['ctrl']) == self.model.nu:
-            self.data.ctrl[:] = np.asarray(st['ctrl'], dtype=np.float64)
+        self.mass_register.passenger_x_offset_m = float(st.get('passenger_x_offset_m', 0.0))
+        self.mass_register.extra_mass_kg = max(0.0, float(st.get('extra_mass_kg', 0.0)))
+        if st.get('cg_shift_vtx_m') is not None:
+            shift = [float(v) for v in st['cg_shift_vtx_m']]
+            self.mass_register.cg_shift_vtx_m = (shift[0], shift[1], shift[2])
+        self.mass_register.flood_water_kg = max(0.0, float(st.get('flood_water_kg', 0.0)))
+        self._apply_mass_to_mujoco()
+
+        # 3. Restore MuJoCo integration state
+        d = self.data
+        d.time = float(st['time'])
+        for name in ('qpos', 'qvel', 'act', 'ctrl', 'qacc_warmstart', 'qfrc_applied', 'xfrc_applied'):
+            if name not in st or st[name] is None:
+                continue
+            target = getattr(d, name)
+            if target.size == 0 and len(st[name]) == 0:
+                continue
+            arr = np.asarray(st[name], dtype=np.float64)
+            if arr.shape != target.shape or not np.all(np.isfinite(arr)):
+                raise ValueError(f'Invalid checkpoint MuJoCo array {name!r}: expected {target.shape}, got {arr.shape}')
+            target[:] = arr
+
+        # 4. Restore actuator & plant state
         self.step_count = int(st['step_count'])
         self.command.update(st['command'])
         self._targets.update(st.get('targets', st['command']))
-        if 'fuel' in st:
-            self.fuel[:] = np.asarray(st['fuel'], dtype=np.float64)
-        if 'energy' in st:
+        if 'rotors' in st and st['rotors'] is not None:
+            self.rotors = [dict(r) for r in st['rotors']]
+        if 'power' in st and st['power'] is not None:
+            self.power = dict(st['power'])
+        if 'energy' in st and st['energy'] is not None:
             self.energy.update(st['energy'])
-        if 'flags' in st:
-            self.flags = set(st['flags'])
-        mj.mj_forward(self.model, self.data)
-        self._evaluate_and_cache_hydro(t=float(self.data.time), force_eval=True)
+        if 'fuel_initial' in st and st['fuel_initial'] is not None:
+            self.fuel_initial[:] = np.asarray(st['fuel_initial'], dtype=np.float64)
+        if 'fuel' in st and st['fuel'] is not None:
+            self.fuel[:] = np.asarray(st['fuel'], dtype=np.float64)
+        if 'wind' in st and st['wind'] is not None:
+            self.wind[:] = np.asarray(st['wind'], dtype=np.float64)
+        if 'events' in st and st['events'] is not None:
+            self.events = copy.deepcopy(list(st['events']))
+        self.flags = set(st.get('flags', ()))
+        self.crashed = bool(st.get('crashed', False))
+        self.max_alt = float(st.get('max_alt', 0.0))
+        self.max_impact_n = float(st.get('max_impact_n', 0.0))
+        self.max_gear_load_n = float(st.get('max_gear_load_n', 0.0))
+        self.max_nongear_impact_n = float(st.get('max_nongear_impact_n', 0.0))
+        self.last_collision = copy.deepcopy(st.get('last_collision'))
+        if 'last_fan_rpm' in st and st['last_fan_rpm'] is not None:
+            self.last_fan_rpm = [float(x) for x in st['last_fan_rpm']]
+        if 'last_thrust_per_fan_n' in st and st['last_thrust_per_fan_n'] is not None:
+            self.last_thrust_per_fan_n = [float(x) for x in st['last_thrust_per_fan_n']]
+        if '_last_fan_motor_torque_nm' in st and st['_last_fan_motor_torque_nm'] is not None:
+            self._last_fan_motor_torque_nm = [float(x) for x in st['_last_fan_motor_torque_nm']]
+        if '_last_fan_aero_torque_nm' in st and st['_last_fan_aero_torque_nm'] is not None:
+            self._last_fan_aero_torque_nm = [float(x) for x in st['_last_fan_aero_torque_nm']]
+        if '_last_servo_saturated' in st and st['_last_servo_saturated'] is not None:
+            self._last_servo_saturated = {str(k): bool(v) for k, v in st['_last_servo_saturated'].items()}
+        if '_last_applied_flood_kg' in st and st['_last_applied_flood_kg'] is not None:
+            self._last_applied_flood_kg = float(st['_last_applied_flood_kg'])
+        if '_last_whirlpool_hazard' in st and st['_last_whirlpool_hazard'] is not None:
+            self._last_whirlpool_hazard = copy.deepcopy(st['_last_whirlpool_hazard'])
+        if 'last_propulsion_n' in st and st['last_propulsion_n'] is not None:
+            self.last_propulsion_n = np.asarray(st['last_propulsion_n'], dtype=np.float64)
+        if 'last_propulsion_torque_nm' in st and st['last_propulsion_torque_nm'] is not None:
+            self.last_propulsion_torque_nm = np.asarray(st['last_propulsion_torque_nm'], dtype=np.float64)
+        if 'last_aero_force_n' in st and st['last_aero_force_n'] is not None:
+            self.last_aero_force_n = np.asarray(st['last_aero_force_n'], dtype=np.float64)
+        if 'last_aero_torque_nm' in st and st['last_aero_torque_nm'] is not None:
+            self.last_aero_torque_nm = np.asarray(st['last_aero_torque_nm'], dtype=np.float64)
+        if 'last_aero_detail' in st and st['last_aero_detail'] is not None:
+            self.last_aero_detail = copy.deepcopy(st['last_aero_detail'])
+        if '_last_aero_munk_nm' in st and st['_last_aero_munk_nm'] is not None:
+            self._last_aero_munk_nm = np.asarray(st['_last_aero_munk_nm'], dtype=np.float64)
+        if 'last_munk_moment_nm' in st and st['last_munk_moment_nm'] is not None:
+            self.last_munk_moment_nm = np.asarray(st['last_munk_moment_nm'], dtype=np.float64)
+        if 'last_cn_yaw' in st and st['last_cn_yaw'] is not None:
+            self.last_cn_yaw = float(st['last_cn_yaw'])
+        if 'last_cn_beta' in st and st['last_cn_beta'] is not None:
+            self.last_cn_beta = float(st['last_cn_beta'])
+        if 'stability_assist' in st and st['stability_assist'] is not None:
+            self.stability_assist = float(st['stability_assist'])
+
+        self._raw_hydro_cache = None
+        mj.mj_forward(self.model, d)
+        f_ap = self.last_propulsion_n + self.last_aero_force_n
+        m_ap = self.last_propulsion_torque_nm + self.last_aero_torque_nm
+        self._evaluate_and_cache_hydro(
+            t=float(d.time),
+            force_eval=True,
+            ext_force_m=f_ap,
+            ext_torque_m=m_ap,
+        )
+        if '_prev_hydro_f' in st and st['_prev_hydro_f'] is not None:
+            self._prev_hydro_f = {int(k): np.asarray(v, dtype=np.float64) for k, v in st['_prev_hydro_f'].items()}
+        if '_curr_hydro_f' in st and st['_curr_hydro_f'] is not None:
+            self._curr_hydro_f = {int(k): np.asarray(v, dtype=np.float64) for k, v in st['_curr_hydro_f'].items()}
+
+        if is_v2:
+            self.legacy_checkpoint_limitations = []
+        else:
+            limitations: list[str] = []
+            if 'water_field' not in st:
+                limitations.append(
+                    'Legacy v1 checkpoint lacked evolving shallow-water arrays (h, hu, hv), SWE accumulator, '
+                    'vessel wake overlay, and water clock; water field was reset to datum at data.time.'
+                )
+            if 'qacc_warmstart' not in st:
+                limitations.append(
+                    'Legacy v1 checkpoint lacked MuJoCo qacc_warmstart, act, qfrc_applied, and xfrc_applied buffers.'
+                )
+            if 'register_version' not in st:
+                limitations.append(
+                    "Legacy v1 checkpoint lacked register_version; defaulted to 'rc01-lc-v1' to preserve original loading semantics."
+                )
+            self.legacy_checkpoint_limitations = limitations

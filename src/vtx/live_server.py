@@ -25,7 +25,7 @@ import numpy as np
 from fastapi import FastAPI,HTTPException,WebSocket,WebSocketDisconnect,Request
 from fastapi.responses import FileResponse,HTMLResponse,JSONResponse,RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel,Field,field_validator,ConfigDict
+from pydantic import BaseModel,Field,field_validator,ConfigDict,model_serializer
 from ._rotation import Rotation
 from .aircraft import Aircraft,DT,ROOT
 from .mission_selection import MapPoint,select_mission
@@ -150,6 +150,35 @@ class Mission(BaseModel):
     def airframe(cls,v):
         if v not in ['baseline','light','r6','r6_variator','phantom-a10b','phantom','phantom-fx','phantom-a9','phantom-fx-a9','ricochet-rc01-f03','ricochet-concept-a','ricochet-rc01-dev']:raise ValueError('Unknown airframe revision')
         return v
+    @model_serializer(mode='wrap')
+    def _serialize_mission(self, handler):
+        d = handler(self)
+        if d.get('water_config') is None:
+            d.pop('water_config', None)
+        if d.get('ricochet_load_case') is None:
+            d.pop('ricochet_load_case', None)
+        return d
+
+
+def _validate_env_airframe_compatibility(
+    env_key: str,
+    variant: str | None,
+    explicit_env: bool,
+    explicit_variant: bool,
+) -> None:
+    if ricochet_live.is_ricochet_variant(variant):
+        if explicit_env and env_key != 'ricochet_lake':
+            raise HTTPException(422, 'Ricochet variants require the ricochet_lake environment')
+    elif env_key == 'ricochet_lake' and explicit_variant:
+        raise HTTPException(422, 'Non-Ricochet aircraft cannot operate in ricochet_lake; select airport or sandbox')
+
+
+def _world_for(world, ignore_scenery: bool):
+    if not ignore_scenery:
+        return world
+    cloned = copy.copy(world)
+    cloned.obstacles = []
+    return cloned
 
 
 def mission_dump(request):
@@ -490,14 +519,22 @@ class Laboratory:
         if metadata['run_id']!=run_id or (evidence/'summary.json').exists():raise ValueError('Checkpoint does not identify an unfinished sortie')
         request=Mission(**metadata['request'])
         saved_env=request.environment or (state.get('mission') or {}).get('environment_key') or 'ricochet_lake'
-        self.world=make_world(saved_env,seed=self.world.seed)
-        flight_world=self.world_for(request.ignore_scenery_collisions)
+        target_world=make_world(saved_env,seed=self.world.seed)
+        flight_world=_world_for(target_world,request.ignore_scenery_collisions)
         wcfg=WaterEnvironmentConfig(**request.water_config) if request.water_config else None
-        candidate=ricochet_live.make_aircraft(flight_world,request.airframe_variant,water_config=wcfg,load_case=request.ricochet_load_case or 'LC-03',wind_world_mps=request.wind_world_mps)
+        plant_state=state.get('plant',{})
+        reg_ver=plant_state.get('register_version','rc01-lc-v1' if 'water_field' not in plant_state else 'rc01-f03-lc-v2')
+        default_lc='LC-03' if reg_ver=='rc01-lc-v1' else 'LC-01'
+        candidate=ricochet_live.make_aircraft(flight_world,request.airframe_variant,water_config=wcfg,load_case=request.ricochet_load_case or default_lc,wind_world_mps=request.wind_world_mps,register_version=reg_ver)
         if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:
             raise ValueError('Checkpoint model differs from current Ricochet physics model')
-        candidate.restore_state(state['plant'])
+        candidate.restore_state(plant_state)
+        limitations=getattr(candidate,'legacy_checkpoint_limitations',None)
+        if limitations:
+            lim_msg='; '.join(str(x) for x in limitations) if isinstance(limitations,(list,tuple)) else str(limitations)
+            self.recovery_notice=(f'{self.recovery_notice} {lim_msg}'.strip() if self.recovery_notice else lim_msg)
         session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']
+        self.world=target_world
         self.aircraft=candidate;self.flight_world=flight_world;self.run_id=run_id;self.log_path=evidence
         self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
         self.mission=state['mission'];self.objective=state.get('objective');self.pilot_owner=state.get('pilot_owner');self.pending_pilot=state.get('pending_pilot');self.pilot_epoch=state.get('pilot_epoch',0);self.fallback_status=state.get('fallback_status');self.authority=state['authority'];self.time_scale=state['time_scale']
@@ -587,24 +624,23 @@ class Laboratory:
         return obs
 
     def world_for(self,ignore_scenery):
-        if not ignore_scenery:return self.world
-        world=copy.copy(self.world);world.obstacles=[]
-        return world
+        return _world_for(self.world,ignore_scenery)
 
     def start(self,request:Mission):
         if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.airframe_variant!='r6':
             raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
-        self.phantom_landing_site=None;self.phantom_cg_gate=None
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
-        if request.environment is not None:
+        explicit_env=request.environment is not None
+        if explicit_env:
             target_env=resolve_environment_key(request.environment)
-            if getattr(self.world,'environment_key','airport')!=target_env:
-                self.world=make_world(target_env,seed=self.world.seed)
-        elif ricochet_live.is_ricochet_variant(request.airframe_variant) and getattr(self.world,'environment_key','airport')!='ricochet_lake':
-            self.world=make_world('ricochet_lake',seed=self.world.seed)
-        flight_world=self.world_for(request.ignore_scenery_collisions)
-        self.preview_generation+=1
+        elif ricochet_live.is_ricochet_variant(request.airframe_variant):
+            target_env='ricochet_lake'
+        else:
+            target_env=getattr(self.world,'environment_key','airport')
+        _validate_env_airframe_compatibility(target_env,request.airframe_variant,explicit_env,explicit_variant=True)
+        target_world=self.world if getattr(self.world,'environment_key','airport')==target_env else make_world(target_env,seed=self.world.seed)
+        flight_world=_world_for(target_world,request.ignore_scenery_collisions)
         departure_check=flight_world.validate(MapPoint(*request.departure),'departure')
         if not departure_check.valid:raise ValueError('INVALID_DEPARTURE: '+departure_check.reason)
         target=MapPoint(*request.destination)
@@ -613,22 +649,26 @@ class Laboratory:
         arrival_check=flight_world.validate(target,'destination')
         target_z=flight_world.surface_z(*request.destination)
         if phantom_live.is_phantom_variant(request.airframe_variant):
-            self.aircraft=phantom_live.make_aircraft(flight_world,request)
+            candidate=phantom_live.make_aircraft(flight_world,request)
         elif ricochet_live.is_ricochet_variant(request.airframe_variant):
             existing_wcfg=getattr(self.aircraft,'water_config',None)
             wcfg=WaterEnvironmentConfig(**request.water_config) if request.water_config else (existing_wcfg or ricochet_live.default_interactive_water_config())
-            self.aircraft=ricochet_live.make_aircraft(flight_world,request.airframe_variant,water_config=wcfg,load_case=request.ricochet_load_case or 'LC-03',wind_world_mps=request.wind_world_mps)
+            candidate=ricochet_live.make_aircraft(flight_world,request.airframe_variant,water_config=wcfg,load_case=request.ricochet_load_case or 'LC-01',wind_world_mps=request.wind_world_mps)
         else:
-            self.aircraft=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
+            candidate=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
-        spawn_z=flight_world.surface_z(*request.departure) if getattr(self.aircraft,'is_ricochet',False) else departure_check.terrain_z_m
-        self.aircraft.spawn(*request.departure,spawn_z)
+        spawn_z=flight_world.surface_z(*request.departure) if getattr(candidate,'is_ricochet',False) else departure_check.terrain_z_m
+        candidate.spawn(*request.departure,spawn_z)
         # Bench engine is ready after launch; collective remains zero until commanded.
-        if not getattr(self.aircraft, 'is_phantom', False) and not getattr(self.aircraft, 'is_ricochet', False):
-            self.aircraft.set_command(dict(engine=1.0))
+        if not getattr(candidate, 'is_phantom', False) and not getattr(candidate, 'is_ricochet', False):
+            candidate.set_command(dict(engine=1.0))
+        self.phantom_landing_site=None;self.phantom_cg_gate=None
+        self.world=target_world
+        self.aircraft=candidate
         self.flight_world=flight_world
+        self.preview_generation+=1
         self.aircraft.stability_assist=request.stability_assist
         self.active=True;self.paused=False;self.time_scale=request.time_scale;self.authority=request.authority
         self.run_id=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
@@ -893,8 +933,8 @@ class Laboratory:
                   label='Explicit retry of '+hint['run_id'],
                   **({'environment':retry_env} if retry_env else {}),
                   **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}),
-                  **({'water_config':request.get('water_config',old.get('water_config'))} if (request.get('water_config') or old.get('water_config')) else {}),
-                  **({'ricochet_load_case':request.get('ricochet_load_case',old.get('ricochet_load_case'))} if (request.get('ricochet_load_case') or old.get('ricochet_load_case')) else {}))
+                  **({'water_config':request.get('water_config',old.get('water_config'))} if (request.get('water_config') is not None or (ricochet_live.is_ricochet_variant(variant) and old.get('water_config') is not None)) else {}),
+                  **({'ricochet_load_case':request.get('ricochet_load_case',old.get('ricochet_load_case'))} if (request.get('ricochet_load_case') is not None or (ricochet_live.is_ricochet_variant(variant) and old.get('ricochet_load_case') is not None)) else {}))
         result=self.start(m)
         self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
                                       previous_fuel_kg=old.get('fuel_kg',60.),new_fuel_kg=m.fuel_kg if not phantom_live.is_phantom_variant(variant) else float(self.aircraft.fuel_initial.sum()),
@@ -1032,11 +1072,27 @@ async def get_water_state():
     return wf
 
 @app.get('/api/water/model')
-async def get_water_model():
+async def get_water_model(variant: str | None = None):
     p=lab.aircraft
-    if not getattr(p,'is_ricochet',False):
-        raise HTTPException(409,'Pinned Ricochet geometry is only available when RicochetCraft is loaded')
-    return p.visual_geometry()
+    if variant is None:
+        if not getattr(p,'is_ricochet',False):
+            raise HTTPException(409,'Pinned Ricochet geometry is only available when RicochetCraft is loaded')
+        return p.visual_geometry()
+    hull_var=ricochet_live.hull_variant_for_airframe(variant) if ricochet_live.is_ricochet_variant(variant) else str(variant).strip().lower()
+    if hull_var in ('f03','f03_baseline','rc01_f03'):
+        norm_hull='f03_baseline'
+    elif hull_var in ('concept_a','concept_a_glb','concept_a_proxy','f03_flared_proxy'):
+        norm_hull='concept_a'
+    else:
+        raise HTTPException(422,f'Unknown Ricochet variant: {variant!r}')
+    if getattr(p,'is_ricochet',False) and p.hull_bundle.variant_id==norm_hull:
+        return p.visual_geometry()
+    world_target=lab.world if getattr(lab.world,'environment_key','airport')=='ricochet_lake' else make_world('ricochet_lake',seed=lab.world.seed)
+    airframe_var=variant if ricochet_live.is_ricochet_variant(variant) else ('ricochet-concept-a' if norm_hull=='concept_a' else 'ricochet-rc01-f03')
+    def _build_vis():
+        craft=ricochet_live.make_aircraft(world_target,airframe_var)
+        return craft.visual_geometry()
+    return await asyncio.to_thread(_build_vis)
 
 @app.post('/api/water/mass')
 async def update_water_mass(request:dict):
@@ -1057,6 +1113,13 @@ async def update_water_mass(request:dict):
             waterproof=request.get('waterproof'),
             flood_water_kg=request.get('flood_water_kg'),
             bilge_pump=bool(request.get('bilge_pump',False)),
+            register_version=request.get('register_version'),
+            fuel_state=request.get('fuel_state'),
+            fuel_mass_kg=request.get('fuel_mass_kg'),
+            propulsion_installation=request.get('propulsion_installation'),
+            propulsion_off=request.get('propulsion_off'),
+            passenger_x_offset_m=request.get('passenger_x_offset_m'),
+            extra_mass_kg=request.get('extra_mass_kg'),
         )
     except (ValueError,TypeError) as e:raise HTTPException(422,str(e))
     lab.last_obs=None
@@ -1106,24 +1169,8 @@ async def release_identity():
                 supported_variants=['r6','r6_variator','light','baseline','phantom-a10b','phantom-fx','phantom','phantom-a9','phantom-fx-a9','ricochet-rc01-f03','ricochet-concept-a','ricochet-rc01-dev'])
 @app.get('/api/view')
 async def view():return lab.view()
-@app.post('/api/model-preview')
-async def model_preview(request:dict):
-    """Switch the idle inspection aircraft without creating a flight record."""
-    if lab.active:raise HTTPException(409,'End and retain the current sortie before choosing another vehicle')
-    if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before changing vehicles')
-    if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.get('airframe_variant')!='r6':
-        raise HTTPException(409,'This cockpit is pinned to R6')
-    target_world=lab.world
-    if request.get('environment') is not None:
-        try:env_key=resolve_environment_key(request.get('environment'))
-        except ValueError as e:raise HTTPException(422,str(e))
-        if getattr(lab.world,'environment_key','airport')!=env_key:
-            target_world=make_world(env_key,seed=lab.world.seed)
-    elif ricochet_live.is_ricochet_variant(request.get('airframe_variant')) and getattr(lab.world,'environment_key','airport')!='ricochet_lake':
-        target_world=make_world('ricochet_lake',seed=lab.world.seed)
-    dep_default=list(getattr(target_world,'default_departure',[0,0])) if (request.get('environment') is not None or ricochet_live.is_ricochet_variant(request.get('airframe_variant'))) else [0,0]
-    try:selection=Mission(environment=request.get('environment') or getattr(target_world,'environment_key',None),airframe_variant=request.get('airframe_variant'), departure=request.get('departure',dep_default), phantom={'start_configuration': request.get('start_configuration','vtol')})
-    except ValidationError as e:raise HTTPException(422,str(e))
+async def _apply_idle_selection(target_world, selection: Mission, stale_detail: str) -> None:
+    """Validate departure/config, build idle aircraft off-thread, and commit atomically."""
     point=MapPoint(*selection.departure)
     if phantom_live.is_phantom_variant(selection.airframe_variant):
         from .phantom.mission import validate_phantom
@@ -1132,14 +1179,22 @@ async def model_preview(request:dict):
     else:
         verdict=target_world.validate(point,'departure')
         if not verdict.valid:raise HTTPException(422,verdict.reason)
+    wcfg=None
+    if ricochet_live.is_ricochet_variant(selection.airframe_variant):
+        from .ricochet.mass_register import normalize_load_case
+        try:
+            if selection.ricochet_load_case is not None:
+                normalize_load_case(selection.ricochet_load_case)
+            wcfg=WaterEnvironmentConfig(**selection.water_config) if selection.water_config else (getattr(lab.aircraft,'water_config',None) or ricochet_live.default_interactive_water_config())
+        except (ValueError,TypeError) as e:
+            raise HTTPException(422,str(e))
     lab.preview_generation+=1
     generation=lab.preview_generation
     def build():
         if phantom_live.is_phantom_variant(selection.airframe_variant):
             aircraft=phantom_live.make_aircraft(target_world,selection)
         elif ricochet_live.is_ricochet_variant(selection.airframe_variant):
-            wcfg=getattr(lab.aircraft,'water_config',None) or ricochet_live.default_interactive_water_config()
-            aircraft=ricochet_live.make_aircraft(target_world,selection.airframe_variant,water_config=wcfg,wind_world_mps=selection.wind_world_mps)
+            aircraft=ricochet_live.make_aircraft(target_world,selection.airframe_variant,water_config=wcfg,load_case=selection.ricochet_load_case or 'LC-01',wind_world_mps=selection.wind_world_mps)
         else:
             aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
                               fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
@@ -1147,11 +1202,43 @@ async def model_preview(request:dict):
                               atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
         aircraft.spawn(*selection.departure,target_world.surface_z(*selection.departure))
         return aircraft
-    aircraft=await asyncio.to_thread(build)
+    try:aircraft=await asyncio.to_thread(build)
+    except ValueError as e:raise HTTPException(422,str(e))
     if lab.active or generation!=lab.preview_generation:
-        raise HTTPException(409,'The flight or model selection changed while the inspection model was loading')
+        raise HTTPException(409,stale_detail)
     lab.world=target_world;lab.flight_world=target_world;lab.aircraft=aircraft;lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
     lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
+
+
+@app.post('/api/model-preview')
+async def model_preview(request:dict):
+    """Switch the idle inspection aircraft without creating a flight record."""
+    if lab.active:raise HTTPException(409,'End and retain the current sortie before choosing another vehicle')
+    if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before changing vehicles')
+    if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.get('airframe_variant')!='r6':
+        raise HTTPException(409,'This cockpit is pinned to R6')
+    req_env=request.get('environment')
+    explicit_env=req_env is not None
+    variant=request.get('airframe_variant')
+    explicit_variant=variant is not None
+    if explicit_env:
+        try:env_key=resolve_environment_key(req_env)
+        except ValueError as e:raise HTTPException(422,str(e))
+    elif ricochet_live.is_ricochet_variant(variant):
+        env_key='ricochet_lake'
+    elif not ricochet_live.is_ricochet_variant(variant) and getattr(lab.world,'environment_key','airport')=='ricochet_lake':
+        env_key='airport'
+    else:
+        env_key=getattr(lab.world,'environment_key','airport')
+    _validate_env_airframe_compatibility(env_key,variant,explicit_env,explicit_variant)
+    target_world=lab.world if getattr(lab.world,'environment_key','airport')==env_key else make_world(env_key,seed=lab.world.seed)
+    dep_default=list(getattr(target_world,'default_departure',[0,0])) if (explicit_env or target_world is not lab.world or ricochet_live.is_ricochet_variant(variant)) else [0,0]
+    mission_kwargs={}
+    if request.get('water_config') is not None:mission_kwargs['water_config']=request.get('water_config')
+    if request.get('ricochet_load_case') is not None:mission_kwargs['ricochet_load_case']=request.get('ricochet_load_case')
+    try:selection=Mission(environment=env_key,airframe_variant=variant,departure=request.get('departure',dep_default),phantom={'start_configuration': request.get('start_configuration','vtol')},**mission_kwargs)
+    except ValidationError as e:raise HTTPException(422,str(e))
+    await _apply_idle_selection(target_world,selection,'The flight or model selection changed while the inspection model was loading')
     return lab.view()
 @app.post('/api/environment')
 async def set_environment(request:dict):
@@ -1160,48 +1247,27 @@ async def set_environment(request:dict):
     if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before switching environments')
     try:env_key=resolve_environment_key(request.get('environment'))
     except ValueError as e:raise HTTPException(422,str(e))
-    target_world=lab.world if getattr(lab.world,'environment_key','airport')==env_key else make_world(env_key,seed=lab.world.seed)
+    explicit_variant=request.get('airframe_variant') is not None
     current_variant=request.get('airframe_variant') or getattr(lab.aircraft,'variant',None) or getattr(lab.aircraft,'airframe_variant','r6')
-    if env_key=='ricochet_lake' and not request.get('airframe_variant') and not ricochet_live.is_ricochet_variant(current_variant):
+    if env_key=='ricochet_lake' and not explicit_variant and not ricochet_live.is_ricochet_variant(current_variant):
         current_variant='ricochet-rc01-f03'
-    elif env_key!='ricochet_lake' and not request.get('airframe_variant') and ricochet_live.is_ricochet_variant(current_variant):
+    elif env_key!='ricochet_lake' and not explicit_variant and ricochet_live.is_ricochet_variant(current_variant):
         current_variant='r6'
     if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and current_variant!='r6':
+        if explicit_variant:
+            raise HTTPException(409,'This cockpit is pinned to R6')
         current_variant='r6'
+    _validate_env_airframe_compatibility(env_key,current_variant,explicit_env=True,explicit_variant=explicit_variant or env_key=='ricochet_lake')
+    target_world=lab.world if getattr(lab.world,'environment_key','airport')==env_key else make_world(env_key,seed=lab.world.seed)
     start_cfg=request.get('start_configuration') or getattr(lab.aircraft,'start_configuration','vtol')
     dep=request.get('departure') if request.get('departure') is not None else list(target_world.default_departure)
     dest=request.get('destination') if request.get('destination') is not None else list(target_world.default_destination)
-    try:selection=Mission(environment=env_key,airframe_variant=current_variant,departure=dep,destination=dest,phantom={'start_configuration':start_cfg})
+    mission_kwargs={}
+    if request.get('water_config') is not None:mission_kwargs['water_config']=request.get('water_config')
+    if request.get('ricochet_load_case') is not None:mission_kwargs['ricochet_load_case']=request.get('ricochet_load_case')
+    try:selection=Mission(environment=env_key,airframe_variant=current_variant,departure=dep,destination=dest,phantom={'start_configuration':start_cfg},**mission_kwargs)
     except ValidationError as e:raise HTTPException(422,str(e))
-    point=MapPoint(*selection.departure)
-    if phantom_live.is_phantom_variant(selection.airframe_variant):
-        from .phantom.mission import validate_phantom
-        verdict=validate_phantom(target_world,point,selection.airframe_variant)
-        if not verdict['ok']:raise HTTPException(422,verdict['reason'])
-    else:
-        verdict=target_world.validate(point,'departure')
-        if not verdict.valid:raise HTTPException(422,verdict.reason)
-    lab.preview_generation+=1
-    generation=lab.preview_generation
-    def build():
-        if phantom_live.is_phantom_variant(selection.airframe_variant):
-            aircraft=phantom_live.make_aircraft(target_world,selection)
-        elif ricochet_live.is_ricochet_variant(selection.airframe_variant):
-            wcfg=getattr(lab.aircraft,'water_config',None) or ricochet_live.default_interactive_water_config()
-            aircraft=ricochet_live.make_aircraft(target_world,selection.airframe_variant,water_config=wcfg,wind_world_mps=selection.wind_world_mps)
-        else:
-            aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
-                              fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
-                              engine_power_limit_kw=selection.engine_power_limit_kw,
-                              atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
-        aircraft.spawn(*selection.departure,target_world.surface_z(*selection.departure))
-        return aircraft
-    aircraft=await asyncio.to_thread(build)
-    if lab.active or generation!=lab.preview_generation:
-        raise HTTPException(409,'The flight or model selection changed while the environment was loading')
-    lab.world=target_world;lab.flight_world=target_world;lab.aircraft=aircraft
-    lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
-    lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
+    await _apply_idle_selection(target_world,selection,'The flight or model selection changed while the environment was loading')
     return dict(ok=True,environment=env_key,world=lab.world.public(),view=lab.view())
 @app.post('/api/objective')
 async def set_objective(request:dict):
