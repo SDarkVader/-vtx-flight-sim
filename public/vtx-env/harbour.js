@@ -279,7 +279,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
       if (ticket === revision) {status = 'Harbour unavailable: ' + error.message; render();}
     } finally {pendingGets--;}
   };
-  const send = payload => {
+  const send = (payload, {throwOnError = false} = {}) => {
     const epoch = worldEpoch;
     chain = chain.catch(() => {}).then(async () => {
       if (!enabled || disposed || epoch !== worldEpoch) return;
@@ -289,7 +289,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
         if (response?.ok === false) throw Error(response.reason || 'Harbour action refused');
         status = response?.reason || ({save: 'Harbour saved.', restore: 'Saved harbour restored.', dock: 'Mooring secured.', undock: 'Mooring released.'}[payload.action] || '');
         await refresh({snap: payload.action === 'restore' || payload.action === 'dock'});
-      } catch (error) {status = error.message; toast(error.message);}
+      } catch (error) {status = error.message; toast(error.message); if (throwOnError) throw error;}
       finally {pendingActions--; render();}
     });
     return chain;
@@ -334,6 +334,19 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
   }, 100);
   return {
     panel, refresh, get state() {return enabled && Date.now() - lastSuccess < 2000 ? state : null;},
+    async chooseBoat(boatId) {
+      if (!enabled || !world?.harbour) throw Error('Select Main Airport to use the harbour.');
+      await flushHelm();
+      if (!ready()) await refresh();
+      if (!state?.initialized) await send({action: 'activate'}, {throwOnError: true});
+      if (!state?.initialized) throw Error(status || 'Could not start the harbour.');
+      if (state.selectedId !== boatId) await send({action: 'select', boatId}, {throwOnError: true});
+      const boat = selected();
+      if (!boat || boat.id !== boatId) throw Error(status || 'Could not select the boat.');
+      panel.open = true;
+      onFocus(boat.position, 'boat');
+      return boat;
+    },
     setWorld(next) {worldEpoch++; revision++; discardHelm(); world = next; state = null; status = ''; lastSuccess = 0; onRoutes(el('routes').checked); render(); if (enabled) void refresh();},
     setEnabled(next) {if (enabled === !!next) return; enabled = !!next; revision++; if (!enabled) {worldEpoch++; discardHelm(); onState(null);} else void refresh(); render();},
     dispose() {disposed = true; revision++; clearInterval(timer); clearTimeout(helmTimer); panel.remove();},
