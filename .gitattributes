@@ -139,3 +139,14 @@ src/vtx/release.py text eol=crlf
 src/vtx/training_assist.py text eol=crlf
 src/vtx/urban_reference.py text eol=crlf
 src/vtx/world.py text eol=crlf
+inputs/main_airport_harbour.json text eol=lf
+public/vtx-env/runway-layout.js text eol=lf
+public/vtx-env/harbour.js text eol=lf
+public/vtx-env/harbour-map.js text eol=lf
+src/vtx/airport_harbour.py text eol=lf
+src/vtx/harbour_fleet.py text eol=lf
+src/vtx/harbour_session.py text eol=lf
+src/vtx/harbour_water.py text eol=lf
+src/vtx/ricochet/*.py text eol=crlf
+src/vtx/water/*.py text eol=crlf
+*.npz binary

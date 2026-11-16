@@ -3,6 +3,8 @@
 // aprons, stands, holding points, and facility complexes from LAYOUT with sub-millimetre parity.
 // Live aircraft pose is synchronized with MuJoCo truth frame (position, physical yaw, velocity).
 import { LAYOUT } from './layout.js';
+import {primaryRunwayCues} from './runway-layout.js?v=20261116-runway-1';
+import {drawHarbourMap, drawHarbourBoats} from './harbour-map.js?v=20261116-harbour-1';
 
 function evalCubicBezier(p0, p1, p2, p3, t) {
   const mt = 1 - t, mt2 = mt * mt, mt3 = mt2 * mt, t2 = t * t, t3 = t2 * t;
@@ -20,8 +22,10 @@ export class TacticalMinimap {
     this.ctx = canvas.getContext('2d');
     this.isLarge = isLarge;
     this.zoom = 0.5;
+    this.airportZoom = 0.5;
     this.worldHalf = 500;
     this.center = [0, 100]; // centered to capture both runways and northern facilities
+    this.airportCenter = [0, 100];
     this.tacticalMode = false; // false: airport, true: whole world
     this.dragStart = null;
     this.isDragging = false;
@@ -35,8 +39,8 @@ export class TacticalMinimap {
     // Double click to toggle tactical zoom
     c.addEventListener('dblclick', (e) => {
       this.tacticalMode = !this.tacticalMode;
-      this.zoom = this.tacticalMode ? 1000 / (this.worldHalf * 2 * Math.max(1, c.width / c.height)) : 0.5;
-      this.center = this.tacticalMode ? [0, 0] : [0, 100];
+      this.zoom = this.tacticalMode ? 1000 / (this.worldHalf * 2 * Math.max(1, c.width / c.height)) : this.airportZoom;
+      this.center = this.tacticalMode ? [0, 0] : [...this.airportCenter];
       backgroundCache.delete(c);
       e.preventDefault();
     });
@@ -122,6 +126,8 @@ export class TacticalMinimap {
       g.strokeStyle = '#68b5d8'; g.lineWidth = 1;
       g.strokeRect(px(x - half_x), py(y + half_y), scaleM(half_x * 2), scaleM(half_y * 2));
     }
+
+    drawHarbourMap(g, proj, world?.harbour);
 
     // Grid covers the visible extent; spacing expands for the world view.
     const spacing = this.zoom < 0.3 ? 1000 : 200;
@@ -211,23 +217,24 @@ export class TacticalMinimap {
     }
 
     // 6. Runways
-    // Runway 08/26 (Primary: 1432m x 30m)
+    // Runway 08/26 uses the same world record as the 3D paint and lights.
+    const primary = primaryRunwayCues(world), runway = primary.runway;
     g.save();
     g.fillStyle = '#22252a';
-    g.fillRect(px(-716), py(15), scaleM(4616), scaleM(30));
+    g.fillRect(px(runway.x0), py(runway.yc + runway.width / 2), scaleM(runway.length), scaleM(runway.width));
     g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = Math.max(1, scaleM(0.8));
     g.setLineDash([scaleM(14), scaleM(16)]);
-    g.beginPath(); g.moveTo(px(-690), py(0)); g.lineTo(px(3874), py(0)); g.stroke();
+    g.beginPath(); g.moveTo(px(primary.centerline[0]), py(runway.yc)); g.lineTo(px(primary.centerline[1]), py(runway.yc)); g.stroke();
     g.setLineDash([]);
     // Heading numbers '08' and '26'
     g.fillStyle = '#ffffff';
     g.font = `bold ${Math.max(8, Math.round(scaleM(14)))}px "Arial Black", sans-serif`;
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText('08', px(-660), py(0));
-    g.fillText('26', px(3844), py(0));
+    for (const {label, x} of primary.numbers) g.fillText(label, px(x), py(runway.yc));
     // Threshold green/red markers
-    g.fillStyle = '#22e055'; g.fillRect(px(-716), py(15), scaleM(3), scaleM(30));
-    g.fillStyle = '#ff2211'; g.fillRect(px(3897), py(15), scaleM(3), scaleM(30));
+    for (const {x, color} of primary.thresholdBands) {
+      g.fillStyle = color; g.fillRect(px(x), py(runway.yc + runway.width / 2), scaleM(3), scaleM(runway.width));
+    }
     g.restore();
 
     // Runway 03/21 (Secondary: 980m x 23m, 55 deg)
@@ -380,20 +387,26 @@ export class TacticalMinimap {
     return layer;
   }
 
-  render(world, { last, track, departure, destination }) {
+  render(world, { last, track, departure, destination, harbourState }) {
     if (!world) return;
     this.worldHalf = world.half_m;
+    const isSandbox = world.environment === 'sandbox' || world.id === 'stage1-valley';
+    this.airportZoom = isSandbox ? 1 : world.runway ? .12 : .5;
+    this.airportCenter = isSandbox ? [0, 0] : world.runway
+      ? [(world.runway.x0 + world.runway.x1) / 2, world.runway.yc + 100] : [0, 100];
     const proj = this.getProjection(world.half_m);
     const { px, py, scaleM, w, h } = proj;
 
     // Cache or redraw background
     let bg = backgroundCache.get(this.canvas);
-    if (!bg || bg.worldId !== world.id || bg.w !== w || bg.h !== h || bg.zoom !== this.zoom || bg.cx !== this.center[0] || bg.cy !== this.center[1]) {
+    const worldKey = JSON.stringify([world.id, world.version, world.seed, world.displayed_world_sha256, world.runway]);
+    if (!bg || bg.worldKey !== worldKey || bg.w !== w || bg.h !== h || bg.zoom !== this.zoom || bg.cx !== this.center[0] || bg.cy !== this.center[1]) {
       const layer = this.buildBackgroundLayer(world, proj);
-      bg = { layer, worldId: world.id, w, h, zoom: this.zoom, cx: this.center[0], cy: this.center[1] };
+      bg = { layer, worldKey, w, h, zoom: this.zoom, cx: this.center[0], cy: this.center[1] };
       backgroundCache.set(this.canvas, bg);
     }
     this.ctx.drawImage(bg.layer, 0, 0);
+    drawHarbourBoats(this.ctx, proj, harbourState);
 
     // Dynamic flight track breadcrumbs
     if (track && track.length > 1) {

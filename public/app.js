@@ -19,14 +19,15 @@ import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js
 import {buildSky} from './vtx-env/sky.js?v=1';
 import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
-import {buildAirfield} from './vtx-env/airfield.js?v=6';
+import {buildAirfield} from './vtx-env/airfield.js?v=20261116-runway-1';
+import {buildHarbour,createHarbourControls,harbourOverviewView} from './vtx-env/harbour.js?v=20261116-harbour-1';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=phantom-no-white-exterior-lenses-20261113';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=airport-scale-20261107';
+import {TacticalMinimap} from './vtx-env/tactical-minimap.js?v=20261116-harbour-1';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
-import {createFreeCamera} from './free-camera.js?v=4';
+import {createFreeCamera} from './free-camera.js?v=20261116-runway-1';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
 import {RIDE_JOURNEYS,buildRideJourney} from './vtx-env/visual-ride-journeys.js?v=3';
 import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from './vtx-env/ride-trajectory.js?v=1';
@@ -129,7 +130,7 @@ const renderer=new THREE.WebGLRenderer({antialias:quality.antialias,powerPrefere
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.enablePan=false;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
-const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m));
+const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m),()=>world);
 const sky=buildSky(scene,renderer,{quality}),environment={};
 // Desktop-app tier only: post-processing. Day/night is presentation only and never touches the physics.
 const post=createPost(renderer,scene,camera,quality);
@@ -199,6 +200,34 @@ $('airport-camera').onchange=()=>{const mode=$('airport-camera').value;if(mode==
 const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);post?.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 const worldGroup=new THREE.Group();worldGroup.name='vtx-world';scene.add(worldGroup);
+let harbourLayer=null,harbourOverviewState=null;
+function restoreHarbourOverview(){
+ if(!harbourOverviewState)return;
+ const saved=harbourOverviewState;harbourOverviewState=null;
+ if(saved.fog)Object.assign(saved.fog,saved.fogValues);
+ camera.near=saved.near;camera.far=saved.far;camera.updateProjectionMatrix();
+}
+const harbourControls=createHarbourControls({host:document.querySelector('.mission-panel'),api,toast,
+ onState:state=>{harbourLayer?.update(state);drawMaps(true);},
+ onRoutes:visible=>harbourLayer?.setRoutesVisible(visible),
+ onFocus:(point,kind)=>{
+  if(!point?.every(Number.isFinite))return;
+  setCameraMode('free');
+  const [x,y,z]=point;
+  if(kind==='harbour'&&world?.harbour){
+   const view=harbourOverviewView(world.harbour,camera),fog=scene.fog;
+   harbourOverviewState={fog,fogValues:fog?.isFog?{near:fog.near,far:fog.far}:{density:fog?.density},near:camera.near,far:camera.far};
+   // Fit the complete lake and retain depth precision above its shallow bed.
+   // Other camera choices restore the normal airport projection and haze.
+   camera.near=view.near;camera.far=Math.max(camera.far,view.far);camera.updateProjectionMatrix();
+   if(fog)Object.assign(fog,fog.isFog?{near:view.fogNear,far:view.far}:{density:view.fogDensity});
+   freeCam.teleport(view.position,view.target);
+  }else{
+   freeCam.teleport([x+24,y-30,z+18],point);
+  }
+ }
+});
+document.querySelector('.map-key')?.after(harbourControls.panel);
 function plane(w,h,color,x,y,z,parent=worldGroup){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({color,roughness:.95}));m.position.set(x,y,z);m.receiveShadow=true;parent.add(m);return m;}
 function makeLabel(text,color='#7cdfcb'){
  const c=document.createElement('canvas');c.width=128;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle=color;ctx.beginPath();ctx.arc(64,64,49,0,Math.PI*2);ctx.fill();ctx.fillStyle='#143934';ctx.font='bold 62px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,64,67);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:true}));sprite.scale.set(1.8,1.8,1.8);scene.add(sprite);return sprite;
@@ -206,9 +235,10 @@ function makeLabel(text,color='#7cdfcb'){
 const markerA=makeLabel('A'),markerB=makeLabel('B','#ffc88b');
  const START_PRESETS={
  airport:[
-  ['-700,0','Runway 08 threshold'],
-  ['3800,0','Runway 26 threshold'],
-  ['300,0','Runway centre'],
+  ['-700,0','Established runway takeoff point'],
+  ['-3885,0','Runway 08 west threshold'],
+  ['3885,0','Runway 26 east threshold'],
+  ['300,0','Runway station +300 m'],
   ['0,0','Central stand'],
   ['205,-85','South test apron'],
   ['custom','Custom point'],
@@ -249,8 +279,8 @@ function syncEnvironmentControls(envKey){
  const rwyBtn=$('runway-start');
  if(rwyBtn){
   rwyBtn.hidden=currentEnvironment==='r6-valley-20261103';
-  rwyBtn.textContent=currentEnvironment==='sandbox'?'Set A: sandbox runway 09 start':'Set A: runway 08 start';
-  rwyBtn.title=currentEnvironment==='sandbox'?'Sandbox runway 09 threshold at X -700 m, Y 0 m (1,650 m takeoff roll along +X)':'Runway 08 start, 15 m inside the marked threshold';
+  rwyBtn.textContent=currentEnvironment==='sandbox'?'Set A: sandbox runway 09 start':'Set A: established takeoff point';
+  rwyBtn.title=currentEnvironment==='sandbox'?'Sandbox runway 09 threshold at X -700 m, Y 0 m (1,650 m takeoff roll along +X)':'Established takeoff point at X -700 m, Y 0 m; extended runway continues in both directions';
  }
  const caption=$('scene-caption');
  if(caption){
@@ -258,10 +288,12 @@ function syncEnvironmentControls(envKey){
    ?'<span>HISTORICAL R6 / VALLEY</span><p>1,000 × 1,000 m · recovered terrain and obstacles · floor depends on aircraft</p>'
    :currentEnvironment==='sandbox'
    ?'<span>STAGE 1 / VALLEY TEST RANGE</span><p>2,000 × 2,000 m · 1,900 m east-west runway, terrain and ground contact</p>'
-   :'<span>VTX / EXTENDED AIRFIELD</span><p>8,000 × 8,000 m · terrain, extended runway and ground contact</p>';
+   :'<span>VTX / EXTENDED AIRFIELD</span><p>7,800 m runway · broad level approaches · surrounding hills retained</p>';
  }
 }
 function clearWorldGroup(){
+ restoreHarbourOverview();
+ harbourLayer?.dispose();harbourLayer=null;
  const keepTextures=new Set([markerA.material?.map,markerB.material?.map].filter(Boolean));
  for(const child of [...worldGroup.children]){
   worldGroup.remove(child);
@@ -392,18 +424,23 @@ function buildWorld(w){
   environment.buildings=buildBuildings(worldGroup,w,{ppm:quality.facadePpm,quality});environment.kit=buildAirfieldKit(worldGroup,w,{quality});buildAirfield(worldGroup,{ppm:quality.airfieldPpm,quality,world:w});buildTrees(worldGroup,w,{quality});buildForecourt(worldGroup,w);environment.volcano=buildVolcanoBasement(worldGroup,w);environment.serviceRoads=buildServiceRoads(worldGroup,w,groundZ);
   worldGroup.add(makeWater(w,surfaceZ(w.water.x,w.water.y)+.1));
   environment.dressing=dressWorld(worldGroup,w,ground,{quality,lightPool,extraTextures:[markerA.material.map,markerB.material.map]});
+  harbourLayer=buildHarbour(w,{fetchModel:boatId=>api('/api/harbour/model?boatId='+encodeURIComponent(boatId)),onError:(boatId,error)=>console.warn('Harbour model unavailable',boatId,error.message)});
+  if(harbourLayer)worldGroup.add(harbourLayer.root);
  }
+ harbourControls.setWorld(w);
+ harbourControls.setEnabled(!!w.harbour&&!replayFrames&&!worldUnavailable);
  timeOfDay.refresh();
  syncEnvironmentControls(w.environment);
  for(const c of [$('map'),$('large-map')]){
   const mm=getMinimap(c);
   if(mm){
    mm.tacticalMode=false;
-   mm.zoom=isSandbox?1.0:0.5;
+   mm.zoom=isSandbox?1.0:w.runway?0.12:0.5;
    mm.center=isSandbox?[0,0]:[0,100];
   }
  }
  if($('map-mode'))$('map-mode').textContent='World';
+ if($('grid-label'))$('grid-label').textContent=w.runway?'1 km grid':'200 m grid';
  updateMarkers();drawMaps(true);console.log('VTX: terrain ready',w.id);
 }
 let worldUnavailable=false;
@@ -600,7 +637,7 @@ if($('environment-select'))$('environment-select').onchange=guard(()=>switchEnvi
 $('start-preset').onchange=guard(async()=>{const value=$('start-preset').value;if(value==='custom')return;pick='a';await choosePoint(value.split(',').map(Number));});
 $('map').onclick=guard(e=>onMap(e,$('map')));$('large-map').onclick=guard(e=>onMap(e,$('large-map')));
 function setPick(p){pick=p;$('pick-a').classList.toggle('selected',p==='a');$('pick-b').classList.toggle('selected',p==='b');$('large-pick').textContent=p.toUpperCase();}
-$('runway-start').onclick=guard(async()=>{pick='a';const pt=[-700,0];await choosePoint(pt);toast(currentEnvironment==='sandbox'?'Departure set at sandbox runway 09 threshold: X -700 m, Y 0 m.':'Departure set near runway 08 threshold: X -700 m, Y 0 m.');});
+$('runway-start').onclick=guard(async()=>{pick='a';const pt=[-700,0];await choosePoint(pt);toast(currentEnvironment==='sandbox'?'Departure set at sandbox runway 09 threshold: X -700 m, Y 0 m.':'Departure set at the established takeoff point: X -700 m, Y 0 m.');});
 $('pick-a').onclick=()=>setPick('a');$('pick-b').onclick=()=>setPick('b');
 for(const [id,p] of [['dep','a'],['dest','b']])$(id).onchange=guard(async()=>{const vals=$(id).value.split(',').map(Number);if(vals.length!==2||vals.some(v=>!Number.isFinite(v)))throw Error('Use two finite coordinates: east, north');setPick(p);await choosePoint(vals);});
 $('map-zoom').onclick=()=>{$('map-dialog').showModal();drawMaps(true);};
@@ -611,10 +648,10 @@ if(mapModeBtn){
     if(mm){
       const isSandbox=currentEnvironment==='sandbox';
       mm.tacticalMode=!mm.tacticalMode;
-      mm.zoom=mm.tacticalMode?1000/(world.half_m*2*Math.max(1,$('map').width/$('map').height)):(isSandbox?1.0:0.5);
+      mm.zoom=mm.tacticalMode?1000/(world.half_m*2*Math.max(1,$('map').width/$('map').height)):(isSandbox?1.0:world.runway?0.12:0.5);
       mm.center=mm.tacticalMode?[0,0]:(isSandbox?[0,0]:[0,100]);
       mapModeBtn.textContent=mm.tacticalMode?(isSandbox?'Sandbox':'Airport'):'World';
-      $('grid-label').textContent=mm.tacticalMode?'1 km grid':'200 m grid';
+      $('grid-label').textContent=mm.zoom<0.3?'1 km grid':'200 m grid';
       drawMaps(true);
     }
   };
@@ -731,6 +768,7 @@ function showRideAircraft(mode='chase'){
   }
 }
 function setCameraMode(mode){
+  restoreHarbourOverview();
   const previous=cameraMode;
   const actor=rideEnabled?visualTraffic?.getActor(selectedVehicleId)?.root:null;
   if(rideEnabled){
@@ -930,6 +968,7 @@ $('history').onclick=guard(async()=>{
 });
 $('open-records').onclick=()=>$('history').click();
 function updateReplayReadings(){
+ harbourControls.setEnabled(false);
  const r=replayCockpitReadings(replayFrames?.[replayFrame]);
  $('cockpit-alt').textContent=r.altitude;$('cockpit-vs').textContent=r.verticalSpeed;
  $('cockpit-speed').textContent=r.speed;$('cockpit-fuel').textContent=r.fuel;
@@ -950,7 +989,7 @@ function drawMap(canvas){
   const mm=getMinimap(canvas);
   if(mm){
     if(canvas===$('map'))$('grid-label').textContent=mm.zoom<0.3?'1 km grid':'200 m grid';
-    mm.render(world,{last,track,departure,destination});
+    mm.render(world,{last,track,departure,destination,harbourState:replayFrames?null:harbourControls.state});
   }
 }
 // Legacy map replaced by TacticalMinimap
@@ -1086,8 +1125,9 @@ function connect(){
 api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&&w.default_departure.length===2){departure=[...w.default_departure];$('dep').value=departure.join(', ');}buildWorld(w);connect();}).catch(()=>fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{buildWorld(w);$('view-sync').textContent='SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';})).catch(e=>{$('loading').textContent='Unable to load airport: '+e.message;console.error('Airport world',e);});
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 let lastFrameMs=0;
-if(new URLSearchParams(location.search).has('debug'))window.__vtx={post,timeOfDay,scene,worldGroup,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,switchEnvironment,get currentEnvironment(){return currentEnvironment;},get model(){return model;},get loadedAsset(){return loadedAsset;},get modelReady(){return modelReady;},get last(){return last;},get world(){return world;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
+if(new URLSearchParams(location.search).has('debug'))window.__vtx={post,timeOfDay,scene,worldGroup,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,switchEnvironment,get currentEnvironment(){return currentEnvironment;},get model(){return model;},get loadedAsset(){return loadedAsset;},get modelReady(){return modelReady;},get last(){return last;},get world(){return world;},get harbourState(){return harbourControls.state;},get harbourLayer(){return harbourLayer;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
 function animate(){requestAnimationFrame(animate);if(document.hidden)return;const now=performance.now();if(now-lastFrameMs<(lightweightView?67:(quality.frameMs??50)))return;lastFrameMs=now;const truth=replayFrames?replayFrames[replayFrame]:last?.rendering_truth;
+ harbourControls.setEnabled(!!world?.harbour&&!replayFrames&&!worldUnavailable);
  if(replayFrames)showAttitude(truth,'REPLAY');
  const frameDt=rideLastFrame?Math.min(.25,(now-rideLastFrame)/1000):0;
  rideLastFrame=now;

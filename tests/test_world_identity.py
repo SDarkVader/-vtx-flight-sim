@@ -2,6 +2,17 @@
 import pytest
 from vtx import live_server as server
 from vtx.world import SandboxWorld
+from vtx.world import TestWorld
+
+
+def test_runway_definition_is_included_in_environment_identity():
+    world = TestWorld()
+    original = server.world_fingerprint(world)
+    world.runway['x0'] += 100.
+    assert server.world_fingerprint(world) != original
+    original = server.world_fingerprint(world)
+    world.approach_corridor['flat_half_width_m'] += 100.
+    assert server.world_fingerprint(world) != original
 
 
 @pytest.mark.parametrize('variant', ['r6', 'phantom-a10c'])

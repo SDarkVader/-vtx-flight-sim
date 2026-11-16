@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 
-export function createFreeCamera(camera, renderer, viewport, setCameraMode) {
+export function createFreeCamera(camera, renderer, viewport, setCameraMode, getWorld = () => null) {
   let active = false;
   let yaw = 0;       // horizontal look angle (rad)
   let pitch = 0;     // vertical look angle (rad)
@@ -131,6 +131,12 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode) {
     btn.onmouseleave = () => btn.style.background = '#1e293b';
     btn.onclick = (e) => {
       e.stopPropagation();
+      const runway = getWorld()?.runway;
+      if (lm.name === 'Runway 26' && runway) {
+        teleport([runway.x1 - 100, runway.yc, runway.elevation_m + 14],
+                 [runway.x1 - 500, runway.yc, runway.elevation_m + 2]);
+        return;
+      }
       teleport(lm.pos, lm.target);
     };
     lmContainer.appendChild(btn);

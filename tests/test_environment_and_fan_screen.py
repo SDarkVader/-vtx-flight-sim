@@ -74,7 +74,7 @@ def test_airport_and_sandbox_worlds_change_physics_geometry_and_model_hash():
     sandbox = make_world('sandbox')
     assert isinstance(airport, TestWorld) and not isinstance(airport, SandboxWorld)
     assert isinstance(sandbox, SandboxWorld)
-    assert airport.id == 'stage1-extended-airfield-recovery' and airport.version == '4'
+    assert airport.id == 'stage1-extended-airfield-recovery' and airport.version == '6'
     assert sandbox.id == 'stage1-valley' and sandbox.version == '2'
     assert airport.half == 4000. and airport.n == 401
     assert sandbox.half == 1000. and sandbox.n == 201
