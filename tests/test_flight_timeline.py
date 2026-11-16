@@ -13,7 +13,7 @@ def test_active_and_ended_run_timeline(tmp_path,monkeypatch):
     try:
         goal=asyncio.run(server.set_objective({'run_id':run,'text':'Hold here'}))
         obs=lab.sensor_observation()
-        lab.accept_action(Action(authority='colin',observation_id=obs['observation_id'],reason='Spool gently',
+        lab.accept_action(Action(authority='colin',expected_run_id=run,observation_id=obs['observation_id'],reason='Spool gently',
                                  engine=.3,collective_deg=[0]*4,tilt_deg=[[0,0]]*4))
         result=asyncio.run(server.runs());assert result[0]['run_id']==run and result[0]['active']
         timeline=asyncio.run(server.timeline(run));assert lab.active

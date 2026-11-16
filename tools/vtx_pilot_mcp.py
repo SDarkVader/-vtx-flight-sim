@@ -1,7 +1,7 @@
 """VTX pilot connection for any AI assistant (Model Context Protocol, stdio).
 
 This is a thin door onto the simulator's existing pilot interface, the same one Colin's sessions used:
-GET /api/view, GET /api/observe, POST /api/action, POST /api/pilot/handover, POST /api/objective.
+GET /api/pilot/status, GET /api/observe, POST /api/action, POST /api/pilot/handover, POST /api/objective.
 It holds no aircraft state and runs no physics. Every command goes through the server's own authority,
 run and schema checks, and is reported as applied only after the plant's telemetry is read back.
 
@@ -19,10 +19,12 @@ URL = os.environ.get('VTX_LAB_URL', 'http://127.0.0.1:8765').rstrip('/')
 TOKEN = os.environ.get('VTX_CLOUD_ACCESS_TOKEN', '')
 PILOT_ID = os.environ.get('VTX_PILOT_ID') or 'ai-pilot-' + uuid.uuid4().hex[:6]
 seat = dict(run_id=None, epoch=None)          # this process's ownership of the Colin seat, per flight
+last_instruments = None
 
 KEYS = ('t_s', 'gnss_xy_m', 'baro_m', 'radar_altimeter_m', 'airspeed_m_s', 'velocity_world_m_s', 'velocity_body_m_s', 'attitude_deg',
         'body_rates_deg_s', 'weight_on_wheels', 'fan_rpm', 'pod_tilt_deg', 'leg_extension_m', 'wing_state', 'flap_deg', 'canard_pitch_deg',
-        'generator_kw', 'buffer_soc', 'fuel_kg', 'stability_mode', 'warning_lamps', 'faults', 'observation_id')
+        'generator_kw', 'buffer_soc', 'fuel_kg', 'stability_mode', 'warning_lamps', 'faults', 'observation_id', 'run_id',
+        'attitude_xyz_deg', 'gyro_body_deg_s', 'gnss_velocity_mps', 'radar_clearance_m', 'rotor_rpm', 'collective_feedback_deg')
 
 
 def call(path, payload=None):
@@ -49,31 +51,38 @@ def telemetry(o):
 
 
 def status(_):
-    v = call('/api/view'); o = v.get('observation') or {}
-    try:
-        ident = call('/api/identity')
-    except RuntimeError:
-        ident = (o.get('configuration') or {})
+    v = call('/api/pilot/status')
+    o = call('/api/observe')
+    instrument_packet = remember(o)
+    config = o.get('configuration') or {}
+    ident = config.get('identity') or {}
     return dict(simulator=URL, run_id=v.get('run_id'), active=v.get('active'), paused=v.get('paused'), authority=v.get('authority'),
                 pilot_owner=v.get('pilot_owner'), pilot_epoch=v.get('pilot_epoch'), this_pilot=PILOT_ID,
-                this_pilot_holds_seat=bool(v.get('pilot_owner') == PILOT_ID), objective=v.get('objective'), mission=v.get('mission'),
-                aircraft={k: ident.get(k) for k in ('variant', 'name', 'config_sha256', 'render_asset', 'git_commit', 'verified', 'status') if k in ident},
-                telemetry=telemetry(o))
+                this_pilot_holds_seat=bool(v.get('pilot_owner') == PILOT_ID), objective=v.get('objective'), mission=o.get('mission'),
+                aircraft=dict(variant=config.get('airframe_variant'), config_sha256=config.get('config_sha256'),
+                              **{k: ident[k] for k in ('name', 'git_commit', 'verified', 'status') if k in ident}),
+                telemetry=instrument_packet)
+
+
+def remember(observation):
+    global last_instruments
+    last_instruments = telemetry(observation)
+    return last_instruments
 
 
 def observe(_):
-    return telemetry(call('/api/observe'))
+    return remember(call('/api/observe'))
 
 
 def take_seat(a):
     """Become the Colin-seat pilot for the current flight (run-scoped handover; the previous owner is fenced off)."""
-    v = call('/api/view')
+    v = call('/api/pilot/status')
     if not v.get('active'):
         raise RuntimeError('No flight is running. Ask the operator to start a mission in the cockpit.')
     if v.get('authority') != 'colin':
         if not a.get('request_authority'):
             raise RuntimeError("The manual operator holds authority. Ask the user; if they agree, call again with request_authority=true.")
-        call('/api/operator', dict(authority='colin')); v = call('/api/view')
+        call('/api/operator', dict(authority='colin')); v = call('/api/pilot/status')
     r = call('/api/pilot/handover', dict(run_id=v['run_id'], pilot_id=PILOT_ID, expected_epoch=v.get('pilot_epoch', 0)))
     seat.update(run_id=v['run_id'], epoch=r.get('pilot_epoch', r.get('epoch')))
     return dict(seat='held', pilot_id=PILOT_ID, run_id=seat['run_id'], pilot_epoch=seat['epoch'], objective=r.get('objective'))
@@ -81,30 +90,30 @@ def take_seat(a):
 
 def command(a):
     """One phantom-fbw-1 action through /api/action, then telemetry read back after it is applied."""
-    fields = dict(a.get('controls') or {}); reason = a.get('reason') or 'AI pilot command'
-    v = call('/api/view')
-    if not v.get('active'):
-        raise RuntimeError('No flight is running.')
-    obs = call('/api/observe')
-    act = dict(schema='phantom-fbw-1', authority=v['authority'], expected_run_id=v['run_id'], observation_id=obs['observation_id'], reason=reason[:2000], **fields)
-    if v['authority'] == 'colin' and (v.get('pilot_owner') or v.get('pilot_epoch')):
-        if seat['run_id'] != v['run_id']:
-            raise RuntimeError('Another pilot owns this flight or the seat was not taken. Call vtx_take_seat first.')
-        act.update(pilot_id=PILOT_ID, pilot_epoch=seat['epoch'], pilot_run_id=v['run_id'])
+    fields = dict(a['controls'])
+    if not fields or fields.keys() - CONTROLS['properties'].keys():
+        raise ValueError('Supply named aircraft controls for one command.')
+    obs = last_instruments
+    v = call('/api/pilot/status')
+    if (not v.get('active') or v.get('paused') or v.get('authority') != 'colin' or
+            seat['run_id'] != v['run_id'] or seat['epoch'] != v.get('pilot_epoch') or
+            PILOT_ID not in (v.get('pilot_owner'), v.get('pending_pilot'))):
+        raise RuntimeError('An active flight and the current pilot seat are required.')
+    if (not obs or a.get('run_id') != v['run_id'] or obs.get('run_id') != v['run_id'] or
+            a.get('observation_id') != obs['observation_id']):
+        raise ValueError('Read current instruments and supply their run_id and observation_id.')
+    act = dict(schema='phantom-fbw-1', authority='colin', expected_run_id=v['run_id'],
+               observation_id=obs['observation_id'], reason=a['reason'][:2000], pilot_id=PILOT_ID,
+               pilot_epoch=seat['epoch'], pilot_run_id=v['run_id'], **fields)
     t0 = time.perf_counter(); ack = call('/api/action', act)
     wait = float(a.get('observe_after_s', 1.0)); time.sleep(max(0.1, min(wait, 10.0)))
-    after = call('/api/observe')
+    after = observe({})
     return dict(accepted=True, sequence=ack.get('sequence'), apply_t_s=ack.get('apply_t_s'), accept_latency_ms=round((time.perf_counter() - t0 - max(0.1, min(wait, 10.0))) * 1000, 1),
-                telemetry_before=telemetry(obs), telemetry_after=telemetry(after))
-
-
-def instruct(a):
-    """A plain-words instruction through the server's deterministic interpreter (/api/pilot/command)."""
-    return call('/api/pilot/command', dict(text=a['text'], confirm=bool(a.get('confirm')), source='ai'))
+                telemetry_before=obs, telemetry_after=after)
 
 
 def objective(a):
-    v = call('/api/view')
+    v = call('/api/pilot/status')
     return call('/api/objective', dict(text=a['text'], run_id=v.get('run_id')))
 
 
@@ -122,8 +131,7 @@ TOOLS = {
     'vtx_status': (status, 'Flight status: run ID, authority, who holds the pilot seat, aircraft identity and pinned physics configuration, and current telemetry. Call this first.', dict(type='object', properties={})),
     'vtx_observe': (observe, 'Fresh pilot-visible telemetry from the running physics (position, altitude, speed, attitude, fans, wings, power, warnings). Use it before and after every command; never report an outcome you have not observed.', dict(type='object', properties={})),
     'vtx_take_seat': (take_seat, 'Take the AI pilot seat for the current flight (run-scoped handover). If a human holds manual authority, ask them first and pass request_authority=true only with their agreement.', dict(type='object', properties=dict(request_authority=dict(type='boolean')))),
-    'vtx_command': (command, 'Send one flight-control action to the aircraft and get telemetry from before and after it was applied. The simulator holds the last command, so the aircraft keeps flying between calls.', dict(type='object', required=['controls', 'reason'], properties=dict(controls=CONTROLS, reason=dict(type='string', description='why, from the telemetry you observed'), observe_after_s=dict(type='number', minimum=0.1, maximum=10)))),
-    'vtx_instruct': (instruct, "Pass the user's instruction in plain words (e.g. 'take us up', 'hold altitude', 'land') to the simulator's built-in interpreter. Returns whether it was executed, with telemetry. Risky commands need confirm=true after the user confirms.", dict(type='object', required=['text'], properties=dict(text=dict(type='string'), confirm=dict(type='boolean')))),
+    'vtx_command': (command, 'Send one flight-control action to the aircraft and get telemetry from before and after it was applied. The simulator holds the last command, so the aircraft keeps flying between calls.', dict(type='object', required=['run_id', 'observation_id', 'controls', 'reason'], properties=dict(run_id=dict(type='string'), observation_id=dict(type='integer'), controls=CONTROLS, reason=dict(type='string', description='why, from the telemetry you observed'), observe_after_s=dict(type='number', minimum=0.1, maximum=10)))),
     'vtx_set_objective': (objective, "Record the user's current goal for the flight (kept across pilot reconnects and handovers). It is not a control command.", dict(type='object', required=['text'], properties=dict(text=dict(type='string')))),
 }
 INSTRUCTIONS = ("You are the pilot of the VTX Phantom in a live physics simulator. Talk with the user naturally. Fly only through these tools: "

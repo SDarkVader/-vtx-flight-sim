@@ -1,8 +1,11 @@
+import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
+
 const airframe = document.getElementById('airframe');
 const startConfiguration = document.getElementById('phantom-start');
 const status = document.getElementById('validation');
 const start = document.getElementById('start');
-let loadedVariant = airframe.value;
+const evidence = document.getElementById('aircraft-evidence');
+let loadedVariant = '';
 let pending = false;
 
 function setBusy(value) {
@@ -17,15 +20,24 @@ function setBusy(value) {
 
 function showActual(view) {
   const actual = view.observation?.configuration?.airframe_variant;
-  if (actual && [...airframe.options].some(option => option.value === actual)) {
+  evidence.textContent = flownEvidence(view);
+  evidence.hidden = !evidence.textContent;
+  document.getElementById('r6-pilot-record').hidden = actual !== 'r6-argon-20261103';
+  if (knownAircraft(airframe, view)) {
     airframe.value = actual;
     loadedVariant = actual;
     const title = airframe.selectedOptions[0].textContent.split(' · ')[0];
     start.firstChild.textContent = `New ${title} mission `;
+  } else {
+    airframe.value = '';
+    airframe.disabled = !!view.active;
+    start.disabled = true;
+    status.textContent = view.inspection_selection_known === false ? 'Choose an aircraft explicitly before starting.' : actual ? `Loaded aircraft ${actual} is not in this selector.` : 'Aircraft identity unavailable; reconnect before starting.';
+    return;
   }
   airframe.disabled = !!view.active;
   startConfiguration.disabled = !!view.active;
-  start.disabled = !!view.active;
+  start.disabled = !!view.active || document.documentElement.dataset.vtxWorldUnavailable === '1';
 }
 
 async function currentView() {
@@ -78,5 +90,6 @@ document.addEventListener('vtx-preview-start', () => {
   if (!airframe.disabled) void applyPreview(airframe.value);
 });
 currentView().then(view => { if (!pending) showActual(view); }).catch(() => {
+  start.disabled = true;
   status.textContent = 'Aircraft status unavailable; reconnect before starting.';
 });

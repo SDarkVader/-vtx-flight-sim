@@ -1,0 +1,82 @@
+===== flight 20261113T134422-ef008d | aircraft phantom-a10c | git 44a8394 | code 66f1edb0 | label VTOL repeat of 12 Nov recording
+   sim t  | mode     | fwd speed | ground spd | climb  | pitch | radar alt | pods    | wheels on ground | crashed
+     0.0  | attitude |    0.0 m/s |    0.0 m/s |   0.0  |  -0.0 |     0.118 |   0.0  | False            | False
+     2.0  | attitude |    0.0 m/s |    0.0 m/s |   0.0  |   0.0 |     0.124 |   0.0  | True             | False
+     4.1  | attitude |    0.0 m/s |    0.0 m/s |   0.0  |   1.8 |      0.16 |   0.0  | True             | False
+     6.1  | attitude |   -0.0 m/s |    0.0 m/s |   0.0  |   3.6 |     0.221 |   0.0  | True             | False
+     8.1  | attitude |   -0.0 m/s |    0.0 m/s |   0.0  |   3.7 |     0.212 |   0.0  | True             | False
+    10.1  | attitude |   -0.0 m/s |    0.0 m/s |  -0.0  |   3.6 |     0.207 |   0.0  | True             | False
+    12.2  | attitude |   -0.0 m/s |    0.0 m/s |   0.0  |   3.7 |      0.22 |   0.0  | True             | False
+    14.2  | attitude |    0.0 m/s |    0.0 m/s |  -0.0  |   1.6 |     0.342 |   0.0  | True             | False
+    16.2  | attitude |    0.0 m/s |    0.0 m/s |  -0.0  |   1.7 |     0.332 |   0.0  | True             | False
+    18.2  | attitude |    0.0 m/s |    0.0 m/s |   0.0  |   1.7 |     0.334 |   4.9  | True             | False
+    20.2  | attitude |   -0.0 m/s |    0.0 m/s |   0.0  |   0.7 |     0.318 |  89.9  | True             | False
+    22.2  | attitude |    0.0 m/s |    0.0 m/s |   0.1  |   0.7 |     0.324 |  89.9  | True             | False
+    24.2  | attitude |   -2.0 m/s |    2.3 m/s |   1.1  |  12.3 |     1.448 |  89.9  | False            | False
+    26.2  | attitude |   -2.6 m/s |    2.1 m/s |   3.6  |  -8.7 |     6.079 |  89.9  | False            | False
+    28.2  | attitude |   -0.0 m/s |    0.6 m/s |   5.9  |   5.4 |    15.583 |  90.0  | False            | False
+    30.2  | attitude |   -2.0 m/s |    1.8 m/s |   8.0  |  -1.6 |    29.481 |  89.9  | False            | False
+    32.3  | attitude |   -0.3 m/s |    0.6 m/s |   9.8  |   1.6 |    47.386 |  90.0  | False            | False
+    34.3  | attitude |   -1.3 m/s |    1.7 m/s |  11.1  |   2.0 |    68.851 |  89.9  | False            | False
+    36.4  | attitude |   -1.1 m/s |    1.3 m/s |  12.3  |   1.1 |    92.874 |  90.0  | False            | False
+    38.4  | attitude |   -1.3 m/s |    2.0 m/s |  13.1  |   3.0 |    118.86 |  89.9  | False            | False
+    40.5  | attitude |   -1.7 m/s |    2.1 m/s |  13.6  |   1.6 |   146.234 |  90.0  | False            | False
+    42.5  | attitude |   -1.6 m/s |    2.4 m/s |  14.0  |   3.5 |   174.606 |  90.0  | False            | False
+    44.5  | attitude |    0.2 m/s |    0.9 m/s |  14.3  |   4.6 |   203.564 |  90.0  | False            | False
+    46.6  | attitude |    2.8 m/s |    2.1 m/s |  14.3  |   3.1 |   232.956 |  89.9  | False            | False
+    48.6  | attitude |    6.2 m/s |    5.8 m/s |  13.9  |   1.8 |   261.952 |  89.9  | False            | False
+    50.7  | attitude |    9.3 m/s |    9.3 m/s |  13.0  |   0.2 |   289.609 |  89.9  | False            | False
+    52.7  | attitude |   12.3 m/s |   12.5 m/s |  11.9  |  -0.7 |   315.147 |  89.9  | False            | False
+    54.8  | attitude |   14.8 m/s |   15.2 m/s |  10.7  |  -2.3 |   338.323 |  89.9  | False            | False
+    56.8  | attitude |   17.2 m/s |   17.7 m/s |   9.6  |  -3.3 |   359.099 |  89.9  | False            | False
+    58.9  | attitude |   19.3 m/s |   19.9 m/s |   8.5  |  -4.1 |   377.601 |  90.0  | False            | False
+    60.9  | attitude |   21.1 m/s |   21.7 m/s |   7.5  |  -4.4 |   393.922 |  90.0  | False            | False
+    63.0  | attitude |   22.6 m/s |   23.1 m/s |   6.6  |  -4.5 |   408.271 |  90.0  | False            | False
+    65.0  | attitude |   23.7 m/s |   24.2 m/s |   5.9  |  -4.7 |   421.042 |  90.0  | False            | False
+    67.1  | attitude |   24.4 m/s |   25.0 m/s |   5.5  |  -4.6 |   432.718 |  90.0  | False            | False
+    69.1  | attitude |   25.0 m/s |   25.5 m/s |   5.3  |  -4.3 |   443.756 |  90.0  | False            | False
+    71.2  | attitude |   25.2 m/s |   25.7 m/s |   5.2  |  -4.1 |    454.51 |  90.0  | False            | False
+    73.2  | attitude |   25.4 m/s |   25.8 m/s |   5.2  |  -4.1 |   465.178 |  90.0  | False            | False
+    75.3  | attitude |   25.5 m/s |   25.9 m/s |   5.2  |  -4.0 |    475.84 |  90.0  | False            | False
+    77.3  | attitude |   25.5 m/s |   25.9 m/s |   5.2  |  -4.0 |   486.492 |  90.0  | False            | False
+    79.4  | attitude |   25.5 m/s |   26.0 m/s |   5.2  |  -4.0 |   497.163 |  90.0  | False            | False
+    81.4  | attitude |   25.6 m/s |   26.0 m/s |   5.2  |  -4.0 |   507.846 |  90.0  | False            | False
+    83.5  | attitude |   25.6 m/s |   26.0 m/s |   5.2  |  -4.0 |   518.544 |  90.0  | False            | False
+    85.5  | attitude |   25.6 m/s |   26.0 m/s |   5.2  |  -4.0 |   529.246 |  90.0  | False            | False
+    87.5  | attitude |   25.6 m/s |   26.0 m/s |   5.2  |  -4.0 |   539.972 |  90.0  | False            | False
+    89.6  | attitude |   25.6 m/s |   26.0 m/s |   5.2  |  -4.0 |   550.701 |  90.0  | False            | False
+    91.6  | attitude |   25.6 m/s |   26.0 m/s |   5.3  |  -4.0 |   561.461 |  90.0  | False            | False
+    93.7  | attitude |   25.6 m/s |   26.0 m/s |   5.3  |  -4.0 |   572.237 |  90.0  | False            | False
+    95.7  | attitude |   25.6 m/s |   26.0 m/s |   5.3  |  -4.0 |   583.007 |  90.0  | False            | False
+    97.8  | attitude |   25.6 m/s |   26.1 m/s |   5.3  |  -4.0 |   593.801 |  90.0  | False            | False
+    99.8  | attitude |   25.6 m/s |   26.1 m/s |   5.3  |  -4.0 |   604.608 |  90.0  | False            | False
+   outcome: airborne attempt ended
+
+===== flight 20261113T134602-f4ccef | aircraft phantom-a10c | git 44a8394 | code 66f1edb0 | label Live take-off test
+   sim t  | mode     | fwd speed | ground spd | climb  | pitch | radar alt | pods    | wheels on ground | crashed
+     0.0  | attitude |    0.0 m/s |    0.0 m/s |   0.0  |  -0.0 |     0.118 |   0.0  | False            | False
+     2.0  | attitude |    0.0 m/s |    0.0 m/s |   0.0  |   0.0 |     0.124 |   0.0  | True             | False
+     4.1  | attitude |    0.0 m/s |    0.0 m/s |   0.0  |   1.8 |      0.16 |   0.0  | True             | False
+     6.1  | attitude |   -0.0 m/s |    0.0 m/s |   0.0  |   3.6 |      0.22 |   0.0  | True             | False
+     8.1  | attitude |   -0.0 m/s |    0.0 m/s |   0.0  |   3.7 |     0.212 |   0.0  | True             | False
+    10.1  | attitude |   -0.0 m/s |    0.0 m/s |  -0.0  |   3.6 |     0.207 |   0.0  | True             | False
+    12.2  | attitude |    0.2 m/s |    0.2 m/s |   0.0  |   3.8 |     0.221 |   0.0  | True             | False
+    14.2  | attitude |    6.9 m/s |    6.9 m/s |  -0.0  |   4.0 |     0.224 |   2.0  | True             | False
+    16.2  | attitude |   15.8 m/s |   15.8 m/s |   0.0  |   4.0 |      0.22 |   3.1  | True             | False
+    18.2  | attitude |   25.1 m/s |   25.1 m/s |   0.0  |   4.0 |     0.228 |   3.5  | True             | False
+    20.2  | attitude |   34.3 m/s |   34.4 m/s |   0.0  |   3.7 |     0.242 |   3.8  | True             | False
+    22.2  | attitude |   43.2 m/s |   43.3 m/s |   0.0  |   3.6 |     0.255 |   3.9  | True             | False
+    24.2  | attitude |   51.6 m/s |   51.6 m/s |   0.0  |   3.4 |     0.271 |   3.5  | True             | False
+    26.2  | attitude |   59.2 m/s |   59.3 m/s |   0.0  |   4.1 |     0.275 |   2.0  | True             | False
+    28.2  | attitude |   65.7 m/s |   65.9 m/s |   0.0  |   4.0 |     0.288 |   0.3  | True             | False
+    30.2  | attitude |   71.0 m/s |   71.2 m/s |  -0.0  |   4.0 |     0.303 |   0.0  | True             | False
+    32.3  | attitude |   75.1 m/s |   75.3 m/s |   0.0  |   3.9 |     0.314 |   0.0  | False            | False
+    34.3  | attitude |   78.3 m/s |   78.5 m/s |   0.0  |   4.5 |     0.311 |   0.0  | True             | False
+    36.4  | attitude |   79.2 m/s |   79.6 m/s |   1.6  |   7.5 |     1.455 |   0.0  | False            | False
+    38.4  | attitude |   79.8 m/s |   80.1 m/s |   1.9  |   6.9 |     4.803 |   0.0  | False            | False
+    40.5  | attitude |   80.3 m/s |   80.6 m/s |   2.0  |   6.8 |     7.767 |   0.0  | False            | False
+    42.5  | attitude |   80.7 m/s |   81.0 m/s |   2.1  |   6.8 |    10.261 |   0.0  | False            | False
+    44.5  | attitude |   81.1 m/s |   81.4 m/s |   2.2  |   6.7 |    13.303 |   0.0  | False            | False
+    46.6  | attitude |   81.5 m/s |   81.8 m/s |   2.3  |   6.7 |    17.621 |   0.0  | False            | False
+   outcome: airborne attempt ended
+

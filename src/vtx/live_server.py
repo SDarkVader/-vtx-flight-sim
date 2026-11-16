@@ -7,6 +7,7 @@ controls use that same endpoint. /api/view is renderer/audit truth, NOT a sensor
 from __future__ import annotations
 import asyncio
 import copy
+import csv
 from contextlib import asynccontextmanager
 from datetime import datetime,timezone
 import hashlib
@@ -18,8 +19,10 @@ import os
 import re
 from pathlib import Path
 import subprocess
+import sys
 import time
 import uuid
+import xml.etree.ElementTree as ET
 from typing import Literal
 import mujoco as mj
 import numpy as np
@@ -29,15 +32,37 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel,Field,field_validator,ConfigDict
 from ._rotation import Rotation
 from .aircraft import Aircraft,DT,ROOT
-from .mission_selection import MapPoint,select_mission
+from .mission_selection import MapPoint,SurfaceDecision,select_mission
+from .harbour_session import HarbourSession
 from .world import TestWorld,SandboxWorld,make_world,resolve_environment_key
+from .r6_historical_valley import R6_HISTORICAL_VARIANT
 from .r6_hold import R6HoldController
 from .phantom import live as phantom_live
 from .phantom.controls import PhantomAction
+from .phantom.identity import asset_sha256
+from .frontend_identity import server_frontend_manifest
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from .release import EXPECTED_RELEASE, actual_release, assert_expected_release
 from .pilot_api_recorder import get_recorder, record_decision, openai_transport, close_recorders
+
+def publish_new_evidence(path, content):
+    """Publish a fully written same-directory evidence file without replacement."""
+    temporary=path.with_name('.'+path.name+'.'+uuid.uuid4().hex+'.tmp')
+    created=False
+    try:
+        with temporary.open('xb') as stream:
+            created=True
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        # A hard link publishes atomically and fails if the evidence exists.
+        # Unlike os.replace, it cannot overwrite an existing flight record.
+        os.link(temporary,path)
+    finally:
+        if created:
+            try:temporary.unlink(missing_ok=True)
+            except OSError:pass  # A complete published summary remains valid.
 
 def runtime_source_sha256(source_root=None):
     """Identify the actual Python runtime, including the nested Phantom plant."""
@@ -55,6 +80,40 @@ def runtime_source_sha256(source_root=None):
 
 # Captured at import, before operators can change files under a running server.
 RUNTIME_SOURCE_SHA256 = runtime_source_sha256()
+R6_CHECKPOINT_DERIVED = ('xpos','xquat','xmat','xipos','ximat','xanchor','xaxis',
+                         'cdof','cdof_dot','geom_xpos','geom_xmat','site_xpos','site_xmat',
+                         'subtree_com','cvel','actuator_force','actuator_velocity',
+                         'ten_length','ten_velocity','ten_J')
+
+def world_fingerprint(world):
+    """Hash the actual terrain and world definition, not just its version label."""
+    heights=np.ascontiguousarray(world.heights,dtype='<f8')
+    metadata=dict(key=world.environment_key,id=world.id,version=world.version,seed=world.seed,
+        n=world.n,half=world.half,label=world.label,shape=list(heights.shape),
+        obstacles=world.obstacles,water=world.water,default_departure=world.default_departure,
+        default_destination=world.default_destination)
+    if hasattr(world, 'runway'):
+        metadata.update(runway=world.runway, approach_corridor=world.approach_corridor)
+    if hasattr(world, 'harbour'):
+        metadata['harbour']=world.harbour
+    raw=json.dumps(metadata,sort_keys=True,separators=(',',':'),allow_nan=False).encode('utf-8')
+    digest=hashlib.sha256(b'vtx-world-v1\0')
+    digest.update(len(raw).to_bytes(8,'big'));digest.update(raw);digest.update(heights.tobytes())
+    return digest.hexdigest()
+
+def environment_identity(world,flight_world,aircraft):
+    hfield=np.ascontiguousarray(aircraft.model.hfield_data,dtype='<f4')
+    return dict(scheme='vtx-world-v1',seed=world.seed,displayed_world_sha256=world_fingerprint(world),
+                physics_world_sha256=world_fingerprint(flight_world),
+                mujoco_hfield_sha256=hashlib.sha256(hfield.tobytes()).hexdigest())
+
+
+def landing_support(world,point,purpose,variant):
+    if getattr(world,'harbour',None) and phantom_live.is_phantom_variant(variant):
+        from .phantom.mission import footprint
+        if world.harbour_overlaps(point.x_m,point.y_m,footprint(variant)['swept_radius_m']):
+            return SurfaceDecision(False,'Harbour water overlaps the aircraft footprint')
+    return world.validate(point,purpose)
 
 
 class Action(BaseModel):
@@ -144,7 +203,7 @@ class Mission(BaseModel):
     @field_validator('airframe_variant')
     @classmethod
     def airframe(cls,v):
-        if v not in ['baseline','light','r6','r6_variator','phantom-a10b','phantom-a10c','phantom','phantom-fx','phantom-a9','phantom-fx-a9']:raise ValueError('Unknown airframe revision')
+        if v not in ('baseline','light','r6','r6_variator',R6_HISTORICAL_VARIANT,*phantom_live.VARIANTS):raise ValueError('Unknown airframe revision')
         return v
 
 
@@ -186,6 +245,23 @@ def foot_clearance_m(p):
     return max(0.,(dist if dist>=0 else low+.05)-.05)
 
 class Laboratory:
+    @property
+    def world(self):
+        return self._world
+
+    @world.setter
+    def world(self, world):
+        # Display worlds are built before selection and are not mutated afterwards.
+        # Compute on selection, never in the telemetry/400 Hz integration loop.
+        fingerprint=world_fingerprint(world)
+        self._world=world
+        self._displayed_world_sha256=fingerprint
+
+    def world_snapshot(self):
+        snapshot=self.world.public()
+        snapshot['displayed_world_sha256']=self._displayed_world_sha256
+        return snapshot
+
     def __init__(self, data_root=None):
         self.world=TestWorld();self.flight_world=self.world;self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
@@ -195,41 +271,115 @@ class Laboratory:
         self.error=None;self.recovery_notice=None;self.preview_generation=0;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
         self.retry_hint=None
         self.data_root=Path(data_root if data_root is not None else os.environ.get('VTX_DATA_ROOT',str(ROOT))).resolve()
+        self.harbour_session=HarbourSession(self.data_root)
         self.checkpoint_path=self.data_root/'pilot/live-flight-checkpoint.json'
+        self.saved_flights_path=self.data_root/'pilot/saved-flights'
+        self.inspection_path=self.data_root/'pilot/inspection-selection.json'
+        self.inspection_selection_known=False
+        self.server_frontend_identity=None
         self.last_checkpoint_t=-1.
         self.memory_path=self.data_root/'pilot/colin-memory.json'
         self.memory_path.parent.mkdir(parents=True,exist_ok=True)
         if not self.memory_path.exists():self.memory_path.write_text(json.dumps(dict(schema_version=1,pilot='Colin',experience_count=0,lessons=[],aircraft_familiarity='cold start; no VTX-specific solution',stage2_accessed=False,history=[]),indent=2))
+        self.checkpoint_set_aside=None
         restored=self.restore_checkpoint()
         # Never replace or classify a saved sortie merely because its checkpoint
         # cannot be decoded by this build. It remains available for recovery.
         self.recovery_blocked=self.checkpoint_path.exists() and not restored
+        if restored:self.inspection_selection_known=True
+        elif not self.recovery_blocked and self.inspection_path.exists():
+            try:self._restore_inspection_selection()
+            except (OSError,ValueError,KeyError,TypeError) as exc:
+                self.error='Saved aircraft selection unavailable: '+str(exc)
+                self.recovery_blocked=True
         completed=sorted((self.data_root/'evidence/flights').glob('*/summary.json'))
         if completed and not restored:
-            last=json.loads(completed[-1].read_text())
-            meta_path=completed[-1].parent/'metadata.json'
-            if meta_path.exists():
-                self.retry_hint=dict(run_id=last['run_id'],mission=last['mission'],request=json.loads(meta_path.read_text())['request'])
-                self.end_summary={k:v for k,v in last.items() if k!='final'}
+            try:
+                last=json.loads(completed[-1].read_text(encoding='utf-8'))
+                meta_path=completed[-1].parent/'metadata.json'
+                if meta_path.exists():
+                    self.retry_hint=dict(run_id=last['run_id'],mission=last['mission'],request=json.loads(meta_path.read_text(encoding='utf-8'))['request'])
+                    self.end_summary={k:v for k,v in last.items() if k!='final'}
+            except (OSError,ValueError,KeyError,TypeError) as exc:
+                # Retain suspect evidence; do not use it as a retry source or
+                # infer that a checkpoint can safely resume over this summary.
+                detail=f'Flight summary {completed[-1]} is unreadable; retained for inspection: {exc}'
+                self.error=(self.error+'; '+detail) if self.error else detail
         # If the process died without stop(), the latest metadata is still
         # enough to retry at the departure point. Never reconstruct mid-flight
         # physics from a render frame or claim the interrupted flight landed.
         unfinished=sorted(p for p in (self.data_root/'evidence/flights').glob('*/metadata.json')
-                          if not (p.parent/'summary.json').exists())
+                          if not (p.parent/'summary.json').exists()
+                          and not (self.saved_flights_path/(p.parent.name+'.json')).exists())
         if not restored and not self.recovery_blocked and unfinished and (not completed or unfinished[-1].parent.name>completed[-1].parent.name):
             path=unfinished[-1]
             try:
                 meta=json.loads(path.read_text())
+                aside=self.checkpoint_set_aside if self.checkpoint_set_aside and self.checkpoint_set_aside.get('run_id')==meta['run_id'] else None
                 interrupted=dict(run_id=meta['run_id'],mission=meta['mission'],
                                  outcome='interrupted',authority=meta.get('operator'),
-                                 reason='Server exited before the sortie ended; physical state not recoverable',
-                                 previous_evidence=path.parent.name)
-                (path.parent/'summary.json').write_text(json.dumps(interrupted,indent=2))
+                                 reason=('Checkpoint written by a different software build was set aside; physical state not resumed'
+                                         if aside else 'Server exited before the sortie ended; physical state not recoverable'),
+                                 previous_evidence=path.parent.name,**({'checkpoint_set_aside':aside} if aside else {}))
                 self.retry_hint=dict(run_id=meta['run_id'],mission=meta['mission'],
                                      request=meta['request'])
                 self.end_summary=interrupted
             except (ValueError,KeyError,OSError):
                 pass
+
+    def _remember_inspection_selection(self,request,aircraft,world):
+        """Persist an explicit selection, independently of a flight checkpoint."""
+        uri=aircraft.provenance.get('render_asset')
+        visual_hash=asset_sha256(uri) if uri else None
+        if not visual_hash:raise ValueError('Selected aircraft visual asset is missing')
+        frontend=server_frontend_manifest()
+        state=dict(schema=1,request=mission_dump(request),runtime_source_sha256=RUNTIME_SOURCE_SHA256,
+                   environment=dict(key=world.environment_key,id=world.id,version=world.version,seed=world.seed),
+                   environment_identity=environment_identity(world,aircraft.world,aircraft),
+                   model_xml_sha256=aircraft.provenance['model_xml_sha256'],
+                   config_sha256=aircraft.provenance.get('config_sha256'),
+                   visual_identity=dict(uri=uri,sha256=visual_hash),server_frontend_identity=frontend)
+        self.inspection_path.parent.mkdir(parents=True,exist_ok=True)
+        temporary=self.inspection_path.with_suffix('.tmp')
+        with temporary.open('w',encoding='utf-8') as f:
+            json.dump(state,f,separators=(',',':'));f.flush();os.fsync(f.fileno())
+        os.replace(temporary,self.inspection_path)
+        self.server_frontend_identity=frontend
+        self.inspection_selection_known=True
+
+    def _restore_inspection_selection(self):
+        state=json.loads(self.inspection_path.read_text(encoding='utf-8'))
+        if state.get('schema')!=1:raise ValueError('Unsupported aircraft selection record')
+        if state.get('runtime_source_sha256')!=RUNTIME_SOURCE_SHA256:
+            raise ValueError('Selected aircraft requires runtime '+str(state.get('runtime_source_sha256'))+'; record retained')
+        frontend=self._verify_server_frontend(state)
+        saved=dict(state['request'])
+        if saved.pop('fuel_kg_explicit',True) is False:saved.pop('fuel_kg',None)
+        request=Mission(**saved)
+        env=state['environment'];world=make_world(env['key'],seed=env['seed'])
+        if world.id!=env['id'] or world.version!=env['version']:
+            raise ValueError('Selected environment definition differs; record retained')
+        flight_world=copy.copy(world) if request.ignore_scenery_collisions else world
+        if request.ignore_scenery_collisions:flight_world.obstacles=[]
+        if phantom_live.is_phantom_variant(request.airframe_variant):
+            aircraft=phantom_live.make_aircraft(flight_world,request)
+            from .phantom import identity as aircraft_identity_pins
+            check=aircraft_identity_pins.verify(aircraft,experimental=bool(aircraft.experimental_overrides),runtime_source_sha256=RUNTIME_SOURCE_SHA256)
+            if check['pinned'] and check['mismatches']:raise ValueError('Selected aircraft identity differs; record retained')
+            aircraft._identity=check
+        else:
+            aircraft=Aircraft(flight_world,request.gear_variant,request.reference_rpm,fuel_kg=request.fuel_kg,
+                airframe_variant=request.airframe_variant,engine_power_limit_kw=request.engine_power_limit_kw,
+                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
+        aircraft.spawn(*request.departure,world.surface_z(*request.departure))
+        if aircraft.provenance['model_xml_sha256']!=state['model_xml_sha256'] or aircraft.provenance.get('config_sha256')!=state.get('config_sha256'):
+            raise ValueError('Selected aircraft model or configuration differs; record retained')
+        if state.get('environment_identity')!=environment_identity(world,flight_world,aircraft):
+            raise ValueError('Selected environment data or heightfield differs; record retained')
+        self._verify_checkpoint_visual(state,aircraft)
+        self.world=world;self.flight_world=flight_world;self.aircraft=aircraft
+        self.server_frontend_identity=frontend
+        self.inspection_selection_known=True
 
     def checkpoint(self, force=False):
         """Crash-consistent physics checkpoint, never a flight-control decision."""
@@ -239,17 +389,34 @@ class Laboratory:
         if not force and p.data.time-self.last_checkpoint_t < .5:
             return
         d=p.data
+        asset=p.provenance.get('render_asset')
+        visual_identity=dict(uri=asset,sha256=asset_sha256(asset) if asset else None)
+        # Reuse the selection/start snapshot: hashing 150 MB of assets inside
+        # the 400 Hz physics loop would perturb live flight. Restore rehashes.
+        frontend=self.server_frontend_identity
+        if not frontend:raise ValueError('Current flight has no server frontend asset snapshot')
         if getattr(p,'is_phantom',False):
-            state=dict(schema='phantom-1',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],config_sha256=p.P.config_sha256,runtime_source_sha256=RUNTIME_SOURCE_SHA256,mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback_status=self.fallback_status,authority=self.authority,
+            state=dict(schema='phantom-2',run_id=self.run_id,model_xml_sha256=p.provenance['model_xml_sha256'],config_sha256=p.P.config_sha256,runtime_source_sha256=RUNTIME_SOURCE_SHA256,visual_identity=visual_identity,server_frontend_identity=frontend,mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback_status=self.fallback_status,authority=self.authority,
                        time_scale=self.time_scale,paused=self.paused,plant=p.checkpoint_state(),
                        session=dict(action_log=self.action_log,action_sequence=self.action_sequence,next_pending_action=self.next_pending_action,last_command_time=self.last_command_time,
                                     lease_expired=self.lease_expired,obs_id=self.obs_id,settled_s=self.settled_s,left_ground=self.left_ground,
                                     landing_recorded=self.landing_recorded,last_landing=self.last_landing,
                                     last_audit_t=self.last_audit_t,sensor_rng_state=self.sensor_rng.bit_generator.state,
                                     phantom_cg_gate=getattr(self,'phantom_cg_gate',None)))
-            return self._write_checkpoint(state)
-        state=dict(schema=1,run_id=self.run_id, runtime_source_sha256=RUNTIME_SOURCE_SHA256,
+            revision=p.provenance.get('flight_revision')
+            if revision:state['flight_revision_registry_sha256']=revision['registry_sha256']
+            return self._write_checkpoint(state,force=force)
+        spec=mj.mjtState.mjSTATE_INTEGRATION
+        integration=np.empty(mj.mj_stateSize(p.model,spec))
+        mj.mj_getState(p.model,d,integration,spec)
+        state=dict(schema=2,run_id=self.run_id, runtime_source_sha256=RUNTIME_SOURCE_SHA256,
                    model_xml_sha256=p.provenance['model_xml_sha256'],
+                   visual_identity=visual_identity,
+                   server_frontend_identity=frontend,
+                   dependency_versions=dict(python='.'.join(map(str,sys.version_info[:3])),numpy=np.__version__,mujoco=mj.__version__),
+                   integration_spec=int(spec),integration_state=integration.tolist(),
+                   model_state={name:getattr(p.model,name).tolist() for name in ('body_mass','body_inertia')},
+                   derived_state={name:getattr(d,name).tolist() for name in R6_CHECKPOINT_DERIVED},
                    mission=self.mission,objective=self.objective,pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,
                    fallback_status=self.fallback_status,fallback_controller=self.fallback_controller.snapshot() if self.fallback_controller else None,authority=self.authority,
                    time_scale=self.time_scale,paused=self.paused,
@@ -283,10 +450,11 @@ class Laboratory:
                                 landing_recorded=self.landing_recorded,last_landing=self.last_landing,
                                 last_audit_t=self.last_audit_t,
                                 sensor_rng_state=self.sensor_rng.bit_generator.state))
-        return self._write_checkpoint(state)
+        return self._write_checkpoint(state,force=force)
 
-    def _write_checkpoint(self,state):
+    def _write_checkpoint(self,state,force=False):
         d=self.aircraft.data
+        state['harbour_fleet']=self.harbour_session.flight_snapshot(force=force)
         payload=json.dumps(state,allow_nan=False,separators=(',',':'),default=float)
         target=self.checkpoint_path
         target.parent.mkdir(parents=True,exist_ok=True)
@@ -298,21 +466,236 @@ class Laboratory:
         os.replace(temporary,target)
         self.last_checkpoint_t=float(d.time)
 
+    def save_flight_for_switching(self,expected_run_id):
+        """Park an unfinished flight without ending it or discarding its checkpoint."""
+        if not self.active or not self.run_id:raise HTTPException(409,'No active flight to save')
+        if expected_run_id!=self.run_id:raise HTTPException(409,'Flight changed; refresh before saving')
+        saved=self.saved_flights_path/(self.run_id+'.json')
+        if saved.exists():raise HTTPException(409,'A saved checkpoint for this flight already exists')
+        if getattr(self.aircraft,'is_phantom',False) and self.aircraft.step_log:
+            self.aircraft.step_log.flush()
+        self.checkpoint(force=True)
+        payload=self.checkpoint_path.read_bytes()
+        self.saved_flights_path.mkdir(parents=True,exist_ok=True)
+        try:
+            with saved.open('xb') as f:
+                f.write(payload);f.flush();os.fsync(f.fileno())
+        except FileExistsError:
+            raise HTTPException(409,'A saved checkpoint for this flight already exists')
+        except OSError:
+            saved.unlink(missing_ok=True)
+            raise
+        self.log('flight_saved_for_switching',dict(run_id=self.run_id,checkpoint_t_s=float(self.aircraft.data.time)))
+        if getattr(self.aircraft,'is_phantom',False) and self.aircraft.step_log:
+            self.aircraft.step_log.close();self.aircraft.step_log=None
+        if self.audit_file:self.audit_file.close();self.audit_file=None
+        self.checkpoint_path.unlink()
+        self.active=False;self.paused=True;self.last_obs=None
+        return dict(run_id=self.run_id,environment=(self.mission or {}).get('environment_key'),saved=True)
+
+    def saved_flights(self):
+        result=[]
+        for path in sorted(self.saved_flights_path.glob('*.json')):
+            try:
+                state=json.loads(path.read_text(encoding='utf-8'))
+                if state['run_id']!=path.stem:raise ValueError('Run ID does not match saved checkpoint')
+                evidence=self.data_root/'evidence/flights'/path.stem
+                meta=json.loads((evidence/'metadata.json').read_text(encoding='utf-8'))
+                physics=state.get('plant',{}) if state.get('schema')=='phantom-2' else state.get('physics',{})
+                result.append(dict(run_id=path.stem,variant=meta.get('request',{}).get('airframe_variant'),
+                    environment=(state.get('mission') or {}).get('environment_key'),t_s=physics.get('time'),
+                    available=not (evidence/'summary.json').exists()))
+            except (OSError,ValueError,KeyError,TypeError):
+                result.append(dict(run_id=path.stem,available=False))
+        return result
+
+    def restore_saved_flight(self,run_id):
+        """Resume a parked flight paused; leave incompatible checkpoints intact."""
+        if self.active:raise HTTPException(409,'End or save the current flight before restoring another')
+        if self.recovery_blocked or self.checkpoint_path.exists():raise HTTPException(409,'An existing checkpoint needs recovery first')
+        if not isinstance(run_id,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',run_id):raise HTTPException(422,'Invalid saved flight ID')
+        saved=self.saved_flights_path/(run_id+'.json')
+        if not saved.is_file():raise HTTPException(404,'Saved flight not found')
+        payload=saved.read_bytes()
+        try:
+            state=json.loads(payload)
+            if state.get('run_id')!=run_id:raise ValueError('Saved flight identity differs from its filename')
+        except (ValueError,TypeError) as exc:
+            raise HTTPException(409,'Saved checkpoint is invalid and remains available for inspection') from exc
+        self.checkpoint_path.parent.mkdir(parents=True,exist_ok=True)
+        try:
+            with self.checkpoint_path.open('xb') as f:
+                f.write(payload);f.flush();os.fsync(f.fileno())
+        except FileExistsError:
+            raise HTTPException(409,'An existing checkpoint needs recovery first')
+        if not self.restore_checkpoint():
+            # The saved source is untouched; remove only the copy made above.
+            self.checkpoint_path.unlink(missing_ok=True)
+            raise HTTPException(409,self.error or 'Saved checkpoint is incompatible')
+        # Restore has already attached the paused physical state and opened its
+        # evidence. Later I/O errors must not falsely report that restoration
+        # failed: the active checkpoint and the saved source remain intact.
+        warnings=[]
+        try:
+            archive=self.data_root/'pilot/checkpoint-history'
+            archive.mkdir(parents=True,exist_ok=True)
+            saved.rename(archive/(run_id+'-'+uuid.uuid4().hex+'.json'))
+        except OSError as exc:
+            warnings.append('Saved checkpoint could not be archived; it remains in Saved flights: '+str(exc))
+        try:
+            meta=json.loads((self.log_path/'metadata.json').read_text(encoding='utf-8'))
+            saved_request=dict(meta['request'])
+            if saved_request.pop('fuel_kg_explicit',True) is False:saved_request.pop('fuel_kg',None)
+            self._remember_inspection_selection(Mission(**saved_request),self.aircraft,self.world)
+        except (OSError,ValueError,KeyError,TypeError) as exc:
+            warnings.append('Aircraft selection could not be saved for the next idle restart: '+str(exc))
+        self.recovery_blocked=False;self.error=None
+        self.recovery_notice=' '.join(warnings) if warnings else None
+        return dict(run_id=self.run_id,restored=True,paused=True,environment=(self.mission or {}).get('environment_key'),
+                    **({'warning':self.recovery_notice} if warnings else {}))
+
+    def fork_checkpoint_continuation(self,expected_run_id,expected_sha256):
+        """Explicitly branch a diverged checkpoint into a new evidence directory.
+
+        The parent evidence is never opened for writing; the checkpoint is saved
+        byte-for-byte before the active checkpoint is changed to the new run.
+        """
+        if self.active:raise HTTPException(409,'End or save the current flight before continuing another')
+        if not self.checkpoint_path.is_file():raise HTTPException(404,'No retained active checkpoint')
+        payload=self.checkpoint_path.read_bytes();digest=hashlib.sha256(payload).hexdigest()
+        if digest!=expected_sha256:raise HTTPException(409,'Checkpoint changed; refresh before continuing')
+        transaction=self.data_root/'pilot/fork-transactions'/(digest+'.json')
+        if transaction.exists():raise HTTPException(409,'A continuation transaction for this checkpoint already exists; inspect its recorded state before retrying')
+        def file_digest(path):
+            h=hashlib.sha256()
+            with path.open('rb') as f:
+                for chunk in iter(lambda:f.read(1024*1024),b''):h.update(chunk)
+            return h.hexdigest()
+        def durable_new(path,data):
+            with path.open('xb') as f:f.write(data);f.flush();os.fsync(f.fileno())
+        try:
+            state=json.loads(payload);parent=state['run_id'];schema=state['schema']
+            if not isinstance(parent,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',parent):raise ValueError('Invalid checkpoint run ID')
+            if parent!=expected_run_id:raise ValueError('Checkpoint identifies a different run')
+            if schema not in (2,'phantom-2'):raise ValueError('Checkpoint format does not support verified continuation')
+            if state.get('runtime_source_sha256')!=RUNTIME_SOURCE_SHA256:raise ValueError('Checkpoint runtime differs from this build')
+            self._verify_server_frontend(state)
+            checkpoint_time=float(state['plant']['time'] if schema=='phantom-2' else state['physics']['time'])
+            source=self.data_root/'evidence/flights'/parent
+            meta=json.loads((source/'metadata.json').read_text(encoding='utf-8'))
+            if meta['run_id']!=parent or (source/'summary.json').exists():raise ValueError('Checkpoint does not identify an unfinished sortie')
+            try:self._verify_evidence_tail(source,checkpoint_time,phantom=schema=='phantom-2')
+            except json.JSONDecodeError:
+                tail_reason='Parent event log is incomplete or malformed; retained unchanged'
+            except ValueError as exc:
+                if not any(part in str(exc) for part in ('extends beyond the checkpoint','incomplete or unreadable')):raise
+                tail_reason=str(exc)
+            else:raise ValueError('Evidence does not require a separate continuation')
+            required=['metadata.json','model.xml','events.jsonl']
+            if schema=='phantom-2':required+=['aircraft_identity.json','phantom_parameters.json','phantom_ledger.json','phantom_steps.csv.gz']
+            get_recorder(self.data_root).drain()
+            filenames=sorted(p.name for p in source.iterdir() if p.is_file())
+            if any(name not in filenames for name in required):raise ValueError('Required parent evidence is missing')
+            original_hashes={name:file_digest(source/name) for name in filenames}
+            small={name:(source/name).read_bytes() for name in required if name not in ('events.jsonl','phantom_steps.csv.gz')}
+            if original_hashes['model.xml']!=state['model_xml_sha256']:
+                raise ValueError('Recorded model XML differs from the checkpoint')
+            if schema=='phantom-2':
+                with gzip.open(source/'phantom_steps.csv.gz','rt',encoding='utf-8') as f:header=f.readline()
+                if not header.startswith('t,') or not header.endswith('\n'):raise ValueError('Original telemetry header is unavailable')
+        except (OSError,EOFError,ValueError,KeyError,TypeError) as exc:
+            raise HTTPException(409,'Checkpoint continuation unavailable: '+str(exc)) from exc
+
+        child=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex[:6]
+        stage=self.data_root/'pilot'/'fork-staging'/uuid.uuid4().hex
+        staged_evidence=stage/'evidence/flights'/child;staged_evidence.mkdir(parents=True)
+        lineage=dict(parent_run_id=parent,checkpoint_time_s=checkpoint_time,checkpoint_sha256=digest,
+                     parent_evidence_sha256=original_hashes,
+                     reason=tail_reason,relationship='explicit continuation from checkpoint; parent retains later evidence')
+        meta=dict(meta);meta['run_id']=child;meta['continuation']=lineage
+        # The new segment begins at the checkpoint, whose server assets can
+        # differ from those present when the original run first started.
+        meta['server_frontend_identity']=state['server_frontend_identity']
+        durable_new(staged_evidence/'metadata.json',json.dumps(meta,indent=2).encode('utf-8'))
+        for name,data in small.items():
+            if name!='metadata.json':durable_new(staged_evidence/name,data)
+        durable_new(staged_evidence/'events.jsonl',b'')
+        if schema=='phantom-2':
+            durable_new(staged_evidence/'phantom_steps.csv.gz',gzip.compress(header.encode('utf-8')))
+        state['run_id']=child;state['continuation']=lineage
+        staged_checkpoint=stage/'pilot/live-flight-checkpoint.json';staged_checkpoint.parent.mkdir(parents=True)
+        durable_new(staged_checkpoint,json.dumps(state,separators=(',',':'),allow_nan=False).encode('utf-8'))
+        candidate=Laboratory(data_root=stage)
+        if not candidate.active or not candidate.paused:
+            raise HTTPException(409,'Checkpoint continuation validation failed: '+str(candidate.error))
+        if getattr(candidate.aircraft,'is_phantom',False) and candidate.aircraft.step_log:
+            candidate.aircraft.step_log.close();candidate.aircraft.step_log=None
+        candidate.audit_file.close();candidate.audit_file=None
+        for name in ('events.jsonl',*(['phantom_steps.csv.gz'] if schema=='phantom-2' else [])):
+            with (staged_evidence/name).open('ab') as f:f.flush();os.fsync(f.fileno())
+        # Ensure neither the checkpoint nor the evidence changed during staging.
+        get_recorder(self.data_root).drain()
+        if (self.checkpoint_path.read_bytes()!=payload or
+                sorted(p.name for p in source.iterdir() if p.is_file())!=filenames or
+                any(file_digest(source/name)!=value for name,value in original_hashes.items())):
+            raise HTTPException(409,'Parent checkpoint or evidence changed during continuation validation')
+        transaction.parent.mkdir(parents=True,exist_ok=True)
+        try:
+            with transaction.open('x',encoding='utf-8') as f:
+                json.dump(dict(parent_run_id=parent,child_run_id=child,checkpoint_sha256=digest,
+                               staged_root=str(stage),state='publish_started'),f)
+                f.flush();os.fsync(f.fileno())
+        except FileExistsError:
+            raise HTTPException(409,'A continuation transaction for this checkpoint already exists')
+        archive=self.data_root/'pilot/checkpoint-history';archive.mkdir(parents=True,exist_ok=True)
+        preserved=archive/(parent+'-fork-'+uuid.uuid4().hex+'.json')
+        with preserved.open('xb') as f:f.write(payload);f.flush();os.fsync(f.fileno())
+        target=self.data_root/'evidence/flights'/child;target.parent.mkdir(parents=True,exist_ok=True)
+        staged_evidence.rename(target)
+        # Original checkpoint is already durable in checkpoint-history.
+        os.replace(staged_checkpoint,self.checkpoint_path)
+        transaction_update=transaction.with_suffix('.tmp')
+        durable_new(transaction_update,json.dumps(dict(parent_run_id=parent,child_run_id=child,
+            checkpoint_sha256=digest,staged_root=str(stage),state='committed')).encode('utf-8'))
+        os.replace(transaction_update,transaction)
+        candidate.data_root=self.data_root;candidate.checkpoint_path=self.checkpoint_path
+        candidate.saved_flights_path=self.saved_flights_path;candidate.inspection_path=self.inspection_path
+        candidate.memory_path=self.memory_path;candidate.log_path=target
+        candidate.audit_file=(target/'events.jsonl').open('a',encoding='utf-8')
+        if schema=='phantom-2':candidate.aircraft.step_log=gzip.open(target/'phantom_steps.csv.gz','at',encoding='utf-8')
+        candidate.recovery_blocked=False;candidate.error=None;candidate.inspection_selection_known=True
+        self.harbour_session.take_over(candidate.harbour_session)
+        candidate.harbour_session=self.harbour_session
+        self.__dict__.update(candidate.__dict__)
+        self.log('checkpoint_continuation',lineage)
+        return dict(run_id=child,parent_run_id=parent,checkpoint_time_s=checkpoint_time,paused=True,continuation=lineage)
+
     def restore_checkpoint(self):
         """Restore exact persisted plant state, held until explicit operator resume."""
         path=self.checkpoint_path
         if not path.exists():
             return False
+        fleet=None
         try:
             state=json.loads(path.read_text(encoding='utf-8'))
             saved_source=state.get('runtime_source_sha256')
             if saved_source and saved_source != RUNTIME_SOURCE_SHA256:
-                raise ValueError('Checkpoint runtime source differs from the running software')
+                raise ValueError(f"Saved flight {state.get('run_id')} requires runtime {saved_source}; "
+                                 f"this runtime is {RUNTIME_SOURCE_SHA256}. Checkpoint retained at {path}")
             if not saved_source:
-                self.recovery_notice='Legacy checkpoint has no runtime source fingerprint; source equivalence is unverified.'
+                raise ValueError(f'Checkpoint has no runtime source fingerprint; source equivalence is unverified. Checkpoint retained at {path}')
+            frontend=self._verify_server_frontend(state)
+            if state.get('harbour_fleet') is not None:
+                fleet=self.harbour_session.stage((state.get('mission',{}).get('environment_identity') or {})['seed'],state['harbour_fleet'])
             if state['schema']=='phantom-1':
-                return self._restore_phantom(state)
-            if state['schema']!=1:
+                raise ValueError('Legacy Phantom checkpoint lacks actuator and controller state required for verified continuation; retained for inspection')
+            if state['schema']=='phantom-2':
+                restored=self._restore_phantom(state,fleet)
+                if restored:self.server_frontend_identity=frontend
+                return restored
+            if state['schema']==1:
+                raise ValueError('Legacy R6 checkpoint lacks solver and actuator state required for verified continuation; retained for inspection')
+            if state['schema']!=2:
                 raise ValueError('Unsupported checkpoint schema')
             run_id=state['run_id']
             evidence=self.data_root/'evidence/flights'/run_id
@@ -320,30 +703,44 @@ class Laboratory:
             if (metadata['run_id']!=run_id or
                     (evidence/'summary.json').exists()):
                 raise ValueError('Checkpoint does not identify an unfinished sortie')
+            self._verify_evidence_tail(evidence,state['physics']['time'],phantom=False)
             saved_request=normalize_saved_mission_request(metadata['request'])
-            # Older checkpoints omitted these fields and used the former defaults.
-            saved_request.setdefault('airframe_variant','light')
-            saved_request.setdefault('gear_variant','baseline')
+            if not saved_request.get('airframe_variant') or not saved_request.get('gear_variant'):
+                raise ValueError('Checkpoint lacks the recorded aircraft or gear variant; identity cannot be reconstructed')
             request=Mission(**saved_request)
             saved_env=request.environment or (state.get('mission') or {}).get('environment_key') or (state.get('mission') or {}).get('environment')
-            if saved_env:
-                self.world=make_world(saved_env,seed=self.world.seed)
-            flight_world=self.world_for(request.ignore_scenery_collisions)
+            if not saved_env:raise ValueError('Checkpoint lacks its recorded environment; environment cannot be reconstructed')
+            environment=state.get('mission',{}).get('environment_identity')
+            if not environment or 'seed' not in environment:raise ValueError('Checkpoint lacks its environment fingerprint or seed')
+            restored_world=make_world(saved_env,seed=environment['seed'])
+            flight_world=copy.copy(restored_world) if request.ignore_scenery_collisions else restored_world
+            if request.ignore_scenery_collisions:flight_world.obstacles=[]
             candidate=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
             if candidate.provenance['model_xml_sha256']!=state['model_xml_sha256']:
                 raise ValueError('Checkpoint model differs from current physics model')
-            d=candidate.data
-            physics=state['physics']
-            for name in ('qpos','qvel','act','ctrl','qacc_warmstart'):
-                arr=np.asarray(physics[name],dtype=float)
-                target=getattr(d,name)
-                if arr.shape!=target.shape or not np.all(np.isfinite(arr)):
-                    raise ValueError('Invalid checkpoint physics array: '+name)
+            if environment!=environment_identity(restored_world,flight_world,candidate):
+                raise ValueError('Checkpoint environment data or heightfield differs from its recording')
+            self._verify_checkpoint_visual(state,candidate)
+            versions=dict(python='.'.join(map(str,sys.version_info[:3])),numpy=np.__version__,mujoco=mj.__version__)
+            if state.get('dependency_versions')!=versions:raise ValueError('Checkpoint Python, NumPy or MuJoCo version differs from this runtime')
+            d=candidate.data;m=candidate.model;spec=mj.mjtState.mjSTATE_INTEGRATION
+            if state.get('integration_spec')!=int(spec):raise ValueError('Unsupported MuJoCo integration state')
+            integration=np.asarray(state['integration_state'],dtype=float)
+            if integration.shape!=(mj.mj_stateSize(m,spec),) or not np.all(np.isfinite(integration)):
+                raise ValueError('Invalid checkpoint integration state')
+            for name in ('body_mass','body_inertia'):
+                arr=np.asarray(state['model_state'][name],dtype=float);target=getattr(m,name)
+                if arr.shape!=target.shape or not np.all(np.isfinite(arr)):raise ValueError('Invalid checkpoint model array: '+name)
                 target[:]=arr
-            d.time=float(physics['time'])
+            mj.mj_setConst(m,mj.MjData(m));mj.mj_setState(m,d,integration,spec)
+            warmstart=d.qacc_warmstart.copy();mj.mj_forward(m,d);d.qacc_warmstart[:]=warmstart
+            for name in R6_CHECKPOINT_DERIVED:
+                arr=np.asarray(state['derived_state'][name],dtype=float);target=getattr(d,name)
+                if arr.shape!=target.shape or not np.all(np.isfinite(arr)):raise ValueError('Invalid checkpoint derived array: '+name)
+                target[:]=arr
             if not math.isfinite(d.time) or d.time<0:
                 raise ValueError('Invalid checkpoint physics time')
             plant=state['plant']
@@ -374,15 +771,12 @@ class Laboratory:
             candidate._bench_apply_experimental_assist=plant['experimental_assist']
             candidate.governor.integral_nm=plant['governor_integral_nm']
             candidate.governor.telemetry=plant['governor_telemetry']
-            for i,bid in enumerate(candidate.fuel_bids):
-                candidate.model.body_mass[bid]=max(float(candidate.fuel[i]),1e-9)
-                candidate.model.body_inertia[bid]=(candidate.initial_fuel_inertia[i]*
-                    max(float(candidate.fuel[i]/candidate.fuel_initial[i]),1e-9))
-            mj.mj_setConst(candidate.model,mj.MjData(candidate.model))
-            mj.mj_forward(candidate.model,d)
             session=state['session']
             self.sensor_rng.bit_generator.state=session['sensor_rng_state']
+            self.harbour_session.restore_flight(state,fleet)
+            self.world=restored_world
             self.aircraft=candidate
+            self.server_frontend_identity=frontend
             self.flight_world=flight_world
             self.run_id=run_id
             self.log_path=evidence
@@ -400,9 +794,6 @@ class Laboratory:
             self.action_log=session['action_log']
             self.action_sequence=session.get('action_sequence',max((a['sequence'] for a in self.action_log),default=0))
             self.next_pending_action=session['next_pending_action']
-            for action in self.action_log[self.next_pending_action:]:
-                action['cancelled']=True
-            self.next_pending_action=len(self.action_log)
             self.last_command_time=session['last_command_time']
             self.lease_expired=session['lease_expired']
             self.obs_id=session['obs_id']
@@ -417,24 +808,39 @@ class Laboratory:
             self.end_summary=None
             self.log('flight_checkpoint_restored',
                      dict(checkpoint_t_s=d.time,paused=True,
-                          pending_actions_cancelled=True,
+                          pending_actions_retained=True,
                           reason='Explicit operator resume required; physics position and velocity retained'))
             return True
         except (OSError,ValueError,KeyError,TypeError,IndexError) as exc:
             self.error='Flight checkpoint unavailable: '+str(exc)
             return False
+        finally:
+            if fleet is not None and self.harbour_session.worker is not fleet:
+                fleet.close()
 
-    def _restore_phantom(self,state):
+    def _restore_phantom(self,state,fleet=None):
         run_id=state['run_id'];evidence=self.data_root/'evidence/flights'/run_id
         metadata=json.loads((evidence/'metadata.json').read_text())
         if metadata['run_id']!=run_id or (evidence/'summary.json').exists():raise ValueError('Checkpoint does not identify an unfinished sortie')
+        self._verify_evidence_tail(evidence,state['plant']['time'],phantom=True)
         saved=dict(metadata['request'])
         if saved.pop('fuel_kg_explicit',True) is False:saved.pop('fuel_kg',None)
+        if not saved.get('airframe_variant'):
+            raise ValueError('Checkpoint lacks the recorded aircraft variant; identity cannot be reconstructed')
         request=Mission(**saved)
+        from .phantom.flight_revisions import REGISTRY_PATH, flight_revision
+        if flight_revision(request.airframe_variant):
+            expected_registry=state.get('flight_revision_registry_sha256')
+            actual_registry=hashlib.sha256(REGISTRY_PATH.read_bytes()).hexdigest()
+            if not expected_registry or expected_registry!=actual_registry:
+                raise ValueError('Checkpoint flight revision registry is missing or differs from this build')
         saved_env=request.environment or (state.get('mission') or {}).get('environment_key') or (state.get('mission') or {}).get('environment')
-        if saved_env:
-            self.world=make_world(saved_env,seed=self.world.seed)
-        flight_world=self.world_for(request.ignore_scenery_collisions)
+        if not saved_env:raise ValueError('Checkpoint lacks its recorded environment; environment cannot be reconstructed')
+        environment=state.get('mission',{}).get('environment_identity')
+        if not environment or 'seed' not in environment:raise ValueError('Checkpoint lacks its environment fingerprint or seed')
+        restored_world=make_world(saved_env,seed=environment['seed'])
+        flight_world=copy.copy(restored_world) if request.ignore_scenery_collisions else restored_world
+        if request.ignore_scenery_collisions:flight_world.obstacles=[]
         expected_config=state.get('config_sha256') or metadata.get('airframe',{}).get('config_sha256')
         if not expected_config:
             snapshot=evidence/'phantom_parameters.json'
@@ -451,24 +857,78 @@ class Laboratory:
                 break
         if candidate is None:
             raise ValueError('Checkpoint model or Phantom configuration differs from current physics')
+        if environment!=environment_identity(restored_world,flight_world,candidate):
+            raise ValueError('Checkpoint environment data or heightfield differs from its recording')
+        self._verify_checkpoint_visual(state,candidate)
         candidate.restore_state(state['plant'])
-        session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']
-        self.aircraft=candidate;self.flight_world=flight_world;self.run_id=run_id;self.log_path=evidence
-        self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
         import gzip as _gz
-        candidate.step_log=_gz.open(evidence/'phantom_steps.csv.gz','at');candidate.STEP_COLS=None
+        try:
+            with _gz.open(evidence/'phantom_steps.csv.gz','rt',encoding='utf-8') as stream:
+                header=stream.readline().strip()
+                step_columns=header.split(',') if header else None
+        except (OSError,EOFError) as exc:
+            raise ValueError('Original Phantom telemetry cannot be opened for continuation') from exc
+        if step_columns is not None and step_columns!=list(candidate.step_row()):
+            raise ValueError('Original Phantom telemetry columns differ from this runtime')
+        session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']
+        self.harbour_session.restore_flight(state,fleet)
+        self.world=restored_world;self.aircraft=candidate;self.flight_world=flight_world;self.run_id=run_id;self.log_path=evidence
+        self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
+        candidate.step_log=_gz.open(evidence/'phantom_steps.csv.gz','at');candidate.STEP_COLS=step_columns
         self.mission=state['mission'];self.objective=state.get('objective');self.pilot_owner=state.get('pilot_owner');self.pending_pilot=state.get('pending_pilot');self.pilot_epoch=state.get('pilot_epoch',0);self.fallback_status=state.get('fallback_status');self.authority=state['authority'];self.time_scale=state['time_scale']
         self.active=True;self.paused=True;self.wall_started=time.monotonic()
         self.action_log=session['action_log'];self.action_sequence=session.get('action_sequence',max((a['sequence'] for a in self.action_log),default=0));self.next_pending_action=session['next_pending_action']
-        for action in self.action_log[self.next_pending_action:]:action['cancelled']=True
-        self.next_pending_action=len(self.action_log)
         self.last_command_time=session['last_command_time'];self.lease_expired=session['lease_expired'];self.obs_id=session['obs_id']
         self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.last_audit_t=session['last_audit_t']
         self.settled_s=session['settled_s'];self.left_ground=session['left_ground'];self.landing_recorded=session.get('landing_recorded',False);self.last_landing=session.get('last_landing');self.last_checkpoint_t=float(candidate.data.time);self.end_summary=None
         self.phantom_cg_gate=session.get('phantom_cg_gate');self.phantom_landing_site=(self.last_landing or {}).get('closest_reference')
-        self.log('flight_checkpoint_restored',dict(checkpoint_t_s=candidate.data.time,paused=True,pending_actions_cancelled=True,variant=candidate.variant,
+        self.log('flight_checkpoint_restored',dict(checkpoint_t_s=candidate.data.time,paused=True,pending_actions_retained=True,variant=candidate.variant,
                  reason='Explicit operator resume required; physics position and velocity retained'))
         return True
+
+    @staticmethod
+    def _verify_evidence_tail(evidence,checkpoint_time,phantom):
+        """Never append resumed state behind newer, already recorded evidence."""
+        t=float(checkpoint_time)
+        if not math.isfinite(t):raise ValueError('Invalid checkpoint time')
+        try:
+            with (evidence/'events.jsonl').open(encoding='utf-8') as stream:
+                for line in stream:
+                    row=json.loads(line)
+                    if float(row.get('t_s',0))>t+1e-6:
+                        raise ValueError('Flight evidence extends beyond the checkpoint; a separate continuation segment is required')
+            if phantom:
+                with gzip.open(evidence/'phantom_steps.csv.gz','rt',encoding='utf-8',newline='') as stream:
+                    for row in csv.DictReader(stream):
+                        if float(row['t'])>t+1e-6:
+                            raise ValueError('Flight telemetry extends beyond the checkpoint; a separate continuation segment is required')
+        except (OSError,EOFError,KeyError,TypeError) as exc:
+            raise ValueError('Flight evidence is incomplete or unreadable; checkpoint retained') from exc
+
+    @staticmethod
+    def _verify_server_frontend(state):
+        recorded=state.get('server_frontend_identity')
+        if not isinstance(recorded,dict) or not isinstance(recorded.get('files'),dict):
+            raise ValueError('Saved state has no server frontend asset fingerprint; retained for inspection')
+        actual=server_frontend_manifest()
+        if actual!=recorded:
+            before=recorded['files'];after=actual['files']
+            changes=[f'missing {name}' for name in sorted(before.keys()-after.keys())]
+            changes += [f'added {name}' for name in sorted(after.keys()-before.keys())]
+            changes += [f'changed {name}' for name in sorted(before.keys() & after.keys()) if before[name]!=after[name]]
+            detail=', '.join(changes[:5]) or 'manifest format or metadata changed'
+            if len(changes)>5:detail+=f' and {len(changes)-5} more'
+            raise ValueError('Server frontend assets differ from the saved state: '+detail+'; retained for inspection')
+        return actual
+
+    @staticmethod
+    def _verify_checkpoint_visual(state,candidate):
+        recorded=state.get('visual_identity') or {}
+        uri=candidate.provenance.get('render_asset')
+        if not recorded.get('uri') or not recorded.get('sha256'):
+            raise ValueError('Checkpoint has no verified visual asset fingerprint')
+        if recorded['uri']!=uri or asset_sha256(uri)!=recorded['sha256']:
+            raise ValueError('Checkpoint visual asset is missing or differs from the recorded asset')
 
     def log(self,kind,payload):
         if self.audit_file:
@@ -546,38 +1006,41 @@ class Laboratory:
     def start(self,request:Mission):
         if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.airframe_variant!='r6':
             raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
-        self.phantom_landing_site=None;self.phantom_cg_gate=None
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
         if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
+        target_world=self.world
         if request.environment is not None:
             target_env=resolve_environment_key(request.environment)
             if getattr(self.world,'environment_key','airport')!=target_env:
-                self.world=make_world(target_env,seed=self.world.seed)
-        flight_world=self.world_for(request.ignore_scenery_collisions)
+                target_world=make_world(target_env,seed=self.world.seed)
+        flight_world=copy.copy(target_world) if request.ignore_scenery_collisions else target_world
+        if request.ignore_scenery_collisions:flight_world.obstacles=[]
         self.preview_generation+=1
-        departure_check=flight_world.validate(MapPoint(*request.departure),'departure')
+        departure_check=landing_support(flight_world,MapPoint(*request.departure),'departure',request.airframe_variant)
         if not departure_check.valid:raise ValueError('INVALID_DEPARTURE: '+departure_check.reason)
         target=MapPoint(*request.destination)
         if max(abs(target.x_m),abs(target.y_m))>flight_world.half-8:
             raise ValueError('Destination outside surveyed map boundary')
-        arrival_check=flight_world.validate(target,'destination')
+        arrival_check=landing_support(flight_world,target,'destination',request.airframe_variant)
         target_z=flight_world.surface_z(*request.destination)
         if phantom_live.is_phantom_variant(request.airframe_variant):
             candidate=phantom_live.make_aircraft(flight_world,request)
             # A pinned aircraft flies only as itself: physics configuration, parameter file and visual asset must match the pin.
             from .phantom import identity as aircraft_identity_pins
-            check=aircraft_identity_pins.verify(candidate,experimental=bool(candidate.experimental_overrides))
+            check=aircraft_identity_pins.verify(candidate,experimental=bool(candidate.experimental_overrides),runtime_source_sha256=RUNTIME_SOURCE_SHA256)
             if check['pinned'] and check['mismatches']:
                 self.log('flight_refused_identity_mismatch',check) if getattr(self,'log_path',None) else None
                 raise HTTPException(409,'Flight refused: '+check['name']+' does not match its pinned identity. '+check['status'])
             candidate._identity=check
-            self.aircraft=candidate
         else:
-            self.aircraft=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
+            candidate=Aircraft(flight_world,request.gear_variant,request.reference_rpm,
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
-        self.aircraft.spawn(*request.departure,departure_check.terrain_z_m)
+        candidate.spawn(*request.departure,departure_check.terrain_z_m)
+        self._remember_inspection_selection(request,candidate,target_world)
+        self.world=target_world;self.aircraft=candidate
+        self.phantom_landing_site=None;self.phantom_cg_gate=None
         # Bench engine is ready after launch; collective remains zero until commanded.
         if not getattr(self.aircraft, 'is_phantom', False):
             self.aircraft.set_command(dict(engine=1.0))
@@ -589,6 +1052,7 @@ class Laboratory:
                           departure_z_m=departure_check.terrain_z_m,destination_z_m=target_z,
                           destination_landing_valid=arrival_check.valid,destination_advisory=arrival_check.reason,landing_requested=request.landing_requested,
                           environment=self.world.id,environment_version=self.world.version,
+                          environment_identity=environment_identity(self.world,flight_world,self.aircraft),
                           environment_key=getattr(self.world,'environment_key','airport'),
                           environment_label=getattr(self.world,'label','Main Airport'),
                           label=request.label,
@@ -608,6 +1072,7 @@ class Laboratory:
             commit=pin.read_text().strip() if pin.exists() else 'UNKNOWN_BUILD_COMMIT'
         meta=dict(run_id=self.run_id,mission=self.mission,operator=request.authority,request=mission_dump(request),
                   airframe=self.aircraft.provenance,software_commit=commit,
+                  server_frontend_identity=self.server_frontend_identity,
                   runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
                   learning_checkpoint_sha256=hashlib.sha256(self.memory_path.read_bytes()).hexdigest(),
                   clocks='400 Hz physics, 100 Hz aero, 20 Hz sensors; independent wall clock at displayed time scale',
@@ -632,7 +1097,8 @@ class Laboratory:
         point = MapPoint(*destination)
         if max(abs(point.x_m), abs(point.y_m)) > self.world.half - 8:
             raise HTTPException(422, 'Destination outside surveyed map boundary')
-        arrival_check = self.world.validate(point, 'destination')
+        variant=getattr(self.aircraft,'variant',None) or getattr(self.aircraft,'airframe_variant',None)
+        arrival_check = landing_support(self.world,point,'destination',variant)
         previous = list(self.mission['destination'])
         self.mission['destination'] = list(destination)
         self.mission['destination_z_m'] = self.world.surface_z(*destination)
@@ -654,7 +1120,23 @@ class Laboratory:
         if isinstance(a,PhantomAction)!=bool(getattr(self.aircraft,'is_phantom',False)):
             raise HTTPException(409,'Action schema does not match the active airframe (Phantom requires schema phantom-fbw-1)')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
-        if self.authority=='colin' and a.observation_id not in self.observations:raise HTTPException(409,'Colin action requires an actual permitted observation ID')
+        if a.authority=='colin' and getattr(a,'pti',None) is not None and a.pti.command!='abort':
+            raise HTTPException(409,'Timed test excitation is offline only; pilot decisions must be individual telemetry-based commands')
+        if self.authority=='colin':
+            from .pilot_policy import observation_error
+            prior=None
+            # The existing feedback hold is a server-owned connection hold,
+            # not a new external pilot decision or waypoint navigator.
+            feedback_hold=(self.fallback_controller is not None and self.pilot_owner=='r6-deterministic-hold'
+                           and a.pilot_id==self.pilot_owner)
+            if not feedback_hold:
+                prior=next((row['issued'].get('observation_id') for row in reversed(self.action_log)
+                            if not row.get('cancelled') and row['issued'].get('authority')=='colin'
+                            and row['issued'].get('pilot_id')==a.pilot_id
+                            and row['issued'].get('pilot_epoch')==a.pilot_epoch),None)
+            error=observation_error(self.observations.get(a.observation_id),self.aircraft.data.time,
+                                    self.run_id,a.expected_run_id,a.pilot_run_id,a.observation_id,prior)
+            if error:raise HTTPException(409,error)
         takeover=(a.authority=='colin' and self.pending_pilot is not None and a.pilot_id==self.pending_pilot
                   and a.pilot_epoch==self.pilot_epoch and a.pilot_run_id==self.run_id)
         if takeover:
@@ -764,10 +1246,11 @@ class Laboratory:
 
     def stop(self,reason):
         if not self.active:return self.end_summary or dict(status='No active sortie')
-        self.active=False;self.last_obs=None;p=self.aircraft
+        # Keep the checkpoint and leave the flight paused if recording the
+        # outcome fails; an I/O error must not silently discard recoverable state.
+        self.paused=True;p=self.aircraft
         if self.fallback_controller:
             self.fallback_controller=None;self.fallback_status=dict(state='inactive',reason='Flight ended')
-        self.checkpoint_path.unlink(missing_ok=True)
         outcome=('landed_at_departure' if self.last_landing and self.last_landing['closest_reference']=='departure' else 'landed') if self.settled_s>=2 and self.last_landing and not p.crashed else ('collision' if p.crashed else ('airborne attempt ended' if self.left_ground else 'no takeoff'))
         summary=dict(run_id=self.run_id,outcome=outcome,reason=reason,simulated_seconds=float(p.data.time),
                      wall_seconds=time.monotonic()-self.wall_started,decisions=self.action_sequence,
@@ -777,8 +1260,11 @@ class Laboratory:
                      final=p.physical_snapshot(),mission=self.mission,landing_assessment=self.last_landing,
                      claim='Conditional experimental model; not validated VTX performance')
         if getattr(p,'is_phantom',False):summary['phantom']=phantom_live.summary_extras(self)
+        publish_new_evidence(self.log_path/'summary.json',json.dumps(summary,indent=2,default=float).encode('utf-8'))
         self.log('sortie_end',summary)
-        (self.log_path/'summary.json').write_text(json.dumps(summary,indent=2,default=float));self.audit_file.close();self.audit_file=None
+        self.audit_file.close();self.audit_file=None
+        self.checkpoint_path.unlink(missing_ok=True)
+        self.active=False;self.last_obs=None
         self.end_summary={k:v for k,v in summary.items() if k!='final'}
         self.retry_hint=dict(run_id=self.run_id,mission=self.mission,request=json.loads((self.log_path/'metadata.json').read_text())['request'])
         return self.end_summary
@@ -815,47 +1301,65 @@ class Laboratory:
     def retry(self,request):
         """Explicit new sortie. Preserve the failed run and the learned state."""
         if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before retrying a mission')
-        if self.active:self.stop('Operator restarted flight test; previous attempt retained')
+        if self.active:raise HTTPException(409,'End and retain the current sortie before retrying')
         hint=self.retry_hint
         if not hint:raise HTTPException(409,'No retained mission to retry')
         old=hint['request']
-        variant=request.get('airframe_variant',old.get('airframe_variant','light'))
+        def retained(name):
+            if name in request:return request[name]
+            if name in old:return old[name]
+            raise HTTPException(409,'Retained mission lacks '+name+'; specify it or start a new mission')
+        variant=request.get('airframe_variant') or old.get('airframe_variant')
+        if not variant:raise HTTPException(409,'Retained mission has no aircraft variant; select a new mission explicitly')
         # Phantom fuel comes from its own options/load state; never inherit the
         # legacy four-fan fuel default through a retry (flight campaign D-2).
         fuel_kw={}
-        if not phantom_live.is_phantom_variant(variant):fuel_kw['fuel_kg']=request.get('fuel_kg',old.get('fuel_kg',60.))
+        if not phantom_live.is_phantom_variant(variant):
+            fuel=request.get('fuel_kg',old.get('fuel_kg'))
+            if fuel is None:raise HTTPException(409,'Retained mission has no fuel loading; specify fuel or start a new mission')
+            fuel_kw['fuel_kg']=fuel
         elif 'fuel_kg' in request:fuel_kw['fuel_kg']=request['fuel_kg']
         elif old.get('fuel_kg') is not None and old.get('fuel_kg_explicit'):fuel_kw['fuel_kg']=old['fuel_kg']
         retry_env=request.get('environment',old.get('environment') or hint.get('mission',{}).get('environment_key') or hint.get('mission',{}).get('environment'))
+        if not retry_env:raise HTTPException(409,'Retained mission has no environment; choose one explicitly')
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
-                  authority=request.get('authority','manual'),time_scale=request.get('time_scale',old.get('time_scale',Mission.model_fields['time_scale'].default)),
-                  stability_assist=request.get('stability_assist',old.get('stability_assist',0.)),
-                  reference_rpm=old.get('reference_rpm',800.),gear_variant=old.get('gear_variant','baseline'),
+                  authority=request.get('authority','manual'),time_scale=retained('time_scale'),
+                  stability_assist=retained('stability_assist'),
+                  reference_rpm=retained('reference_rpm'),gear_variant=retained('gear_variant'),
                   airframe_variant=variant,**fuel_kw,
-                  engine_power_limit_kw=request.get('engine_power_limit_kw',old.get('engine_power_limit_kw',469.8)),
-                  atmosphere_model=request.get('atmosphere_model',old.get('atmosphere_model','constant')),
-                  wind_world_mps=request.get('wind_world_mps',old.get('wind_world_mps',[0.,0.,0.])),
-                  ignore_scenery_collisions=request.get('ignore_scenery_collisions',old.get('ignore_scenery_collisions',False)),
-                  landing_precision_m=request.get('landing_precision_m',old.get('landing_precision_m')),
+                  engine_power_limit_kw=retained('engine_power_limit_kw'),
+                  atmosphere_model=retained('atmosphere_model'),wind_world_mps=retained('wind_world_mps'),
+                  ignore_scenery_collisions=retained('ignore_scenery_collisions'),
+                  landing_requested=retained('landing_requested'),landing_precision_m=retained('landing_precision_m'),
                   label='Explicit retry of '+hint['run_id'],
                   **({'environment':retry_env} if retry_env else {}),
                   **({'phantom':request.get('phantom',old.get('phantom'))} if (request.get('phantom') or old.get('phantom')) else {}))
         result=self.start(m)
         self.log('retry_lineage',dict(previous_run_id=hint['run_id'],checkpoint_preserved=True,new_airframe_variant=m.airframe_variant,
-                                      previous_fuel_kg=old.get('fuel_kg',60.),new_fuel_kg=m.fuel_kg if not phantom_live.is_phantom_variant(variant) else float(self.aircraft.fuel_initial.sum()),
-                                      previous_power_limit_kw=old.get('engine_power_limit_kw',469.8),new_power_limit_kw=m.engine_power_limit_kw))
+                                      previous_fuel_kg=old.get('fuel_kg'),new_fuel_kg=m.fuel_kg if not phantom_live.is_phantom_variant(variant) else float(self.aircraft.fuel_initial.sum()),
+                                      previous_power_limit_kw=old.get('engine_power_limit_kw'),new_power_limit_kw=m.engine_power_limit_kw))
         return result
+
+    def pilot_status(self):
+        observation = self.sensor_observation()
+        return dict(run_id=self.run_id, active=self.active, paused=self.paused, authority=self.authority,
+                    pilot_owner=self.pilot_owner, pending_pilot=self.pending_pilot, pilot_epoch=self.pilot_epoch,
+                    objective=self.objective, airframe_variant=observation['configuration']['airframe_variant'],
+                    warning_lamps=observation['warning_lamps'], outcome=(self.end_summary or {}).get('outcome'))
 
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
                     runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
+                    server_frontend_last_capture_sha256=(self.server_frontend_identity or {}).get('sha256'),
+                    browser_frontend_verified=False,
                     environment=dict(key=getattr(self.world,'environment_key','airport'),
-                                     id=self.world.id,version=self.world.version,
+                                     id=self.world.id,version=self.world.version,seed=self.world.seed,
+                                     displayed_world_sha256=self._displayed_world_sha256,
                                      label=getattr(self.world,'label','Main Airport'),
                                      half_m=self.world.half,
                                      default_departure=list(getattr(self.world,'default_departure',[-700.,0.])),
                                      default_destination=list(getattr(self.world,'default_destination',[-50.,20.]))),
-                    active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,recovery_notice=self.recovery_notice,landing_assessment=self.last_landing,
+                    active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,recovery_notice=self.recovery_notice,landing_assessment=self.last_landing,inspection_selection_known=self.inspection_selection_known,
                     clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
                     rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,objective=self.objective,
                     pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback=self.fallback_status,
@@ -877,6 +1381,10 @@ async def physical_clock():
     while True:
         await asyncio.sleep(.005)
         now=time.monotonic();delta=now-last;last=now
+        harbour_rate = lab.time_scale if lab.active else 1.
+        if (lab.active and lab.paused) or not getattr(lab.world,'harbour',None):
+            harbour_rate = 0.
+        lab.harbour_session.set_rate(harbour_rate)
         if not lab.active or lab.paused:accum=0.;continue
         if seen_epoch!=lab.clock_epoch:
             lab.log('scheduler_clock_rebase',dict(unintegrated_backlog_s=accum,time_scale=lab.time_scale,reason='Explicit operator clock change; no physical state reset'))
@@ -906,6 +1414,7 @@ async def lifespan(app):
         if lab.audit_file:
             lab.audit_file.close();lab.audit_file=None
     task.cancel()
+    await asyncio.to_thread(lab.harbour_session.close)
     await asyncio.to_thread(close_recorders)
 
 app=FastAPI(title='VTX live engineering laboratory',lifespan=lifespan)
@@ -948,7 +1457,37 @@ async def login(request:Request):
     response.set_cookie('vtx_session',hmac.new(_access_token.encode(),b'vtx-browser-session',hashlib.sha256).hexdigest(),secure=True,httponly=True,samesite='strict')
     return response
 @app.get('/api/world')
-async def world():return lab.world.public()
+async def world():return lab.world_snapshot()
+
+@app.get('/api/harbour')
+async def harbour_status():
+    try:
+        return await asyncio.to_thread(lab.harbour_session.status,lab.world)
+    except (OSError,ValueError) as exc:
+        raise HTTPException(409,str(exc)) from exc
+
+@app.get('/api/harbour/model')
+async def harbour_model(boatId:str):
+    try:
+        return await asyncio.to_thread(lab.harbour_session.model,lab.world,boatId)
+    except (OSError,ValueError,KeyError) as exc:
+        raise HTTPException(409,str(exc)) from exc
+
+@app.post('/api/harbour/action')
+async def harbour_action(request:dict):
+    action=request.get('action')
+    if action not in ('activate','select','command','dock','undock','save','restore'):
+        raise HTTPException(422,'Unknown harbour action')
+    if action in ('select','command','dock','undock') and not isinstance(request.get('boatId'),str):
+        raise HTTPException(422,'Select the boat explicitly')
+    if action=='dock' and not isinstance(request.get('berthId'),str):
+        raise HTTPException(422,'Select the berth explicitly')
+    if action=='command' and not isinstance(request.get('command'),dict):
+        raise HTTPException(422,'Expected a boat command')
+    try:
+        return await asyncio.to_thread(lab.harbour_session.act,lab.world,action,request)
+    except (OSError,ValueError,KeyError) as exc:
+        raise HTTPException(409,str(exc)) from exc
 @app.get('/api/observe')
 async def observe():
     observation=lab.sensor_observation()
@@ -956,7 +1495,11 @@ async def observe():
         get_recorder(lab.data_root).emit(dict(schema_version=1,run_id=lab.run_id,
             decision_id=None,wall_utc=datetime.now(timezone.utc).isoformat(),
             kind='pilot_observation_served',payload=observation))
-    return observation
+    return {**observation, 'run_id': lab.run_id}
+
+@app.get('/api/pilot/status')
+async def pilot_status():
+    return lab.pilot_status()
 
 class PilotPrompt(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -982,7 +1525,7 @@ async def release_identity():
     return dict(expected=EXPECTED_RELEASE,loaded=loaded,matches=(loaded==EXPECTED_RELEASE),
                 enforced=os.environ.get('VTX_ENFORCE_RELEASE')=='1',
                 selection_allowed=os.environ.get('VTX_ENFORCE_RELEASE')!='1',
-                supported_variants=['r6','r6_variator','light','baseline','phantom-a10b','phantom-a10c','phantom-fx','phantom','phantom-a9','phantom-fx-a9'])
+                supported_variants=['r6','r6_variator',R6_HISTORICAL_VARIANT,'light','baseline',*phantom_live.VARIANTS])
 @app.get('/api/view')
 async def view():return lab.view()
 @app.get('/api/identity')
@@ -995,7 +1538,26 @@ async def identity():
         out=dict(variant=p.provenance.get('airframe_variant'),revision=p.provenance.get('revision'),render_asset=p.provenance.get('render_asset'),
                  git_commit=pins.git_commit(),pinned=False,verified=None,mismatches=[],status='not pinned (historical or reference variant)')
     out.update(runtime_source_sha256=RUNTIME_SOURCE_SHA256,run_id=lab.run_id,active=lab.active)
+    out.update(server_frontend_last_capture_sha256=(lab.server_frontend_identity or {}).get('sha256'),browser_frontend_verified=False)
     return out
+
+@app.get('/api/frontend-identity')
+async def frontend_identity():
+    """Current server files, not an attestation of an open browser or its cache."""
+    try:return await asyncio.to_thread(server_frontend_manifest)
+    except (OSError,ValueError) as exc:raise HTTPException(409,'Frontend identity unavailable: '+str(exc))
+
+@app.get('/api/runs/{run_id}/frontend-identity')
+async def recorded_frontend_identity(run_id:str):
+    if not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',run_id):raise HTTPException(422,'Invalid run ID')
+    path=lab.data_root/'evidence/flights'/run_id/'metadata.json'
+    if not path.is_file():raise HTTPException(404,'Run not found')
+    try:meta=json.loads(path.read_text(encoding='utf-8'))
+    except (OSError,ValueError) as exc:raise HTTPException(409,'Run metadata cannot be read') from exc
+    if meta.get('run_id')!=run_id:raise HTTPException(409,'Run metadata identity differs')
+    recorded=meta.get('server_frontend_identity')
+    return dict(captured=bool(recorded),identity=recorded,
+                note='Server public files captured at mission start; browser-loaded content is not verified')
 
 class PilotCommand(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -1014,13 +1576,16 @@ async def pilot_command(c:PilotCommand):
     base=dict(heard=c.text,source=c.source,understood=False,accepted=False,executed=False,run_id=lab.run_id,authority=lab.authority)
     def done(**kw):
         out={**base,**kw,'latency_ms':round((time.perf_counter()-t0)*1000,1)}
-        if lab.active and lab.run_id:lab.log('pilot_command',out)
+        if lab.active and lab.run_id==base['run_id']:lab.log('pilot_command',out)
         return out
     if not getattr(lab.aircraft,'is_phantom',False):
         return done(intent='refused',say='Voice and text commands fly the Phantom only. Choose a Phantom first.')
     before=lab.sensor_observation()
     r=pc.parse(c.text,before)
     if r['intent']=='status':return done(understood=True,intent='status',say=pc.status_readback(before),telemetry=pc.telemetry_excerpt(before))
+    if c.source=='ai':
+        return done(intent='refused',rejected='AI text macros are disabled',
+                    say='Observe the aircraft and send an explicit telemetry-based pilot action. Plain-language AI instructions do not execute built-in flight commands.')
     if r['intent'] in ('unknown','refused','confirm','cancel') or not r['patch']:
         return done(understood=r['intent'] in ('refused','confirm','cancel'),intent=r['intent'],say=r['say'])
     base.update(understood=True,intent=r['intent'],patch=r['patch'])
@@ -1039,15 +1604,20 @@ async def pilot_command(c:PilotCommand):
     base.update(accepted=True,sequence=result['sequence'],apply_t_s=result['apply_t_s'],observation_id=before['observation_id'])
     get_recorder(lab.data_root).emit(dict(schema_version=1,run_id=lab.run_id,decision_id=None,wall_utc=datetime.now(timezone.utc).isoformat(),
         kind='pilot_action_accepted',payload=dict(action=a.model_dump(by_alias=True,exclude_none=True),result=result)))
-    run=lab.run_id;deadline=time.perf_counter()+2.0;applied_ms=None
+    run=lab.run_id;deadline=time.perf_counter()+2.0;applied_ms=None;cancelled=False
     while time.perf_counter()<deadline and lab.active and lab.run_id==run and not lab.paused:
-        if float(lab.aircraft.data.time)>=result['apply_t_s'] and pc.held(lab.aircraft.fcc.cmd,r['patch']):
+        queued=next((row for row in lab.action_log if row.get('sequence')==result['sequence']),None)
+        if queued and queued.get('cancelled'):
+            cancelled=True;break
+        if queued and queued.get('applied') and float(lab.aircraft.data.time)>=result['apply_t_s'] and pc.held(lab.aircraft.fcc.cmd,r['patch']):
             applied_ms=round((time.perf_counter()-t0)*1000,1);break
         await asyncio.sleep(.005)
     if applied_ms is None:
-        why='the simulation is paused' if lab.paused else 'the flight ended' if not lab.active or lab.run_id!=run else 'the physics loop did not apply it within 2 seconds'
+        why='the command was cancelled before application' if cancelled else 'the simulation is paused' if lab.paused else 'the flight ended' if not lab.active or lab.run_id!=run else 'the physics loop did not apply it within 2 seconds'
         return done(say=f'Command accepted but not yet applied: {why}.',not_applied=why,telemetry_before=pc.telemetry_excerpt(before))
     await asyncio.sleep(.25)   # let the plant respond so the reply quotes telemetry from after the command
+    if lab.run_id!=run:
+        return done(executed=True,applied_latency_ms=applied_ms,say='Command applied; the flight changed before telemetry readback.',telemetry_before=pc.telemetry_excerpt(before))
     lab.last_obs=None;after=lab.sensor_observation()
     return done(executed=True,applied_latency_ms=applied_ms,say=r['say'],telemetry_before=pc.telemetry_excerpt(before),telemetry_after=pc.telemetry_excerpt(after))
 
@@ -1096,6 +1666,14 @@ async def model_preview(request:dict):
     aircraft=await asyncio.to_thread(build)
     if lab.active or generation!=lab.preview_generation:
         raise HTTPException(409,'The flight or model selection changed while the inspection model was loading')
+    if getattr(aircraft,'is_phantom',False):
+        from .phantom import identity as aircraft_identity_pins
+        check=aircraft_identity_pins.verify(aircraft,experimental=bool(aircraft.experimental_overrides),runtime_source_sha256=RUNTIME_SOURCE_SHA256)
+        if check['pinned'] and check['mismatches']:
+            raise HTTPException(409,'Aircraft identity mismatch: '+check['status'])
+        aircraft._identity=check
+    try:lab._remember_inspection_selection(selection,aircraft,target_world)
+    except ValueError as e:raise HTTPException(409,str(e))
     lab.world=target_world;lab.flight_world=target_world;lab.aircraft=aircraft;lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
     lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
     return lab.view()
@@ -1104,12 +1682,18 @@ async def set_environment(request:dict):
     """Switch the live world between Main Airport and Test Sandbox when no sortie is active."""
     if lab.active:raise HTTPException(409,'End and retain the current sortie before switching environments')
     if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before switching environments')
+    if not lab.inspection_selection_known:raise HTTPException(409,'Select an aircraft explicitly before switching environments')
     try:env_key=resolve_environment_key(request.get('environment'))
     except ValueError as e:raise HTTPException(422,str(e))
-    target_world=lab.world if getattr(lab.world,'environment_key','airport')==env_key else make_world(env_key,seed=lab.world.seed)
-    current_variant=request.get('airframe_variant') or getattr(lab.aircraft,'variant',None) or getattr(lab.aircraft,'airframe_variant','r6')
+    current_variant=getattr(lab.aircraft,'variant',None) or getattr(lab.aircraft,'airframe_variant',None)
+    if not current_variant:
+        raise HTTPException(409,'Loaded aircraft identity is unavailable; environment was not changed')
+    requested_variant=request.get('airframe_variant')
+    if requested_variant is not None and requested_variant!=current_variant:
+        raise HTTPException(409,'Environment change cannot replace the loaded aircraft; select the aircraft separately')
     if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and current_variant!='r6':
-        current_variant='r6'
+        raise HTTPException(409,'Loaded aircraft does not match the enforced release; environment was not changed')
+    target_world=lab.world if getattr(lab.world,'environment_key','airport')==env_key else make_world(env_key,seed=lab.world.seed)
     start_cfg=request.get('start_configuration') or getattr(lab.aircraft,'start_configuration','vtol')
     dep=request.get('departure') if request.get('departure') is not None else list(target_world.default_departure)
     dest=request.get('destination') if request.get('destination') is not None else list(target_world.default_destination)
@@ -1138,10 +1722,18 @@ async def set_environment(request:dict):
     aircraft=await asyncio.to_thread(build)
     if lab.active or generation!=lab.preview_generation:
         raise HTTPException(409,'The flight or model selection changed while the environment was loading')
+    if getattr(aircraft,'is_phantom',False):
+        from .phantom import identity as aircraft_identity_pins
+        check=aircraft_identity_pins.verify(aircraft,experimental=bool(aircraft.experimental_overrides),runtime_source_sha256=RUNTIME_SOURCE_SHA256)
+        if check['pinned'] and check['mismatches']:
+            raise HTTPException(409,'Aircraft identity mismatch: '+check['status'])
+        aircraft._identity=check
+    try:lab._remember_inspection_selection(selection,aircraft,target_world)
+    except ValueError as e:raise HTTPException(409,str(e))
     lab.world=target_world;lab.flight_world=target_world;lab.aircraft=aircraft
     lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
     lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
-    return dict(ok=True,environment=env_key,world=lab.world.public(),view=lab.view())
+    return dict(ok=True,environment=env_key,world=lab.world_snapshot(),view=lab.view())
 @app.post('/api/objective')
 async def set_objective(request:dict):
     if not lab.active:raise HTTPException(409,'No active flight')
@@ -1233,6 +1825,8 @@ async def validate(x:float,y:float,variant:str|None=None,ignore_scenery_collisio
     return asdict(world.validate(MapPoint(x,y),'mission'))
 @app.post('/api/mission')
 async def mission(request:Mission):
+    if 'airframe_variant' not in request.model_fields_set:
+        raise HTTPException(409,'Select an aircraft explicitly before starting a mission')
     try:return lab.start(request)
     except ValueError as e:raise HTTPException(422,str(e))
 @app.post('/api/destination')
@@ -1267,6 +1861,35 @@ async def action(request:Request):
         raise
 @app.post('/api/stop')
 async def stop(request:dict):return lab.stop(str(request.get('reason','Operator ended sortie')))
+@app.post('/api/save-flight')
+async def save_flight(request:dict):return lab.save_flight_for_switching(request.get('run_id'))
+@app.get('/api/saved-flights')
+async def saved_flights():return lab.saved_flights()
+@app.post('/api/restore-flight')
+async def restore_flight(request:dict):return lab.restore_saved_flight(request.get('run_id'))
+@app.get('/api/checkpoint-recovery')
+async def checkpoint_recovery():
+    path=lab.checkpoint_path
+    if not lab.recovery_blocked or not path.is_file():return dict(available=False)
+    try:
+        data=path.read_bytes();state=json.loads(data)
+        digest=hashlib.sha256(data).hexdigest();txn=lab.data_root/'pilot/fork-transactions'/(digest+'.json')
+        transaction=json.loads(txn.read_text(encoding='utf-8')) if txn.is_file() else None
+        physics=state.get('plant',{}) if state.get('schema')=='phantom-2' else state.get('physics',{})
+        reason=lab.error or ''
+        fork_available=transaction is None and any(s in reason for s in ('extends beyond the checkpoint','evidence is incomplete or unreadable'))
+        if not fork_available and transaction is None and state.get('schema') in (2,'phantom-2'):
+            def malformed_evidence():
+                try:lab._verify_evidence_tail(lab.data_root/'evidence/flights'/state['run_id'],physics['time'],state['schema']=='phantom-2')
+                except json.JSONDecodeError:return True
+                except (ValueError,KeyError,OSError,TypeError):return False
+                return False
+            fork_available=await asyncio.to_thread(malformed_evidence)
+        return dict(available=True,run_id=state.get('run_id'),checkpoint_sha256=digest,
+                    checkpoint_time_s=physics.get('time'),reason=lab.error,transaction=transaction,fork_available=fork_available)
+    except (OSError,ValueError):return dict(available=False,reason='Checkpoint cannot be read; retained for inspection')
+@app.post('/api/fork-checkpoint')
+async def fork_checkpoint(request:dict):return lab.fork_checkpoint_continuation(request.get('run_id'),request.get('checkpoint_sha256'))
 @app.post('/api/retry')
 async def retry(request:dict):
     try:return lab.retry(request)
@@ -1322,20 +1945,56 @@ async def lesson(request:dict):
 async def runs():
     result=[]
     for path in sorted((lab.data_root/'evidence/flights').glob('*/summary.json'),reverse=True):
-        s=json.loads(path.read_text())
-        row={k:v for k,v in s.items() if k!='final'}
-        m=row.get('mission') or {}
+        try:
+            s=json.loads(path.read_text(encoding='utf-8'))
+            if not isinstance(s,dict) or s.get('run_id')!=path.parent.name:
+                raise ValueError('Summary does not identify its flight')
+            row={k:v for k,v in s.items() if k!='final'}
+        except (OSError,ValueError,TypeError):
+            row=dict(run_id=path.parent.name,outcome='summary unreadable; evidence retained',
+                     simulated_seconds=None,decisions=None,active=False)
+        try:
+            meta=json.loads((path.parent/'metadata.json').read_text(encoding='utf-8'))
+            if meta.get('run_id')==path.parent.name:
+                if meta.get('continuation'):row['continuation']=meta['continuation']
+                if not row.get('mission') and isinstance(meta.get('mission'),dict):row['mission']=meta['mission']
+        except (OSError,ValueError,TypeError,AttributeError):
+            pass  # Summary remains independently available for inspection.
+        m=row.get('mission')
+        if not isinstance(m,dict):m={}
         if m.get('environment') and 'environment' not in row:
             row['environment']=m.get('environment')
             row['environment_key']=m.get('environment_key')
             row['environment_label']=m.get('environment_label')
         result.append(row)
+    # A retained parent of a checkpoint continuation has no summary. Keep it
+    # discoverable without inventing an outcome or writing to its evidence.
+    for path in sorted((lab.data_root/'evidence/flights').glob('*/metadata.json'),reverse=True):
+        run_id=path.parent.name
+        if (path.parent/'summary.json').exists() or (lab.active and lab.run_id==run_id):continue
+        try:
+            meta=json.loads(path.read_text(encoding='utf-8'))
+            if meta.get('run_id')!=run_id:continue
+            mission=meta.get('mission') or {}
+            row=dict(run_id=run_id,outcome='unfinished; evidence retained',simulated_seconds=None,
+                     decisions=None,active=False,mission=mission,
+                     environment=mission.get('environment'),environment_key=mission.get('environment_key'),
+                     environment_label=mission.get('environment_label'))
+            if meta.get('continuation'):row['continuation']=meta['continuation']
+            result.append(row)
+        except (OSError,ValueError,TypeError):
+            continue
     if lab.active and lab.run_id:
         m=lab.mission or {}
-        result.insert(0,dict(run_id=lab.run_id,outcome='in progress',simulated_seconds=float(lab.aircraft.data.time),
+        row=dict(run_id=lab.run_id,outcome='in progress',simulated_seconds=float(lab.aircraft.data.time),
                              decisions=lab.action_sequence,active=True,mission=lab.mission,
                              environment=m.get('environment'),environment_key=m.get('environment_key'),
-                             environment_label=m.get('environment_label')))
+                             environment_label=m.get('environment_label'))
+        meta_path=lab.log_path/'metadata.json'
+        if meta_path.exists():
+            meta=json.loads(meta_path.read_text(encoding='utf-8'))
+            if meta.get('continuation'):row['continuation']=meta['continuation']
+        result.insert(0,row)
     return result
 
 
@@ -1357,6 +2016,13 @@ async def archive_runs():
             except (OSError,ValueError,TypeError):
                 continue
     return dict(records=records,available=True)
+
+@app.get('/api/archive/r6-pilot-record')
+async def r6_historical_pilot_record():
+    """Expose the retained pilot record without serving the whole pilot directory."""
+    path=ROOT/'pilot/flight_records/20261103T125202-92636c/PILOT_RECORD.md'
+    if not path.is_file():raise HTTPException(404,'Historical R6 pilot record is unavailable')
+    return FileResponse(path,media_type='text/plain; charset=utf-8')
 
 @app.get('/api/runs/{run_id}/findings')
 async def run_findings(run_id: str):
@@ -1407,6 +2073,123 @@ async def timeline(run_id:str):
     if not path.exists() and not compressed.exists():raise HTTPException(404,'Run not found')
     return await asyncio.to_thread(read_decision_timeline,path if path.exists() else compressed)
 
+def recorded_phantom_wheel_geometry(run_dir):
+    """Read only explicitly described, identity-matched historical tyre cylinders.
+
+    Do not compile a historical model, resolve includes or use the currently
+    selected aircraft. Unsupported or incomplete evidence stays unavailable.
+    """
+    unavailable=dict(status='unavailable')
+    try:
+        metadata=json.loads((run_dir/'metadata.json').read_text(encoding='utf-8'))
+        airframe=metadata['airframe']
+        revision=airframe['airframe_variant']
+        expected=airframe['model_xml_sha256']
+        if (metadata['run_id']!=run_dir.name or not isinstance(revision,str) or
+                not revision.startswith('phantom-') or not isinstance(expected,str) or
+                not re.fullmatch(r'[0-9a-f]{64}',expected)):
+            return unavailable
+        xml=(run_dir/'model.xml').read_bytes()
+        if len(xml)>16_000_000 or hashlib.sha256(xml).hexdigest()!=expected:
+            return unavailable
+        # Includes/default-defined geometry cannot safely be inferred by this
+        # deliberately narrow reader, nor should this audit parse entities.
+        if re.search(br'<!\s*(?:DOCTYPE|ENTITY)\b',xml,re.IGNORECASE):
+            return unavailable
+        root=ET.fromstring(xml)
+        if root.tag!='mujoco' or any(e.tag=='include' for e in root.iter()):
+            return unavailable
+        geom_pose_attrs=('type','size','pos','fromto','quat','euler','axisangle','xyaxes','zaxis')
+        for default in root.iter('default'):
+            if any(any(g.get(a) is not None for a in geom_pose_attrs) for g in default.findall('geom')):
+                return unavailable
+        parents={child:parent for parent in root.iter() for child in parent}
+        geometry={}
+        for pod in ('FL','FR','RL','RR'):
+            matches=[e for e in root.iter('geom') if e.get('name')==f'tyre_{pod}']
+            if len(matches)!=1:return unavailable
+            geom=matches[0];body=parents.get(geom)
+            if (body is None or body.tag!='body' or body.get('name')!=f'pod_{pod}_wheel' or
+                    not any(j.get('name')==f'pod_{pod}_wheel' for j in body.findall('joint')) or
+                    parents.get(body) is None or parents[body].get('name')!=f'pod_{pod}' or
+                    parents.get(parents[body]) is None or parents[parents[body]].get('name')!='airframe' or
+                    any(body.get(a) is not None for a in ('quat','euler','axisangle','xyaxes','zaxis')) or
+                    geom.get('class') is not None or body.get('childclass') is not None or
+                    geom.get('type')!='cylinder' or any(geom.get(a) is not None for a in
+                        ('fromto','quat','euler','axisangle','xyaxes'))):
+                return unavailable
+            size=[float(v) for v in geom.attrib['size'].split()]
+            axis=[float(v) for v in geom.attrib['zaxis'].split()]
+            pos=[float(v) for v in geom.get('pos','0 0 0').split()]
+            body_pos=[float(v) for v in body.get('pos','0 0 0').split()]
+            if (len(size)!=2 or not all(math.isfinite(v) and v>0 for v in size) or
+                    len(axis)!=3 or not all(math.isfinite(v) for v in axis) or
+                    abs(axis[0])>1e-9 or abs(axis[2])>1e-9 or abs(axis[1])<1e-9 or
+                    len(pos)!=3 or not all(math.isfinite(v) and abs(v)<1e-9 for v in pos) or
+                    len(body_pos)!=3 or not all(math.isfinite(v) and abs(v)<1e-9 for v in body_pos)):
+                return unavailable
+            geometry[pod]=dict(radius_m=size[0],half_width_m=size[1])
+        return dict(status='recorded-model-verified',model_xml_sha256=expected,
+                    airframe_variant=revision,wheels=geometry)
+    except (OSError,ValueError,TypeError,KeyError,ET.ParseError):
+        return unavailable
+
+
+def recorded_replay_context(run_dir):
+    """Read replay identity without changing the selected aircraft or world.
+
+    An absent historical fingerprint is not evidence that the current terrain
+    or a similarly named visual is the one originally recorded.
+    """
+    context=dict(environment=None,visual=None)
+    try:
+        meta=json.loads((run_dir/'metadata.json').read_text(encoding='utf-8'))
+        if meta.get('run_id')!=run_dir.name:return context
+        mission=meta.get('mission') or {}
+        env=mission.get('environment_identity') or {}
+        fingerprint=env.get('displayed_world_sha256')
+        if (env.get('scheme')=='vtx-world-v1' and isinstance(env.get('seed'),int) and
+                not isinstance(env.get('seed'),bool) and
+                all(isinstance(mission.get(k),str) and mission[k] for k in
+                    ('environment_key','environment','environment_version')) and
+                isinstance(fingerprint,str) and re.fullmatch(r'[0-9a-f]{64}',fingerprint)):
+            context['environment']=dict(key=mission['environment_key'],id=mission['environment'],
+                version=mission['environment_version'],seed=env['seed'],displayed_world_sha256=fingerprint)
+        airframe=meta.get('airframe') or {}
+        variant=airframe.get('airframe_variant');model=airframe.get('model_xml_sha256')
+        config=airframe.get('config_sha256');asset=airframe.get('render_asset')
+        if (not isinstance(variant,str) or not variant or not isinstance(model,str) or
+                not re.fullmatch(r'[0-9a-f]{64}',model) or
+                (config is not None and (not isinstance(config,str) or not re.fullmatch(r'[0-9a-f]{64}',config))) or
+                not isinstance(asset,str) or not re.fullmatch(r'/assets/[A-Za-z0-9_.-]+\.glb',asset)):
+            return context
+        xml=(run_dir/'model.xml').read_bytes()
+        if len(xml)>16_000_000 or hashlib.sha256(xml).hexdigest()!=model:return context
+        identity_path=run_dir/'aircraft_identity.json'
+        if identity_path.exists():
+            identity=json.loads(identity_path.read_text(encoding='utf-8'))
+            if (identity.get('variant')!=variant or identity.get('model_xml_sha256')!=model or
+                    identity.get('render_asset')!=asset or identity.get('config_sha256')!=config):
+                return context
+            digest=identity.get('render_asset_sha256');identity_source='aircraft_identity.json'
+        else:
+            # R6 runs have no Phantom aircraft_identity.json; new runs record
+            # their actual public asset in the mission-start server snapshot.
+            manifest=meta.get('server_frontend_identity') or {}
+            files=manifest.get('files') or {}
+            entry=files.get(asset.lstrip('/')) or {}
+            if manifest.get('scheme')!='vtx-server-public-tree-v1':return context
+            digest=entry.get('sha256');identity_source='server-frontend-snapshot'
+        if (isinstance(digest,str) and re.fullmatch(r'[0-9a-f]{64}',digest) and
+                asset_sha256(asset)==digest):
+            context['visual']=dict(variant=variant,model_xml_sha256=model,config_sha256=config,render_asset=asset,
+                render_asset_sha256=digest,identity_source=identity_source,
+                status='server-asset-matches-record',browser_loaded_verified=False)
+    except (OSError,ValueError,TypeError,AttributeError):
+        pass
+    return context
+
+
 def read_replay_frames(path, limit=1200):
     """Bound replay memory while retaining the first and last physical states."""
     frames=[]; stride=1; count=0; last=None
@@ -1425,7 +2208,22 @@ def read_replay_frames(path, limit=1200):
     if count and frames[-1][0]!=count-1:
         if len(frames)>=limit:frames.pop()
         frames.append((count-1,last))
-    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=[v for _,v in frames],
+    wheel_source=recorded_phantom_wheel_geometry(path.parent)
+    output=[v for _,v in frames]
+    if wheel_source['status']=='recorded-model-verified':
+        for frame in output:
+            if not isinstance(frame,dict):continue
+            provenance=frame.get('provenance') or {}
+            phantom=frame.get('phantom')
+            if (isinstance(phantom,dict) and isinstance(provenance,dict) and
+                    provenance.get('model_xml_sha256')==wheel_source['model_xml_sha256'] and
+                    provenance.get('airframe_variant')==wheel_source['airframe_variant'] and
+                    frame.get('variant')==wheel_source['airframe_variant'] and
+                    'wheel_collision_geometry' not in phantom):
+                phantom['wheel_collision_geometry']=wheel_source['wheels']
+                phantom['wheel_collision_geometry_source']='recorded-model-verified'
+    return dict(mode='POST_FLIGHT_AUDIT_ONLY',frames=output,
+                recorded_context=recorded_replay_context(path.parent),recorded_wheel_geometry=wheel_source,
                 total_frames=count,sampling_stride=stride,downsampled=count>len(frames))
 
 @app.get('/api/replay/{run_id}')

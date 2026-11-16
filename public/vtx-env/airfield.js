@@ -4,6 +4,7 @@
 // zero solid physics collisions. Surfaces are drawn with deterministic renderOrder.
 import * as THREE from 'three';
 import { LAYOUT } from './layout.js';
+import {primaryRunwayCues} from './runway-layout.js?v=20261116-runway-1';
 import {sampleTerrainHeight} from './ride-trajectory.js';
 import { asphaltTextures, concreteTextures, makeCanvas, toTexture, rng, windsockTexture } from './textures.js';
 import * as F from './facade.js';
@@ -259,13 +260,15 @@ export function buildAirfield(scene, { ppm = 11, world } = {}) {
   // DUAL CROSSING RUNWAYS (Gloucestershire EGBJ Operational Topology)
   // =========================================================================
 
-  // Primary runway extends east along the matching flat physical strip.
-  const rwy0826_len = 4616, rwy0826_w = 30 + 8;
-  decal(group, rwy0826_len, rwy0826_w, 1592, 0, surface(rwy0826_len, rwy0826_w, 2.5, (g, w, h) => {
+  // The physical world's runway record also locates paint, lights and map cues.
+  const primary = primaryRunwayCues(world), strip = primary.surface;
+  const rwy0826_len = strip.length, rwy0826_w = strip.width;
+  decal(group, rwy0826_len, rwy0826_w, strip.x, strip.y, surface(rwy0826_len, rwy0826_w, 2.5, (g, w, h) => {
     patternFill(g, asph.map, w, h, 8);
-    g.fillStyle = 'rgba(60,62,65,.4)'; g.fillRect(0, 0, w, 4); g.fillRect(0, h - 4, w, 4);
+    const shoulder = primary.runway.shoulder_width;
+    g.fillStyle = 'rgba(60,62,65,.4)'; g.fillRect(0, 0, w, shoulder); g.fillRect(0, h - shoulder, w, shoulder);
     const cy = h / 2; g.fillStyle = '#f0eee2';
-    g.fillRect(0, 4.2, w, .45); g.fillRect(0, h - 4.65, w, .45);
+    g.fillRect(0, shoulder + .2, w, .45); g.fillRect(0, h - shoulder - .65, w, .45);
     for (let x = 20; x < w - 20; x += 30) g.fillRect(x, cy - .25, 14, .5);
     for (const dir of [1, -1]) {
       const x0 = dir > 0 ? 3 : w - 3;
@@ -286,7 +289,7 @@ export function buildAirfield(scene, { ppm = 11, world } = {}) {
       }
     }
     F.text(g, null, 'VTX AVIATION', w / 2, cy + 3.8, 9, { color: 'rgba(245,184,0,.75)', align: 'center', glow: false });
-  }, { roughness: .4, env: 1.4 }), { z: Z + .001 });
+  }, { roughness: .4, env: 1.4 }), { z: strip.z });
 
   // ---- 2. Secondary Crossing Runway 03/21: 980m length x 23m width (heading 055°, crossing at [235, 0])
   const rwy0321_len = 980, rwy0321_w = 23 + 7;
@@ -497,21 +500,12 @@ export function buildAirfield(scene, { ppm = 11, world } = {}) {
   // RUNWAY LIGHTING & TAXIWAY BLUE EDGE LIGHTS
   // =========================================================================
   const disc = new THREE.CircleGeometry(.22, 10);
-  const add = (x, y, col) => lights.push([x, y, col]);
+  const add = (x, y, col, z = Z + .02) => lights.push([x, y, col, z]);
 
   // Runway 08/26 Edge Lights: white along runway, amber on last 300m of each end
-  for (let x = -710; x <= 3890; x += 25) {
-    const isAmber = x < -410 || x > 3600;
-    const col = isAmber ? '#ffb822' : '#fff3d0';
-    add(x, -15.4, col); add(x, 15.4, col);
-  }
+  for (const [x, y, color] of primary.edgeLights) add(x, y, color, primary.runway.elevation_m + Z + .02);
   // Runway 08/26 Threshold Lights (Green entrance / Red end)
-  for (let y = -14; y <= 14; y += 3.5) {
-    add(-715, y, '#35e060'); // 08 threshold green
-    add(3899, y, '#ff3a2a');  // 26 end red
-    add(-716, y, '#ff3a2a'); // 08 end red (from reverse)
-    add(3898, y, '#35e060'); // 26 threshold green (from reverse)
-  }
+  for (const [x, y, color] of primary.thresholdLights) add(x, y, color, primary.runway.elevation_m + Z + .02);
 
   // Runway 03/21 Edge Lights along rotated axis
   const cos21 = Math.cos(rwy0321_rot), sin21 = Math.sin(rwy0321_rot);
@@ -539,8 +533,8 @@ export function buildAirfield(scene, { ppm = 11, world } = {}) {
   for (let x = apron.x0 + 4; x <= apron.x1 - 4; x += 10) add(x, apron.y0 + .8, '#2588ff');
 
   // PAPI (Precision Approach Path Indicator) 4-box arrays
-  const papiBox = (px, py, ang) => {
-    const bg = new THREE.Group(); bg.position.set(px, py, Z + 0.1);
+  const papiBox = (px, py, ang, elevation) => {
+    const bg = new THREE.Group(); bg.position.set(px, py, elevation + Z + 0.1);
     bg.rotation.z = ang;
     for (let b = 0; b < 4; b++) {
       const bx = (b - 1.5) * 2.2;
@@ -551,13 +545,12 @@ export function buildAirfield(scene, { ppm = 11, world } = {}) {
     }
     group.add(bg);
   };
-  papiBox(-416, -24, 0); // RWY 08 PAPI
-  papiBox(416, 24, Math.PI); // RWY 26 PAPI
+  for (const {x, y, rotation} of primary.papi) papiBox(x, y, rotation, primary.runway.elevation_m);
 
   // Instanced flush lights mesh
   const mat = new THREE.MeshBasicMaterial({ color: '#fff', depthTest: false, depthWrite: false, toneMapped: false });
   const inst = new THREE.InstancedMesh(disc, mat, lights.length), m = new THREE.Matrix4(), col = new THREE.Color();
-  lights.forEach(([x, y, c], i) => { m.makeTranslation(x, y, Z + .02); inst.setMatrixAt(i, m); inst.setColorAt(i, col.set(c).multiplyScalar(2.2)); });
+  lights.forEach(([x, y, c, z = Z + .02], i) => { m.makeTranslation(x, y, z); inst.setMatrixAt(i, m); inst.setColorAt(i, col.set(c).multiplyScalar(2.2)); });
   inst.renderOrder = -1; group.add(inst);
 
   // ---- 3D Illuminated Windsock

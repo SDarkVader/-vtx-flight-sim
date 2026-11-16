@@ -30,6 +30,8 @@ def validate_phantom(world, point, variant='phantom', heading_rad=0.0):
     out = dict(ok=False, variant=variant, footprint=fp)
     if max(abs(x), abs(y)) > world.half - 8:
         out['reason'] = 'Outside the surveyed terrain support boundary'; return out
+    if hasattr(world,'harbour') and world.harbour_overlaps(x,y,fp['swept_radius_m']):
+        out['reason'] = 'Harbour water overlaps the aircraft footprint'; return out
     w = world.water
     if abs(x - w['x']) < w['half_x'] + 4 and abs(y - w['y']) < w['half_y'] + 4:
         out['reason'] = 'Water: no flotation or support model'; return out

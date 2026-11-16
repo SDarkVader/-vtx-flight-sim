@@ -8,3 +8,11 @@ export function physicalCameraTarget(truth) {
   const origin = truth?.body_poses?.airframe?.position;
   return origin ? [origin[0], origin[1], origin[2] + 1.5] : null;
 }
+
+// Clearance uses the authoritative aircraft pose, without a camera-height offset.
+export function physicalAircraftPosition(truth){
+ for(const position of [truth?.body_poses?.airframe?.position,truth?.mass?.cg_world_m]){
+  if(Array.isArray(position)&&position.length===3&&position.every(Number.isFinite))return [...position];
+ }
+ return null;
+}

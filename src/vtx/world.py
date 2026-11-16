@@ -9,7 +9,7 @@ from .mission_selection import MapPoint, SurfaceDecision
 class TestWorld:
     __test__ = False
     id = 'stage1-extended-airfield-recovery'
-    version = '4'
+    version = '6'
     environment_key = 'airport'
     label = 'Main Airport'
     half = 4000.
@@ -23,10 +23,13 @@ class TestWorld:
         edge=np.clip((np.maximum(abs(x),abs(y))-220)/240,0,1)
         edge=edge*edge*(3-2*edge)
         self.heights = edge*(22+14*np.sin(x/81)**2+21*np.cos(y/107)**2)
-        # The east/west takeoff strip continues past the former 500 m
-        # heightfield boundary. Blend smoothly into the existing hills at
-        # its sides; the same samples drive collision and rendering.
-        shoulder = np.clip((np.abs(y) - 30.) / 40., 0., 1.)
+        self.runway = dict(id='08/26', x0=-3900., x1=3900., yc=0., width=30.,
+                           shoulder_width=4., elevation_m=0., default_start=[-700., 0.])
+        self.approach_corridor = dict(flat_half_width_m=500., terrain_blend_end_m=900.)
+        # Keep an open, level area beside the entire runway for the return
+        # circuit and final approach. Retain the original hills farther out;
+        # collision, map and terrain rendering all use these same samples.
+        shoulder = np.clip((np.abs(y) - 500.) / 400., 0., 1.)
         shoulder = shoulder * shoulder * (3. - 2. * shoulder)
         self.heights *= shoulder
         self.obstacles = [
@@ -50,6 +53,20 @@ class TestWorld:
             height=float(rng.uniform(5,13));radius=float(rng.uniform(.7,1.6))
             self.obstacles.append(dict(id=f'tree-{i}',kind='cylinder',center=[float(cx),float(cy),height/2],half=[radius,radius,height/2],color='#536a55',landable=False))
         self.water=dict(x=-265.,y=30.,half_x=28.,half_y=80.)
+        from . import airport_harbour
+        from copy import deepcopy
+        self.harbour = deepcopy(airport_harbour.survey())
+        airport_harbour.carve_basin(self)
+
+    def harbour_water_mask(self, x, y):
+        from .airport_harbour import water_mask
+        return water_mask(x,y) if hasattr(self,'harbour') else np.zeros(np.broadcast(x,y).shape,dtype=bool)
+
+    def harbour_overlaps(self, x, y, radius):
+        if not hasattr(self,'harbour'):
+            return False
+        from .airport_harbour import footprint_over_water
+        return footprint_over_water(self,x,y,radius)
 
     def terrain_z(self,x,y):
         """Exact piecewise planar interpolation of the same heightfield samples."""
@@ -71,6 +88,8 @@ class TestWorld:
     def validate(self,point:MapPoint,purpose:str) -> SurfaceDecision:
         x,y=point.x_m,point.y_m
         if max(abs(x),abs(y))>self.half-8:return SurfaceDecision(False,'Outside the surveyed terrain support boundary')
+        if self.harbour_overlaps(x,y,4.1):
+            return SurfaceDecision(False,'Harbour water overlaps the aircraft footprint')
         w=self.water
         if abs(x-w['x'])<w['half_x']+4 or abs(y-w['y'])<w['half_y']+4:
             if abs(x-w['x'])<w['half_x']+4 and abs(y-w['y'])<w['half_y']+4:
@@ -94,12 +113,19 @@ class TestWorld:
         return SurfaceDecision(True,'Six-foot support, swept footprint and local vertical approach column are clear',z)
 
     def public(self):
-        return dict(id=self.id,version=self.version,environment=self.environment_key,
+        value = dict(id=self.id,version=self.version,environment=self.environment_key,
                     label=self.label,seed=self.seed,half_m=self.half,
                     default_departure=list(self.default_departure),
                     default_destination=list(self.default_destination),
                     heights_m=self.heights.tolist(),obstacles=self.obstacles,water=self.water,
                     scale_m=100,validation='Local support and vertical approach only; pilot must assess the route')
+        if hasattr(self, 'runway'):
+            value['runway'] = dict(self.runway, default_start=list(self.runway['default_start']))
+            value['approach_corridor'] = dict(self.approach_corridor)
+        if hasattr(self, 'harbour'):
+            from copy import deepcopy
+            value['harbour'] = deepcopy(self.harbour)
+        return value
 
 
 class SandboxWorld(TestWorld):
@@ -147,9 +173,17 @@ class SandboxWorld(TestWorld):
         self.water = dict(x=-265., y=140., half_x=28., half_y=80.)
 
 
+def _historical_r6_valley(seed=41031):
+    # Deferred import avoids a cycle: the historical world shares TestWorld's
+    # interpolation and validation methods but has its own recovered geometry.
+    from .r6_historical_valley import R6HistoricalValley
+    return R6HistoricalValley(seed=seed)
+
+
 ENVIRONMENTS = {
     'airport': TestWorld,
     'sandbox': SandboxWorld,
+    'r6-valley-20261103': _historical_r6_valley,
 }
 
 ENVIRONMENT_ALIASES = {
@@ -161,6 +195,7 @@ ENVIRONMENT_ALIASES = {
     'test-sandbox': 'sandbox',
     'test_sandbox': 'sandbox',
     'stage1-valley': 'sandbox',
+    'r6-valley-20261103': 'r6-valley-20261103',
 }
 
 

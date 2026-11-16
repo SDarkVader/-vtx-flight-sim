@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "integrated_runtime_sha256": "8cb087e6337fa80a373e50561dc817cf7468d43bf52341f600d1368b47cdcbe3",
+  "text_dependencies_sha256_lf": {
+    "evidence/phantom/a10_handover.json": "50b3068409ce2040ecf798cac148d72bcd561388ce265d7acb281ff1aea105ec",
+    "evidence/phantom/phantom_geometry.json": "a9c7f9805a307350639267fd5411318d0070b8a055cfa903a0ebf9655746f24a"
+  },
+  "revisions": {
+    "phantom-a10c-runway-20261112": {
+      "name": "Phantom A10-C · runway 12 Nov",
+      "status": "Integrated test candidate derived from flown revision; promotion pending",
+      "base_variant": "phantom-a10c",
+      "parent_commit": "b38d5f1b10c2869e603f948f8abd9d1f0411c326",
+      "parent_runtime_sha256": "26ec2aa2c66fed5670457000196a25dcb435976f99bdf47f957923f717d84171",
+      "config_sha256": "2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f",
+      "parameter_file_sha256": "3955457a00f9b3eadea50c4d919730099202a36d2063130e95261b466067ee3b",
+      "render_asset": "/assets/phantom-a10b-visual.glb",
+      "render_asset_sha256": "45364301f2950ca57e5b34ac73d29b0abe11471dd82f0fe0e5068da70418a93e",
+      "boundary_floor": "none",
+      "initial_stability_mode": "rate_damping",
+      "nose_strut": "deploy_with_wing_in_road_stance",
+      "evidence": [
+        {
+          "run_id": "20261112T132734-215fcf",
+          "environment": "airport",
+          "summary": "Fans-off runway takeoff; later collision"
+        },
+        {
+          "run_id": "20261112T135625-df0959",
+          "environment": "sandbox",
+          "summary": "Fans-off runway takeoff; attempt ended"
+        }
+      ],
+      "limitations": "Historical environment collision geometry has no boundary floor; B visual retained with an explicitly identified measured-suspension schematic; structural rod/mount geometry is not modelled.",
+      "suspension_schematic": {
+        "schema": 1,
+        "asset": "/assets/phantom-a10c-suspension-schematic.glb",
+        "sha256": "c571a3bcbcebd67651c5f202e566a9762460cc7819da20feb3f99de1e08466e5",
+        "label": "Measured suspension schematic; presentation only"
+      }
+    },
+    "phantom-a10c-vtol-20261112": {
+      "name": "Phantom A10-C · VTOL 12 Nov",
+      "status": "Integrated test candidate derived from flown revision; promotion pending",
+      "base_variant": "phantom-a10c",
+      "parent_commit": "eb855817be9a1318e1482dd3cd6acf677e18e865",
+      "parent_runtime_sha256": "3b30e763040d12788f84754b65498fbdd8c630eed10d8d1e7f3d8e9c69b03d8b",
+      "config_sha256": "2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f",
+      "parameter_file_sha256": "3955457a00f9b3eadea50c4d919730099202a36d2063130e95261b466067ee3b",
+      "render_asset": "/assets/phantom-a10b-visual.glb",
+      "render_asset_sha256": "45364301f2950ca57e5b34ac73d29b0abe11471dd82f0fe0e5068da70418a93e",
+      "boundary_floor": "sandbox_only",
+      "initial_stability_mode": "rate_damping",
+      "nose_strut": "deploy_with_wing_in_road_stance",
+      "evidence": [
+        {
+          "run_id": "20261112T204732-17cc37",
+          "environment": "airport",
+          "summary": "Vertical takeoff and sustained flight; later collision"
+        },
+        {
+          "run_id": "20261112T211016-e9d0ab",
+          "environment": "airport",
+          "summary": "Vertical takeoff and sustained flight; later collision"
+        }
+      ],
+      "limitations": "Historical environment has a boundary floor only in the sandbox; B visual retained with an explicitly identified measured-suspension schematic; structural rod/mount geometry is not modelled.",
+      "suspension_schematic": {
+        "schema": 1,
+        "asset": "/assets/phantom-a10c-suspension-schematic.glb",
+        "sha256": "c571a3bcbcebd67651c5f202e566a9762460cc7819da20feb3f99de1e08466e5",
+        "label": "Measured suspension schematic; presentation only"
+      }
+    }
+  }
+}

@@ -12,16 +12,16 @@ from tools.phantom import phantom_persistent_pilot as bridge
 def test_unified_port_8765_guard(tmp_path, monkeypatch, variant, authority, expected_actions):
     controls = tmp_path / "controls.json"
     controls.write_text(json.dumps({
-        "armed": True, "arm_run_id": "test-run", "serial": 5,
+        "armed": True, "observation_id": 42, "arm_run_id": "test-run", "serial": 5,
         "reason": "Explicitly armed test command",
         "command": {"engine": 0.1, "collective": 0.0},
     }), encoding="utf-8")
     actions = []
     def fake_call(path, payload=None):
-        if path == "/api/view":
+        if path == "/api/pilot/status":
             return {"run_id": "test-run", "active": True, "paused": False,
                     "authority": authority,
-                    "observation": {"configuration": {"airframe_variant": variant}}}
+                    "airframe_variant": variant}
         if path == "/api/observe":
             return {"observation_id": 42, "t_s": 4.2}
         if path == "/api/action":
@@ -44,14 +44,14 @@ def test_unified_health_read_only(monkeypatch, capsys):
         seen.append(path)
         assert payload is None
         return {"active": True, "authority": "manual",
-                "observation": {"configuration": {"airframe_variant": "phantom-fx"}}}
+                "airframe_variant": "phantom-fx"}
     monkeypatch.setattr(bridge, "URL", "http://127.0.0.1:8765")
     monkeypatch.setattr(bridge, "call", fake_call)
     monkeypatch.setattr(sys, "argv", ["phantom_persistent_pilot", "--health"])
     bridge.main()
     result = json.loads(capsys.readouterr().out)
     assert result["phantom_bridge_compatible"] is True
-    assert seen == ["/api/view"]
+    assert seen == ["/api/pilot/status"]
 
 
 def test_windows_bom_controls(tmp_path, monkeypatch):
@@ -63,9 +63,9 @@ def test_windows_bom_controls(tmp_path, monkeypatch):
         seen.append(path)
         assert payload is None
         return {"run_id": "r1", "active": True, "authority": "manual",
-                "observation": {"configuration": {"airframe_variant": "phantom-fx"}}}
+                "airframe_variant": "phantom-fx"}
     monkeypatch.setattr(bridge, "URL", "http://127.0.0.1:8765")
     monkeypatch.setattr(bridge, "call", fake_call)
     monkeypatch.setattr(sys, "argv", ["phantom_persistent_pilot", "--controls", str(controls), "--once"])
     bridge.main()
-    assert seen == ["/api/view"]
+    assert seen == ["/api/pilot/status"]

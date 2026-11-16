@@ -1,7 +1,5 @@
 """Instrument-driven experimental VTX waypoint controller. No prerecorded flight path."""
-import json, math, time
-from pathlib import Path
-from persistent_pilot import request, BASE
+import math
 
 def clamp(x, lo, hi):
     return max(lo, min(hi, x))
@@ -30,37 +28,6 @@ def command(obs, target):
                 cabin_deg=[0.0,0.0,0.0],cabin_level=True),dist
 
 def main():
-    view=request(BASE,"/api/view")
-    if not view.get("active") or view.get("authority")!="colin":
-        raise SystemExit("No active Colin sortie")
-    run=view["run_id"]
-    print("Controller for",run,"target",view["mission"]["destination"],flush=True)
-    request(BASE,"/api/operator",{"stability_assist":1.0,"experimental_assist_wire":True})
-    request(BASE,"/api/operator",{"paused":False})
-    last=-1
-    while True:
-        view=request(BASE,"/api/view")
-        if view.get("run_id")!=run or not view.get("active") or view.get("authority")!="colin":
-            print("Flight ended or authority changed",flush=True);break
-        if view.get("paused"):
-            print("Operator paused flight",flush=True);break
-        obs=request(BASE,"/api/observe")
-        if obs["observation_id"]==last:
-            time.sleep(0.3);continue
-        last=obs["observation_id"]
-        attitude=obs["attitude_xyz_deg"]
-        rates=obs["gyro_world_deg_s"]
-        if max(abs(x) for x in attitude[:2])>12 or max(abs(x) for x in rates)>15 or "IMPACT" in obs["warning_lamps"]:
-            request(BASE,"/api/operator",{"paused":True})
-            print("Flight paused on attitude/rate/impact guard",attitude,rates,flush=True);break
-        target=view["mission"]["destination"]
-        cmd,dist=command(obs,target)
-        request(BASE,"/api/action",{**cmd,"authority":"colin",
-          "observation_id":obs["observation_id"],
-          "reason":"Closed-loop climb and waypoint guidance from live instruments"})
-        if last%20==0:
-            print("t",obs["t_s"],"clearance",obs["radar_clearance_m"],
-                  "rpm",obs["rotor_rpm"],"distance",round(dist,1),flush=True)
-        time.sleep(0.35)
+    raise SystemExit('This prewritten waypoint navigator is offline only. Use live telemetry and individual learned pilot commands in the game.')
 if __name__=="__main__":
     main()

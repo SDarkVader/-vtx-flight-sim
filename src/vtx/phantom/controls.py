@@ -6,8 +6,9 @@ yaw +1 = nose right; arrays are in physical order FL, FR, RL, RR / left, right (
 
 Stability modes (disclosed, bounded, logged separately from the pilot):
   off            - stick = normalised differential moment demand
-  rate_damping   - off + rate damping on sensed body rates (default)
-  attitude       - stick = bank/pitch command, pedal = yaw-rate command; PD attitude loops
+  rate_damping   - off + rate damping on sensed body rates
+  attitude       - stick = bank/pitch command, pedal = yaw-rate command; PD attitude loops (default: both the
+                   vertical and the runway take-off hold in it; a vertical take-off in rate_damping flips)
   attitude_vs    - attitude + vertical-speed command/hold: the pilot sets climb rate, the FCC
                    moves collective around a mass-based trim estimate within vs_authority,
                    using a LEAKY integrator so the mode can never act as an altitude hold.
@@ -92,7 +93,7 @@ COMMAND_FIELDS = ('engine', 'collective', 'vertical_speed_m_s', 'pitch', 'roll',
 
 
 def default_command(start='vtol'):
-    return dict(engine=1.0, collective=0.0, vertical_speed_m_s=0.0, pitch=0.0, roll=0.0, yaw=0.0, stability_mode='rate_damping',
+    return dict(engine=1.0, collective=0.0, vertical_speed_m_s=0.0, pitch=0.0, roll=0.0, yaw=0.0, stability_mode='attitude',
                 pod_tilt_deg=[90.0] * 4 if start == 'vtol' else [0.0] * 4, flap_deg=[0.0, 0.0], aileron_trim_deg=[0.0, 0.0],
                 canard_pitch_deg=[0.0, 0.0], canard_fold='folded', booster_throttle=[0.0, 0.0], wheel_drive=[0.0] * 4, brake=[1.0] * 4,
                 leg_extension_m=[0.52] * 4 if start == 'vtol' else [0.0] * 4, wing='hold')

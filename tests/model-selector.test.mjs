@@ -10,7 +10,8 @@ const airframe = element('r6');
 airframe.options = [{value:'r6', textContent:'R6 · Argon'}, {value:'phantom-a10b', textContent:'Phantom A10-B · current'}];
 Object.defineProperty(airframe, 'selectedOptions', {get() { return airframe.options.filter(item => item.value === airframe.value); }});
 const items = {airframe, 'phantom-start': element('road'), validation: element(), start: element(),
-  models: element(), dep: element('0,0')};
+  models: element(), dep: element('0,0'), 'aircraft-evidence': element(),
+  'r6-pilot-record': element()};
 const listeners = {};
 globalThis.document = {documentElement: {dataset:{}}, getElementById: id => items[id],
   addEventListener(name, fn) { listeners[name] = fn; }};
@@ -27,7 +28,9 @@ globalThis.fetch = async (url, options) => {
   }
   throw Error('Unexpected endpoint ' + url);
 };
-const source=await readFile(new URL('../public/model-selector.js',import.meta.url),'utf8');
+const selectionUrl = new URL('../public/aircraft-selection.js', import.meta.url).href;
+const source=(await readFile(new URL('../public/model-selector.js',import.meta.url),'utf8'))
+  .replace("from './aircraft-selection.js?v=1'", `from '${selectionUrl}'`);
 await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 await new Promise(resolve => setTimeout(resolve,0));
 assert.equal(airframe.value, 'r6');

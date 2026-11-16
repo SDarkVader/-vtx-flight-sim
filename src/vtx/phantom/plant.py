@@ -8,12 +8,13 @@ come from the multibody dynamics. Aero/thrust forces enter through xfrc_applied 
 No pose, velocity or force is ever written to the vehicle except through these physical paths.
 """
 from __future__ import annotations
-import gzip, hashlib, io, json, math
+import base64, gzip, hashlib, io, json, math, sys, zlib
 import xml.etree.ElementTree as ET
 import mujoco as mj
 import numpy as np
 from ..aircraft import DT
 from .params import Params, ROOT, load_a10b_characteristics
+from .flight_revisions import REGISTRY_PATH, flight_revision
 from .ledger import PhantomLedger
 from .geometry import PODS, SIDE, FRONT, WING_SIDES, WING_SIGN, PINS
 from .propulsion import DuctedFan
@@ -24,6 +25,22 @@ from .controls import FlightControl, default_command
 AIRBORNE_DEBOUNCE_S = 0.25   # continuous no-support time before the plant counts itself airborne
 VEH = dict(contype='2', conaffinity='1', group='3')
 WING_STATES = ('stowed', 'hatch_opening', 'sliding_out', 'pinning', 'locked', 'unpinning', 'sliding_in', 'hatch_closing')
+CHECKPOINT_DERIVED_FIELDS = ('xpos', 'xquat', 'xmat', 'xipos', 'ximat', 'xanchor', 'xaxis', 'cdof', 'cdof_dot',
+                             'geom_xpos', 'geom_xmat', 'site_xpos', 'site_xmat', 'subtree_com', 'cvel', 'actuator_force',
+                             'actuator_velocity')
+
+
+def checkpoint_json(value):
+    """Copy evolving NumPy-backed state into independent JSON-safe values."""
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, dict):
+        return {key: checkpoint_json(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [checkpoint_json(item) for item in value]
+    return value
 
 
 def f3(v):
@@ -57,7 +74,7 @@ def suspension_design(P, L, inert):
         F = M * g * (front if FRONT[k] else 1 - front) / 2 - m_u * g          # static sprung load at this corner
         ms = F / g; w = 2 * math.pi * f
         kk = ms * w * w; c = 2 * zeta * math.sqrt(kk * ms)
-        lift = 0.0   # built level; PhantomAircraft.nose_strut_update extends the strut at run time
+        lift = 0.0   # fixed road suspension; wing deployment must not change ride height
         lo, hi = P['suspension.travel_m']
         out[k] = dict(stiffness_n_m=kk, damping_ns_m=c, preload_n=F, springref_m=-F / kk - lift, unsprung_kg=m_u, sprung_kg=ms,
                       travel_m=[lo - lift, hi - lift], ride_offset_m=-lift)
@@ -91,6 +108,12 @@ def build_xml(L: PhantomLedger, world):
         ET.SubElement(asset, 'mesh', name=f'hull_{i}', vertex=f3(pc['vertices']))
     wb = ET.SubElement(x, 'worldbody')
     ET.SubElement(wb, 'geom', name='terrain', type='hfield', hfield='terrain', contype='1', conaffinity='2', group='0')
+    revision = flight_revision(P.requested_variant)
+    if revision is None:
+        # The current aircraft retains the later world-edge floor.
+        ET.SubElement(wb, 'geom', name='boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
+    elif revision['boundary_floor'] == 'sandbox_only' and getattr(world, 'environment_key', None) == 'sandbox':
+        ET.SubElement(wb, 'geom', name='sandbox_boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
     for o in world.obstacles:
         a = dict(name=o['id'], type=o['kind'], pos=f3(o['center']), contype='1', conaffinity='2', group='0')
         a['size'] = f3(o['half']) if o['kind'] == 'box' else f3([o['half'][0], o['half'][2]])
@@ -214,6 +237,7 @@ class PhantomAircraft:
     def __init__(self, world, variant='phantom', fuel_kg=None, occupants=None, start_configuration='vtol', engines_running=True,
                  buffer_soc=None, wind=None, overrides=None, load_state=None):
         self.world = world
+        self.stability_assist = 0.0
         P = self.P = Params(variant, overrides)
         if load_state:
             spec = P.tree['load_states'][load_state]
@@ -240,6 +264,9 @@ class PhantomAircraft:
         self.aero = SurfaceAero(P)
         self.fcc = FlightControl(P, self.fan, 0)
         self.fcc.cmd = default_command(start_configuration)
+        revision = flight_revision(variant)
+        if revision:
+            self.fcc.cmd['stability_mode'] = revision['initial_stability_mode']
         if not engines_running:
             self.fcc.cmd['engine'] = 0.0
         cap = P['fuel.tank_capacity_kg']
@@ -250,6 +277,7 @@ class PhantomAircraft:
         self.wind = np.array(wind if wind is not None else P['atmosphere.wind_world_m_s'], float)
         self.start_configuration = start_configuration
         self.targets = {}; self.wing_state = {s: 'stowed' for s in WING_SIDES}; self.wing_timer = {s: 0.0 for s in WING_SIDES}
+        self.flap_interlock = None
         self.faults = []; self.events = []; self.flags = set(); self.crashed = False; self.max_alt = 0.0; self.max_impact_n = 0.0
         self.step_count = 0; self.last_mass_update = 0.0
         self.fan_omega_cmd = [0.0] * 4; self.fan_state = [{} for _ in PODS]; self.booster_state = [{}, {}]
@@ -260,7 +288,8 @@ class PhantomAircraft:
         self.p6 = P['proposals.p6_drs_stabilator'] > 0.5
         self.stab_te_up = math.radians(P['proposals.p6_stab_rest_te_up_deg']) if self.p6 else 0.0
         self.jet = turbine_boosters(P)
-        self.nose_lift = 0.0; self.nose_lift_max = float(P.get('suspension.nose_lift_m', 0.0))   # take-off stance strut extension (m)
+        self.nose_lift = 0.0
+        self.nose_lift_max = float(P.get('suspension.nose_lift_m', 0.0))
         self.eff = P.get('effectors.enabled', 0.0) > 0.5          # control_effectors overlay: rudders, booster TVC, steering
         self.rudder = 0.0; self.tvc = [0.0, 0.0]                   # rad: rudder (+ = side force +y); TVC pitch (+ = thrust up), yaw (+ = thrust +y)
         self.jet_spool = [0.0, 0.0]
@@ -269,12 +298,19 @@ class PhantomAircraft:
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
         self.physics_data = load_a10b_characteristics() if variant == 'phantom-a10b' else None
-        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=('/assets/phantom-a10b-visual.glb' if variant in ('phantom-a10b', 'phantom-a10c') else ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10' else f'/assets/phantom-{P.cassette_revision.lower()}.glb')),
+        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=('/assets/phantom-a10b-visual.glb' if variant in ('phantom-a10b', 'phantom-a10c') or revision else ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10' else f'/assets/phantom-{P.cassette_revision.lower()}.glb')),
                                model_xml_sha256=hashlib.sha256(self.xml.encode()).hexdigest(), parameter_file_sha256=P.file_sha256,
                                config_sha256=P.config_sha256, wing_cassette_revision=P.tree['geometry_sources']['wing_cassette_revision'],
                                physics_characteristics_uri='/evidence/phantom/a10b_characteristics.json' if variant == 'phantom-a10b' else None,
                                physics_model_doc_uri='/docs/phantom/PHANTOM_A10B_MODEL.md' if variant == 'phantom-a10b' else None,
                                ledger_mass_kg=self.mass_properties()['mass_kg'] if False else None)
+        if revision:
+            self.provenance['flight_revision'] = dict(parent_commit=revision['parent_commit'],
+                parent_runtime_sha256=revision['parent_runtime_sha256'], evidence=revision['evidence'],
+                status=revision['status'], limitations=revision['limitations'],
+                registry_sha256=hashlib.sha256(REGISTRY_PATH.read_bytes()).hexdigest())
+            if revision.get('suspension_schematic'):
+                self.provenance['flight_revision']['suspension_schematic'] = dict(revision['suspension_schematic'])
         self.engine_power_limit_w = P['generators.count'] * P['generators.power_each_w']
         self.reference_rpm = None; self.gear_variant = 'phantom-legs-oleo'
         self.set_configuration(start_configuration)
@@ -488,9 +524,13 @@ class PhantomAircraft:
         hl = P.handover['control_limits']
         v_air = float(np.linalg.norm(d.qvel[:3] - self.wind)); qdyn = 0.5 * P['atmosphere.density_kg_m3'] * v_air ** 2
         self.wing_sequencer(dt, qdyn)
+        flap_reasons = []
         for j, s in enumerate(WING_SIDES):
             locked = self.wing_locked(s)
             flap = c['flap_deg'][j] if locked and v_air <= hl['flap']['max_speed_m_s'] else 0.0
+            flap_reasons.append(None if abs(c['flap_deg'][j]) < 1e-9 else
+                                'wing_unlocked' if not locked else
+                                'airspeed_limit' if v_air > hl['flap']['max_speed_m_s'] else None)
             ail = al['aileron_deg'][j] if locked else 0.0
             self.ramp(f'flap_{s}', math.radians(flap), math.radians(hl['flap']['rate_deg_s']), dt)
             self.ramp(f'aileron_{s}', math.radians(ail), math.radians(hl['aileron']['rate_deg_s']), dt)
@@ -499,6 +539,8 @@ class PhantomAircraft:
             can_ok = abs(self.joint(f'canard_{s}_fold')[0]) < math.radians(5)
             self.ramp(f'canard_{s}', math.radians(al['canard_deg'][j]) if can_ok else 0.0,
                       math.radians(P.get('effectors.canard_rate_deg_s', hl['canard_pitch']['rate_deg_s'])), dt)
+        self.flap_interlock = dict(t_s=float(d.time), airspeed_m_s=v_air,
+                                   max_speed_m_s=hl['flap']['max_speed_m_s'], reasons=flap_reasons)
         if self.p6:
             rest = P['proposals.p6_stab_rest_te_up_deg']; lo, hi = P['proposals.p6_stab_travel_deg']
             dem = float((self.fcc.last or {}).get('moment_demand', [0, 0, 0])[1])
@@ -592,12 +634,13 @@ class PhantomAircraft:
 
     # ------------------------------------------------------------ per-step forces
     def nose_strut_update(self, dt):
-        """Take-off stance overlay: each front wheel's spring seat moves down on a rate-limited strut actuator, raising
-        the nose. Extended while the wings are out in road stance, retracted otherwise. It is the suspension joint's own
-        spring reference and travel that move, so the load path stays spring, damper and tyre."""
+        """Use the selected revision's recorded take-off-stance policy."""
         m = self.model; P = self.P
         road = all(abs(self.joint(f'pod_{k}')[0]) < math.radians(10) for k in PODS)
-        want = self.nose_lift_max if road and self.wing_state['left'] != 'stowed' else 0.0
+        revision = flight_revision(self.variant)
+        speed = abs(float(self.vel_body()[0]))
+        ready = road and self.wing_state['left'] != 'stowed'
+        want = self.nose_lift_max if ready and (revision is not None or speed >= 75.0) else 0.0
         step = P.get('suspension.nose_lift_rate_m_s', 0.05) * dt
         self.nose_lift += float(np.clip(want - self.nose_lift, -step, step))
         lo, hi = P['suspension.travel_m']
@@ -701,9 +744,9 @@ class PhantomAircraft:
         return v6[3:] + np.cross(v6[:3], p - self.data.xpos[b])
 
     # ------------------------------------------------------------ contacts
-    def check_contacts(self):
+    def contact_samples(self):
         d, m = self.data, self.model
-        sup = set(); f6 = np.zeros(6); hard = 0.0; sup_force = 0.0
+        samples = []; f6 = np.zeros(6)
         for i in range(d.ncon):
             con = d.contact[i]
             g1, g2 = con.geom1, con.geom2
@@ -711,14 +754,28 @@ class PhantomAircraft:
             if veh is None:
                 continue
             mj.mj_contactForce(m, d, i, f6)
-            fn = abs(f6[0]); name = m.geom(veh).name
+            other = g2 if veh == g1 else g1
+            samples.append(dict(vehicle_geom=m.geom(veh).name, other_geom=m.geom(other).name,
+                                normal_force_n=float(abs(f6[0])),
+                                position_world_m=np.asarray(con.pos).tolist(), separation_m=float(con.dist)))
+        return samples
+
+    def check_contacts(self):
+        d = self.data
+        sup = set(); hard = 0.0; hard_contact = None; sup_force = 0.0
+        samples = getattr(self, '_restored_contact_samples', None)
+        if samples is None:
+            samples = self.contact_samples()
+        self._restored_contact_samples = None
+        for sample in samples:
+            fn = sample['normal_force_n']; name = sample['vehicle_geom']
             self.max_impact_n = max(self.max_impact_n, fn)
             if name.startswith(('foot_', 'tyre_')):
                 sup.add(name); sup_force += fn
             else:
-                hard = max(hard, fn)
+                if fn > hard:hard = fn;hard_contact = sample
         if hard > self.P['contact.crash_force_n'] and not self.crashed:
-            self.crashed = True; self.events.append(dict(event='collision', t_s=float(d.time), force_n=hard))
+            self.crashed = True; self.events.append(dict(event='collision', t_s=float(d.time), force_n=hard, contact=hard_contact))
         # Debounced air/ground state: a bounce shorter than AIRBORNE_DEBOUNCE_S is not a new
         # flight phase, so one touchdown no longer logs several events (flight campaign D-14).
         if sup:
@@ -819,15 +876,20 @@ class PhantomAircraft:
         poses['cabin'] = dict(position=np.round(d.xpos[self.bids['airframe']] + Rb @ seat, 5).tolist(), quaternion_wxyz=poses['airframe']['quaternion_wxyz'])
         return dict(t_s=float(d.time), variant=self.variant, config_sha256=self.P.config_sha256, body_poses=poses, provenance=self.provenance, events=self.events[-20:],
                     phantom=dict(joints=joints, fan_rpm=[abs(self.joint(f'pod_{k}_fan')[1]) * 60 / (2 * math.pi) for k in PODS],
+                                 wheel_collision_geometry={k: dict(radius_m=float(self.model.geom(f'tyre_{k}').size[0]),
+                                                                     half_width_m=float(self.model.geom(f'tyre_{k}').size[1]))
+                                                           for k in PODS},
                                  wheel_rad_s=[self.joint(f'pod_{k}_wheel')[1] for k in PODS], wing_state=dict(self.wing_state),
                                  # render-only context for the booster glow / vectoring cowl (no effect on physics)
                                  booster_thrust_max_n=float(self.jet['t0_station_n'] if self.jet else self.booster.thrust_max),
                                  fan_thrust_max_n=float(self.fan.thrust_max),
                                  booster_engine=(self.jet['kind'] if self.jet else 'edf'),
                                  drs_deg=(math.degrees(self.stab_te_up) if self.p6 else None),
+                                 nose_lift_m=float(self.nose_lift),
+                                 flap_interlock=self.flap_interlock,
                                  booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg'] + math.degrees(self.tvc[0])),
                                  **({'booster_vector_yaw_deg': math.degrees(self.tvc[1]), 'rudder_deg': math.degrees(self.rudder),
-                                     'nose_lift_m': float(self.nose_lift), 'steer_deg': [math.degrees(self.joint(f'pod_{k}_steer')[0]) if f'pod_{k}_steer' in self.jid else 0.0 for k in PODS]} if self.eff else {}),
+                                     'steer_deg': [math.degrees(self.joint(f'pod_{k}_steer')[0]) if f'pod_{k}_steer' in self.jid else 0.0 for k in PODS]} if self.eff else {}),
                                  **({'physics_data': self.physics_data} if self.physics_data else {}),
                                  fan_rpm_max=float(self.fan.omega_max * 60 / (2 * math.pi))),
                     mass=mp, propulsors=[dict(pod=k, cmd_n=(self.alloc.get('thrust') or [0] * 4)[i], **{kk: (float(vv) if not isinstance(vv, bool) else vv) for kk, vv in self.fan_state[i].items()},
@@ -836,7 +898,8 @@ class PhantomAircraft:
                     aero=dict(force_body_n=np.asarray(self.aero_out['force_body']).tolist(), moment_body_nm=np.asarray(self.aero_out['moment_body']).tolist(),
                               surfaces=self.aero_out['surfaces'], hinge_moments=self.aero_out['hinge_moments']),
                     energy=dict(b, totals=self.bus.energy), fcc=self.fcc.last, command=self.fcc.cmd, targets=self.targets,
-                    fuel_kg=self.fuel.tolist(), contact=dict(support=getattr(self, 'support', []), max_contact_force_n=self.max_impact_n),
+                    fuel_kg=self.fuel.tolist(), contact=dict(support=getattr(self, 'support', []), max_contact_force_n=self.max_impact_n,
+                        samples=(self.contact_samples() if getattr(self, '_restored_contact_samples', None) is None else self._restored_contact_samples)),
                     faults=self.faults, flags=sorted(self.flags), crashed=self.crashed,
                     mechanical_energy_j=float(d.energy[0] + d.energy[1]))
 
@@ -866,6 +929,7 @@ class PhantomAircraft:
             leg_extension_m=[round(-self.joint(f'leg_{k}')[0], 3) for k in PODS],
             leg_compression_m=[round(self.joint(f'leg_{k}_oleo')[0], 4) for k in PODS],
             weight_on_wheels=self.support_count() > 0,
+            tyre_contact={k: f'tyre_{k}' in getattr(self, 'support', ()) for k in PODS},  # modelled per-corner ground contacts, FL/FR/RL/RR
             wing_state=dict(self.wing_state), flap_deg=[round(math.degrees(self.joint(f'flap_{s}')[0]), 2) for s in WING_SIDES],
             aileron_deg=[round(math.degrees(self.joint(f'aileron_{s}')[0]), 2) for s in WING_SIDES],
             canard_pitch_deg=[round(math.degrees(self.joint(f'canard_{s}')[0]), 2) for s in WING_SIDES],
@@ -880,24 +944,106 @@ class PhantomAircraft:
             **({'suspension_m': [round(self.joint(f'pod_{k}_susp')[0], 4) for k in PODS]} if 'pod_FL_susp' in self.jid else {}))
 
     def checkpoint_state(self):
-        d = self.data
-        return dict(qpos=d.qpos.tolist(), qvel=d.qvel.tolist(), act=d.act.tolist(), ctrl=d.ctrl.tolist(), qacc_warmstart=d.qacc_warmstart.tolist(), time=float(d.time),
+        d = self.data; m = self.model
+        spec = mj.mjtState.mjSTATE_INTEGRATION
+        integration = np.empty(mj.mj_stateSize(m, spec))
+        mj.mj_getState(m, d, integration, spec)
+        evolving = dict(wing_timer=self.wing_timer, nose_lift=self.nose_lift,
+                        rng_state=self.rng.bit_generator.state, rudder=self.rudder, tvc=self.tvc,
+                        fan_omega_cmd=self.fan_omega_cmd, fan_state=self.fan_state,
+                        booster_state=self.booster_state, motor_torque=self.motor_torque,
+                        booster_torque=self.booster_torque, prop_scale=self.prop_scale,
+                        aero_out=self.aero_out, aero_state=getattr(self, 'aero_state', None), alloc=self.alloc,
+                        fcc_last=self.fcc.last, pti_active=self.fcc.pti.active, pti_t0=self.fcc.pti.t0,
+                        pti_log=self.fcc.pti.log, last_mass_update=self.last_mass_update,
+                        v_prev=getattr(self, 'v_prev', None), accel_est=getattr(self, 'accel_est', None),
+                        no_support_since=self.no_support_since, support=getattr(self, 'support', []),
+                        support_force_n=self.support_force_n, first_contact_sink=self.first_contact_sink,
+                        fan_heights=getattr(self, 'fan_heights', None), peak_time_used=self.peak_time_used,
+                        bus_last=self.bus.last, flap_interlock=self.flap_interlock,
+                        ring_i=self.ring_i, ring_full=self.ring_full,
+                        ring_zlib_b64=base64.b64encode(zlib.compress(self.ring.tobytes(), 1)).decode('ascii'))
+        return checkpoint_json(dict(checkpoint_format=3, integration_spec=int(spec), integration_state=integration,
+                    sensor_calibration=dict(schema=1, radar_ground_reference_m=getattr(self, 'radar_ground_reference_m', None)),
+                    dependency_versions=dict(python='.'.join(map(str, sys.version_info[:3])), numpy=np.__version__, mujoco=mj.__version__),
+                    model_state=dict(body_mass=m.body_mass, body_inertia=m.body_inertia,
+                                     qpos_spring=m.qpos_spring, jnt_range=m.jnt_range,
+                                     dof_frictionloss=m.dof_frictionloss), evolving=evolving,
+                    derived_state={name:getattr(d,name) for name in CHECKPOINT_DERIVED_FIELDS},
+                    contact_samples=(self.contact_samples() if getattr(self, '_restored_contact_samples', None) is None
+                                     else self._restored_contact_samples),
+                    qpos=d.qpos.tolist(), qvel=d.qvel.tolist(), act=d.act.tolist(), ctrl=d.ctrl.tolist(), qacc_warmstart=d.qacc_warmstart.tolist(), time=float(d.time),
                     eq_active=d.eq_active.tolist(), cmd=self.fcc.cmd, vs_int=self.fcc.vs_int, targets=self.targets, wing_state=self.wing_state, fuel=self.fuel.tolist(),
                     bus=self.bus.state(), flags=sorted(self.flags), faults=self.faults, events=self.events[-200:], crashed=self.crashed, max_alt=self.max_alt,
                     max_impact_n=self.max_impact_n, step_count=self.step_count, airborne=self.airborne, spawn_z=getattr(self, 'spawn_z', 0.0),
-                    stab_te_up=self.stab_te_up, jet_spool=list(self.jet_spool))
+                    stab_te_up=self.stab_te_up, jet_spool=list(self.jet_spool)))
 
     def restore_state(self, s):
-        d = self.data
-        for k in ('qpos', 'qvel', 'act', 'ctrl', 'qacc_warmstart'):
-            arr = np.asarray(s[k], float)
-            if arr.shape != getattr(d, k).shape or not np.all(np.isfinite(arr)):
-                raise ValueError('Invalid checkpoint array ' + k)
-            getattr(d, k)[:] = arr
-        d.time = s['time']; d.eq_active[:] = s['eq_active']
+        if s.get('checkpoint_format') == 2:
+            raise ValueError('Phantom checkpoint lacks retained radar sensor calibration; retained for inspection')
+        if s.get('checkpoint_format') != 3:
+            raise ValueError('Phantom checkpoint lacks state required for a verified continuation')
+        calibration = s.get('sensor_calibration')
+        if (not isinstance(calibration, dict) or calibration.get('schema') != 1 or
+                isinstance(calibration.get('schema'), bool) or 'radar_ground_reference_m' not in calibration):
+            raise ValueError('Phantom checkpoint lacks retained radar sensor calibration')
+        radar_reference = calibration['radar_ground_reference_m']
+        if radar_reference is not None and (isinstance(radar_reference, bool) or
+                not isinstance(radar_reference, (int, float)) or not math.isfinite(radar_reference)):
+            raise ValueError('Invalid checkpoint radar sensor calibration')
+        versions = dict(python='.'.join(map(str, sys.version_info[:3])), numpy=np.__version__, mujoco=mj.__version__)
+        if s.get('dependency_versions') != versions:
+            raise ValueError('Checkpoint Python, NumPy or MuJoCo version differs from this runtime')
+        d = self.data; m = self.model
+        spec = mj.mjtState.mjSTATE_INTEGRATION
+        if s.get('integration_spec') != int(spec):
+            raise ValueError('Unsupported MuJoCo integration state')
+        integration = np.asarray(s['integration_state'], dtype=float)
+        if integration.shape != (mj.mj_stateSize(m, spec),) or not np.all(np.isfinite(integration)):
+            raise ValueError('Invalid checkpoint integration state')
+        for name in ('body_mass', 'body_inertia', 'qpos_spring', 'jnt_range', 'dof_frictionloss'):
+            arr = np.asarray(s['model_state'][name], dtype=float)
+            target = getattr(m, name)
+            if arr.shape != target.shape or not np.all(np.isfinite(arr)):
+                raise ValueError('Invalid checkpoint model array ' + name)
+            target[:] = arr
+        scratch = mj.MjData(m)
+        mj.mj_setConst(m, scratch)
+        mj.mj_setState(m, d, integration, spec)
+        warmstart = d.qacc_warmstart.copy()
+        mj.mj_forward(m, d)
+        d.qacc_warmstart[:] = warmstart
+        for name in CHECKPOINT_DERIVED_FIELDS:
+            arr = np.asarray(s['derived_state'][name], dtype=float)
+            target = getattr(d, name)
+            if arr.shape != target.shape or not np.all(np.isfinite(arr)):
+                raise ValueError('Checkpoint derived state cannot be reconstructed: ' + name)
+            target[:] = arr
         self.fcc.cmd = s['cmd']; self.fcc.vs_int = s['vs_int']; self.targets = s['targets']; self.wing_state = s['wing_state']
         self.fuel = np.array(s['fuel']); self.bus.restore(s['bus']); self.flags = set(s['flags']); self.faults = s['faults']; self.events = s['events']
         self.crashed = s['crashed']; self.max_alt = s['max_alt']; self.max_impact_n = s['max_impact_n']; self.step_count = s['step_count']
+        self._restored_contact_samples = s['contact_samples'] if self.step_count % 4 == 0 else None
         self.airborne = s['airborne']; self.spawn_z = s['spawn_z']
+        self.radar_ground_reference_m = radar_reference
         self.stab_te_up = s.get('stab_te_up', self.stab_te_up); self.jet_spool = list(s.get('jet_spool', self.jet_spool))
-        self.apply_fuel_mass(force=True); mj.mj_forward(self.model, d)
+        e = s['evolving']
+        self.wing_timer = dict(e['wing_timer']); self.nose_lift = float(e['nose_lift'])
+        self.rng.bit_generator.state = e['rng_state']; self.rudder = e['rudder']; self.tvc = list(e['tvc'])
+        self.fan_omega_cmd = list(e['fan_omega_cmd']); self.fan_state = e['fan_state']; self.booster_state = e['booster_state']
+        self.motor_torque = np.asarray(e['motor_torque'], dtype=float); self.booster_torque = np.asarray(e['booster_torque'], dtype=float)
+        self.prop_scale = e['prop_scale']; self.aero_out = e['aero_out']; self.aero_state = e['aero_state']; self.alloc = e['alloc']
+        self.fcc.last = e['fcc_last']; self.fcc.pti.active = e['pti_active']; self.fcc.pti.t0 = e['pti_t0']; self.fcc.pti.log = e['pti_log']
+        self.last_mass_update = e['last_mass_update']; self.v_prev = e['v_prev']
+        if e['accel_est'] is not None:self.accel_est = e['accel_est']
+        self.no_support_since = e['no_support_since']; self.support = list(e['support']); self.support_force_n = e['support_force_n']
+        self.first_contact_sink = e['first_contact_sink']; self.peak_time_used = list(e['peak_time_used'])
+        if e['fan_heights'] is not None:self.fan_heights = list(e['fan_heights'])
+        self.bus.last = e['bus_last']; self.flap_interlock = e['flap_interlock']
+        try:
+            ring = np.frombuffer(zlib.decompress(base64.b64decode(e['ring_zlib_b64'], validate=True)), dtype=self.ring.dtype)
+        except (ValueError, zlib.error) as exc:
+            raise ValueError('Invalid checkpoint crash history') from exc
+        if ring.size != self.ring.size or not np.all(np.isfinite(ring)):
+            raise ValueError('Invalid checkpoint crash history')
+        self.ring[:] = ring.reshape(self.ring.shape); self.ring_i = int(e['ring_i']); self.ring_full = bool(e['ring_full'])
+        if not 0 <= self.ring_i < len(self.ring):raise ValueError('Invalid checkpoint crash history position')

@@ -32,7 +32,7 @@ def test_adapter_death_failover_preserves_flight_and_objective(tmp_path, monkeyp
     run=lab.start(Mission(authority='colin'))['run_id']
     objective=asyncio.run(server.set_objective({'text':'Take us to the airport'}))
     def call(base,path,data=None):
-        if path == "/api/view": return lab.view()
+        if path == "/api/pilot/status": return lab.pilot_status()
         if path == "/api/observe": return lab.sensor_observation()
         if path == "/api/pilot/handover": return asyncio.run(server.pilot_handover(data))
         if path == "/api/pilot/failure": return asyncio.run(server.pilot_failure(data))
@@ -62,7 +62,7 @@ def test_disconnect_is_not_provider_failure(tmp_path,monkeypatch):
     down=[False]
     def call(base,path,data=None):
         if down[0]: raise URLError('temporary disconnect')
-        if path == "/api/view": return lab.view()
+        if path == "/api/pilot/status": return lab.pilot_status()
         if path == "/api/observe": return lab.sensor_observation()
         if path == "/api/pilot/handover": return asyncio.run(server.pilot_handover(data))
         if path == "/api/pilot/failure": return asyncio.run(server.pilot_failure(data))
@@ -77,6 +77,7 @@ def test_disconnect_is_not_provider_failure(tmp_path,monkeypatch):
         except URLError: pass
         down[0]=False
         assert sup.tick() and sup.provider.process.pid==pid and sup.epoch==epoch
+        assert len(lab.action_log)==1  # Reconnection at the same simulator tick does not issue a second command.
         assert lab.pilot_owner=='model-a' and lab.fallback_status is None
     finally:
         sup.close();lab.stop('reconnect test complete')
@@ -87,7 +88,7 @@ def test_lost_handover_response_still_reports_child_exit(tmp_path,monkeypatch):
     lab=Laboratory();monkeypatch.setattr(server,'lab',lab)
     run=lab.start(Mission(authority='colin'))['run_id'];lost=[True]
     def call(base,path,data=None):
-        if path == '/api/view': return lab.view()
+        if path == '/api/pilot/status': return lab.pilot_status()
         if path == '/api/pilot/handover':
             result=asyncio.run(server.pilot_handover(data))
             if lost[0]:
@@ -117,7 +118,7 @@ def test_provider_reports_real_connection_failure_and_replacement_takes_over(tmp
     run=lab.start(Mission(authority='colin'))['run_id']
     objective=asyncio.run(server.set_objective({'text':'Hold here'}))
     def call(base,path,data=None):
-        if path == '/api/view': return lab.view()
+        if path == '/api/pilot/status': return lab.pilot_status()
         if path == '/api/observe': return lab.sensor_observation()
         if path == '/api/pilot/handover': return asyncio.run(server.pilot_handover(data))
         if path == '/api/pilot/failure': return asyncio.run(server.pilot_failure(data))

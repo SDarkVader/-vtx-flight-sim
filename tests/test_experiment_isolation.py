@@ -5,7 +5,7 @@ import vtx.live_server as server
 from vtx.experiments import ExperimentRequest
 
 
-def test_experiment_runs_real_physics_and_isolates_live_sortie(tmp_path, monkeypatch):
+def test_explicit_offline_fixture_runs_physics_without_touching_live_sortie(tmp_path, monkeypatch):
     monkeypatch.setenv('VTX_DATA_ROOT', str(tmp_path))
     live = server.Laboratory(data_root=tmp_path)
     monkeypatch.setattr(server, 'lab', live)
@@ -13,7 +13,12 @@ def test_experiment_runs_real_physics_and_isolates_live_sortie(tmp_path, monkeyp
     live.paused = True
     run_id = live.run_id
     qpos = live.aircraft.data.qpos.copy()
-    routes = {(r.path, method): r.endpoint for r in server.app.routes if hasattr(r, 'endpoint') for method in (getattr(r, 'methods', None) or [])}
+    from fastapi import FastAPI
+    from vtx.experiments import install_experiment_routes
+    offline_app=FastAPI()
+    install_experiment_routes(offline_app,lambda:live,server.Laboratory,server.Mission,
+                             server.parse_action,server.DT,offline_test_root=tmp_path)
+    routes = {(r.path, method): r.endpoint for r in offline_app.routes if hasattr(r, 'endpoint') for method in (getattr(r, 'methods', None) or [])}
     async def exercise():
         spec = ExperimentRequest(airframe_variant='phantom-a10b', start_configuration='road',
             duration_s=.3, schedule=[{'at_s': 0, 'action': {'wheel_drive': [.2]*4, 'brake': [0]*4}}])
@@ -132,3 +137,49 @@ def test_experiment_override_validation_preserves_original():
                     {'aero.wing_cd0': float('nan')}, {'proposals.p6_drs_stabilator': 0}):
         with pytest.raises(ValueError):
             build_overrides('phantom-a10b', None, invalid)
+
+
+def test_game_rejects_scheduled_launch_and_keeps_existing_evidence(
+    tmp_path, monkeypatch
+):
+    import json
+    from types import SimpleNamespace
+    import pytest
+    from fastapi import HTTPException
+
+    live = SimpleNamespace(data_root=tmp_path, active=True, run_id="existing-run")
+    monkeypatch.setattr(server, "lab", live)
+    routes = {
+        (r.path, m): r.endpoint
+        for r in server.app.routes
+        if hasattr(r, "endpoint")
+        for m in (getattr(r, "methods", None) or [])
+    }
+
+    async def exercise():
+        for schedule in ([], [{"at_s": 0, "action": {"wheel_drive": [0.2] * 4}}]):
+            with pytest.raises(HTTPException, match="offline only") as error:
+                await routes[("/api/experiments", "POST")](
+                    ExperimentRequest(schedule=schedule)
+                )
+            assert error.value.status_code == 409
+        assert not (tmp_path / "experiments").exists()
+        # Labelled static legacy evidence fixture: no simulation is launched.
+        experiment_id = "a" * 32
+        root = tmp_path / "experiments" / experiment_id
+        root.mkdir(parents=True)
+        request = dict(airframe_variant="phantom-a10b", duration_s=2)
+        state = dict(id=experiment_id, status="completed", progress_s=2.0)
+        (root / "request.json").write_text(json.dumps(request))
+        (root / "status.json").write_text(json.dumps(state))
+        before = {p.name: p.read_bytes() for p in root.iterdir()}
+        history = await routes[("/api/experiments", "GET")]()
+        status = await routes[("/api/experiments/{experiment_id}", "GET")](
+            experiment_id
+        )
+        assert history["experiments"][0]["id"] == experiment_id
+        assert status["status"] == "completed"
+        assert before == {p.name: p.read_bytes() for p in root.iterdir()}
+
+    asyncio.run(exercise())
+    assert live.active and live.run_id == "existing-run"

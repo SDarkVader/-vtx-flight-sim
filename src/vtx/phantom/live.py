@@ -152,7 +152,8 @@ def aircraft_identity(lab):
     cached = getattr(p, '_identity', None)
     if cached is None:
         experimental = bool(getattr(p, 'experimental_overrides', None))
-        cached = p._identity = identity.verify(p, experimental=experimental)
+        from ..live_server import RUNTIME_SOURCE_SHA256
+        cached = p._identity = identity.verify(p, experimental=experimental, runtime_source_sha256=RUNTIME_SOURCE_SHA256)
     return cached
 
 

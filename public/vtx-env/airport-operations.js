@@ -8,17 +8,18 @@ import {DEFAULT_VISUAL_MODEL,vehicleModel} from './vehicle-registry.js';
 
 const AIRCRAFT=[
  {id:'a10-primary',modelId:DEFAULT_VISUAL_MODEL,route:'standard',direction:'left',stand:[-45,-50]},
- {id:'r6-flight',modelId:'r6',route:'holding',direction:'left',runwayId:'03/21',alternateIndex:0,stand:[185,-90]},
- {id:'r6-training',modelId:'r6',route:'training',direction:'right',stand:[0,0]},
- {id:'r6-teardrop',modelId:'r6',route:'teardrop',direction:'left',runwayId:'03/21',alternateIndex:1,stand:[205,-90]},
- {id:'r6-go-around',modelId:'r6',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:[225,-90]}
+ {id:'r6-flight',modelId:'r6',route:'holding',direction:'left',runwayId:'03/21',alternateIndex:0,stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-A').center},
+ {id:'r6-training',modelId:'r6',route:'training',direction:'right',stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-B').center},
+ {id:'r6-teardrop',modelId:'r6',route:'teardrop',direction:'left',runwayId:'03/21',alternateIndex:1,stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-C').center},
+ {id:'r6-go-around',modelId:'r6',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-D').center}
 ];
 const ease=u=>u*u*(3-2*u), clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const collide=(a,b,pad=6)=>a[0]<b[1]+pad&&b[0]<a[1]+pad;
 function taxiSeconds(actor){
  if(actor.runwayId==='03/21')return 12+8+actor.alternateIndex*4;
  const lane=Math.max(12,Math.abs(actor.stand[0]+90)/5);
- const queue=Math.max(8,Math.abs((-25-15*actor.index)+35)/5);
+ const laneY=actor.modelId==='r6'?-27:-35;
+ const queue=Math.max(8,Math.abs((-25-15*actor.index)-laneY)/5);
  return 6+lane+queue+2+8;
 }
 function runwaySchedule(aircraft){
@@ -59,10 +60,11 @@ function sampleAircraft(actor,t,cycle){
  const hold=alternate?[180,-70,stand[2]]:[-90,-25-15*actor.index,stand[2]];
  const runwayStart=actor.route.points[0],runwayEnd=actor.route.points.at(-1),local=((t%cycle)+cycle)%cycle;
  let pose,operation;
- const laneY=-35;
+ // The south-apron Argon joins the existing return lane, clear of tree-5.
+ const laneY=actor.modelId==='r6'?-27:-35;
  const laneStart=[actor.stand[0],laneY,stand[2]],queue=[-90,laneY,stand[2]];
  const laneSeconds=Math.max(12,Math.abs(actor.stand[0]+90)/5);
- const queueSeconds=Math.max(8,Math.abs(hold[1]+35)/5);
+ const queueSeconds=Math.max(8,Math.abs(hold[1]-laneY)/5);
  const taxiStart=departure-(6+laneSeconds+queueSeconds+2+8);
  if(alternate){
   const entry=8+actor.alternateIndex*4,short=[actor.stand[0],-70,stand[2]],start=departure-entry-12;

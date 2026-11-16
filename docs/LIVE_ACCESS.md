@@ -1,5 +1,27 @@
 # Live interface and keyboard controls
 
+## Current local cockpit
+
+The continuity integration uses **http://127.0.0.1:8770/** and one authoritative
+server. Follow the [README launch instructions](../README.md) and read the
+single live project record named by `AGENTS.md` before changing its source,
+data directory or selected aircraft. Do not launch a second cockpit to inspect
+another candidate. Main Aircraft promotion is pending; explicitly select a
+named test candidate in Experiments, or intentionally restore its own saved
+flight.
+
+**Save flight & switch** parks an unfinished flight. **Flight records → Restore
+paused flight** restores a compatible state; takeover and **Resume existing
+mission** are explicit. Starting or retrying while a sortie is active is
+rejected: save or end it first. New mission/retry and resume are different
+operations and retain different evidence. See
+[checkpoint and pilot-station boundaries](PERSISTENT_PILOT_STATION.md).
+
+The following hosted-session notes are historical. Their URLs, ports, expiry
+times and older recovery behavior do not identify the current local runtime.
+
+## Historical hosted session and R6 controls
+
 Live sandbox: https://sb-6iqplfebw 9l 2.vercel.run
 
 The browser and Colin connect to one authoritative Python/MuJoCo process.
@@ -12,6 +34,11 @@ This is an isolated sandbox; no production deployment in that project was edited
 
 Click **Take manual authority** to use the same raw controls as Colin. It copies
 the current actuator settings. Press **C** for cockpit/chase view.
+
+The raw mixes below describe the R6 control path. Use the Phantom-specific
+panel's **Take control**, sliders and deployment buttons for the current
+Phantom candidates; do not assume another airframe's keyboard mix or fuel/drive
+settings apply to Phantom.
 
 | Input | Raw fly-by-wire effect |
 | --- | --- |
@@ -38,16 +65,17 @@ remains in effect until the operator or pilot changes it, authority transfers,
 or the flight test ends. Explicit Pause freezes physics and is logged.
 
 **Retry · manual** and **Retry · Colin** start another attempt from the retained
-departure and destination. Starting a new mission or retrying an active test
-retains its evidence before spawning the next aircraft. The lower
+departure and destination. In the current integration a new mission or retry
+refuses an active test; save or end it explicitly first. The lower
 frame selector chooses the full R4 or experimental R5 variant for a fresh sortie;
 an active aircraft cannot be lightened by changing a menu.
 
 Flight records provide post-flight state inspection. They cannot operate the
 live plant. Camera views and instruments follow solver state, not animations.
 
-For a local, durable run, follow `LIVE_LAB_IMPLEMENTATION.md` and open
-http://localhost:8765. For a hosted pilot client:
+The commands below describe the historical hosted client. For the current
+local run, use the README procedure on port 8770 rather than these old URLs or
+the earlier port-8765 launch recipe.
 
 ```sh
 VTX_LAB_URL=https://sb-6iqplfebw 9l 2.vercel.run python tools/pilot_client.py observe

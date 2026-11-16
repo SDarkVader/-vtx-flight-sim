@@ -1,4 +1,25 @@
-# Running the live laboratory
+# Running the live laboratory — current launch and historical implementation
+
+## Current continuity integration
+
+Use the [README's reviewed local launcher](../README.md) for the single cockpit
+on port **8770**. Read the authoritative record named by `AGENTS.md` before
+changing the source/data directory or resuming a flight. Do not run the legacy
+startup command below alongside an existing simulator.
+
+Select a named candidate explicitly; Main Aircraft promotion remains pending.
+Use **Save flight & switch** and **Flight records → Restore paused flight** for
+supported continuation, then takeover/resume explicitly. See the
+[current checkpoint boundaries](PERSISTENT_PILOT_STATION.md#current-explicit-save-and-switch).
+New mission/retry is a fresh run and is refused while another sortie is active.
+
+The implementation notes below describe the earlier R4/R5 development path and
+its historical defaults. They are not a promotion or launch decision for the
+current R6/Phantom candidates. Control contracts are variant-specific: current
+Phantom manual patches remain held until changed; do not apply R4/R5 collective
+units or lease behavior to that panel.
+
+## Historical manual development startup
 
 From the repository root, Python 3.11 or later:
 

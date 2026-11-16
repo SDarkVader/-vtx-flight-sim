@@ -17,6 +17,7 @@ from ._rotation import Rotation
 from .aero import BladeElementModel, ideal_hover
 from .atmosphere import standard_air_density
 from .world import TestWorld
+from .r6_historical_valley import R6_HISTORICAL_VARIANT, R6_HISTORICAL_ENVIRONMENT
 from .governor import ShaftGovernor
 from .training_assist import assisted_collective
 
@@ -29,6 +30,33 @@ G=9.80665
 CABIN_PASSIVE_DAMPING=80.  # Nm/(rad/s), proposed joint damper; not measured hardware.
 CABIN_LEVEL_RATE_GAIN=1600.  # Nm/(rad/s), proposed inertial-rate feedback.
 CABIN_TARGET_RATE_DEG_S=45.  # commanded joint target slew; motor limits still apply.
+
+# Preserve the original historical XML's shaft axes and cone coefficients.
+# LAPACK/libm can differ in their last bits; current aircraft retain their recipe.
+_RECORDED_SHAFT_AXES = {
+    'shaft1': '1 6.00096648316e-16 0',
+    'shaft2': '-2.66709591794e-16 1 0',
+    'shaft3': '-1 -7.3345141839e-16 -0',
+    'shaft4': '3.4256045266e-15 -1 -0',
+}
+_RECORDED_CONE_COEFFICIENTS = (
+    ('1.0', '0.0'),
+    ('0.9807852804032304', '0.19509032201612825'),
+    ('0.9238795325112867', '0.3826834323650898'),
+    ('0.8314696123025452', '0.5555702330196022'),
+    ('0.7071067811865476', '0.7071067811865476'),
+    ('0.5555702330196023', '0.8314696123025452'),
+    ('0.38268343236508984', '0.9238795325112867'),
+    ('0.19509032201612833', '0.9807852804032304'),
+    ('6.123233995736766e-17', '1.0'),
+    ('-0.1950903220161282', '0.9807852804032304'),
+    ('-0.3826834323650897', '0.9238795325112867'),
+    ('-0.555570233019602', '0.8314696123025453'),
+    ('-0.7071067811865475', '0.7071067811865476'),
+    ('-0.8314696123025453', '0.5555702330196022'),
+    ('-0.9238795325112867', '0.3826834323650899'),
+    ('-0.9807852804032304', '0.1950903220161286'),
+)
 
 
 def _cylinder_inertia(mass,r,h):
@@ -128,7 +156,7 @@ def inertial(parent,info,pivot):
                   fullinertia=fmt([j[0,0],j[1,1],j[2,2],j[0,1],j[0,2],j[1,2]]))
 
 
-def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_fuel_kg=None,variator_package=False):
+def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_fuel_kg=None,variator_package=False,boundary_floor=True,historical_xml=False):
     xml=ET.Element('mujoco',model='VTX-P0-V4A-experimental')
     ET.SubElement(xml,'compiler',angle='radian',autolimits='true',inertiafromgeom='false',fusestatic='false')
     ET.SubElement(xml,'option',timestep=str(DT),gravity=f'0 0 {-G}',integrator='implicit',
@@ -141,6 +169,10 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
     ET.SubElement(asset,'hfield',name='terrain',nrow=str(world.n),ncol=str(world.n),size=f'{world.half} {world.half} 70 2')
     wb=ET.SubElement(xml,'worldbody')
     ET.SubElement(wb,'geom',name='terrain',type='hfield',hfield='terrain',contype='1',conaffinity='2')
+    # Current variants retain the later floor; the named historical candidate
+    # deliberately reproduces the earlier no-floor collision geometry.
+    if boundary_floor:
+        ET.SubElement(wb, 'geom', name='boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
     for o in world.obstacles:
         args=dict(name=o['id'],type=o['kind'],pos=fmt(o['center']),contype='1',conaffinity='2')
         args['size']=fmt(o['half']) if o['kind']=='box' else fmt([o['half'][0],o['half'][2]])
@@ -169,11 +201,15 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
         elif name.startswith('rotor'):
             ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis='0 0 1',limited='false')
         elif name.startswith('shaft'):
-            j_mat=np.array(info['inertia_centroid_kg_m2'])
-            _,vecs=np.linalg.eigh(j_mat)
-            a=vecs[:,0].copy();a[2]=0;a/=np.linalg.norm(a)
-            if np.dot(a[:2],info['centroid_m'][:2])<0:a=-a
-            ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis=fmt(a),limited='false')
+            if historical_xml:
+                axis = _RECORDED_SHAFT_AXES[name]
+            else:
+                j_mat=np.array(info['inertia_centroid_kg_m2'])
+                _,vecs=np.linalg.eigh(j_mat)
+                a=vecs[:,0].copy();a[2]=0;a/=np.linalg.norm(a)
+                if np.dot(a[:2],info['centroid_m'][:2])<0:a=-a
+                axis = fmt(a)
+            ET.SubElement(b,'joint',name=name+'_spin',type='hinge',axis=axis,limited='false')
         elif name.startswith('gear'):
             # Same physical gear hardware across loading/lightening studies.
             effective_mass=ledger.get('gear_design_reference_mass_kg',ledger['empty']['mass_kg']+170+60)/6
@@ -250,8 +286,9 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
             a=k*math.pi/16
             stop=ET.SubElement(tendons,'fixed',name=f'nacelle{i}_cone{k}',limited='true',
                                range=fmt([-cone_limit,cone_limit]),solreflimit='.005 1',solimplimit='.99 .999 .001')
-            ET.SubElement(stop,'joint',joint=f'nacelle{i}_x',coef=str(math.cos(a)))
-            ET.SubElement(stop,'joint',joint=f'nacelle{i}_y',coef=str(math.sin(a)))
+            coefficients = _RECORDED_CONE_COEFFICIENTS[k] if historical_xml else (str(math.cos(a)), str(math.sin(a)))
+            ET.SubElement(stop,'joint',joint=f'nacelle{i}_x',coef=coefficients[0])
+            ET.SubElement(stop,'joint',joint=f'nacelle{i}_y',coef=coefficients[1])
     eq=ET.SubElement(xml,'equality')
     senses=[1,-1,1,-1]
     for i in range(2,5):
@@ -280,7 +317,7 @@ class Aircraft:
         if airframe_variant=='baseline':
             ledger_path=LEDGER_R4_PATH
             render_asset='/assets/airframe-r4.glb'
-        elif airframe_variant in ('r6','r6_variator'):
+        elif airframe_variant in ('r6','r6_variator',R6_HISTORICAL_VARIANT):
             ledger_path=LEDGER_R6_PATH
             render_asset='/assets/airframe-r6.glb'
         else:
@@ -290,8 +327,11 @@ class Aircraft:
         self.ledger=json.loads(ledger_path.read_text())
         self.airframe_variant=airframe_variant
         self.world=world or TestWorld()
+        historical=(airframe_variant==R6_HISTORICAL_VARIANT)
+        if historical and getattr(self.world,'environment_key',None)!=R6_HISTORICAL_ENVIRONMENT:
+            raise ValueError('Historical R6 candidate requires its explicitly identified 3 November valley')
         self.gear_variant=gear_variant;self.reference_rpm=float(rpm)
-        self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm,tank_fuel_kg=tank_fuel_kg,variator_package=self.variator_package)
+        self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm,tank_fuel_kg=tank_fuel_kg,variator_package=self.variator_package,boundary_floor=not historical,historical_xml=historical)
         self.data=mj.MjData(self.model)
         self.bids={name:mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,name) for name in self.ledger['bodies']}
         self.foot_geoms=[i for i in range(self.model.ngeom) if (mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_BODY,int(self.model.geom_bodyid[i])) or '').startswith('gear')]
@@ -357,6 +397,13 @@ class Aircraft:
                 self_contact='CAD clearance audit; no all-part multibody self-contact',
                 structural_failure='rigid load paths; no laminate failure allowables or FEA',
                 rotor_map='axial BEMT; duct gain=1; no CFD/interference/edgewise qualification')}
+        if historical:
+            self.provenance['flight_revision']=dict(
+                status='Unpromoted integrated experiment derived from the recorded R6 flight',
+                parent_runtime_sha256='951ef3f83e193513e89ba8abc6d1ac34210f9e826620cc6e7d649b8675bb8219',
+                evidence=[dict(run_id='20261103T125202-92636c',environment=R6_HISTORICAL_ENVIRONMENT,
+                    summary='Recorded hover and transit; supported ending 2.58 m from destination')],
+                limitations='Historical world has no boundary floor; original control event log is unavailable and this integrated runtime is not the historical runtime.')
         mj.mj_forward(self.model,self.data)
 
     def spawn(self,x,y,z):

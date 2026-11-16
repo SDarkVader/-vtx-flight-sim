@@ -14,16 +14,6 @@ async function api(url, options) {
   return response.json();
 }
 
-function example() {
-  const phantom = $('aircraft').value.startsWith('phantom');
-  $('start').disabled = !phantom;
-  $('schedule').value = JSON.stringify(phantom ? [
-    {at_s: 0, action: {brake: [0, 0, 0, 0], wheel_drive: [.25, .25, .25, .25], wing: 'hold'}},
-  ] : [
-    {at_s: 0, action: {engine: 1, collective_deg: [0, 0, 0, 0], tilt_deg: [[0, 0], [0, 0], [0, 0], [0, 0]]}},
-  ], null, 2);
-}
-
 async function loadParameters() {
   const value = $('aircraft').value;
   const phantom = value.startsWith('phantom');
@@ -100,7 +90,7 @@ async function refresh() {
       `${state.outcome ? ' · ' + state.outcome : ''}${state.error ? ' · ' + state.error : ''}` +
       `${state.abort_reason ? ' · ' + state.abort_reason : ''}`;
     const running = ['queued', 'running'].includes(state.status);
-    $('abort').disabled = !running;
+
     const evidence = $('evidence');
     evidence.replaceChildren();
     if (running) {
@@ -144,34 +134,7 @@ function select(id) {
   void refresh();
 }
 
-$('aircraft').addEventListener('change', () => { example(); void loadParameters(); });
-$('experiment-form').addEventListener('submit', async event => {
-  event.preventDefault();
-  try {
-    const variant = $('aircraft').value;
-    const body = {
-      experimental_overrides: variant.startsWith('phantom') ? JSON.parse($('overrides').value) : {},
-      airframe_variant: variant === 'phantom-fx-p6-off' ? 'phantom-fx' : variant,
-      p6_enabled: variant === 'phantom-fx-p6-off' ? false : null,
-      start_configuration: $('start').value,
-      departure: [Number($('east').value), Number($('north').value)],
-      duration_s: Number($('duration').value),
-      max_attitude_deg: $('max-attitude').value === '' ? null : Number($('max-attitude').value),
-      schedule: JSON.parse($('schedule').value),
-    };
-    const result = await api('/api/experiments', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
-    await showRuns();
-    select(result.id);
-  } catch (error) { $('message').textContent = error.message; }
-});
-$('abort').addEventListener('click', async () => {
-  const id = selected;
-  try {
-    await api(`/api/experiments/${id}/abort`, {method: 'POST'});
-    if (id === selected) $('message').textContent = 'Abort requested; retaining evidence.';
-  } catch (error) { if (id === selected) $('message').textContent = error.message; }
-});
-example();
+$('aircraft').addEventListener('change', loadParameters);
 void loadParameters();
 showRuns().then(items => {
   let last;

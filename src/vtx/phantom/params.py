@@ -2,13 +2,14 @@
 from __future__ import annotations
 import copy, hashlib, json
 from pathlib import Path
+from .flight_revisions import flight_revision, registry
 
 ROOT = Path(__file__).resolve().parents[3]
 PARAMETER_FILE = ROOT / 'inputs/phantom_parameters_v1.json'
 MANIFEST_FILE = ROOT / 'inputs/phantom_simulation_manifest_v0.json'
 A10B_CHARACTERISTICS_FILE = ROOT / 'evidence/phantom/a10b_characteristics.json'
 LABELS = {'MEASURED-K', 'DERIVED', 'SYNTHETIC_UNVALIDATED', 'MANUFACTURER', 'REGULATORY_REFERENCE'}
-VARIANTS = ('phantom-a10b', 'phantom-a10c', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')   # phantom-a10b = A10-B (current default); phantom-fx = A10-A; -a9 = earlier
+VARIANTS = ('phantom-a10b', 'phantom-a10c', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9') + tuple(registry()['revisions'])
 DEFAULT_VARIANT = 'phantom-a10b'
 CASSETTE_REVISIONS = ('A9', 'A10')
 
@@ -60,8 +61,10 @@ class Params:
         raw = json.loads(Path(path).read_text(encoding='utf-8'))
         # line endings folded to LF so a Windows (CRLF) checkout reports the same parameter-file identity as Linux
         self.file_sha256 = hashlib.sha256(Path(path).read_bytes().replace(b'\r\n', b'\n')).hexdigest()
-        self.variant = variant
-        chain, v = [], variant
+        self.requested_variant = variant
+        revision = flight_revision(variant)
+        self.variant = revision['base_variant'] if revision else variant
+        chain, v = [], self.variant
         while v:   # a variant may inherit another (e.g. phantom-fx-a9 = phantom-fx + A9 cassette)
             chain.insert(0, raw['variants'][v]); v = raw['variants'][v].get('inherits')
         self.tree = copy.deepcopy(raw['base'])
@@ -72,7 +75,7 @@ class Params:
         if overrides:
             _merge(self.tree, overrides)
         self.n_numbers = _check_labels(self.tree)
-        self.variant_info = {k: v for k, v in raw['variants'][variant].items() if k != 'overlay'}
+        self.variant_info = {k: v for k, v in raw['variants'][self.variant].items() if k != 'overlay'}
         self.manifest_map = raw['manifest_map']
         self.revision_log = raw['revision_log']
         self.config_sha256 = hashlib.sha256(json.dumps(self.tree, sort_keys=True).encode()).hexdigest()
@@ -139,6 +142,7 @@ class Params:
         return True
 
     def snapshot(self):
-        return dict(variant=self.variant, parameter_file_sha256=self.file_sha256, config_sha256=self.config_sha256,
+        return dict(variant=self.requested_variant, parameter_file_sha256=self.file_sha256, config_sha256=self.config_sha256,
                     variant_info=self.variant_info, revision_log=self.revision_log, parameters=self.tree,
+                    **({'parameter_variant':self.variant} if self.requested_variant != self.variant else {}),
                     **({'characteristics': load_a10b_characteristics()} if self.variant == 'phantom-a10b' else {}))

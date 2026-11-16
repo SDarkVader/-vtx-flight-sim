@@ -22,10 +22,10 @@ class FakeServer:
                       gyro_world_deg_s=[0,0,0],warning_lamps=[],
                       assistance_applied=False)
     def __call__(self, base, path, payload=None):
-        if path=="/api/view":
+        if path=="/api/pilot/status":
             return dict(run_id=self.run,active=self.active,paused=self.paused,
-                        authority=self.authority,rendering_truth=dict(crashed=self.crashed),
-                        observation=self.obs,end_summary=self.end_summary)
+                        authority=self.authority,warning_lamps=["IMPACT"] if self.crashed else [],
+                        outcome=(self.end_summary or {}).get("outcome"))
         if path=="/api/observe":
             self.obs["observation_id"]+=1
             return dict(self.obs)
@@ -51,7 +51,7 @@ def test_link_requires_session_binding_with_cabin_level():
     with TemporaryDirectory() as tmp:
         directory=Path(tmp)
         controls=directory/"controls.json"
-        cfg=dict(DEFAULT,armed=True,arm_run_id="wrong-run",serial=1,
+        cfg=dict(DEFAULT,armed=True,observation_id=1,arm_run_id="wrong-run",serial=1,
                  engine=0.4,reason="Forty percent ground spool")
         controls.write_text(json.dumps(cfg))
         pilot=Pilot(controls=controls,status=directory/"status.json",
@@ -65,6 +65,7 @@ def test_link_requires_session_binding_with_cabin_level():
             controls.write_text(json.dumps(cfg))
             pilot.tick(now=101)
             assert fake.actions[-1]["engine"]==0.4
+            assert fake.actions[-1]["observation_id"]==1
             assert fake.actions[-1]["cabin_level"] is True
 
 
@@ -72,7 +73,7 @@ def test_explicit_cabin_level_opt_out_is_respected_for_armed_pilot():
     with TemporaryDirectory() as tmp:
         directory=Path(tmp)
         controls=directory/'controls.json'
-        cfg=dict(DEFAULT,armed=True,arm_run_id='run-a',serial=1,cabin_level=False,
+        cfg=dict(DEFAULT,armed=True,observation_id=1,arm_run_id='run-a',serial=1,cabin_level=False,
                  engine=.4,reason='Manual cabin test')
         controls.write_text(json.dumps(cfg))
         pilot=Pilot(controls=controls,status=directory/'status.json',events=directory/'events.jsonl')
@@ -83,7 +84,7 @@ def test_explicit_cabin_level_opt_out_is_respected_for_armed_pilot():
 
 def test_reconnect_does_not_repeat_held_control_or_create_mission(tmp_path):
     controls=tmp_path/'controls.json'
-    controls.write_text(json.dumps(dict(DEFAULT,armed=True,arm_run_id='run-a',serial=1,
+    controls.write_text(json.dumps(dict(DEFAULT,armed=True,observation_id=1,arm_run_id='run-a',serial=1,
                                         engine=.4,reason='Hold current setting')))
     pilot=Pilot(controls=controls,status=tmp_path/'status.json',events=tmp_path/'events.jsonl')
     fake=FakeServer()
@@ -95,11 +96,24 @@ def test_reconnect_does_not_repeat_held_control_or_create_mission(tmp_path):
         assert fake.retry_calls==[]
 
 
+def test_armed_file_without_observed_sample_keeps_monitoring(tmp_path):
+    controls=tmp_path/'controls.json'
+    controls.write_text(json.dumps(dict(DEFAULT,armed=True,arm_run_id='run-a',serial=1)))
+    pilot=Pilot(controls=controls,status=tmp_path/'status.json',events=tmp_path/'events.jsonl')
+    fake=FakeServer()
+    with patch('tools.persistent_pilot.request',side_effect=fake):
+        pilot.tick(now=100)
+    status=json.loads((tmp_path/'status.json').read_text())
+    assert status['state']=='awaiting_observation_id'
+    assert status['observation']['observation_id']>0
+    assert fake.actions==[] and fake.operators==[]
+
+
 def test_crash_does_not_start_a_new_mission():
     with TemporaryDirectory() as tmp:
         directory=Path(tmp)
         controls=directory/"controls.json"
-        cfg=dict(DEFAULT,armed=True,arm_run_id="run-a",serial=3,
+        cfg=dict(DEFAULT,armed=True,observation_id=1,arm_run_id="run-a",serial=3,
                  engine=0.4,reason="Initial test spool")
         controls.write_text(json.dumps(cfg))
         pilot=Pilot(controls=controls,status=directory/"status.json",
@@ -120,7 +134,7 @@ def test_manual_pause_and_guard_disallow_control():
     with TemporaryDirectory() as tmp:
         directory=Path(tmp)
         controls=directory/"controls.json"
-        cfg=dict(DEFAULT,armed=True,arm_run_id="run-a",serial=4,
+        cfg=dict(DEFAULT,armed=True,observation_id=1,arm_run_id="run-a",serial=4,
                  engine=0.7,reason="Testing engine")
         controls.write_text(json.dumps(cfg))
         pilot=Pilot(controls=controls,status=directory/"status.json",

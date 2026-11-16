@@ -28,8 +28,8 @@ def main():
     ap.add_argument('--health', action='store_true', help='Read-only connection and aircraft check')
     a = ap.parse_args()
     if a.health:
-        view = call('/api/view')
-        variant = ((view.get('observation') or {}).get('configuration') or {}).get('airframe_variant')
+        view = call('/api/pilot/status')
+        variant = view.get('airframe_variant')
         print(json.dumps({'connected': True, 'variant': variant, 'active': view.get('active'),
                           'authority': view.get('authority'), 'phantom_bridge_compatible':
                           isinstance(variant, str) and variant.startswith('phantom')}), flush=True)
@@ -38,25 +38,22 @@ def main():
     while True:
         try:
             c = json.loads(Path(a.controls).read_text(encoding='utf-8-sig'))
-            view = call('/api/view')
+            view = call('/api/pilot/status')
             run = view.get('run_id')
             action_key = (run, c.get('serial'))
-            variant = ((view.get('observation') or {}).get('configuration') or {}).get('airframe_variant')
-            # For the unified endpoint, refuse any control if R6 (or an unknown
-            # airframe) is selected. Preserve historical 8766 bridge semantics.
-            aircraft_ok = (not URL.endswith(':8765') or
-                           (isinstance(variant, str) and variant.startswith('phantom')))
-            if (c.get('armed') and aircraft_ok and c.get('arm_run_id') == run and view.get('active')
+            variant = view.get('airframe_variant')
+            aircraft_ok = isinstance(variant, str) and variant.startswith('phantom')
+            observed_id = c.get('observation_id')
+            if (c.get('armed') and type(observed_id) is int and observed_id > 0 and aircraft_ok and c.get('arm_run_id') == run and view.get('active')
                     and not view.get('paused') and view.get('authority') == 'colin'
                     and view.get('pilot_owner') is None and not view.get('pilot_epoch', 0)
                     and action_key != last_action_key):
-                obs = call('/api/observe')
-                p = dict(schema='phantom-fbw-1', authority='colin', expected_run_id=run, observation_id=obs['observation_id'],
+                p = dict(schema='phantom-fbw-1', authority='colin', expected_run_id=run, observation_id=observed_id,
                          reason=(c.get('reason') or 'Pilot command')[:2000], **c.get('command', {}))
                 if c.get('pti'):
                     p['pti'] = c['pti']
                 r = call('/api/action', p)
-                print(json.dumps(dict(t=obs.get('t_s'), serial=c.get('serial'), accepted=r.get('sequence', r))), flush=True)
+                print(json.dumps(dict(observation_id=observed_id, serial=c.get('serial'), accepted=r.get('sequence', r))), flush=True)
                 last_action_key = action_key
         except (HTTPError, URLError, ValueError, KeyError, OSError) as e:
             print('link:', type(e).__name__, str(e)[:200], flush=True)

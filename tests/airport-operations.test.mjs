@@ -25,13 +25,28 @@ assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='teardrop')
 assert.ok(airport.aircraft.some(a=>a.runwayId==='03/21'&&a.routeId==='go-around'));
 assert.ok(airport.aircraft.some(a=>!a.runwayId),'main runway lacks scheduled arrivals');
 assert.deepEqual(airport.sample('a10-primary',0).position.slice(0,2),[-45,-50]);
-assert.deepEqual(airport.sample('r6-flight',0).position.slice(0,2),[185,-90]);
-assert.deepEqual(airport.sample('r6-training',0).position.slice(0,2),LAYOUT.spawn);
+assert.deepEqual(airport.sample('r6-flight',0).position.slice(0,2),[192,-102]);
+assert.deepEqual(airport.sample('r6-training',0).position.slice(0,2),[204,-102]);
+assert.notDeepEqual(airport.sample('r6-training',0).position.slice(0,2),LAYOUT.destination);
 for(const actor of airport.aircraft.filter(a=>a.id!=='a10-primary')){
  const [x,y]=airport.sample(actor.id,0).position;
  const marked=LAYOUT.pads.some(p=>Math.hypot(x-p.x,y-p.y)<.1)||
    LAYOUT.stands_expanded.some(s=>Math.hypot(x-s.center[0],y-s.center[1])<.1);
  assert.ok(marked,`${actor.id} does not start on a marked stand`);
+ const pose=airport.sample(actor.id,0),radius=Math.hypot(7/2,6/2);
+ assert.equal(pose.position[2],actor.ground+VEHICLE_MODELS.r6.cgLocal[2]);
+ assert.deepEqual(airport.sample(actor.id,airport.cycle-.01).position,pose.position,'return parking changes stand/height');
+ const apron=LAYOUT.aprons_expanded.find(a=>a.id==='R6-SOUTH-APRON');
+ assert.ok(Math.abs(x-apron.center[0])+3.5<=apron.size[0]/2&&Math.abs(y-apron.center[1])+3<=apron.size[1]/2);
+ for(const runway of LAYOUT.runways.filter(r=>r.status==='open')){
+  const axis=runway.axis||[1,0],offset=[x-runway.center[0],y-runway.center[1]];
+  const lateral=Math.abs(offset[0]*axis[1]-offset[1]*axis[0])/Math.hypot(...axis);
+  assert.ok(lateral>runway.width/2+radius+2,`${actor.id} parks in active runway ${runway.id}`);
+ }
+ for(const taxi of LAYOUT.taxiways){
+  const nearestY=Math.max(Math.min(y,Math.max(taxi.y0,taxi.y1)),Math.min(taxi.y0,taxi.y1));
+  assert.ok(Math.hypot(x-taxi.x,y-nearestY)>taxi.width/2+radius+2,`${actor.id} parks on taxiway ${taxi.id}`);
+ }
 }
 assert.equal(DEFAULT_VISUAL_MODEL,'phantom-a10-81c823e2');
 const current=VEHICLE_MODELS[DEFAULT_VISUAL_MODEL];

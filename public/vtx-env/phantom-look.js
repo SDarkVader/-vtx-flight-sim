@@ -5,7 +5,7 @@
 //  * rear boosters: liner glow + directional blue plume (+ light) from booster thrust / thrust_max: a shallow glow at
 //    low boost rising to a radiant blue jet; the conical petal cowl closes at low boost, opens at full boost and tilts
 //    by the plant's booster vector angle;
-//  * DRS / airbrake flap: deploys from the brake command above 12 m/s (actuator rate 140 deg/s);
+//  * DRS / airbrake flap: follows the plant's stabilator state when modelled;
 //  * brake lamps (tail lenses + DRS trailing-edge strip) brighten on the brake command;
 //  * wheel-hub ember glow follows each pod's fan rpm.
 import * as THREE from 'three';
@@ -141,16 +141,38 @@ export function attachPhantom(model) {
     if (!/^pod_(FL|FR|RL|RR)$/.test(j.name)) continue;
     const pod = j.name.slice(4), idx = PODS.indexOf(pod);
     const cad = j.node.name.replace('JOINT_WHEEL_POD_', '');
+    const suspension = new THREE.Group();
+    suspension.name = `VTX_RUNTIME_WHEEL_${pod}_SUSPENSION`;
+    j.node.add(suspension);
+    const steering = new THREE.Group();
+    steering.name = `VTX_RUNTIME_WHEEL_${pod}_STEERING`;
+    suspension.add(steering);
     const wheel = new THREE.Group();
     wheel.name = `VTX_RUNTIME_WHEEL_${pod}_SPIN`;
-    j.node.add(wheel);
+    steering.add(wheel);
     for (const suffix of ['AMBER_RING', 'CLOSED_TYRE', 'STRUCTURAL_DISK']) {
       const part = j.node.getObjectByName(`WHEEL_${cad}_${suffix}`);
       if (part) wheel.attach(part);
     }
     const spokes = j.node.getObjectByName(`VTX_VISUAL_WHEEL_${cad}_VTX_ALLOY_SPOKES`);
     if (spokes) wheel.attach(spokes);
-    rig.wheels.push({node: wheel, idx, axis: new THREE.Vector3(0, pod.endsWith('L') ? 1 : -1, 0)});
+    // Measure the authored tyre for inspection. Collision dimensions do not
+    // resize the accepted visual assembly or move its authored attachments.
+    const tyre = wheel.getObjectByName(`WHEEL_${cad}_CLOSED_TYRE`);
+    let authored = null;
+    if (tyre?.isMesh && tyre.geometry) {
+      tyre.geometry.computeBoundingBox();
+      wheel.updateWorldMatrix(true, true);
+      const relative = new THREE.Matrix4().copy(wheel.matrixWorld).invert().multiply(tyre.matrixWorld);
+      const bounds = tyre.geometry.boundingBox?.clone().applyMatrix4(relative);
+      if (bounds && !bounds.isEmpty()) {
+        const size = bounds.getSize(new THREE.Vector3()), center = bounds.getCenter(new THREE.Vector3());
+        if (size.x > 0 && size.y > 0 && size.z > 0 && Math.abs(size.x - size.z) < Math.max(size.x, size.z) * .02 && center.length() < .005) {
+          authored = {radius_m: (size.x + size.z) / 4, half_width_m: size.y / 2};
+        }
+      }
+    }
+    rig.wheels.push({node: wheel, suspension, steering, podJoint: j, idx, authored, fit: {status: 'unavailable'}, axis: new THREE.Vector3(0, pod.endsWith('L') ? 1 : -1, 0)});
 
     // Exhaust points opposite the force axis and turns with the actual pod joint.
     const jet = new THREE.Group();
@@ -228,22 +250,111 @@ export function attachPhantom(model) {
 }
 
 const tmp = new THREE.Quaternion(); const ZUP = new THREE.Vector3(0,0,1);
-export function updatePhantom(rig, truth, parked = false, wheelOffsets = []) {
+// These recorded configurations have no rear steer joint. A missing value is
+// accepted only if the measured body quaternions also confirm zero steering.
+const fixedRearSteerConfigs = {
+  'phantom-a10b': '3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01',
+  'phantom-a10c': '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f',
+  'phantom-a10c-runway-20261112': '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f',
+  'phantom-a10c-vtol-20261112': '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f',
+};
+export function updatePhantom(rig, truth, parked = false, wheelOffsets = [], requireWheelPose = false) {
   if (!rig || !truth) return;
   const q = truth.phantom?.joints;
   if (q || parked) {
     for (const j of rig.joints) {
-      const raw = q?.[j.name]; if (raw === undefined && !parked) continue; const v = parked && /^pod_(FL|FR|RL|RR)$/.test(j.name) ? (j.name.endsWith("L") ? Math.PI / 2 : -Math.PI / 2) : parked && j.name.startsWith("leg_") ? 0 : raw; if (v === undefined) continue; const d = v - j.q0;
+      const raw = q?.[j.name]; if (!Number.isFinite(raw) && !parked) continue; const v = parked && /^pod_(FL|FR|RL|RR)$/.test(j.name) ? (j.name.endsWith("L") ? Math.PI / 2 : -Math.PI / 2) : parked && j.name.startsWith("leg_") ? 0 : raw; if (!Number.isFinite(v) || !Number.isFinite(j.q0)) continue; const oleo = q?.[`${j.name}_oleo`]; const compression = /^leg_(FL|FR|RL|RR)$/.test(j.name) && !parked && Number.isFinite(oleo) ? oleo : 0; const d = v - j.q0 + compression;
       if (j.type === 'slide') { j.node.position.copy(j.pos).addScaledVector(j.axis, d); }
       else { tmp.setFromAxisAngle(j.axis, d); j.node.quaternion.copy(tmp).multiply(j.quat); }
-      const steer=q?.[`${j.name}_steer`];
-      if(steer !== undefined && /^pod_F[LR]$/.test(j.name)){tmp.setFromAxisAngle(ZUP,steer);j.node.quaternion.premultiply(tmp);}
     }
   }
   for (const wheel of rig.wheels) {
     const pod = PODS[wheel.idx];
+    const rootPose = truth.body_poses?.airframe, podPose = truth.body_poses?.[`pod_${pod}`];
+    const validArray = (a, n) => Array.isArray(a) && a.length === n && a.every(Number.isFinite);
+    let collisionAnchor = null;
+    if (!parked && wheel.podJoint.node.parent?.name === 'airframe' && validArray(rootPose?.position, 3) && validArray(rootPose?.quaternion_wxyz, 4) && validArray(podPose?.position, 3)) {
+      const r = rootPose.quaternion_wxyz;
+      const inverse = new THREE.Quaternion(r[1], r[2], r[3], r[0]);
+      if (inverse.lengthSq() > 1e-12) {
+        inverse.normalize().invert();
+        collisionAnchor = new THREE.Vector3().fromArray(podPose.position).sub(new THREE.Vector3().fromArray(rootPose.position)).applyQuaternion(inverse);
+      }
+    }
+    // Keep the original mesh assembly intact. The collision model has different
+    // tyre dimensions and attachment datums; those differences are diagnostics,
+    // not a reason to enlarge or relocate individual visible components.
+    wheel.podJoint.node.position.copy(wheel.podJoint.pos);
+    const physical = truth.phantom?.wheel_collision_geometry?.[pod];
+    const colliderKnown = Number.isFinite(physical?.radius_m) && physical.radius_m > 0 && Number.isFinite(physical?.half_width_m) && physical.half_width_m > 0;
+    wheel.node.scale.set(1, 1, 1);
+    wheel.fit = {status:'authored-visual', authored:wheel.authored, collider:colliderKnown ? physical : null,
+      authored_anchor_m:wheel.podJoint.pos.toArray(), collision_anchor_m:collisionAnchor?.toArray() ?? null,
+      visual_minus_collision_anchor_m:collisionAnchor ? wheel.podJoint.pos.clone().sub(collisionAnchor).toArray() : null,
+      size_comparison:!wheel.authored || !colliderKnown ? 'unavailable' :
+        Math.abs(wheel.authored.radius_m-physical.radius_m)<1e-5 && Math.abs(wheel.authored.half_width_m-physical.half_width_m)<1e-5 ? 'matches' : 'different',
+      radial_scale:1, width_scale:1};
+    const suspension = q?.[`pod_${pod}_susp`];
+    const steering = q?.[`pod_${pod}_steer`];
     const angle = wheelAngle(q?.[`pod_${pod}_wheel`], wheelOffsets[wheel.idx]);
-    if (angle !== null) wheel.node.quaternion.setFromAxisAngle(wheel.axis, angle);
+    let confirmedFixedSteer = false, measuredSpin = null, measuredSteer = null;
+    const knownConfig = Object.hasOwn(fixedRearSteerConfigs, truth.variant) && fixedRearSteerConfigs[truth.variant] === truth.config_sha256;
+    if (knownConfig && Number.isFinite(q?.[`pod_${pod}_wheel`])) {
+      const a = podPose?.quaternion_wxyz, b = truth.body_poses?.[`pod_${pod}_wheel`]?.quaternion_wxyz;
+      if (validArray(a, 4) && validArray(b, 4)) {
+        const podQ = new THREE.Quaternion(a[1], a[2], a[3], a[0]);
+        const actualQ = new THREE.Quaternion(b[1], b[2], b[3], b[0]);
+        if (podQ.lengthSq() > 1e-12 && actualQ.lengthSq() > 1e-12) {
+          // MuJoCo body poses and joint positions can differ by one integration
+          // step. Decompose the measured relative orientation into the wheel's
+          // Y-axis spin and its Z-axis steering instead of mixing phases.
+          const relative = podQ.normalize().invert().multiply(actualQ.normalize()).normalize();
+          const spin = new THREE.Quaternion(0, relative.y, 0, relative.w);
+          if (spin.lengthSq() > 1e-12) {
+            spin.normalize();
+            const steer = relative.clone().multiply(spin.clone().invert()).normalize();
+            if (Math.hypot(steer.x, steer.y) < 1e-5) {
+              if (pod.startsWith('R') && steering === undefined && Math.abs(steer.z) < 1e-5) {
+                confirmedFixedSteer = true;
+                measuredSpin = spin;
+              } else if (pod.startsWith('F') && Number.isFinite(steering)) {
+                measuredSpin = spin;
+                measuredSteer = new THREE.Quaternion(0, 0, steer.z, steer.w).normalize();
+              }
+            }
+          }
+        }
+      }
+    }
+    const missing = [
+      [`pod_${pod}`, q?.[`pod_${pod}`]],
+      [`pod_${pod}_susp`, suspension],
+      [`pod_${pod}_steer`, confirmedFixedSteer ? 0 : steering],
+      [`pod_${pod}_wheel`, q?.[`pod_${pod}_wheel`]],
+    ].filter(([, value]) => !Number.isFinite(value)).map(([name]) => name);
+    if (!Number.isFinite(wheel.podJoint.q0)) missing.push(`pod_${pod}_asset_rest`);
+    // The physical view must not carry a wheel pose over from an earlier
+    // snapshot when its joints are absent. The separate scripted animation
+    // deliberately permits unmeasured, neutral wheel presentation.
+    wheel.node.visible = !requireWheelPose || missing.length === 0;
+    const podAvailable = Number.isFinite(q?.[`pod_${pod}`]) && Number.isFinite(wheel.podJoint.q0);
+    wheel.podJoint.node.visible = !requireWheelPose || podAvailable;
+    if (!podAvailable && requireWheelPose) wheel.podJoint.node.quaternion.copy(wheel.podJoint.quat);
+    wheel.fit.pose_status = missing.length ? 'unavailable' : confirmedFixedSteer ? 'measured-fixed-steering' : 'measured';
+    wheel.fit.missing_joints = missing;
+    wheel.suspension.position.z = Number.isFinite(suspension) ? suspension : 0;
+    if (measuredSteer) wheel.steering.quaternion.copy(measuredSteer);
+    else if (Number.isFinite(steering)) wheel.steering.quaternion.setFromAxisAngle(ZUP, steering);
+    else wheel.steering.quaternion.identity();
+    if (measuredSpin) {
+      // Start from the recorded wheel-body pose; velocity-derived sub-frame
+      // motion is presentation-only and is zero during replay.
+      wheel.node.quaternion.copy(measuredSpin);
+      if (Number.isFinite(wheelOffsets[wheel.idx])) {
+        wheel.node.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(wheel.axis, wheelOffsets[wheel.idx]));
+      }
+    } else if (angle !== null) wheel.node.quaternion.setFromAxisAngle(wheel.axis, angle);
+    else wheel.node.quaternion.identity();
   }
   const fans = truth.propulsors || [], fanMax = truth.phantom?.fan_thrust_max_n;
   for (const jet of rig.podJets) {
@@ -306,12 +417,12 @@ export function updatePhantom(rig, truth, parked = false, wheelOffsets = []) {
     }
   });
 
-  // DRS / airbrake: brake command above 12 m/s, finite actuator rate
+  // DRS / airbrake: use the plant's actual finite-rate state, not a second
+  // cosmetic controller driven by the brake command.
   if (rig.drs) {
-    // P6 on: the plant flies the flap (truth.phantom.drs_deg, trailing edge up); the GLB rest pose sits at 6 deg
+    // P6 on: the plant flies the flap (trailing edge up); the GLB rest pose sits at 6 deg.
     const plantDeg = truth.phantom?.drs_deg;
-    const target = plantDeg != null ? plantDeg - 6 : (braking && rig.speed > 12 ? rig.drs.max : 0);
-    rig.drsDeg = dt > 0 ? approach(rig.drsDeg, target, 140 * dt) : target;
+    rig.drsDeg = Number.isFinite(plantDeg) ? plantDeg - 6 : 0;
     tmp.setFromAxisAngle(rig.drs.axis, THREE.MathUtils.degToRad(rig.drsDeg)); rig.drs.node.quaternion.copy(tmp).multiply(rig.drs.quat);
   }
   // brake lamps

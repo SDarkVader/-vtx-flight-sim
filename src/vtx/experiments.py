@@ -35,7 +35,8 @@ class ExperimentRequest(BaseModel):
     schedule: list[ScheduledAction] = Field(default_factory=list, max_length=100)
 
 
-def install_experiment_routes(app, get_lab, Laboratory, Mission, parse_action, dt):
+def install_experiment_routes(app, get_lab, Laboratory, Mission, parse_action, dt, *, offline_test_root=None):
+    offline_test_root = Path(offline_test_root).resolve() if offline_test_root is not None else None
     active = {}
     lock = threading.Lock()
     status_lock = threading.RLock()
@@ -136,6 +137,10 @@ def install_experiment_routes(app, get_lab, Laboratory, Mission, parse_action, d
 
     @app.post('/api/experiments')
     async def create_experiment(spec: ExperimentRequest):
+        if offline_test_root is None:
+            raise HTTPException(409, 'Scripted flight experiments are offline only. The game pilot uses live telemetry and individual commands.')
+        if Path(get_lab().data_root).resolve() != offline_test_root:
+            raise HTTPException(409, 'Offline experiment fixture root differs from its isolated Laboratory')
         if spec.experimental_overrides and not spec.airframe_variant.startswith('phantom'):
             raise HTTPException(422, 'Parameter overrides are currently available for Phantom aircraft')
         if spec.p6_enabled is not None and spec.airframe_variant != 'phantom-fx':

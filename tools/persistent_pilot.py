@@ -3,7 +3,7 @@
 Pilot commands come exclusively from tools/pilot_controls.json, bound to a run
 and serial. The bridge never starts a replacement flight or sends idle controls
 when unarmed; the last accepted simulator command remains in effect.
-The /api/view endpoint is used only for session/crash status; flight controls
+The /api/pilot/status endpoint is used only for session/crash status; flight controls
 depend on /api/observe. Cabin level control defaults on and remains configurable.
 """
 from __future__ import annotations
@@ -22,10 +22,8 @@ from urllib.request import Request, urlopen
 
 if __package__:
     from .argon_calibration import from_instrument_observation
-    from .waypoint_controller import command as waypoint_command
 else:
     from argon_calibration import from_instrument_observation
-    from waypoint_controller import command as waypoint_command
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROLS = ROOT / "tools" / "pilot_controls.json"
@@ -48,6 +46,8 @@ def load_config(path=CONTROLS):
     cfg = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(cfg, dict):
         raise ValueError("Pilot control file must contain an object")
+    if cfg.get('waypoint_mode',False):
+        raise ValueError('Prewritten waypoint navigation is offline only; issue individual telemetry-based pilot decisions')
     for k in DEFAULT:
         if k not in cfg:
             raise ValueError("Missing pilot field: " + k)
@@ -156,7 +156,7 @@ class Pilot:
         if not cfg["enabled"]:
             self.status_update(state="disabled",calibration=self.calibration,calibration_error=self.calibration_error)
             return
-        view=request(self.base,"/api/view")
+        view=request(self.base,"/api/pilot/status")
         if not self.connected:
             self.connected=True
             self.event("server_connected",run_id=view.get("run_id"))
@@ -171,9 +171,8 @@ class Pilot:
             self.blocked_serial=None
             self.last_sent=0
             self.last_action_key=None
-        crashed=bool(view.get("rendering_truth",{}).get("crashed") or
-                     "IMPACT" in view.get("observation",{}).get("warning_lamps",[]))
-        outcome=(view.get("end_summary") or {}).get("outcome")
+        crashed="IMPACT" in view.get("warning_lamps",[])
+        outcome=view.get("outcome")
         if crashed or (not view.get("active") and outcome in ("collision","interrupted")):
             self.status_update(state="interrupted" if outcome=="interrupted" else "crashed",crashed=crashed,authority=view.get("authority"))
             return
@@ -210,17 +209,10 @@ class Pilot:
             self.blocked_serial=cfg["serial"]
             self.event("guard_triggered",run_id=run,serial=cfg["serial"],
                        attitude=attitude,rates=rates)
-        armed=matched and self.blocked_serial!=cfg["serial"] and not guard
+        observation_id=cfg.get("observation_id")
+        has_observation=type(observation_id) is int and observation_id > 0
+        armed=matched and has_observation and self.blocked_serial!=cfg["serial"] and not guard
         setpoints={k:cfg[k] for k in SAFE} if armed else None
-        if armed and cfg.get('waypoint_mode', False):
-            try:
-                setpoints, distance = waypoint_command(obs)
-                if distance < 2.0:
-                    setpoints['tilt_deg']=[[0.0,0.0] for _ in range(4)]
-            except (ValueError,KeyError,TypeError) as exc:
-                self.event('waypoint_guard',reason=str(exc))
-                self.blocked_serial=cfg['serial']
-                return
         if armed and self.settings_run!=run:
             result=request(self.base,"/api/operator",{
                 "experimental_assist_wire":cfg["experimental_assist_wire"],
@@ -230,18 +222,20 @@ class Pilot:
             self.settings_run=run
         action_key=json.dumps([run,cfg['serial'],setpoints,cfg['reason']],sort_keys=True) if armed else None
         if armed and action_key!=self.last_action_key:
-            action={**setpoints,"authority":"colin","expected_run_id":run,"observation_id":obs["observation_id"],
+            action={**setpoints,"authority":"colin","expected_run_id":run,"observation_id":observation_id,
                     "reason":cfg["reason"]}
             ack=request(self.base,"/api/action",action)
             self.last_sent=now
             self.last_action_key=action_key
             self.event("pilot_action",run_id=run,serial=cfg["serial"] if armed else 0,
-                       armed=armed,sequence=ack["sequence"],observation_id=obs["observation_id"],
+                       armed=armed,sequence=ack["sequence"],observation_id=observation_id,
                        setpoints=setpoints)
         if now-self.last_report>=2:
             self.event("telemetry",run_id=run,obs=obs,armed=armed)
             self.last_report=now
         state="armed" if armed else ("guarded" if guard else "awaiting_pilot")
+        if matched and not has_observation:
+            state="awaiting_observation_id"
         self.status_update(state=state,authority="colin",armed=armed,
                            objective=view.get("objective"),
                            fallback="not_available" if not armed else None,

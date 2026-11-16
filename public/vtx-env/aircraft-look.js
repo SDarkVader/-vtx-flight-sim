@@ -333,10 +333,11 @@ export function enhanceAircraft(root, envTexture, {phantom = false} = {}) {
     parent.add(m); return m;
   };
 
-  // Nav lights: Red Port (nacelle 1 / +X), Green Starboard (nacelle 3 / -X), White Stern (nacelle 2 / +Y)
+  // Nav lights: red port and green starboard. The Phantom's detached white
+  // starboard-nacelle strobe was a render-only ornament, not a physical light.
   if (sub('nacelle1')) lamp(sub('nacelle1'), '#ff2211', 1.23, 0, .3);
   if (sub('nacelle3')) lamp(sub('nacelle3'), '#11ff44', -1.23, 0, .3);
-  if (sub('nacelle2')) fx.strobes.push(lamp(sub('nacelle2'), '#ffffff', 0, 1.23, .3, .09));
+  if (!phantom && sub('nacelle2')) fx.strobes.push(lamp(sub('nacelle2'), '#ffffff', 0, 1.23, .3, .09));
   if (!phantom && sub('airframe')) fx.strobes.push(lamp(sub('airframe'), '#ff2211', 0, 0, .08, .09)); // belly beacon
 
   // Cyan glowing inner duct aerodynamic rings (matching VTX specification diagram)
@@ -358,9 +359,10 @@ export function enhanceAircraft(root, envTexture, {phantom = false} = {}) {
     }
   }
 
-  // Forward Landing Searchlight (under the nose frame)
+  // R6-only decorative landing searchlight; the Phantom must not have a
+  // floating white lens attached to its airframe.
   const airframe = sub('airframe');
-  if (airframe) {
+  if (airframe && !phantom) {
     const lightLens = new THREE.Mesh(
       new THREE.CylinderGeometry(.08, .09, .06, 16).rotateX(Math.PI / 2),
       new THREE.MeshStandardMaterial({ color: '#222', emissive: '#fff6e0', emissiveIntensity: 6 })

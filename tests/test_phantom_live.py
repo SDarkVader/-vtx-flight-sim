@@ -72,7 +72,7 @@ def test_phantom_sortie_start_action_stop(tmp_path, monkeypatch, variant):
     assert not lab.lease_expired
     assert lab.aircraft.command['collective']==0.0
     lab.checkpoint()
-    assert lab.checkpoint_path.exists() and json.loads(lab.checkpoint_path.read_text())['schema'] == 'phantom-1'
+    assert lab.checkpoint_path.exists() and json.loads(lab.checkpoint_path.read_text())['schema'] == 'phantom-2'
     lab.stop('End isolated phantom boundary check')
     for f in ('metadata.json', 'events.jsonl', 'summary.json', 'phantom_parameters.json', 'phantom_ledger.json', 'phantom_steps.csv.gz'):
         assert (lab.log_path / f).exists(), f
