@@ -41,9 +41,27 @@ export function buildBoatRig(payload) {
     const vertexColors = Array.isArray(spec.vertex_colors) && spec.vertex_colors.length === spec.vertices.length && spec.vertex_colors.every(Number.isFinite);
     if (vertexColors) geometry.setAttribute('color', new THREE.Float32BufferAttribute(spec.vertex_colors, 3));
     const glass = spec.material_role === 'canopy_glass';
-    const material = new THREE.MeshStandardMaterial({color: vertexColors ? '#ffffff' : spec.color || '#dfe7ee', vertexColors,
-      roughness: glass ? .18 : .48, metalness: .15, transparent: glass, opacity: glass ? .65 : 1, side: THREE.DoubleSide});
-    const mesh = new THREE.Mesh(geometry, material); mesh.name = spec.name || spec.body;
+    const display = spec.material_role === 'avionics_glow';
+    const Material = glass ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    const material = new Material({color: vertexColors ? '#ffffff' : spec.color || '#dfe7ee', vertexColors,
+      roughness: glass ? .18 : .48, metalness: .15, transparent: glass, opacity: glass ? .65 : 1, side: THREE.DoubleSide,
+      emissive: display ? '#0b6378' : '#000000', emissiveIntensity: display ? .8 : 0});
+    let renderMaterials = material;
+    if (spec.name === 'cockpit_interior' && spec.material_role === 'cockpit_detail') {
+      // Preserve every authored vertex/index. Separate the dashboard surround's
+      // draw groups so the pilot view can show two compact MFD bezels instead.
+      const surround = material.clone();
+      let surroundFaces = 0;
+      for (let i = 0; i < spec.faces.length; i += 3) {
+        const dashboard = spec.faces.slice(i,i+3).every(index => spec.vertices[index*3] > 1.7);
+        geometry.addGroup(i,3,dashboard?1:0);
+        if (dashboard) surroundFaces++;
+      }
+      if (surroundFaces) renderMaterials = [material,surround];
+      else {geometry.clearGroups();surround.dispose();}
+    }
+    const mesh = new THREE.Mesh(geometry, renderMaterials); mesh.name = spec.name || spec.body;
+    mesh.userData.materialRole = spec.material_role;
     if (finiteArray(spec.offset, 3)) mesh.position.set(...spec.offset);
     mesh.castShadow = true; mesh.receiveShadow = true; body(spec.body || 'airframe').add(mesh);
   }
@@ -55,6 +73,66 @@ export function buildBoatRig(payload) {
     mesh.castShadow = true; body(spec.body || 'airframe').add(mesh);
   }
   return {root, bodies, geometrySha256: payload.geometry_sha256};
+}
+
+export function setBoatCockpit(rig, inCockpit) {
+  if (!rig || rig.inCockpit === inCockpit) return;
+  rig.inCockpit = inCockpit;
+  if (rig.avionics) rig.avionics.root.visible = inCockpit;
+  rig.root.traverse(mesh => {
+    if (!mesh.isMesh) return;
+    if (mesh.name === 'cockpit_interior' && Array.isArray(mesh.material)) {
+      mesh.material[1].visible = !inCockpit;
+      return;
+    }
+    if (mesh.userData.materialRole === 'canopy_glass') {
+      mesh.userData.exteriorOpacity ??= mesh.material.opacity;
+      mesh.userData.exteriorDepthWrite ??= mesh.material.depthWrite;
+      mesh.userData.exteriorColor ??= mesh.material.color.clone();
+      mesh.material.opacity = inCockpit ? .055 : mesh.userData.exteriorOpacity;
+      mesh.material.color.copy(inCockpit ? new THREE.Color('#edf5f7') : mesh.userData.exteriorColor);
+      // Retain surface reflections and sun glare without darkening the night view.
+      mesh.material.transmission = 0;
+      mesh.material.specularIntensity = inCockpit ? 3 : 1;
+      mesh.material.ior = 1.46;
+      mesh.material.thickness = inCockpit ? .008 : 0;
+      mesh.material.roughness = inCockpit ? .055 : .18;
+      mesh.material.metalness = inCockpit ? 0 : .15;
+      mesh.material.clearcoat = inCockpit ? 1 : 0;
+      mesh.material.clearcoatRoughness = .04;
+      mesh.material.depthWrite = inCockpit ? false : mesh.userData.exteriorDepthWrite;
+      mesh.material.needsUpdate = true;
+      return;
+    }
+    if (mesh.userData.materialRole !== 'avionics_glow') return;
+    mesh.material.visible = !inCockpit;
+    // The authored display faces sit just behind the opaque console face.
+    // In the pilot seat draw those exact triangles as an instrument layer;
+    // hull/appendage geometry, body poses and physical meshes remain intact.
+    mesh.material.depthTest = !inCockpit;
+    mesh.material.depthWrite = !inCockpit;
+    mesh.material.transparent = inCockpit;
+    mesh.renderOrder = inCockpit ? 10 : 0;
+    mesh.material.needsUpdate = true;
+  });
+}
+
+// Render lights only: no lamp mass, collision body or simulation forces.
+export function setBoatLighting(rig, night) {
+  const body=rig?.bodies.get('airframe');if(!body)return;
+  if(!rig.lighting){
+    const root=new THREE.Group();root.name='ricochet-night-lighting';body.add(root);
+    const cabin=new THREE.PointLight('#bdd7e1',.35,1.2,2);cabin.position.set(1.16,0,1.16);root.add(cabin);
+    for(const side of [-1,1]){
+      const lamp=new THREE.SpotLight('#e5efff',450,55,.45,.85,2);
+      lamp.position.set(3.31,side*.18,.94);lamp.target.position.set(14,side*2.5,.50);
+      lamp.castShadow=false;root.add(lamp,lamp.target);
+      const lens=new THREE.Mesh(new THREE.CircleGeometry(.023,12),new THREE.MeshBasicMaterial({color:'#e5efff',toneMapped:false}));
+      lens.rotation.y=Math.PI/2;lens.position.copy(lamp.position);root.add(lens);
+    }
+    rig.lighting={root};
+  }
+  rig.lighting.root.visible=!!night;
 }
 
 const previousPosition = new THREE.Vector3(), previousRotation = new THREE.Quaternion();
@@ -77,9 +155,9 @@ export function applyBoatPoses(rig, poses, previous = null, fraction = 1) {
 }
 
 function disposeTree(root) {
-  const geometries = new Set(), materials = new Set();
-  root.traverse(node => {if (node.geometry) geometries.add(node.geometry); for (const material of [].concat(node.material || [])) materials.add(material);});
-  geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose());
+  const geometries = new Set(), materials = new Set(), textures = new Set();
+  root.traverse(node => {if (node.geometry) geometries.add(node.geometry); for (const material of [].concat(node.material || [])) {materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});
+  geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t=>t.dispose());
   root.removeFromParent();
 }
 

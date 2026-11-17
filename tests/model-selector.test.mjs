@@ -46,7 +46,7 @@ const selectionUrl = new URL('../public/aircraft-selection.js', import.meta.url)
 const sceneryUrl = new URL('../public/scenery-view.js', import.meta.url).href;
 const source=(await readFile(new URL('../public/model-selector.js',import.meta.url),'utf8'))
   .replace("from './aircraft-selection.js?v=1'", `from '${selectionUrl}'`)
-  .replace("from './scenery-view.js?v=20261116-passengers'", `from '${sceneryUrl}'`);
+  .replace(/from '\.\/scenery-view\.js\?v=[^']*'/, `from '${sceneryUrl}'`);
 await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 await new Promise(resolve => setTimeout(resolve,0));
 assert.equal(airframe.value, 'r6');
@@ -72,7 +72,7 @@ const groups=dialogItems['data-vehicle-choice'].children;
 assert.equal(groups[1].label,'Current aircraft · in development');
 assert.deepEqual(groups[1].children.map(option=>option.value),['r6']);
 assert.equal(groups[3].label,'Ride as passenger');
-assert.equal(groups[3].children.length,5);
+assert.equal(groups[3].children.length,10);
 assert.equal(groups[4].label,'Earlier and experimental aircraft');
 assert.deepEqual(groups[4].children.map(option=>option.value),['phantom-a10b']);
 for(const option of groups[3].children){

@@ -9,7 +9,7 @@ assert.deepEqual(airportViewSelection('a10-primary'),{id:'a10-primary',scenery:t
 assert.equal(airportViewSelection('a10-primary',{passenger:true}).passenger,true);
 assert.equal(airportViewSelection('r6-training',{passenger:true}).passenger,false);
 assert.throws(()=>airportViewSelection('missing'));
-assert.equal(SCENERY_VEHICLES.length,5);
+assert.equal(SCENERY_VEHICLES.length,10);
 for(const vehicle of SCENERY_VEHICLES){
  assert.equal(airportViewSelection(vehicle.id).scenery,true);
  assert.equal(sceneryPassengerSeat(vehicle.id).length,3);

@@ -156,7 +156,7 @@ export function enhanceAircraft(root, envTexture, {phantom = false} = {}) {
         new THREE.TorusGeometry(1.215, .016, 8, 96),
         new THREE.MeshStandardMaterial({ color: '#04282f', emissive: CYAN, emissiveIntensity: 3.5 })
       );
-      accent.position.z = .27; accent.name = 'vtx-accent-ring'; accent.userData.pitch_axis = 'decor';
+      accent.position.z = .27; accent.name = 'vtx-accent-ring'; accent.userData.pitch_axis = 'decor';accent.userData.argonRotorHousing=true;
       nac.add(accent);
     }
 
@@ -172,7 +172,7 @@ export function enhanceAircraft(root, envTexture, {phantom = false} = {}) {
       }
     } else {
       const band = new THREE.Mesh(new THREE.TorusGeometry(1.2, .03, 6, 96), checkerMaterial);
-      band.position.z = .15; band.name = 'vtx-livery-band'; band.userData.pitch_axis = 'decor';
+      band.position.z = .15; band.name = 'vtx-livery-band'; band.userData.pitch_axis = 'decor';band.userData.argonRotorHousing=true;
       nac.add(band);
     }
 
@@ -181,7 +181,7 @@ export function enhanceAircraft(root, envTexture, {phantom = false} = {}) {
       new THREE.TorusGeometry(1.22, .008, 6, 96),
       new THREE.MeshStandardMaterial({ color: '#889098', metalness: .9, roughness: .25 })
     );
-    rivetRing.position.z = .05; rivetRing.name = 'vtx-rivet-ring'; rivetRing.userData.pitch_axis = 'decor';
+    rivetRing.position.z = .05; rivetRing.name = 'vtx-rivet-ring'; rivetRing.userData.pitch_axis = 'decor';rivetRing.userData.argonRotorHousing=true;
     nac.add(rivetRing);
 
     // Dynamic rotor blur disc with blade sweep shadows
@@ -355,6 +355,7 @@ export function enhanceAircraft(root, envTexture, {phantom = false} = {}) {
       const ring = new THREE.Mesh(ringGeom, ductRingMat);
       ring.position.set(0, 0, 0.02);
       ring.userData.pitch_axis = 'decor';
+      ring.userData.argonRotorHousing=true;
       nac.add(ring);
     }
   }

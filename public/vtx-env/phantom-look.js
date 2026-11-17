@@ -10,6 +10,7 @@
 //  * wheel-hub ember glow follows each pod's fan rpm.
 import * as THREE from 'three';
 import {thrustFraction, wheelAngle} from './phantom-effects.js?v=1';
+import {attachVehicleLivery} from '../vehicle-livery.js';
 
 const PODS = ['FL', 'FR', 'RL', 'RR'];
 const V3 = (a) => new THREE.Vector3(...a).normalize();
@@ -108,6 +109,7 @@ function addRearDeckDetail(model){
 }
 
 export function attachPhantom(model) {
+  attachVehicleLivery(model);
   if (model.getObjectByName('A10_WING_L_PANEL_CFRP_TORSION_BOX')) {
     stylePhantom(model);
     addRearDeckDetail(model);
@@ -177,7 +179,9 @@ export function attachPhantom(model) {
     // Exhaust points opposite the force axis and turns with the actual pod joint.
     const jet = new THREE.Group();
     jet.name = `VTX_RUNTIME_POD_${pod}_EXHAUST`;
-    jet.rotation.y = pod.endsWith('L') ? 0 : Math.PI;
+    // The plant's force axis is pod-local +Y on the left, -Y on the right.
+    // Our plume geometry extends along +Z: rotate it onto the opposite axis.
+    jet.rotation.x = pod.endsWith('L') ? Math.PI / 2 : -Math.PI / 2;
     const geometry = new THREE.CylinderGeometry(.035, .19, 1, 24, 1, true);
     geometry.rotateX(Math.PI / 2); geometry.translate(0, 0, .5);
     const glow = new THREE.Mesh(geometry, plumeMaterial());

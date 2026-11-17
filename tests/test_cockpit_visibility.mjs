@@ -1,6 +1,6 @@
 import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
-const source=await readFile(new URL('../public/cockpit-visibility.js',import.meta.url),'utf8');
+const source=(await readFile(new URL('../public/cockpit-visibility.js',import.meta.url),'utf8')).replace("'./argon-cutaway.js?v=3'",JSON.stringify(new URL('../public/argon-cutaway.js',import.meta.url).href));
 const {isCockpitObstruction,setCockpitVisibility}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const panel={isMesh:true,userData:{blendstra_id:'c2429ce8-6150-4824-a737-11e0f6d01426'},visible:true};
 const consoleMesh={isMesh:true,userData:{legacyCockpitPanel:true},visible:true};

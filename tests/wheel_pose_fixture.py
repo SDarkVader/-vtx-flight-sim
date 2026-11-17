@@ -27,6 +27,6 @@ for variant in ('phantom-a10b', 'phantom-a10c'):
         expected = {}
         for pod in PODS:
             body_id = aircraft.model.body(f'pod_{pod}_wheel').id
-            expected[pod] = dict(position=aircraft.data.xpos[body_id].tolist(), quaternion_wxyz=aircraft.data.xquat[body_id].tolist())
+            expected[pod] = dict(position=aircraft.data.xpos[body_id].tolist(), quaternion_wxyz=aircraft.data.xquat[body_id].tolist(), fan_axis_world=aircraft.pod_axis(pod).tolist())
         cases.append(dict(variant=variant, tilted=tilted, truth=dict(t_s=snapshot['t_s'], variant=snapshot['variant'], config_sha256=snapshot['config_sha256'], body_poses=snapshot['body_poses'], phantom=snapshot['phantom']), expected=expected))
 print(json.dumps(cases))

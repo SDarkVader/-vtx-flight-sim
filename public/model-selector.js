@@ -1,5 +1,5 @@
 import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
-import {SCENERY_VEHICLES} from './scenery-view.js?v=20261116-passengers';
+import {SCENERY_VEHICLES} from './scenery-view.js?v=20261117-traffic-10';
 
 const airframe = document.getElementById('airframe');
 const mainAircraft = document.getElementById('main-aircraft');

@@ -18,6 +18,24 @@ const backgroundCache = new WeakMap();
 
 const facilityLabelFont = scaleM => `bold ${Math.max(9, Math.round(scaleM(12)))}px system-ui`;
 
+export function mapZoomLimits(worldHalf,aspect=1){
+  return {min:1000/(Math.max(100,worldHalf*2)*Math.max(1,aspect)*1.1),max:10};
+}
+export function mapScaleBar(projection,cssWidth,bufferWidth){
+  const maxPixels=Math.min(140,cssWidth*.36),pixelsPerMetre=projection.scaleM(1)*cssWidth/bufferWidth;
+  const metres=maxPixels/pixelsPerMetre,base=10**Math.floor(Math.log10(metres));
+  const distance=[5,2,1].map(n=>n*base).find(n=>n<=metres)||base/2;
+  return {metres:distance,pixels:distance*pixelsPerMetre,label:distance>=1000?`${distance/1000} km`:`${distance} m`};
+}
+
+function drawMapScale(ctx,canvas,projection){
+  const rect=canvas.getBoundingClientRect();if(!(rect.width>0&&rect.height>0))return;
+  const bar=mapScaleBar(projection,rect.width,canvas.width),sx=canvas.width/rect.width,sy=canvas.height/rect.height;
+  ctx.save();ctx.scale(sx,sy);ctx.fillStyle='#07131de8';ctx.fillRect(7,rect.height-48,bar.pixels+24,41);
+  ctx.fillStyle='#e5efeb';ctx.font='600 11px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0',15,rect.height-31);ctx.textAlign='right';ctx.fillText(bar.label,15+bar.pixels,rect.height-31);
+  ctx.strokeStyle='#e5efeb';ctx.lineWidth=2;ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(15,rect.height-24);ctx.lineTo(15,rect.height-16);ctx.lineTo(15+bar.pixels,rect.height-16);ctx.lineTo(15+bar.pixels,rect.height-24);ctx.stroke();ctx.restore();
+}
+
 export function liveMapObservation(view, ageMs, replaying) {
   return view?.active && ageMs <= 2000 && !replaying ? view.observation : null;
 }
@@ -124,6 +142,8 @@ export class TacticalMinimap {
 
   bindEvents() {
     const c = this.canvas;
+    c.addEventListener('wheel',e=>{e.preventDefault();const r=c.getBoundingClientRect();this.zoomBy(Math.exp(Math.max(-.4,Math.min(.4,-e.deltaY*.002))),[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]);},{passive:false});
+    c.addEventListener('keydown',e=>{if(['+','=','-','_'].includes(e.key)){e.preventDefault();e.stopPropagation();this.zoomBy(e.key==='-'||e.key==='_'?1/1.4:1.4);}});
     
     // Double click to toggle tactical zoom
     c.addEventListener('dblclick', (e) => {
@@ -157,13 +177,23 @@ export class TacticalMinimap {
       } else if (e.touches.length === 2 && touchDist > 0) {
         const newDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         const scale = newDist / touchDist;
-        this.zoom = Math.max(0.05, Math.min(6.0, this.zoom * scale));
+        this.zoomBy(scale);
         touchDist = newDist;
         backgroundCache.delete(c);
       }
     }, { passive: true });
 
     c.addEventListener('touchend', () => { this.isDragging = false; }, { passive: true });
+  }
+
+  zoomBy(factor,anchor=[this.canvas.width/2,this.canvas.height/2]){
+    if(!Number.isFinite(factor)||factor<=0)return;
+    const before=this.getProjection(),point=[before.unpx(anchor[0]),before.unpy(anchor[1])];
+    const limits=mapZoomLimits(this.worldHalf,this.canvas.width/this.canvas.height);
+    this.zoom=Math.max(limits.min,Math.min(limits.max,this.zoom*factor));
+    const after=this.getProjection();this.center[0]+=point[0]-after.unpx(anchor[0]);this.center[1]+=point[1]-after.unpy(anchor[1]);
+    backgroundCache.delete(this.canvas);
+    if(this.lastRender)this.render(...this.lastRender);
   }
 
   getProjection(worldHalf = 500) {
@@ -483,6 +513,7 @@ export class TacticalMinimap {
 
   render(world, { observation, track, departure, destination, harbourState }) {
     if (!world) return;
+    this.lastRender=[world,{observation,track,departure,destination,harbourState}];
     this.worldHalf = world.half_m;
     const isSandbox = world.environment === 'sandbox' || world.id === 'stage1-valley';
     this.airportZoom = isSandbox ? 1 : world.runway ? .12 : .5;
@@ -558,5 +589,6 @@ export class TacticalMinimap {
       this.ctx.fillText('DBL-CLICK / PINCH ZOOM', w - 10, 32);
       drawAircraftMarker(this.ctx, this.canvas, proj, fix);
     }
+    drawMapScale(this.ctx,this.canvas,proj);
   }
 }

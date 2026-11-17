@@ -14,6 +14,20 @@ The **Main Aircraft** menu lets you explicitly select the development Phantom A1
 
 Controls follow the selected seat: physical aircraft controls, Ricochet helm, or a passenger notice for scenic flights. Selecting either Ricochet opens its cockpit camera; **View selected boat**, **Cockpit** and mouse look switch its views. **Aircraft controls** returns to the physical aircraft. The current aircraft render revisions are checked against SHA-256 pins before they are displayed. Fonts and aircraft dynamics are unchanged. See [the selection and camera verification](docs/VEHICLE_CONTROLS_20261117.md).
 
+The Phantom has a cabin-mounted glass flight deck with live airspeed, heading, attitude, vertical speed, radar height, fuel and power readings. Cockpit visibility treatments clear its forward and side sightlines. The Argon keeps its fixed cabin and eye position, with a cockpit-only cutaway through nearby rotor housings; moving blades and the exterior remain intact. Missing telemetry displays a dash.
+
+Both Ricochets use one compact, low-mounted helm display, clear reflective canopy glass and night lighting for the cabin and water ahead. The large black dashboard surround is hidden in the pilot view. These are presentation changes, with no added physical mass or changes to aircraft dynamics. The wheel-fan exhaust effect follows the opposite of the actual fan force axis, pointing down when deployed for lift. Existing VTX lettering is fitted to the Phantom skin and follows the vehicle body.
+
+![Ricochet's compact helm and clear water view, in an isolated visual check](docs/readme-images/ricochet-compact-helm.jpg)
+
+![Phantom live flight deck, in an isolated visual check](docs/readme-images/phantom-flight-deck.jpg)
+
+[Open the cockpit and navigation gallery](docs/COCKPIT_GALLERY.md).
+
+Both maps have a scale bar calculated from their current projection. Zoom with **+ / −**, the mouse wheel or a touch pinch, from a whole-world view down to a 100 m horizontal span. **Airport views → Scenic flights → Traffic** chooses **0–10** scheduled scenery aircraft, including Argons and Phantoms. These routes and passenger seats are separate from the telemetry-driven AI pilot; this update adds no scripted pilot flights.
+
+For isolated main-vehicle testing on Windows, use **[Test-VTX-Vehicles.bat](Test-VTX-Vehicles.bat)** at **http://127.0.0.1:8781/**. It identifies this checkout and uses a separate save folder, leaving an existing game on 8770 untouched. Follow [the main-vehicle test checklist](docs/MAIN_VEHICLE_TESTING.md); passing automated checks does not replace manual flight acceptance.
+
 On Steve's PC, the live project continuity record is `C:/Users/steve/Documents/Github/-vtx-flight-sim/docs/VTX_CONTINUITY.md`. Original flights stay in their recorded local archive and are not replaced by test output.
 
 | Candidate | Original evidence | Current verification |
