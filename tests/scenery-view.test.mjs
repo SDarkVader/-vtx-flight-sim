@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {airportViewSelection,sceneryPoseAt,SCENERY_VEHICLES,sceneryPassengerSeat} from '../public/scenery-view.js';
+import {airportViewSelection,sceneryPoseAt,SCENERY_VEHICLES,sceneryPassengerSeat,sceneryPassengerSight} from '../public/scenery-view.js';
 import {physicalAircraftPosition} from '../public/physical-camera-target.js';
 import {clearOfPhysicalAircraft} from '../public/vtx-env/visual-air-traffic.js';
 
@@ -16,6 +16,9 @@ for(const vehicle of SCENERY_VEHICLES){
  assert.ok(sceneryPassengerSeat(vehicle.id).every(Number.isFinite));
 }
 assert.throws(()=>sceneryPassengerSeat('missing'));
+assert.deepEqual(sceneryPassengerSight('r6-flight',0,0),[0,-1,0]);
+assert.deepEqual(sceneryPassengerSight('a10-primary',0,0),[1,0,0]);
+assert.deepEqual(sceneryPassengerSeat('r6-flight'),[-.2997,-.0592,.4003]);
 
 // Alternate passenger poses drive BOTH visibility clearance and presentation.
 const sampleOperations=()=>({position:[500,500,50],mode:'scripted'});
@@ -33,6 +36,8 @@ assert.deepEqual(physicalAircraftPosition({phantom:{},mass:{cg_world_m:[4,5,6]}}
 assert.equal(physicalAircraftPosition({body_poses:{airframe:{position:[NaN,0,0]}}}),null);
 
 const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+assert.match(app,/inspection_selection_known===false && !last\?\.active/,'an unselected idle placeholder is not presented as the player aircraft');
+assert.match(app,/truth&&!unselected\?visualAsset/,'the placeholder asset is not loaded');
 assert.match(app,/selectedVehicleId='physical-plant',passengerRide=false/);
 assert.doesNotMatch(app,/actors\.filter\(actor=>actor\.id!=='a10-primary'\)/);
 assert.match(app,/clearOfPhysicalAircraft\(poseAt\(sceneTime\)\.position,physical\)/);

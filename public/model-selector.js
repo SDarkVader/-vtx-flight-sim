@@ -2,6 +2,7 @@ import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
 import {SCENERY_VEHICLES} from './scenery-view.js?v=20261116-passengers';
 
 const airframe = document.getElementById('airframe');
+const mainAircraft = document.getElementById('main-aircraft');
 const startConfiguration = document.getElementById('phantom-start');
 const status = document.getElementById('validation');
 const start = document.getElementById('start');
@@ -14,6 +15,7 @@ function setBusy(value) {
   document.documentElement.dataset.vtxPreviewPending = value ? '1' : '0';
   if (value) {
     airframe.disabled = true;
+    mainAircraft.disabled = true;
     startConfiguration.disabled = true;
     start.disabled = true;
   }
@@ -21,6 +23,8 @@ function setBusy(value) {
 
 function showActual(view) {
   const actual = view.observation?.configuration?.airframe_variant;
+  mainAircraft.disabled = !!view.active;
+  mainAircraft.value = view.inspection_selection_known !== false && ['r6', 'phantom-a10c'].includes(actual) ? actual : '';
   evidence.textContent = flownEvidence(view);
   evidence.hidden = !evidence.textContent;
   document.getElementById('r6-pilot-record').hidden = actual !== 'r6-argon-20261103';
@@ -48,7 +52,7 @@ async function currentView() {
 }
 
 async function applyPreview(variant, {selecting = false} = {}) {
-  if (pending) return;
+  if (pending || airframe.disabled) return;
   setBusy(true);
   status.textContent = 'Loading the selected aircraft…';
   try {
@@ -79,6 +83,7 @@ async function applyPreview(variant, {selecting = false} = {}) {
     } catch {
       setBusy(false);
       airframe.value = loadedVariant;
+      mainAircraft.disabled = true;
       // Keep controls disabled until a fresh server view arrives.
     }
   }
@@ -116,13 +121,14 @@ document.getElementById('models').addEventListener('click', () => {
   for (const vehicle of SCENERY_VEHICLES) passengers.append(new Option(vehicle.label, `scenery:${vehicle.id}`));
   vehicleChoice.replaceChildren(placeholder, aircraft, boats, passengers, earlier);
   vehicleChoice.value = '';
-  vehicleStatus.textContent = '';
+  vehicleStatus.textContent = airframe.disabled ? 'Save or end your active aircraft flight before choosing another aircraft. Boats and passenger seats remain available.' : '';
   vehicleDialog.showModal();
 });
 chooseButton.addEventListener('click', async () => {
   const value = vehicleChoice.value;
   if (!value) {vehicleStatus.textContent = 'Choose a vehicle.'; return;}
   if (!value.startsWith('boat:') && !value.startsWith('scenery:')) {
+    if (airframe.disabled) {vehicleStatus.textContent = 'Save or end the current flight before switching aircraft.'; return;}
     airframe.value = value;
     airframe.dispatchEvent(new Event('change', {bubbles: true}));
     vehicleDialog.close();
@@ -143,6 +149,12 @@ chooseButton.addEventListener('click', async () => {
   }
 });
 airframe.addEventListener('change', () => { void applyPreview(airframe.value, {selecting: true}); });
+mainAircraft.addEventListener('change', () => {
+  if (mainAircraft.disabled || airframe.disabled) return;
+  airframe.value = mainAircraft.value;
+  void applyPreview(airframe.value, {selecting: true});
+});
+document.addEventListener('vtx-aircraft-state', event => {if (!pending) showActual(event.detail);});
 startConfiguration.addEventListener('change', () => {
   if (airframe.value.startsWith('phantom') && !airframe.disabled) void applyPreview(airframe.value);
 });

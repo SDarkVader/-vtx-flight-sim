@@ -206,7 +206,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     <div class="map-tools"><button type="button" data-harbour="activate">Initialize two Concept A boats</button><button type="button" data-harbour="lake">View harbour</button></div>
     <label class="control-label">Boat<select data-harbour="boat"><option value="">Choose a boat</option></select></label>
     <p data-harbour="telemetry" class="muted small">No boat selected.</p>
-    <button type="button" data-harbour="focus">View selected boat</button>
+    <div class="map-tools"><button type="button" data-harbour="focus">View selected boat</button><button type="button" data-harbour="cockpit">Cockpit camera</button></div>
     <label class="control-label">Berth<select data-harbour="berth"><option value="">Choose a berth</option></select></label>
     <div class="map-tools"><button type="button" data-harbour="dock">Dock at berth</button><button type="button" data-harbour="undock">Release mooring</button></div>
     <div role="group" aria-label="Helm"><div class="section-label">Helm</div>
@@ -255,6 +255,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     el('dock').disabled = !live || !boat || !!boat.dockedAt || !el('berth').value;
     el('undock').disabled = !live || !boat?.dockedAt;
     el('focus').disabled = !boat || !finiteArray(boat.position, 3);
+    el('cockpit').disabled = !boat || !finiteArray(boat.position, 3) || !boat.body_poses?.airframe;
     el('lake').disabled = !world?.harbour;
     el('cut').disabled = !live || !boat;
     el('save').disabled = !live;
@@ -321,7 +322,8 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
   el('cut').addEventListener('click', () => {flushHelm(); void send({action: 'command', boatId: state.selectedId, command: {throttle: 0}});});
   el('save').addEventListener('click', () => {flushHelm(); void send({action: 'save'});});
   el('restore').addEventListener('click', () => {discardHelm(); void send({action: 'restore'});});
-  el('focus').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat');});
+  el('focus').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat', boat.id);});
+  el('cockpit').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat-cockpit', boat.id);});
   el('lake').addEventListener('click', () => {
     const h = world.harbour; onFocus([...harbourWorldPoint(h, [2200, 1300]), h.waterLevelM], 'harbour');
   });
@@ -344,7 +346,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
       const boat = selected();
       if (!boat || boat.id !== boatId) throw Error(status || 'Could not select the boat.');
       panel.open = true;
-      onFocus(boat.position, 'boat');
+      onFocus(boat.position, 'boat-cockpit', boat.id);
       return boat;
     },
     setWorld(next) {worldEpoch++; revision++; discardHelm(); world = next; state = null; status = ''; lastSuccess = 0; onRoutes(el('routes').checked); render(); if (enabled) void refresh();},

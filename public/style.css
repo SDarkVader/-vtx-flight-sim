@@ -19,7 +19,13 @@ input:not([type="range"]),textarea,[contenteditable="true"]{-webkit-user-select:
 #model-selector-dialog .primary{width:auto;min-width:160px;margin-top:20px;display:block}
 #model-choice-cancel{margin-top:20px}
 @media(max-width:600px){.model-choice-grid{grid-template-columns:1fr}.model-choice-card{min-height:42px}}
-.controls-panel.phantom-active > :not(#phantom-panel){display:none}
+.controls-panel.phantom-active > :not(#phantom-panel):not(#vehicle-control-navigation){display:none}
+.controls-panel[data-vehicle-controls="boat"] > :not(#harbour-panel):not(#vehicle-control-navigation),
+.controls-panel[data-vehicle-controls="passenger"] > :not(#passenger-control-note):not(#vehicle-control-navigation),
+.controls-panel:not([data-vehicle-controls="boat"]) > #harbour-panel,
+.controls-panel:not([data-vehicle-controls="passenger"]) > #passenger-control-note{display:none!important}
+.controls-panel[data-vehicle-controls="boat"] > #harbour-panel,
+.controls-panel[data-vehicle-controls="passenger"] > #passenger-control-note{display:block}
 #phantom-panel{color:#e8f2f2;font-size:12px;line-height:1.5}
 #phantom-panel b{display:block;margin-bottom:12px;color:#7cdfcb}
 #phantom-panel label{display:block;margin:12px 0}

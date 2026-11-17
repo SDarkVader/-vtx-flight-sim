@@ -23,8 +23,11 @@ if errorlevel 1 goto failed
 if /i "%~1"=="--check" exit /b 0
 powershell -NoProfile -Command "if (Get-NetTCPConnection -LocalPort 8770 -State Listen -ErrorAction SilentlyContinue) { exit 1 }"
 if errorlevel 1 (
-  echo Port 8770 is already in use. Open http://127.0.0.1:8770/ for the existing session.
-  goto failed
+  "%VTX_PYTHON%" scripts\check_airport_server.py
+  if errorlevel 1 goto failed
+  echo Use the existing game window to continue.
+  if not defined VTX_LAUNCHER_NO_PAUSE pause
+  exit /b 0
 )
 "%VTX_PYTHON%" scripts\prepare_windows_launch.py "%VTX_DATA_ROOT%"
 if errorlevel 1 goto failed

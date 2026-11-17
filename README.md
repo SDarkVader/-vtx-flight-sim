@@ -10,7 +10,9 @@ Choose vehicle lists the current Phantom A10-C and Argon R6, the two Ricochets a
 
 ## Current development
 
-Main Aircraft promotion is pending the owner's flight tests. The recovered Phantom runway and VTOL candidates remain distinct under Experiments. A10-B remains a pinned reference.
+The **Main Aircraft** menu lets you explicitly select the development Phantom A10-C or Argon R6. Save or end an active aircraft flight before switching. The recovered Phantom runway and VTOL candidates remain distinct under Experiments. A10-B remains a pinned reference; availability in the menu does not certify a development aircraft.
+
+Controls follow the selected seat: physical aircraft controls, Ricochet helm, or a passenger notice for scenic flights. Selecting either Ricochet opens its cockpit camera; **View selected boat**, **Cockpit** and mouse look switch its views. **Aircraft controls** returns to the physical aircraft. The current aircraft render revisions are checked against SHA-256 pins before they are displayed. Fonts and aircraft dynamics are unchanged. See [the selection and camera verification](docs/VEHICLE_CONTROLS_20261117.md).
 
 On Steve's PC, the live project continuity record is `C:/Users/steve/Documents/Github/-vtx-flight-sim/docs/VTX_CONTINUITY.md`. Original flights stay in their recorded local archive and are not replaced by test output.
 
@@ -26,7 +28,7 @@ The authored wheels and pod mounts are retained. Collision dimensions and visual
 
 Use **Save flight & switch** before changing aircraft. Flight records restores supported checkpoints paused; then choose **Take control** and **Resume existing mission**. Phantom inner checkpoint format 3 retains the radar ground-reference calibration. Missing or incompatible dependencies and older insufficient checkpoints remain preserved with an explicit recovery failure, rather than being silently reset. Camera preferences are stored separately in that browser profile.
 
-Saved flights are retained locally; persistence across cloud deployments is not implemented. On Windows, `Start-VTX.bat` launches the local game using the installed Python environment and preserves incompatible prior launch state in a recovery folder.
+Saved flights are retained locally; persistence across cloud deployments is not implemented. On Windows, `Start-VTX.bat` launches the local game using the installed Python environment and preserves incompatible prior launch state in a recovery folder. If the port is occupied, the launcher checks the airport, harbour, runtime and frontend files before identifying the existing server. Local frontend responses require cache revalidation to reduce stale versions across browser profiles.
 
 The actual ground check saved a runway state, switched to the distinct VTOL candidate and restored the same runway run paused at 55.0175 s with identical checkpoint bytes and retained calibration. Full owner flight tests, Argon acceptance and promotion remain outstanding.
 

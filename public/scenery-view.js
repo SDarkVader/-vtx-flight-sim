@@ -12,7 +12,15 @@ const SCENERY_IDS=new Set(SCENERY_VEHICLES.map(vehicle=>vehicle.id));
 // Offsets are relative to the scenery actor's rotation centre, not the physical aircraft.
 export function sceneryPassengerSeat(id){
  if(!SCENERY_IDS.has(id))throw Error('Unknown scenery vehicle');
- return id==='a10-primary'?[.9,0,1.48]:[0,0,.45];
+ // R6's cabin datum is [0,0,1.56], with the existing pilot eye
+ // [-.30,.02,.25]; subtract the unchanged scenic model's render CG.
+ return id==='a10-primary'?[.9,0,1.48]:[-.2997,-.0592,.4003];
+}
+
+export function sceneryPassengerSight(id, yaw, pitch) {
+ if(!SCENERY_IDS.has(id))throw Error('Unknown scenery vehicle');
+ const cp=Math.cos(pitch);
+ return id==='a10-primary'?[Math.cos(yaw)*cp,Math.sin(yaw)*cp,Math.sin(pitch)]:[Math.sin(yaw)*cp,-Math.cos(yaw)*cp,Math.sin(pitch)];
 }
 
 export function airportViewSelection(id=PHYSICAL_VIEW_ID,{passenger=false}={}){
