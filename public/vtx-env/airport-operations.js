@@ -11,14 +11,19 @@ const AIRCRAFT=[
  {id:'r6-flight',modelId:'r6',route:'holding',direction:'left',runwayId:'03/21',alternateIndex:0,stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-A').center},
  {id:'r6-training',modelId:'r6',route:'training',direction:'right',stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-B').center},
  {id:'r6-teardrop',modelId:'r6',route:'teardrop',direction:'left',runwayId:'03/21',alternateIndex:1,stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-C').center},
- {id:'r6-go-around',modelId:'r6',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-D').center}
+ {id:'r6-go-around',modelId:'r6',route:'go-around',direction:'left',runwayId:'03/21',alternateIndex:2,stand:LAYOUT.stands_expanded.find(s=>s.id==='R6-STAND-D').center},
+ {id:'a10-training',modelId:DEFAULT_VISUAL_MODEL,route:'training',direction:'right',stand:[270,-130]},
+ {id:'r6-holiday',modelId:'r6',route:'holding',direction:'right',runwayId:'03/21',alternateIndex:3,stand:[240,-102]},
+ {id:'a10-teardrop',modelId:DEFAULT_VISUAL_MODEL,route:'teardrop',direction:'left',stand:[294,-130]},
+ {id:'r6-circuit',modelId:'r6',route:'training',direction:'left',stand:[252,-102]},
+ {id:'a10-holiday',modelId:DEFAULT_VISUAL_MODEL,route:'holding',direction:'right',stand:[318,-130]}
 ];
 const ease=u=>u*u*(3-2*u), clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const collide=(a,b,pad=6)=>a[0]<b[1]+pad&&b[0]<a[1]+pad;
 function taxiSeconds(actor){
  if(actor.runwayId==='03/21')return 12+8+actor.alternateIndex*4;
  const lane=Math.max(12,Math.abs(actor.stand[0]+90)/5);
- const laneY=actor.modelId==='r6'?-27:-35;
+ const laneY=(actor.modelId==='r6'||actor.index>=5)?-27:-35;
  const queue=Math.max(8,Math.abs((-25-15*actor.index)-laneY)/5);
  return 6+lane+queue+2+8;
 }
@@ -27,6 +32,9 @@ function runwaySchedule(aircraft){
  for(let i=0;i<aircraft.length;i++){
   const actor=aircraft[i],duration=actor.route.duration;
   let departure=38+i*20;
+  // Additional traffic uses the same tested routes, reserving its complete
+  // apron movement after preceding arrivals before joining the runway.
+  if(i>=5)departure=Math.max(departure,...items.map((s,k)=>s.arrival+(aircraft[k].runwayId==='03/21'?80:55)))+taxiSeconds(actor)+10;
   // Reserve runway entry/takeoff and landing, including a six-second wake gap.
   while(true){
    const entry=actor.runwayId==='03/21'?8+actor.alternateIndex*4:8;
@@ -61,7 +69,7 @@ function sampleAircraft(actor,t,cycle){
  const runwayStart=actor.route.points[0],runwayEnd=actor.route.points.at(-1),local=((t%cycle)+cycle)%cycle;
  let pose,operation;
  // The south-apron Argon joins the existing return lane, clear of tree-5.
- const laneY=actor.modelId==='r6'?-27:-35;
+ const laneY=(actor.modelId==='r6'||actor.index>=5)?-27:-35;
  const laneStart=[actor.stand[0],laneY,stand[2]],queue=[-90,laneY,stand[2]];
  const laneSeconds=Math.max(12,Math.abs(actor.stand[0]+90)/5);
  const queueSeconds=Math.max(8,Math.abs(hold[1]-laneY)/5);
@@ -103,9 +111,9 @@ function sampleGround(actor,t,world){
  const z=sampleTerrainHeight(world,a[0],a[1])+1;
  return {...groundPose(a,b,legT,16,z),operation:'ground service',routeId:actor.road,modelId:actor.modelId,vehicleId:actor.id,mode:'scripted'};
 }
-export function createAirportOperations(world){
+export function createAirportOperations(world,{maxAircraft=5}={}){
  if(!world||world.half_m<480)throw Error('Airport traffic requires the 500 m physical terrain');
- const aircraft=AIRCRAFT.map((spec,index)=>{
+ const aircraft=AIRCRAFT.slice(0,clamp(Math.round(Number(maxAircraft)||5),1,10)).map((spec,index)=>{
   const model=vehicleModel(spec.modelId),journey=buildRideJourney(spec.route,spec.direction,model.cgLocal[2],spec.runwayId||'08/26');
   const route=buildRideTrajectory(journey.points,{cruiseSpeed:journey.speed});
   if(spec.runwayId==='03/21')route.terrainFollowWorld=world;
@@ -119,10 +127,10 @@ export function createAirportOperations(world){
  let density=all.length;
  return {
   actors:all,aircraft,ground,cycle:schedule.cycle,runwaySlots:schedule.occupied,
-  setDensity(value){density=clamp(Math.round(Number(value)||0),2,all.length);},
+  setDensity(value){density=clamp(Math.round(Number(value)||0),0,all.length);},
   get density(){return density;},
   sample(id,time){const a=all.find(actor=>actor.id===id);if(!a)throw Error('Unknown vehicle '+id);return aircraft.includes(a)?sampleAircraft(a,time,schedule.cycle):sampleGround(a,time,world);},
-  isVisible(id){return all.findIndex(a=>a.id===id)<density;}
+  isVisible(id){const index=all.findIndex(a=>a.id===id);return index>=0&&index<density;}
  };
 }
 

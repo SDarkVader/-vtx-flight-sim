@@ -8,12 +8,15 @@ import sys
 import uuid
 
 root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(root / "src"))
+from vtx.frontend_identity import server_frontend_manifest
 
 
 def prepare(data_root):
     pilot = Path(data_root) / "pilot"
     current = json.loads((root / "inputs/flight_revisions.json").read_text(
         encoding="utf-8"))["integrated_runtime_sha256"]
+    frontend = server_frontend_manifest()["sha256"]
     candidates = []
     for name in ("live-flight-checkpoint.json", "inspection-selection.json"):
         path = pilot / name
@@ -21,7 +24,9 @@ def prepare(data_root):
             continue
         payload = path.read_bytes()
         state = json.loads(payload)
-        if state.get("runtime_source_sha256") != current:
+        saved_frontend = state.get("server_frontend_identity")
+        if (state.get("runtime_source_sha256") != current or
+                (isinstance(saved_frontend, dict) and saved_frontend.get("sha256") != frontend)):
             candidates.append((path, payload))
     if not candidates:
         return None

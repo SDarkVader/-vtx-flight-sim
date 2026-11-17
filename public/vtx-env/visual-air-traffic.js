@@ -1,6 +1,7 @@
 // Render-only scenic airport traffic. Never enters pilot observations or the physics API.
 import {buildTrafficRoute, sampleTrafficRoute} from './traffic-path.js';
 import {sampleRideTrajectory} from './ride-trajectory.js';
+import {loadPinnedGltf} from '../visual-identity.js';
 const sampleRoute=(route,time)=>route.kind==='smooth-ride'?sampleRideTrajectory(route,time):sampleTrafficRoute(route,time);
 
 export function clearOfPhysicalAircraft(traffic, physical) {
@@ -12,11 +13,10 @@ export function createVisualAirTraffic({THREE, GLTFLoader, scene, aircraft}) {
   const loader = new GLTFLoader();
   const assets = new Map();
   const loadAsset = (spec) => {
-    if (!assets.has(spec.asset)) assets.set(spec.asset, new Promise((resolve, reject) =>
-      loader.load(spec.asset, gltf => {
-        try{spec.prepareSource?.(gltf.scene);resolve(gltf.scene);}
-        catch(error){reject(error);}
-      }, progress => spec.onProgress?.(progress), reject)));
+    if (!assets.has(spec.asset)) assets.set(spec.asset,
+      loadPinnedGltf(loader, spec.asset, spec.assetSha256).then(gltf => {
+        spec.prepareSource?.(gltf.scene); return gltf.scene;
+      }));
     return assets.get(spec.asset);
   };
   for (const spec of aircraft) {

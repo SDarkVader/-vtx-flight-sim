@@ -9,7 +9,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const threeUrl = new URL('../public/vendor/three.module.js', import.meta.url).href;
 const effectsUrl = new URL('../public/vtx-env/phantom-effects.js', import.meta.url).href;
 const source = readFileSync(resolve(root, 'public/vtx-env/phantom-look.js'), 'utf8')
-  .replace("from 'three'", `from '${threeUrl}'`)
+  .replace("from '../vehicle-livery.js'", "from '"+new URL('../public/vehicle-livery.js',import.meta.url).href+"'").replace("from 'three'", `from '${threeUrl}'`)
   .replace("from './phantom-effects.js?v=1'", `from '${effectsUrl}'`);
 const THREE = await import(threeUrl);
 const {attachPhantom, updatePhantom} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
@@ -49,6 +49,11 @@ test('visual wheels preserve authored dimensions and attachment datums while fol
     updatePhantom(rig, c.truth, false, [], true);
     model.updateMatrixWorld(true);
     assert.equal(rig.wheels.length, 4);
+    for(const jet of rig.podJets){
+      const rendered=new THREE.Vector3(0,0,1).applyQuaternion(jet.glow.getWorldQuaternion(new THREE.Quaternion()));
+      const exhaust=new THREE.Vector3(...c.expected[jet.pod].fan_axis_world).negate();
+      assert.ok(rendered.distanceTo(exhaust)<3e-5,`${c.variant} ${c.tilted} ${jet.pod} plume opposes the actual fan force axis`);
+    }
     for (const wheel of rig.wheels) {
       const pod = ['FL', 'FR', 'RL', 'RR'][wheel.idx], expected = c.expected[pod];
       assert.equal(wheel.node.visible, true, `${c.variant} ${pod} wheel visible`);

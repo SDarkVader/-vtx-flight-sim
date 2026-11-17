@@ -16,30 +16,36 @@ import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
 import {missionDeparture} from './mission-departure.js?v=20261116-start';
 import {startupFrameReady} from './startup-visibility.js?v=20261116-start';
 import {cockpitTelemetry} from './cockpit-telemetry.js?v=1';
-import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=4';
+import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=20261117-clear-sight-4';
+import {isArgonRotorHousing} from './argon-cutaway.js?v=3';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
 import {buildSky} from './vtx-env/sky.js?v=1';
 import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
 import {buildAirfield} from './vtx-env/airfield.js?v=20261116-runway-1';
-import {buildHarbour,createHarbourControls,harbourOverviewView} from './vtx-env/harbour.js?v=20261116-runway-load';
+import {buildHarbour,createHarbourControls,harbourOverviewView,setBoatCockpit,setBoatLighting} from './vtx-env/harbour.js?v=20261117-cockpit-9';
+import {boatCameraView} from './vtx-env/harbour-camera.js?v=3';
+import {createVehicleWorkspace} from './vehicle-workspace.js';
+import {loadPinnedGltf,verifiedVisualAssets} from './visual-identity.js';
+import {createPhantomAvionics} from './phantom-avionics.js?v=3';
+import {updateBoatAvionics} from './boat-avionics.js?v=4';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
-import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=phantom-no-white-exterior-lenses-20261113';
+import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=20261117-cutaway';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261116-navigation';
+import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261117-scale-zoom';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=20261116-runway-1';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
 import {RIDE_JOURNEYS,buildRideJourney} from './vtx-env/visual-ride-journeys.js?v=3';
 import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from './vtx-env/ride-trajectory.js?v=1';
 import {attachVisualPhantom,animateVisualPhantom} from './vtx-env/visual-phantom-animation.js?v=2';
-import {createAirportOperations} from './vtx-env/airport-operations.js?v=20261116-scenery-2';
+import {createAirportOperations} from './vtx-env/airport-operations.js?v=20261117-traffic-10';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
 import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
-import {airportViewSelection,sceneryPoseAt,sceneryPassengerSeat} from './scenery-view.js?v=20261116-passengers';
+import {airportViewSelection,sceneryPoseAt,sceneryPassengerSeat,sceneryPassengerSight} from './scenery-view.js?v=20261117-traffic-10';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
-import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261115-authored-wheel-fit';import {createPhantomPanel} from './phantom-controls.js?v=20261115-held-toggle-state';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
+import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261117-pod-exhaust-livery';import {createPhantomPanel} from './phantom-controls.js?v=20261115-held-toggle-state';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
 const phantomMissionNote=document.createElement('p');
@@ -56,6 +62,7 @@ function setMissionOptions(variant){
 }
 setMissionOptions($('airframe').value);
 function showRevision(view) {
+ if(view.inspection_selection_known===false && !view.active){const node=$('revision');node.textContent='No aircraft selected';node.title='Choose a vehicle to load its physical model.';node.style.color='';return;}
  const provenance=view.rendering_truth?.provenance||{};
  const config=view.observation?.configuration?.config_sha256||provenance.config_sha256;
  const physics=provenance.physics_revision||(config?`config ${config.slice(0,12)}`:'physics identity unavailable');
@@ -63,9 +70,10 @@ function showRevision(view) {
  const node=$('revision');
  const id=view.observation?.configuration?.identity;
  const badge=id?(id.verified?' · IDENTITY VERIFIED':id.experimental?' · EXPERIMENTAL CONFIG':id.pinned?' · IDENTITY MISMATCH':' · not pinned'):'';
+ const visualPin=verifiedVisualAssets.has(provenance.render_asset?.split('?')[0])?' · VISUAL PIN VERIFIED':'';
  const visual=id?.render_asset_sha256?` · visual ${id.render_asset_sha256.slice(0,8)}`:'';
  const commit=id?.git_commit?` · git ${id.git_commit.slice(0,7)}`:'';
- node.textContent=`${provenance.revision||'unknown model'} · ${physics}${visual}${commit}${runtime?' · code '+runtime.slice(0,8):''}${badge}`;
+ node.textContent=`${provenance.revision||'unknown model'} · ${physics}${visual}${commit}${runtime?' · code '+runtime.slice(0,8):''}${badge}${visualPin}`;
  node.style.color=id&&id.pinned&&!id.verified&&!id.experimental?'#ff7a6b':'';
  node.title=`Model: ${provenance.revision||'unknown'}; physics: ${provenance.physics_revision||'parameter configuration'}; config SHA-256: ${config||'not supplied'}; model XML SHA-256: ${provenance.model_xml_sha256||'not supplied'}; runtime SHA-256: ${runtime||'not supplied'}${id?`; parameter file SHA-256: ${id.parameter_file_sha256}; visual asset: ${id.render_asset} SHA-256 ${id.render_asset_sha256}; git commit: ${id.git_commit||'not a git checkout'}; identity: ${id.status}`:''}`;
 }
@@ -148,7 +156,7 @@ let rideEnabled=false;
 const trafficPreviewEnabled=true;
 {
  const panel=document.createElement('div');panel.id='ride-controls';
- panel.innerHTML=`<label>View <select id="airport-aircraft"><optgroup label="Piloted aircraft"><option value="physical-plant">Your aircraft · physical</option></optgroup><optgroup label="Scenic flights · visual only"><option value="a10-primary">Phantom A10 · scenery</option><option value="r6-flight">Argon R6 · holding scenery</option><option value="r6-training">Argon R6 · training scenery</option><option value="r6-teardrop">Argon R6 · teardrop scenery</option><option value="r6-go-around">Argon R6 · go-around scenery</option></optgroup></select></label><label>Camera <select id="airport-camera"><option value="chase">Chase</option><option value="cockpit">Cockpit</option><option value="free">Exterior / free</option><option value="orbit">Top</option></select></label><details id="airport-ops"><summary>Scenic flights</summary><div class="airport-menu"><p class="muted small">Scenery follows visual flight paths. Pilot controls stay with your physical aircraft.</p><label>Journey <select id="ride-route">${RIDE_JOURNEYS.map(r=>`<option value="${r.id}">${r.label}</option>`).join('')}</select></label><label>Direction <select id="ride-direction"><option value="left">Left-hand</option><option value="right">Right-hand</option></select></label><button id="ride-start" type="button">Watch passenger ride</button><label>Traffic <select id="traffic-density"><option value="5">Full · 5 scenic aircraft</option><option value="4">Standard · 4</option><option value="3">Mobile · 3</option><option value="2">Light · 2</option></select></label><label>Scenery speed <select id="airport-speed"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select></label><div class="airport-menu-actions"><button id="ride-pause" type="button">Pause scenery</button><button id="ride-restart" type="button">Restart scenery</button></div><span id="ride-progress" aria-live="polite">Loading scenery...</span><div class="airport-menu-actions" id="airport-extra"></div></div></details>`;
+ panel.innerHTML=`<label>View <select id="airport-aircraft"><optgroup label="Piloted aircraft"><option value="physical-plant">Your aircraft · physical</option></optgroup><optgroup label="Scenic flights · visual only"><option value="a10-primary">Phantom A10 · scenery</option><option value="r6-flight">Argon R6 · holding scenery</option><option value="r6-training">Argon R6 · training scenery</option><option value="r6-teardrop">Argon R6 · teardrop scenery</option><option value="r6-go-around">Argon R6 · go-around scenery</option><option value="a10-training">Phantom A10 · training scenery</option><option value="r6-holiday">Argon R6 · holiday scenery</option><option value="a10-teardrop">Phantom A10 · teardrop scenery</option><option value="r6-circuit">Argon R6 · circuit scenery</option><option value="a10-holiday">Phantom A10 · holiday scenery</option></optgroup></select></label><label>Camera <select id="airport-camera"><option value="chase">Chase</option><option value="cockpit">Cockpit</option><option value="free">Exterior / free</option><option value="orbit">Top</option></select></label><details id="airport-ops"><summary>Scenic flights</summary><div class="airport-menu"><p class="muted small">Scenery follows visual flight paths. Pilot controls stay with your physical aircraft.</p><label>Journey <select id="ride-route">${RIDE_JOURNEYS.map(r=>`<option value="${r.id}">${r.label}</option>`).join('')}</select></label><label>Direction <select id="ride-direction"><option value="left">Left-hand</option><option value="right">Right-hand</option></select></label><button id="ride-start" type="button">Watch passenger ride</button><label>Traffic <select id="traffic-density"><option value="0">0 scenic aircraft</option><option value="1">1 scenic aircraft</option><option value="2">2 scenic aircraft</option><option value="3">3 scenic aircraft</option><option value="4">4 scenic aircraft</option><option value="5">5 scenic aircraft</option><option value="6">6 scenic aircraft</option><option value="7">7 scenic aircraft</option><option value="8">8 scenic aircraft</option><option value="9">9 scenic aircraft</option><option value="10">10 scenic aircraft</option></select></label><label>Scenery speed <select id="airport-speed"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select></label><div class="airport-menu-actions"><button id="ride-pause" type="button">Pause scenery</button><button id="ride-restart" type="button">Restart scenery</button></div><span id="ride-progress" aria-live="polite">Loading scenery...</span><div class="airport-menu-actions" id="airport-extra"></div></div></details>`;
  // Airport view controls remain independent of the live aircraft controls.
  document.getElementById('airport-drawer').append(panel);
  // Engineering and flight records remain in the header.
@@ -167,6 +175,13 @@ const trafficPreviewEnabled=true;
   cameraTools.append(nightButton);
   if(new URLSearchParams(location.search).get('time')==='night'){timeOfDay.set('night');nightButton.textContent='Day';}
   function recenterPhysicalVehicle(){
+   if(boatViewId){
+    const body=harbourLayer?.boats.get(boatViewId)?.bodies.get('airframe'),q=body?.quaternion;
+    const view=q?boatCameraView({position:body.position.toArray(),quaternion_wxyz:[q.w,q.x,q.y,q.z]},{mode:'chase'}):null;
+    setCameraMode('chase');
+    if(view){camera.position.set(...view.position);orbit.target.set(...view.target);camera.up.set(0,0,1);orbit.update();}
+    return;
+   }
    const truth=replayFrames?.[replayFrame]||last?.rendering_truth,target=physicalCameraTarget(truth);
    setCameraMode('chase');
    if(target)orbit.target.set(...target);
@@ -195,6 +210,7 @@ const trafficPreviewEnabled=true;
   $('ride-direction').onchange=changeJourney;
  function selectAirportView(id,options){
   const choice=airportViewSelection(id,options);
+  boatViewId=null;vehicleWorkspace.show(choice.scenery?'passenger':'aircraft');
   selectedVehicleId=choice.id;rideEnabled=choice.scenery;passengerRide=choice.passenger;
   $('airport-aircraft').value=choice.id;
   if(rideEnabled)showRideAircraft('chase');else setCameraMode('chase');
@@ -222,7 +238,7 @@ const trafficPreviewEnabled=true;
  $('airport-aircraft').onchange=()=>selectAirportView($('airport-aircraft').value);
  $('airport-aircraft').value='physical-plant';
   $('traffic-density').value=mobile?'3':'5';
- $('traffic-density').onchange=()=>airportOperations?.setDensity($('traffic-density').value);
+ $('traffic-density').onchange=()=>{airportOperations?.setDensity($('traffic-density').value);if(rideEnabled&&!airportOperations?.isVisible(selectedVehicleId))selectAirportView('physical-plant');};
  $('airport-speed').onchange=()=>{sceneScale=Number($('airport-speed').value);};
 $('airport-camera').onchange=()=>{const mode=$('airport-camera').value;if(mode==='orbit')$('view-top').click();else if(rideEnabled&&mode==='chase')showRideAircraft('chase');else setCameraMode(mode);saveCameraPreference();};
   $('view-mode').textContent='PHYSICAL STATE - LIVE';
@@ -230,7 +246,8 @@ $('airport-camera').onchange=()=>{const mode=$('airport-camera').value;if(mode==
 const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);post?.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 const worldGroup=new THREE.Group();worldGroup.name='vtx-world';scene.add(worldGroup);
-let harbourLayer=null,harbourOverviewState=null,harbourViewActive=false;
+const phantomAvionics=createPhantomAvionics();scene.add(phantomAvionics.root);
+let harbourLayer=null,harbourOverviewState=null,harbourViewActive=false,boatViewId=null;
 function restoreHarbourOverview(){
  harbourViewActive=false;
  if(!harbourOverviewState)return;
@@ -239,10 +256,19 @@ function restoreHarbourOverview(){
  camera.near=saved.near;camera.far=saved.far;camera.updateProjectionMatrix();
 }
 const harbourControls=createHarbourControls({host:document.querySelector('.mission-panel'),api,toast,
- onState:(state,options)=>{harbourLayer?.update(state,options);drawMaps();},
+ onState:(state,options)=>{if(boatViewId&&state?.selectedId)boatViewId=state.selectedId;harbourLayer?.update(state,options);drawMaps();},
  onRoutes:visible=>harbourLayer?.setRoutesVisible(visible),
- onFocus:(point,kind)=>{
+ onFocus:(point,kind,boatId)=>{
   if(!point?.every(Number.isFinite))return;
+  boatViewId=boatId||null;
+  if(boatViewId){
+   rideEnabled=false;passengerRide=false;pendingRideExteriorMode=null;selectedVehicleId='physical-plant';
+   if($('airport-aircraft'))$('airport-aircraft').value=selectedVehicleId;
+   vehicleWorkspace.show('boat');cockpitYaw=0;cockpitPitch=0;
+   setCameraMode(kind==='boat-cockpit'?'cockpit':'chase');
+   $('view-mode').textContent='RICOCHET · LIVE HELM';
+   return;
+  }
   setCameraMode('free');
   harbourViewActive=true;
   const [x,y,z]=point;
@@ -259,12 +285,20 @@ const harbourControls=createHarbourControls({host:document.querySelector('.missi
   }
  }
 });
-document.querySelector('.map-key')?.after(harbourControls.panel);
+const vehicleWorkspace=createVehicleWorkspace({host:document.querySelector('.controls-panel'),harbourPanel:harbourControls.panel,
+ onAircraft:()=>{
+  boatViewId=null;rideEnabled=false;passengerRide=false;selectedVehicleId='physical-plant';
+  if($('airport-aircraft'))$('airport-aircraft').value=selectedVehicleId;
+  vehicleWorkspace.show('aircraft');setCameraMode('chase');$('view-mode').textContent='PHYSICAL STATE · LIVE';
+ },
+ onHarbour:()=>{vehicleWorkspace.show('boat');const id=harbourControls.state?.selectedId;if(id)void harbourControls.chooseBoat(id).catch(error=>toast(error.message));},
+ onChange:()=>{manualOwned=false;dirty=false;keys.clear();tiltSpin.fill(0);phantomPanel?.disengage();}
+});
 document.addEventListener('vtx-choose-boat', async event => {
  try {
   const boat = await harbourControls.chooseBoat(event.detail.boatId);
   const workspace = document.getElementById('cockpit-workspace');
-  if (workspace && !workspace.classList.contains('mission-open')) document.querySelector('button[aria-controls="mission-drawer"]')?.click();
+  if (workspace && !workspace.classList.contains('controls-open')) document.querySelector('button[aria-controls="controls-drawer"]')?.click();
   harbourControls.panel.scrollIntoView({block:'nearest'});
   toast(boat.dockedAt ? 'Ricochet selected. Release mooring to leave the berth.' : 'Ricochet selected.');
   event.detail.resolve();
@@ -391,15 +425,15 @@ function buildWorld(w){
  const isSandbox=historical||w.environment==='sandbox';
  clearWorldGroup();
  if(!isSandbox&&trafficPreviewEnabled&&!visualTraffic){
-  airportOperations=createAirportOperations(w);
+  airportOperations=createAirportOperations(w,{maxAircraft:10});
   airportOperations.setDensity($('traffic-density').value);
   const plan=buildRideJourney($('ride-route').value,$('ride-direction').value,rideCgLocal[2]);
   ridePlan=plan;rideRoute=buildRideTrajectory(plan.points,{cruiseSpeed:plan.speed});
   // Scenery has separate identities and transforms from the piloted ownship.
   const specs=airportOperations.actors.map(actor=>{
-   const modelSpec=VEHICLE_MODELS[actor.modelId],isA10=actor.id==='a10-primary',isRotor=modelSpec.animation==='rotor';
+   const modelSpec=VEHICLE_MODELS[actor.modelId],isA10=modelSpec.animation==='a10-28-joint',isRotor=modelSpec.animation==='rotor';
    const poseAt=time=>sceneryPoseAt({actorId:actor.id,time,sceneTime,passengerRide,rideRoute,rideTime,sampleRide:sampleRideTrajectory,sampleOperations:airportOperations.sample});
-   return {id:actor.id,asset:modelSpec.asset,cgLocal:modelSpec.cgLocal,rotateToZUp:modelSpec.rotateToZUp,
+   return {id:actor.id,asset:modelSpec.asset,assetSha256:modelSpec.sha256,cgLocal:modelSpec.cgLocal,rotateToZUp:modelSpec.rotateToZUp,
     prepareSource:actor.modelId==='r6'?root=>enhanceAircraft(root,scene.environment):undefined,
     validate:actor.modelId==='r6'?root=>{
      let meshes=0;root.traverse(node=>{if(node.isMesh)meshes++;});
@@ -494,6 +528,7 @@ const worldSynchronizer=createWorldSynchronizer({
 });
 let aircraftFx=null,loadedAsset=null,assetRetryAfter=0,modelReady=false;
 function disposeModel(root){
+ setCockpitVisibility(root,false);
  const geometries=new Set(),materials=new Set(),textures=new Set();
  root.traverse(n=>{if(!n.isMesh)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});
  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());
@@ -524,7 +559,7 @@ function loadAirframe(asset){
  if(asset===loadedAsset||performance.now()<assetRetryAfter)return;loadedAsset=asset;
  modelReady=false;if(model)model.visible=false;
  $('loading').hidden=false;$('loading').textContent='Loading physical revision…';
- new GLTFLoader().load(asset+(asset.includes('?')?'&':'?')+'v=20261106-zup-pose-bound-1',async g=>{
+ loadPinnedGltf(new GLTFLoader(),asset).then(async g=>{
  if(asset!==loadedAsset){disposeModel(g.scene);return;}
  if(model){suspensionSchematic.clear();detachPhantomEffects(phantomRig);scene.remove(model);disposeModel(model);}
  for(const key of Object.keys(bodyNodes))delete bodyNodes[key];pitchMeshes.length=0;
@@ -556,7 +591,7 @@ function loadAirframe(asset){
  let batchStarted=performance.now();
  for(const body of Object.values(bodyNodes)){
   const batches=new Map();
-  for(const n of [...body.children])if(n.isMesh&&!n.userData.pitch_axis&&!isCockpitObstruction(n)&&!Array.isArray(n.material)){
+  for(const n of [...body.children])if(n.isMesh&&!n.userData.pitch_axis&&!isCockpitObstruction(n)&&!isArgonRotorHousing(n)&&!Array.isArray(n.material)){
    const key=n.material.uuid+Object.keys(n.geometry.attributes).sort().join(',');
    if(!batches.has(key))batches.set(key,[]);batches.get(key).push(n);
   }
@@ -567,7 +602,7 @@ function loadAirframe(asset){
    if(performance.now()-batchStarted>10){await new Promise(resolve=>setTimeout(resolve,0));batchStarted=performance.now();if(model!==sourceModel||loadedAsset!==asset)return;}
   }
  }
- },undefined,e=>{if(asset===loadedAsset){loadedAsset=null;assetRetryAfter=performance.now()+5000;$('loading').textContent=`Aircraft asset unavailable: ${asset}`;}console.error(e);});
+ }).catch(e=>{if(asset===loadedAsset){loadedAsset=null;assetRetryAfter=performance.now()+5000;$('loading').textContent=`Aircraft visual unavailable: ${e.message}`;}console.error(e);});
 }
 
 function limitFanTilt(i){const v=command.tilt_deg[i],r=Math.hypot(...v);if(r>20){v[0]*=20/r;v[1]*=20/r;}for(let j=0;j<2;j++){const k=j?'y':'x';$(k+'-'+i).value=v[j];$(k+'val-'+i).value=v[j].toFixed(1)+'°';}syncPolar(i);}
@@ -703,6 +738,7 @@ $('runway-start').onclick=guard(async()=>{pick='a';const pt=currentEnvironment==
 $('pick-a').onclick=()=>setPick('a');$('pick-b').onclick=()=>setPick('b');
 for(const [id,p] of [['dep','a'],['dest','b']])$(id).onchange=guard(async()=>{const vals=$(id).value.split(',').map(Number);if(vals.length!==2||vals.some(v=>!Number.isFinite(v)))throw Error('Use two finite coordinates: east, north');setPick(p);await choosePoint(vals);});
 $('map-zoom').onclick=()=>{$('map-dialog').showModal();drawMaps(true);};
+document.querySelectorAll('[data-map-zoom]').forEach(button=>button.onclick=()=>{getMinimap($(button.dataset.mapTarget))?.zoomBy(Number(button.dataset.mapZoom));drawMaps(true);});
 const mapModeBtn=$('map-mode');
 if(mapModeBtn){
   mapModeBtn.onclick=()=>{
@@ -754,7 +790,7 @@ const cameraPreferences=createViewPreferenceStore(viewStorage);
 let cameraPreferenceIdentity=null,restoringCameraPreference=false,cameraPreferencesSuspended=false;
 
 function saveCameraPreference(){
-  if(restoringCameraPreference||cameraPreferencesSuspended||rideEnabled||replayFrames||!cameraPreferenceIdentity)return;
+  if(restoringCameraPreference||cameraPreferencesSuspended||rideEnabled||boatViewId||vehicleWorkspace.mode!=='aircraft'||replayFrames||!cameraPreferenceIdentity)return;
   const offset=(cameraMode==='chase'||cameraMode==='orbit')?camera.position.clone().sub(orbit.target):savedChaseOffset;
   const state={mode:cameraMode,cockpitYaw,cockpitPitch};
   if(offset)state.chaseOffset=offset.toArray();
@@ -769,7 +805,7 @@ function saveCameraPreference(){
 function syncCameraPreference(view){
   // Visual traffic and recorded replay have their own cameras; they must not
   // overwrite the physical aircraft's remembered view.
-  if(rideEnabled||replayFrames){cameraPreferencesSuspended=true;return;}
+  if(rideEnabled||boatViewId||vehicleWorkspace.mode!=='aircraft'||replayFrames){cameraPreferencesSuspended=true;return;}
   const variant=view.inspection_selection_known===false?null:view.observation?.configuration?.airframe_variant;
   const environment=view.environment?.key;
   const next=variant&&environment?{variant,environment}:null;
@@ -834,13 +870,16 @@ function setCameraMode(mode){
   restoreHarbourOverview();
   const previous=cameraMode;
   const actor=rideEnabled?visualTraffic?.getActor(selectedVehicleId)?.root:null;
+  if(boatViewId){
+    freeCam.deactivate();orbit.enabled=mode==='chase'||mode==='orbit';
+  }
   if(rideEnabled){
     if(previous==='chase'&&actor&&rideChaseInitialised)rideChaseOffset.copy(camera.position).sub(orbit.target);
-  }else if(previous==='chase'&&mode==='cockpit'){
+  }else if(!boatViewId&&previous==='chase'&&mode==='cockpit'){
     savedChaseOffset=camera.position.clone().sub(orbit.target);
   }
   cameraMode=mode;
-  setCockpitVisibility(model,!rideEnabled&&mode==='cockpit');
+  setCockpitVisibility(model,!rideEnabled&&!boatViewId&&mode==='cockpit');
   if(rideEnabled)setCockpitVisibility(actor?.children?.[0]?.children?.[0],mode==='cockpit');
   aircraftFx?.setCockpitMode?.(!rideEnabled&&mode==='cockpit');
   orbit.enabled=mode==='chase'||mode==='orbit';
@@ -864,7 +903,7 @@ function setCameraMode(mode){
     camera.up.set(0,0,1);
     camera.position.copy(aim).add(mode==='chase'?rideChaseOffset:new THREE.Vector3(0,-.01,Math.max(55,rideChaseOffset.length())));
     orbit.update();
-  }else if(!rideEnabled&&mode==='chase'&&previous==='cockpit'){
+  }else if(!rideEnabled&&!boatViewId&&mode==='chase'&&previous==='cockpit'){
     const target=physicalCameraTarget(last?.rendering_truth);
     if(target)orbit.target.set(...target);
     camera.up.set(0,0,1);
@@ -872,7 +911,7 @@ function setCameraMode(mode){
     orbit.update();
   }
   renderer.domElement.style.touchAction='none';
- $('cockpit-look').hidden=mode!=='cockpit';$('cockpit-instruments').hidden=mode!=='cockpit'||rideEnabled;$('cockpit-frame').hidden=mode!=='cockpit';
+ $('cockpit-look').hidden=mode!=='cockpit';$('cockpit-instruments').hidden=mode!=='cockpit'||rideEnabled||!!boatViewId;$('cockpit-frame').hidden=mode!=='cockpit'||!!boatViewId||!!last?.rendering_truth?.phantom;
  $('cockpit').textContent=mode==='cockpit'?'Exit cockpit · C':'Cockpit · C';
  $('camera').textContent=mode==='free'?'Exit free roam':'Free roam camera';
  const cameraSelect=$('airport-camera');if(cameraSelect)cameraSelect.value=mode;
@@ -895,18 +934,21 @@ function zoomCamera(factor){
 $('zoom-in').onclick=()=>zoomCamera(.8);$('zoom-out').onclick=()=>zoomCamera(1.25);
 $('view-top').onclick=()=>{
  const truth=replayFrames?.[replayFrame]||last?.rendering_truth,target=physicalCameraTarget(truth);
- if(rideEnabled){
+ if(boatViewId){
+    const body=harbourLayer?.boats.get(boatViewId)?.bodies.get('airframe');
+    if(body)orbit.target.copy(body.position).add(new THREE.Vector3(0,0,1));
+  }else if(rideEnabled){
     const actor=visualTraffic?.getActor(selectedVehicleId)?.root;
     if(actor)orbit.target.copy(actor.position).add(new THREE.Vector3(0,0,1.5));
   }else if(target)orbit.target.set(...target);
  const distance=rideEnabled?65:THREE.MathUtils.clamp(camera.position.distanceTo(orbit.target),18,orbit.maxDistance);
  setCameraMode('orbit');camera.up.set(0,0,1);camera.position.copy(orbit.target).add(new THREE.Vector3(0,-.01,distance));orbit.update();saveCameraPreference();
 };
-$('look-left').onclick=()=>{cockpitYaw=THREE.MathUtils.clamp(cockpitYaw-Math.PI/12,-Math.PI/2,Math.PI/2);saveCameraPreference();};
-$('look-right').onclick=()=>{cockpitYaw=THREE.MathUtils.clamp(cockpitYaw+Math.PI/12,-Math.PI/2,Math.PI/2);saveCameraPreference();};
+$('look-left').onclick=()=>{cockpitYaw=THREE.MathUtils.clamp(cockpitYaw+Math.PI/12,-Math.PI/2,Math.PI/2);saveCameraPreference();};
+$('look-right').onclick=()=>{cockpitYaw=THREE.MathUtils.clamp(cockpitYaw-Math.PI/12,-Math.PI/2,Math.PI/2);saveCameraPreference();};
 $('look-center').onclick=()=>{cockpitYaw=0;cockpitPitch=0;saveCameraPreference();};
 renderer.domElement.addEventListener('pointerdown',e=>{if(cameraMode!=='cockpit')return;cockpitPointer={id:e.pointerId,x:e.clientX,y:e.clientY};renderer.domElement.setPointerCapture(e.pointerId);});
-renderer.domElement.addEventListener('pointermove',e=>{if(cameraMode!=='cockpit'||!cockpitPointer||e.pointerId!==cockpitPointer.id)return;cockpitYaw=THREE.MathUtils.clamp(cockpitYaw-(e.clientX-cockpitPointer.x)*.006,-Math.PI/2,Math.PI/2);cockpitPitch=THREE.MathUtils.clamp(cockpitPitch-(e.clientY-cockpitPointer.y)*.006,-Math.PI/3,Math.PI/3);cockpitPointer.x=e.clientX;cockpitPointer.y=e.clientY;});
+renderer.domElement.addEventListener('pointermove',e=>{if((cameraMode!=='cockpit')||!cockpitPointer||e.pointerId!==cockpitPointer.id)return;cockpitYaw=THREE.MathUtils.clamp(cockpitYaw-(e.clientX-cockpitPointer.x)*.006,-Math.PI/2,Math.PI/2);cockpitPitch=THREE.MathUtils.clamp(cockpitPitch-(e.clientY-cockpitPointer.y)*.006,-Math.PI/3,Math.PI/3);cockpitPointer.x=e.clientX;cockpitPointer.y=e.clientY;});
 for(const event of ['pointerup','pointercancel','lostpointercapture'])renderer.domElement.addEventListener(event,()=>{cockpitPointer=null;requestAnimationFrame(saveCameraPreference);});
 renderer.domElement.addEventListener('wheel',()=>requestAnimationFrame(saveCameraPreference),{passive:true});
 renderer.domElement.addEventListener('dblclick',()=>{if(cameraMode==='cockpit'){cockpitYaw=0;cockpitPitch=0;saveCameraPreference();}});
@@ -920,7 +962,7 @@ addEventListener('keydown',e=>{
  if(typing(e)||document.querySelector('dialog[open]'))return;
  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
  if(e.code==='KeyC'&&!e.repeat)$('cockpit').click();
- if(rideEnabled)return;
+ if(!vehicleWorkspace.aircraftInput||rideEnabled||last?.rendering_truth?.phantom)return;
  if(last?.authority!=='manual'||!last.active||!manualOwned)return;
  if(e.code==='KeyX'&&!e.repeat){$('engine').value=command.engine>.5?0:1;$('engine').oninput();}
  if(e.code==='Space'){$('feather').click();keys.clear();}
@@ -928,7 +970,7 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>keys.delete(e.code));addEventListener('blur',()=>keys.clear());
 setInterval(()=>{
- if(!last?.active||last.authority!=='manual'||!manualOwned||last.paused||replayFrames||!keys.size)return;
+ if(!vehicleWorkspace.aircraftInput||!last?.active||last.rendering_truth?.phantom||last.authority!=='manual'||!manualOwned||last.paused||replayFrames||!keys.size)return;
  const down=k=>keys.has(k)?1:0,delta=.12;
  const lift=(down('KeyR')-down('KeyF'))*delta;
  let pitch=(down('KeyW')-down('KeyS'))*.06,roll=(down('KeyD')-down('KeyA'))*.06;
@@ -1003,6 +1045,7 @@ $('history').onclick=guard(async()=>{
    if(!Array.isArray(replay.frames)||!replay.frames.length){toast('No recorded physical states are available for this flight.');return;}
    replayContext=replay.recorded_context||{};replayFrames=replay.frames;replayFrame=0;
    document.documentElement.dataset.vtxReplay='1';
+   boatViewId=null;vehicleWorkspace.show('aircraft');
    if(rideEnabled){rideEnabled=false;passengerRide=false;$('airport-aircraft').value='physical-plant';}
    if(visualTraffic)for(const actor of visualTraffic.actors)actor.root.visible=false;
    $('replay-time').value=0;$('replay-time').max=Math.max(0,replayFrames.length-1);$('replay-controls').hidden=false;
@@ -1092,6 +1135,7 @@ function showAttitude(snapshot, mode){
  renderAttitudeIndicator({indicator:$('attitude'),horizon:$('horizon'),angles:$('angles'),status:$('attitude-status')},snapshot,mode);
 }
 function updateView(v){
+ document.dispatchEvent(new CustomEvent('vtx-aircraft-state',{detail:v}));
  if(replayFrames&&v.active)stopReplay(false);
  if(replayFrames){last=v;latestTruthReceivedMs=performance.now();worldSynchronizer.reconcile();return;}
  $('r6-pilot-record').hidden=v.observation?.configuration?.airframe_variant!=='r6-argon-20261103';
@@ -1145,7 +1189,7 @@ function updateView(v){
  }
  drawMaps();
  if(v.rendering_truth?.phantom){
-  phantomPanel??=createPhantomPanel({api,toast});phantomPanel.show(true);phantomPanel.update(v);
+  phantomPanel??=createPhantomPanel({api,toast,canControl:()=>vehicleWorkspace.aircraftInput&&!rideEnabled&&!replayFrames});phantomPanel.show(true);phantomPanel.update(v);
   document.querySelector('.controls-panel').classList.add('phantom-active');
   const o=v.observation,t=v.rendering_truth,velocity=o.velocity_world_m_s||[0,0,0];
   $('state').textContent=v.active?(v.paused?'PHYSICS PAUSED':'LIVE EXPERIMENT · PHANTOM'):'PHANTOM INSPECTION';
@@ -1180,7 +1224,7 @@ function updateView(v){
  $('power-label').textContent='SHAFT POWER';$('alt').innerHTML=o.radar_clearance_m==null?'—':o.radar_clearance_m.toFixed(2)+'<small>m</small>';$('vs').innerHTML=o.gnss_velocity_mps[2].toFixed(2)+'<small>m/s</small>';$('speed').innerHTML=Math.hypot(...o.gnss_velocity_mps.slice(0,2)).toFixed(2)+'<small>m/s</small>';$('power').innerHTML=o.engine_shaft_kw.toFixed(1)+'<small>kW</small>';$('fuel').innerHTML=o.fuel_kg.reduce((a,b)=>a+b,0).toFixed(2)+'<small>kg</small>';
  for(let i=0;i<4;i++)$('rpm-'+i).textContent=o.rotor_rpm[i].toFixed(0)+' rpm';
  if(o.assisted_collective_deg)$('assist-feedback').textContent=(o.assistance_applied?'Experimental collective targets: ':'Shadow requests: ')+o.assisted_collective_deg.map(x=>x.toFixed(2)+'°').join(' / ')+(o.assistance_applied?' · applied':' · not applied');
- for(const el of document.querySelectorAll('.controls-panel input[type=range]:not(#assist),#feather'))el.disabled=v.authority!=='manual'||!manualOwned;
+ for(const el of document.querySelectorAll('.controls-panel input[type=range]:not(#assist):not([data-command]),#feather'))el.disabled=v.authority!=='manual'||!manualOwned;
  const cabinLocked=v.authority!=='manual'||!manualOwned;for(const el of document.querySelectorAll('.tilt-spin'))el.disabled=cabinLocked;if(cabinLocked)tiltSpin.fill(0);$('cabin-level').disabled=cabinLocked;$('cabin-face-travel').disabled=cabinLocked;$('cabin-x').disabled=cabinLocked||command.cabin_level;$('cabin-y').disabled=cabinLocked||command.cabin_level;if(o.cabin_feedback_deg)$('cabin-feedback').textContent='Actual gimbal X / Y / yaw: '+o.cabin_feedback_deg.map(x=>x.toFixed(1)+'°').join(' / ')+(o.cabin_level_enabled?(o.cabin_level_powered?' · powered level control':' · passive damping only'):' · manual cabin control')+(o.cabin_level_limited?' · travel limit reached':'');
  for(const id of ['dep','drive','gear','airframe','initial-fuel','power-limit','pilot','atmosphere-model','wind-east','wind-north','wind-up','ignore-scenery','landing-precision'])$(id).disabled=v.active||(document.documentElement.dataset.vtxPreviewPending==='1'&&(id==='airframe'||id==='phantom-start'));
  if(v.active){$('landing-precision').value=v.mission?.landing_precision_m??'';$('ignore-scenery').checked=!!v.mission?.ignore_scenery_collisions;$('power-limit').value=t.provenance.engine_power_limit_kw??469.8;$('initial-fuel').value=t.provenance.initial_fuel_kg??o.configuration.initial_fuel_kg;$('pilot').value=v.authority;$('scale').value=String(v.time_scale);$('drive').value=String(t.provenance.reference_rpm);$('gear').value=t.provenance.gear_variant;$('airframe').value=o.configuration.airframe_variant;$('atmosphere-model').value=o.configuration.atmosphere_model??'constant';(o.configuration.wind_world_mps??[0,0,0]).forEach((value,i)=>$( ['wind-east','wind-north','wind-up'][i]).value=value);}
@@ -1230,8 +1274,10 @@ function animate(){
  if(!ridePaused)sceneTime+=frameDt*sceneScale;
  if(passengerRide&&!ridePaused&&rideRoute&&!replayFrames)rideTime=Math.min(rideRoute.duration+22,rideTime+frameDt*sceneScale);
  if(replayFrames){if(visualTraffic)for(const actor of visualTraffic.actors)actor.root.visible=false;}else visualTraffic?.update(sceneTime);
- const requestedAsset=replayFrames?replayFrameAsset(truth,replayContext):truth?visualAsset(truth.provenance?.render_asset):null;
- if(truth&&!requestedAsset){$('loading').hidden=false;$('loading').textContent=replayFrames?'Recorded aircraft visual unavailable or does not match.':'Aircraft visual identity unavailable.';}
+ const unselected=!replayFrames && last?.inspection_selection_known===false && !last?.active;
+ const requestedAsset=replayFrames?replayFrameAsset(truth,replayContext):truth&&!unselected?visualAsset(truth.provenance?.render_asset):null;
+ if(unselected){$('loading').hidden=true;}
+ else if(truth&&!requestedAsset){$('loading').hidden=false;$('loading').textContent=replayFrames?'Recorded aircraft visual unavailable or does not match.':'Aircraft visual identity unavailable.';}
  if(requestedAsset)loadAirframe(requestedAsset);
  if(model)model.visible=modelReady&&loadedAsset===requestedAsset;
  const schematicFresh=!!replayFrames||now-latestTruthReceivedMs<=2000;
@@ -1256,7 +1302,7 @@ function animate(){
    updatePhantom(phantomRig,truth,false,offsets,true);
   }if(truth.pitch_deg)for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
  }
- if(truth&&!rideEnabled){
+ if(truth&&!rideEnabled&&!boatViewId){
   const physicalTarget=physicalCameraTarget(truth);if(physicalTarget)pos.set(...physicalTarget);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
   else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position);if(truth.phantom)camera.position.add(new THREE.Vector3(0,.15,.30).applyQuaternion(q));if(!truth.phantom)camera.position.add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);const sight=truth.phantom?new THREE.Vector3(Math.cos(cockpitYaw)*cp,Math.sin(cockpitYaw)*cp,Math.sin(cockpitPitch)):new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch));cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));camera.lookAt(cameraTarget);}
@@ -1270,7 +1316,7 @@ function animate(){
   if(rideActor){
    const p=rideActor.position,rot=rideActor.children[0].quaternion;
    if(cameraMode==='cockpit'){
-    const sight=new THREE.Vector3(Math.cos(cockpitYaw)*Math.cos(cockpitPitch),Math.sin(cockpitYaw)*Math.cos(cockpitPitch),Math.sin(cockpitPitch)).applyQuaternion(rot);
+    const sight=new THREE.Vector3(...sceneryPassengerSight(selectedVehicleId,cockpitYaw,cockpitPitch)).applyQuaternion(rot);
     camera.position.copy(new THREE.Vector3(...sceneryPassengerSeat(selectedVehicleId)).applyQuaternion(rot).add(p));
     camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(rot));
     camera.lookAt(camera.position.clone().add(sight));
@@ -1298,6 +1344,29 @@ function animate(){
    }
   }
  }else if(visualTraffic&&now-(animate.progressLast||0)>500){animate.progressLast=now;$('ride-progress').textContent='Traffic active · '+Math.floor(sceneTime)+' s';}
+ for(const [id,rig] of harbourLayer?.boats||[]){
+  const cockpit=id===boatViewId&&cameraMode==='cockpit'&&!replayFrames;
+  setBoatCockpit(rig,cockpit);
+  setBoatLighting(rig,timeOfDay.mode==='night');
+  if(cockpit){const state=harbourControls.state,boat=state?.boats?.find(b=>b.id===id);if(boat)updateBoatAvionics(rig,boat,state,now);}
+ }
+ if(boatViewId&&!replayFrames){
+  const rig=harbourLayer?.boats.get(boatViewId),body=rig?.bodies.get('airframe');
+  if(rig?.root.visible&&body?.visible){
+   const q=body.quaternion;
+   const view=boatCameraView({position:body.position.toArray(),quaternion_wxyz:[q.w,q.x,q.y,q.z]},{mode:cameraMode,yaw:cockpitYaw,pitch:cockpitPitch});
+   if(view){
+    if(cameraMode==='cockpit'){camera.position.set(...view.position);camera.up.set(...view.up);camera.lookAt(...view.target);}
+    else if(cameraMode==='chase'||cameraMode==='orbit'){
+     const target=new THREE.Vector3(...view.target),delta=target.clone().sub(orbit.target);
+     if(orbit.target.distanceTo(target)>100)camera.position.set(...view.position);else camera.position.add(delta);
+     orbit.target.copy(target);camera.up.set(0,0,1);orbit.update();
+    }else if(cameraMode==='free')freeCam.update(frameDt);
+    sky.follow(camera.position);
+   }
+  }
+ }
+ phantomAvionics.update(truth?.body_poses?.cabin,last?.observation,!!truth?.phantom&&!rideEnabled&&!boatViewId&&cameraMode==='cockpit'&&modelReady&&!replayFrames,now-latestTruthReceivedMs>2000);
  sky.update(camera,now/1000);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);environment.serviceRoads?.update(now/1000,last?.observation?.gnss_xy_m);
   aircraftFx?.update(replayFrames?null:last?.observation?.rotor_rpm,now/1000);
  // Never reveal an initial origin frame or the prior mission's frame.

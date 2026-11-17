@@ -55,7 +55,7 @@ test('switching views restores the matching aircraft without sending simulator a
   }
   const ctx={cameraPreferences:prefs,THREE:{Vector3:Vec},cameraPreferenceIdentity:null,
     restoringCameraPreference:false,cameraPreferencesSuspended:false,rideEnabled:false,replayFrames:null,cameraMode:'chase',
-    cockpitYaw:0,cockpitPitch:0,savedChaseOffset:null,Math,
+    cockpitYaw:0,cockpitPitch:0,savedChaseOffset:null,Math,boatViewId:null,vehicleWorkspace:{mode:'aircraft'},
     camera:{position:new Vec(9,-11,8),up:new Vec()},orbit:{target:new Vec(),update(){}},
     freeCam:{position:new Vec(2,3,4),yaw:0,pitch:0,teleport(){}},
     physicalCameraTarget:()=>[0,0,0],setCameraMode(mode){ctx.cameraMode=mode;},

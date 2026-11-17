@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {flightDisplayReadings,drawFlightDisplay} from '../public/flight-display.js';
+import {createPhantomAvionics} from '../public/phantom-avionics.js';
+const labels=[],context=new Proxy({}, {get:(o,k)=>o[k]??((...args)=>{if(k==='fillText')labels.push(args[0]);})});
+const document={createElement:()=>({getContext:()=>context})};
+const observation={observation_id:7,t_s:12.5,active:true,attitude_deg:{yaw:0,pitch:4,roll:20},airspeed_m_s:83,
+  velocity_world_m_s:[80,0,2],radar_altimeter_m:100.4,radar_altimeter_ground_reference_m:.4,fuel_kg:[20,21,22,23],generator_kw:245,fan_rpm:[1,2,3,4],warning_lamps:[]};
+const readings=flightDisplayReadings(observation);
+assert.equal(readings.heading,'090');assert.equal(readings.altitude,'100.00');assert.equal(readings.speed,'80.00');assert.equal(readings.verticalSpeed,'2.00');assert.equal(readings.fuel,'86.00');
+drawFlightDisplay(context,readings);
+assert.ok(labels.includes('83.0'));assert.ok(labels.includes('100.00 m'));assert.ok(labels.includes('SYSTEMS NORMAL'));
+assert.equal(flightDisplayReadings(null).altitude,'—');assert.equal(flightDisplayReadings(null).pitch,null);
+assert.equal(flightDisplayReadings(observation,{stale:true}).state,'STALE');
+const display=createPhantomAvionics({document});
+const pose={position:[10,20,30],quaternion_wxyz:[1,0,0,0]};
+display.update(pose,observation,true);assert.equal(display.root.visible,true);assert.deepEqual(display.root.position.toArray(),[10,20,30]);
+const panel=display.root.children[0],position=panel.position.toArray();
+display.update({...pose,position:[11,22,33]},observation,true);assert.deepEqual(display.root.position.toArray(),[11,22,33]);assert.deepEqual(panel.position.toArray(),position);
+display.update(pose,observation,false);assert.equal(display.root.visible,false);
+display.update({},observation,true);assert.equal(display.root.visible,false);
+display.dispose();

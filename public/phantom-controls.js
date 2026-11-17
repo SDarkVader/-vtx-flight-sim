@@ -31,14 +31,14 @@ import {flapInterlockMessage} from './flap-interlock.js?v=1';
 import {renderReadout} from './phantom-readouts.js?v=1';
 import {createPatchQueue, editArrayCommand} from './phantom-command-queue.js?v=1';
 const FIELDS=[['collective',0,1,0.01,0],['vertical_speed_m_s',-3,3,0.1,0],['pitch',-1,1,0.02,0],['roll',-1,1,0.02,0],['yaw',-1,1,0.02,0],['engine',0,1,0.05,1]];
-export function createPhantomPanel({api,toast}){
+export function createPhantomPanel({api,toast,canControl=()=>true}){
   let dirty=false,beat=0,pending=false,lastView=null,engaged=false,engagedRun,voiceReason=null,pendingVoice=null; let vtol=true,legsExtended=true,brakes=true,wing=false,can=false;
   const patchQueue=createPatchQueue();
   const optimisticFields=new Set();
   function engage(){if(!engaged){engaged=true;engagedRun=lastView?.run_id;toast?.('Phantom panel has taken manual control');}}
   function disengage(){engaged=false;engagedRun=undefined;patchQueue.clear();optimisticFields.clear();dirty=false;}
   const cmd={schema:'phantom-fbw-1',engine:1,collective:0,vertical_speed_m_s:0,pitch:0,roll:0,yaw:0,stability_mode:'attitude'};
-  function queuePatch(patch){if(!lastView?.active||lastView.authority!=='manual'){toast?.('Manual flight controls are unavailable.');return;}engage();Object.assign(cmd,structuredClone(patch));for(const field of Object.keys(patch))optimisticFields.add(field);patchQueue.add(patch);dirty=patchQueue.dirty;}
+  function queuePatch(patch){if(!canControl()||!lastView?.active||lastView.authority!=='manual'){toast?.('Manual flight controls are unavailable.');return;}engage();Object.assign(cmd,structuredClone(patch));for(const field of Object.keys(patch))optimisticFields.add(field);patchQueue.add(patch);dirty=patchQueue.dirty;}
   function changedArray(field,index,value,count){return editArrayCommand(optimisticFields.has(field)?cmd[field]:undefined,lastView?.rendering_truth?.command?.[field],index,value,count);}
   let surfaceControls, steerInput;
   let el=document.getElementById('phantom-panel');
@@ -98,7 +98,7 @@ export function createPhantomPanel({api,toast}){
       return reply;};
     // The server interprets the instruction, sends it through /api/action's own checks and answers only after the
     // physics loop holds the command. The reply is spoken; "executed" comes from the plant, never from the parser.
-    const hear=async(text,source='voice')=>{const t0=performance.now();let reply,detail='';
+    const hear=async(text,source='voice')=>{if(!canControl())return 'Select Aircraft controls before commanding the Phantom.';const t0=performance.now();let reply,detail='';
       const word=parseUtterance(text).intent;
       try{
         if(word==='cancel'){reply=pendingVoice?'Cancelled.':'Nothing pending.';pendingVoice=null;}
@@ -125,14 +125,14 @@ export function createPhantomPanel({api,toast}){
     window.__phantomVoice=(t)=>hear(t,'text');
     const say=el.querySelector('#ph-say');say.onkeydown=e=>{if(e.key==='Enter'&&say.value.trim()){hear(say.value.trim(),'text');say.value='';}e.stopPropagation();};   // typed fallback / tests: __phantomVoice('boost 50 percent')
   }
-  setInterval(async()=>{const v=lastView;beat++;if(!heartbeatDue({engaged,pending,view:v,dirty,beat,engagedRun}))return;
+  setInterval(async()=>{const v=lastView;beat++;if(!canControl()||!heartbeatDue({engaged,pending,view:v,dirty,beat,engagedRun}))return;
     const ticket=patchQueue.take();dirty=patchQueue.dirty;pending=true;try{await api('/api/action',{schema:'phantom-fbw-1',...ticket.patch,authority:'manual',expected_run_id:v.run_id,observation_id:v.observation.observation_id,reason:voiceReason||'Manual Phantom operator controls'});voiceReason=null;}
     catch(e){patchQueue.retry(ticket);dirty=patchQueue.dirty;toast(e.message);}finally{pending=false;}},100);
   return {
     disengage,
     show(on){el.style.display=on?'block':'none';},
     update(v){if(!engaged&&v.observation){const o=v.observation;if(Array.isArray(o.pod_tilt_deg)){vtol=o.pod_tilt_deg[0]>45;el.querySelector('#ph-gear').textContent='Pods / wheels: '+(vtol?'90°':'0°');}if(Array.isArray(o.leg_extension_m)){legsExtended=o.leg_extension_m[0]>.26;el.querySelector('#ph-legs').textContent='Legs: '+(legsExtended?'extended':'retracted');}}if(engaged&&engagedRun===undefined)engagedRun=v.run_id;if(engaged&&(!v.active||v.authority!=='manual'||v.run_id!==engagedRun))disengage();lastView=v;const o=v.observation||{},t=v.rendering_truth||{};
-      for(const control of el.querySelectorAll('input,button,select'))control.disabled=!v.active&&control.id!=='ph-voice'&&control.id!=='ph-say';
+      for(const control of el.querySelectorAll('input,button,select'))control.disabled=!canControl()||(!v.active&&control.id!=='ph-voice'&&control.id!=='ph-say');
       if(t.command){
         for(const field of optimisticFields)if(JSON.stringify(t.command[field])===JSON.stringify(cmd[field]))optimisticFields.delete(field);
         if(!engaged)for(const key of Object.keys(cmd))if(key!=='schema'&&t.command[key]!=null)cmd[key]=structuredClone(t.command[key]);

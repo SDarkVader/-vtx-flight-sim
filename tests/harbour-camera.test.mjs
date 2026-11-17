@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {boatCameraView, RICOCHET_EYE} from '../public/vtx-env/harbour-camera.js';
+
+const pose = {position: [10, 20, 2], quaternion_wxyz: [1, 0, 0, 0]};
+let view = boatCameraView(pose);
+view.position.forEach((v, i) => assert.ok(Math.abs(v - (pose.position[i] + RICOCHET_EYE[i])) < 1e-8));
+assert.ok(view.target[0] > view.position[0]);
+assert.deepEqual(view.up, [0, 0, 1]);
+const rotated = boatCameraView({...pose, quaternion_wxyz: [Math.SQRT1_2, 0, 0, Math.SQRT1_2]});
+assert.ok(Math.abs(rotated.position[0] - 10) < 1e-8);
+assert.ok(Math.abs(rotated.position[1] - 21.18) < 1e-8);
+assert.ok(rotated.target[1] > rotated.position[1], 'the camera must rotate with the hull');
+const looked = boatCameraView(pose, {yaw: Math.PI / 2});
+assert.ok(looked.target[1] > looked.position[1]);
+assert.equal(boatCameraView({...pose, quaternion_wxyz: [0, 0, 0, 0]}), null);
+assert.equal(boatCameraView({...pose, position: [NaN, 0, 0]}), null);
+assert.equal(boatCameraView({}), null);
+view = boatCameraView(pose, {mode: 'chase'});
+assert.ok(view.position[0] < pose.position[0]);
+assert.ok(view.position[2] > pose.position[2]);

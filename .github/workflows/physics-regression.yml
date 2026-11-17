@@ -19,8 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify deterministic visual routes and standalone ride terrain
-        run: node tests/visual-air-traffic.test.mjs
+      - name: Verify frontend controls, cameras, identities and visual routes
+        run: node --experimental-loader ./tests/vendor-three-loader.mjs --test tests/*.mjs
       - name: Assert algebra, trajectory and calibration gate
         env:
           PYTHONPATH: src

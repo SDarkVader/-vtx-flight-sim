@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import {setArgonCutaway,isArgonRotorHousing} from '../public/argon-cutaway.js';
+const root=new THREE.Group(),material=new THREE.MeshStandardMaterial(),housing=new THREE.Mesh(new THREE.BoxGeometry(),material),blade=new THREE.Mesh(new THREE.BoxGeometry(),material);
+housing.name='P02 | F2 open annular duct.001';blade.name='P02 | F2 blade 1.001';root.add(housing,blade);const vertices=[...housing.geometry.attributes.position.array];
+assert.ok(isArgonRotorHousing({isMesh:true,name:'P02_|_F2_open_annular_duct001',userData:{}}),'GLTFLoader sanitized node names retain the cutaway');
+assert.ok(isArgonRotorHousing({isMesh:true,name:'batched fixed housing',userData:{physical_body:'nacelle4'}}));
+assert.equal(isArgonRotorHousing({isMesh:true,name:'blade',userData:{physical_body:'rotor4'}}),false);
+setArgonCutaway(root,true);assert.notEqual(housing.material,material);assert.equal(blade.material,material);assert.equal(housing.material.transparent,true);
+const shader={fragmentShader:'#include <opaque_fragment>'};housing.material.onBeforeCompile(shader,{});assert.ok(shader.fragmentShader.includes('vViewPosition'));assert.ok(shader.fragmentShader.includes('nearby'));
+assert.deepEqual([...housing.geometry.attributes.position.array],vertices);assert.deepEqual(housing.position.toArray(),[0,0,0]);
+setArgonCutaway(root,false);assert.equal(housing.material,material);assert.equal(housing.material.transparent,false);
+housing.geometry.dispose();blade.geometry.dispose();material.dispose();

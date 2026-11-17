@@ -42,6 +42,7 @@ const context = new Proxy({}, {
   set(target, key, value) {target[key] = value; return true;},
 });
 const makeCanvas = () => ({width: 900, height: 900, handlers: {}, getContext: () => context,
+  getBoundingClientRect:()=>({width:900,height:900}),
   addEventListener(name, handler) {this.handlers[name] = handler;}});
 globalThis.document = {createElement: makeCanvas};
 const map = new TacticalMinimap(makeCanvas());

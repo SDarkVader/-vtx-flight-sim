@@ -5,7 +5,7 @@ import {test} from 'node:test';
 const threeUrl = new URL('../public/vendor/three.module.js', import.meta.url).href;
 const effectsUrl = new URL('../public/vtx-env/phantom-effects.js', import.meta.url).href;
 const source = (await readFile(new URL('../public/vtx-env/phantom-look.js', import.meta.url), 'utf8'))
-  .replace("from 'three'", `from '${threeUrl}'`)
+  .replace("from '../vehicle-livery.js'", "from '"+new URL('../public/vehicle-livery.js',import.meta.url).href+"'").replace("from 'three'", `from '${threeUrl}'`)
   .replace("from './phantom-effects.js?v=1'", `from '${effectsUrl}'`);
 const THREE = await import(threeUrl);
 const {attachPhantom, updatePhantom} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));

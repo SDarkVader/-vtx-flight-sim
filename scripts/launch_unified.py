@@ -22,6 +22,35 @@ DEFAULT_PORT = 8770
 PORT_SEARCH = 20
 
 
+class RevalidateFrontend:
+    """Require a fresh validation of public files on every page load.
+
+    Keep this at the launcher boundary: it does not modify the flight runtime
+    fingerprint or add middleware to the frequently polled game APIs.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        path = scope.get("path", "")
+        if (scope["type"] != "http" or scope.get("method") not in ("GET", "HEAD")
+                or any(path == prefix or path.startswith(prefix + "/")
+                       for prefix in ("/api", "/docs", "/evidence"))):
+            await self.app(scope, receive, send)
+            return
+
+        async def send_revalidated(message):
+            if message["type"] == "http.response.start":
+                headers = [(key, value) for key, value in message.get("headers", [])
+                           if key.lower() != b"cache-control"]
+                headers.append((b"cache-control", b"no-cache"))
+                message = {**message, "headers": headers}
+            await send(message)
+
+        await self.app(scope, receive, send_revalidated)
+
+
 def checkout_data_root(root: Path = ROOT) -> Path:
     """One data folder per checkout, so a checkpoint left by another clone or an
     older build can never block this one. Stable across updates of the same clone,
@@ -75,9 +104,10 @@ def main(argv=None):
         return 0
 
     import uvicorn
+    from vtx.dashboard_site import app
 
     server = uvicorn.Server(uvicorn.Config(
-        "vtx.dashboard_site:app", host="0.0.0.0", port=args.port, log_level="warning"
+        RevalidateFrontend(app), host="0.0.0.0", port=args.port, log_level="warning"
     ))
     if not args.no_browser:
         def open_when_ready():

@@ -10,7 +10,23 @@ Choose vehicle lists the current Phantom A10-C and Argon R6, the two Ricochets a
 
 ## Current development
 
-Main Aircraft promotion is pending the owner's flight tests. The recovered Phantom runway and VTOL candidates remain distinct under Experiments. A10-B remains a pinned reference.
+The **Main Aircraft** menu lets you explicitly select the development Phantom A10-C or Argon R6. Save or end an active aircraft flight before switching. The recovered Phantom runway and VTOL candidates remain distinct under Experiments. A10-B remains a pinned reference; availability in the menu does not certify a development aircraft.
+
+Controls follow the selected seat: physical aircraft controls, Ricochet helm, or a passenger notice for scenic flights. Selecting either Ricochet opens its cockpit camera; **View selected boat**, **Cockpit** and mouse look switch its views. **Aircraft controls** returns to the physical aircraft. The current aircraft render revisions are checked against SHA-256 pins before they are displayed. Fonts and aircraft dynamics are unchanged. See [the selection and camera verification](docs/VEHICLE_CONTROLS_20261117.md).
+
+The Phantom has a cabin-mounted glass flight deck with live airspeed, heading, attitude, vertical speed, radar height, fuel and power readings. Cockpit visibility treatments clear its forward and side sightlines. The Argon keeps its fixed cabin and eye position, with a cockpit-only cutaway through nearby rotor housings; moving blades and the exterior remain intact. Missing telemetry displays a dash.
+
+Both Ricochets use one compact, low-mounted helm display, clear reflective canopy glass and night lighting for the cabin and water ahead. The large black dashboard surround is hidden in the pilot view. These are presentation changes, with no added physical mass or changes to aircraft dynamics. The wheel-fan exhaust effect follows the opposite of the actual fan force axis, pointing down when deployed for lift. Existing VTX lettering is fitted to the Phantom skin and follows the vehicle body.
+
+![Ricochet's compact helm and clear water view, in an isolated visual check](docs/readme-images/ricochet-compact-helm.jpg)
+
+![Phantom live flight deck, in an isolated visual check](docs/readme-images/phantom-flight-deck.jpg)
+
+[Open the cockpit and navigation gallery](docs/COCKPIT_GALLERY.md).
+
+Both maps have a scale bar calculated from their current projection. Zoom with **+ / −**, the mouse wheel or a touch pinch, from a whole-world view down to a 100 m horizontal span. **Airport views → Scenic flights → Traffic** chooses **0–10** scheduled scenery aircraft, including Argons and Phantoms. These routes and passenger seats are separate from the telemetry-driven AI pilot; this update adds no scripted pilot flights.
+
+For isolated main-vehicle testing on Windows, use **[Test-VTX-Vehicles.bat](Test-VTX-Vehicles.bat)** at **http://127.0.0.1:8781/**. It identifies this checkout and uses a separate save folder, leaving an existing game on 8770 untouched. Follow [the main-vehicle test checklist](docs/MAIN_VEHICLE_TESTING.md); passing automated checks does not replace manual flight acceptance.
 
 On Steve's PC, the live project continuity record is `C:/Users/steve/Documents/Github/-vtx-flight-sim/docs/VTX_CONTINUITY.md`. Original flights stay in their recorded local archive and are not replaced by test output.
 
@@ -26,7 +42,7 @@ The authored wheels and pod mounts are retained. Collision dimensions and visual
 
 Use **Save flight & switch** before changing aircraft. Flight records restores supported checkpoints paused; then choose **Take control** and **Resume existing mission**. Phantom inner checkpoint format 3 retains the radar ground-reference calibration. Missing or incompatible dependencies and older insufficient checkpoints remain preserved with an explicit recovery failure, rather than being silently reset. Camera preferences are stored separately in that browser profile.
 
-Saved flights are retained locally; persistence across cloud deployments is not implemented. On Windows, `Start-VTX.bat` launches the local game using the installed Python environment and preserves incompatible prior launch state in a recovery folder.
+Saved flights are retained locally; persistence across cloud deployments is not implemented. On Windows, `Start-VTX.bat` launches the local game using the installed Python environment and preserves incompatible prior launch state in a recovery folder. If the port is occupied, the launcher checks the airport, harbour, runtime and frontend files before identifying the existing server. Local frontend responses require cache revalidation to reduce stale versions across browser profiles.
 
 The actual ground check saved a runway state, switched to the distinct VTOL candidate and restored the same runway run paused at 55.0175 s with identical checkpoint bytes and retained calibration. Full owner flight tests, Argon acceptance and promotion remain outstanding.
 
