@@ -1,34 +1,34 @@
 # VTX — Vader's Taxis
 
-**A flight and watercraft game in development.** Explore an airfield and its harbour, fly experimental aircraft, take a boat through the islands, and follow the progress of vehicles being developed in the Vader's Taxis world. This is an early playable development build, with aircraft, environments, controls, and missions still being tested and refined.
+**A flight and watercraft game in development.** Fly experimental aircraft from Main Airport or take a Ricochet through the marked channels between the harbour islands.
 
-![Phantom scenery aircraft at the airport, with harbour controls and navigation map](docs/readme-images/phantom-airport.png)
+[Play VTX in your browser](https://vtx-flight-sim.vercel.app/)
+
+![Front three-quarter view of the Phantom A10-C with its wings extended and wheel-fan pods in road position](docs/readme-images/phantom-a10c-exterior.jpg)
+
+*Studio view of the Phantom A10-C. The A10-D shares its exterior and has its own pinned configuration for testing the air-brake ECU.*
 
 The current build brings together an 8 km square Main Airport, a 7,800 m runway with level approaches, and an airport-side harbour with islands, marked routes, docks and multiple Ricochet craft. The airport also has Argon and Phantom scenery traffic and passenger-view flights. Players can track their physical aircraft on the navigation map.
 
-Choose vehicle lists the current Phantom A10-C and Argon R6, the two Ricochets and passenger rides separately from earlier and experimental aircraft. At the Main Airport the Phantom's default mission starts at the extended runway's west threshold; a departure you choose yourself is retained. Startup waits for the aircraft's actual position before displaying the scene. These features are still being tested.
+Open **Choose vehicle** for the Phantom A10-C, Argon R6, or a Ricochet at Airport Landing or Lantern Marina. **Earlier and experimental aircraft** includes the Phantom A10-D ECU test aircraft, the recovered runway and VTOL variants, and the pinned A10-B reference. At Main Airport the Phantom starts at the west runway threshold unless you choose a different departure.
+
+| Argon R6 | Ricochet Concept A |
+| --- | --- |
+| ![Argon R6 exterior showing its four ducted rotors around the central cabin](docs/readme-images/r6-argon-exterior.jpg) | ![Ricochet exterior showing the canopy, twin sponsons and rear ducted fans](docs/readme-images/ricochet-exterior.jpg) |
 
 ## Current development
 
-The **Main Aircraft** menu lets you explicitly select the development Phantom A10-C or Argon R6. Save or end an active aircraft flight before switching. The recovered Phantom runway and VTOL candidates remain distinct under Experiments. A10-B remains a pinned reference; availability in the menu does not certify a development aircraft.
-
-Controls follow the selected seat: physical aircraft controls, Ricochet helm, or a passenger notice for scenic flights. Selecting either Ricochet opens its cockpit camera; **View selected boat**, **Cockpit** and mouse look switch its views. **Aircraft controls** returns to the physical aircraft. The current aircraft render revisions are checked against SHA-256 pins before they are displayed. Fonts and aircraft dynamics are unchanged. See [the selection and camera verification](docs/VEHICLE_CONTROLS_20261117.md).
+Controls follow the seat you choose. Selecting a Ricochet opens its helm camera. Use **View selected boat**, **Cockpit** and mouse look to change views, or **Aircraft controls** to return to the aircraft. Scenic flights have their own passenger seats. The simulator checks the selected aircraft's visual model against its recorded SHA-256 fingerprint. [Selection and camera verification](docs/VEHICLE_CONTROLS_20261117.md).
 
 The Phantom has a cabin-mounted glass flight deck with live airspeed, heading, attitude, vertical speed, radar height, fuel and power readings. Cockpit visibility treatments clear its forward and side sightlines. The Argon keeps its fixed cabin and eye position, with a cockpit-only cutaway through nearby rotor housings; moving blades and the exterior remain intact. Missing telemetry displays a dash.
 
 Both Ricochets use one compact, low-mounted helm display, clear reflective canopy glass and night lighting for the cabin and water ahead. The large black dashboard surround is hidden in the pilot view. These are presentation changes, with no added physical mass or changes to aircraft dynamics. The wheel-fan exhaust effect follows the opposite of the actual fan force axis, pointing down when deployed for lift. Existing VTX lettering is fitted to the Phantom skin and follows the vehicle body.
 
-![Ricochet's compact helm and clear water view, in an isolated visual check](docs/readme-images/ricochet-compact-helm.jpg)
-
-![Phantom live flight deck, in an isolated visual check](docs/readme-images/phantom-flight-deck.jpg)
-
-[Open the cockpit and navigation gallery](docs/COCKPIT_GALLERY.md).
+[View the Phantom flight deck, Argon cockpit and Ricochet helm in the cockpit gallery](docs/COCKPIT_GALLERY.md).
 
 Both maps have a scale bar calculated from their current projection. Zoom with **+ / −**, the mouse wheel or a touch pinch, from a whole-world view down to a 100 m horizontal span. **Airport views → Scenic flights → Traffic** chooses **0–10** scheduled scenery aircraft, including Argons and Phantoms. These routes and passenger seats are separate from the telemetry-driven AI pilot; this update adds no scripted pilot flights.
 
-For isolated main-vehicle testing on Windows, use **[Test-VTX-Vehicles.bat](Test-VTX-Vehicles.bat)** at **http://127.0.0.1:8781/**. It identifies this checkout and uses a separate save folder, leaving an existing game on 8770 untouched. Follow [the main-vehicle test checklist](docs/MAIN_VEHICLE_TESTING.md); passing automated checks does not replace manual flight acceptance.
-
-On Steve's PC, the live project continuity record is `C:/Users/steve/Documents/Github/-vtx-flight-sim/docs/VTX_CONTINUITY.md`. Original flights stay in their recorded local archive and are not replaced by test output.
+The Windows vehicle test launcher uses a separate save folder. [Vehicle test launcher](Test-VTX-Vehicles.bat) · [Main vehicle test checklist](docs/MAIN_VEHICLE_TESTING.md).
 
 | Candidate | Original evidence | Current verification |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ On Steve's PC, the live project continuity record is `C:/Users/steve/Documents/G
 | `phantom-a10c-vtol-20261112` | `20261112T204732-17cc37`, `20261112T211016-e9d0ab` airport | Recorded-control VTOL takeoff reproduced; first 45 s / 4,500 samples match 16 channels |
 | `r6-argon-20261103` | `20261103T125202-92636c`, historical valley | Recorded model/terrain recovered; original full command log remains unavailable; cockpit/flight acceptance pending |
 
-Successful takeoffs and sustained flight remain valid evidence independently of later outcomes. Offline reproduction is not a substitute for the owner's cockpit flight acceptance. Exact parents, configuration and environment links are in [the revision registry](inputs/flight_revisions.json).
+The revision registry records the configuration, environment and parent model for each recovered flight. Cockpit acceptance remains pending for the historical R6. [Revision registry](inputs/flight_revisions.json).
 
 The authored wheels and pod mounts are retained. Collision dimensions and visual offsets are diagnostic data in Engineering. **Suspension schematic** is an optional physical reference, off by default, not structural actuator CAD. See [the schematic contract](docs/phantom/A10C_SUSPENSION_SCHEMATIC.md).
 
@@ -44,7 +44,7 @@ Use **Save flight & switch** before changing aircraft. Flight records restores s
 
 Saved flights are retained locally; persistence across cloud deployments is not implemented. On Windows, `Start-VTX.bat` launches the local game using the installed Python environment and preserves incompatible prior launch state in a recovery folder. If the port is occupied, the launcher checks the airport, harbour, runtime and frontend files before identifying the existing server. Local frontend responses require cache revalidation to reduce stale versions across browser profiles.
 
-The actual ground check saved a runway state, switched to the distinct VTOL candidate and restored the same runway run paused at 55.0175 s with identical checkpoint bytes and retained calibration. Full owner flight tests, Argon acceptance and promotion remain outstanding.
+A ground test switched from the runway candidate to the VTOL candidate and restored the runway flight paused at 55.0175 s. Its checkpoint bytes and radar calibration matched the original. Full cockpit testing and Argon flight acceptance remain open.
 
 Aircraft flight uses a **400 Hz MuJoCo physics model** with aerodynamics, actuators, contact and vehicle mass. The harbour runs its craft alongside the aircraft simulation. AI pilot development uses vehicle telemetry and individual commands, while scheduled scenic flights provide background traffic.
 
@@ -71,7 +71,7 @@ VTX lets you transition seamlessly across multiple operational modes in a single
         tarmac tire grip               airspeeds > 25 m/s            0.8g vectored air brake
 ```
 
-The player controls the physical aircraft. The pictured Phantom on the airport scenery route is background traffic.
+The airport also has scheduled Phantom and Argon scenery flights. Choose a passenger seat to ride along.
 
 ---
 
@@ -100,6 +100,7 @@ Choose either of two Ricochet Concept A craft, steer around the islands, and doc
 | :--- | :--- | :--- | :--- |
 | **Phantom A10-B** *(Pinned reference)* | Two-seat transforming aerocar (FX-A) | 7° wing incidence, active front-wheel steering, Munk hull lift, Moog 965 actuator models, rear boosters, DRS flap | Historical reference; Main promotion is not inferred from its pin |
 | **Phantom FX-A A10-C** *(Current development; PR #41)* | Fans-off, wing-borne A10-B derivative | Four PBS TJ150-class turbojets, rate-limited takeoff-stance setting, lift fans off in the runway study | Current development aircraft; the recovered 12 November candidates and timings are listed separately above |
+| **Phantom A10-D** *(Experimental)* | A10-C airframe with its own pinned configuration | Adds the `transition_ecu_v1` air-braking controller | Available under **Earlier and experimental aircraft**. [ECU test results and model identity](docs/phantom/A10C_AIRBRAKE_ECU_TEST_20261118.md#10-a10-d-test-aircraft) |
 | **Phantom A10-A** | Baseline VTOL prototype | Retractable cassette wings, 4 wheel-pod fans, fixed P6 stabilator | 72-sortie November campaign benchmark (peak altitude 600.58 m) |
 | **R6 Argon** | Four-pod ducted quadrotor | 4 independently articulated ducted fan pods, annular primary structure | Foundation testbed; pure hover agility and dynamic station-keeping |
 | **Phantom A10 As-Drawn** | Scale CAD concept | Compact Ø0.49 m fan geometry (thrust-to-weight 0.52) | Educational study frame demonstrating hover deficit |
@@ -165,7 +166,7 @@ flowchart TD
     end
 
     subgraph API["COMMUNICATION & ROUTING BUS"]
-        FastAPI["FastAPI / Uvicorn Server<br/>(Reviewed PC port 8770)"]
+        FastAPI["FastAPI / Uvicorn server"]
         EnvRouter["/api/environment<br/>[Sortie Lock Guard]"]
         WS_Stream["Timestamped WebSocket Telemetry"]
         REST_Ctrl["REST Endpoints<br/>(/api/model-preview, /api/runs)"]
@@ -190,7 +191,7 @@ flowchart TD
     end
 
     subgraph Storage["DURABLE EVIDENCE REPOSITORY"]
-        EvidenceLedger["Local AppData / Checkpoints<br/>($env:VTX_DATA_ROOT)"]
+        EvidenceLedger["Flight records and checkpoints<br/>(VTX_DATA_ROOT)"]
         BlackBox["Flight Black-Box (.jsonl)<br/>(400 Hz High-Rate Logs)"]
         Fingerprints["Model & Config Hashes<br/>(SHA-256 Provenance)"]
     end
@@ -258,35 +259,23 @@ To preserve scientific rigor, every component of VTX adheres to strict system-le
 
 ---
 
-## Quickstart: Starting the Simulator
+## Run VTX locally
 
-### Prerequisites
-* Windows 10/11 64-bit
-* Python 3.11+ with `pip`
-* A modern browser with WebGL 2.0 (Google Chrome or Microsoft Edge recommended for voice commands)
-
-### Steve's reviewed local station
-
-Double-click `START_VTX_REVIEWED.bat` in `C:\Users\steve\Documents\Github\-vtx-flight-sim`. That local wrapper points to the reviewed isolated checkout, existing Python environment, and original flight data directory. It does not launch the primary checkout's older code.
-
-The tracked [launch-reviewed.bat](launch-reviewed.bat) verifies the pinned Python-tree and visual hashes, uses **port 8770**, and refuses an occupied port. It never kills a process or searches for a different port. Open or reuse one cockpit tab at **[http://127.0.0.1:8770/](http://127.0.0.1:8770/)**; the launcher does not open a second tab automatically. Keep its server window open.
-
-For another reviewed checkout, explicitly supply its existing environment and data root:
+For a Windows installation, use Python 3.11 and a browser with WebGL 2. Open PowerShell in the repository folder and run these commands.
 
 ```powershell
-$env:VTX_PYTHON = 'C:\path\to\existing\.venv\Scripts\python.exe'
-$env:VTX_DATA_ROOT = 'C:\path\to\existing\VTX\flight-data'
-.\launch-reviewed.bat --check  # Read-only configuration/hash check; starts no server
-.\launch-reviewed.bat
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe scripts\launch_unified.py
 ```
 
-Install `requirements.txt` in a dedicated environment when setting up a new PC. Read the continuity record before choosing an archive or changing a pinned runtime. The earlier `RUN_THREE_PANEL_DEV.ps1`, port 8765/8766/18911 examples and generic per-checkout launcher are historical/development entry points; they are not Steve's reviewed continuity station.
+The launcher opens the cockpit in your browser and prints the port and save folder. Keep the terminal open while playing. To choose a different save folder, pass `--data-root` with the folder path. Add `--check` to verify the configuration before starting a session.
 
 ### Verification
 
-The integration passed six aircraft comparisons and 8,700 recorded runway and VTOL control samples. The PR #59 Mathematics run passed 514 Python tests, and all five development previews returned Main Airport data. Original-control reproduction uses [reproduce_recorded_phantom.py](tools/reproduce_recorded_phantom.py) with a new output directory outside the source checkout and original archive. Commands and local evidence paths are recorded in the continuity record; original logs remain local.
+The selector release passed 541 Python tests and 85 JavaScript tests. Browser tests exercised vehicle switching, repositioning and checkpoint recovery after restart. [Release checks](https://github.com/SDarkVader/-vtx-flight-sim/actions/runs/44327327382).
 
-The local recovery package retains exact tested bytes. Runtime/public/input line endings are pinned for Git checkout so Windows conversion does not silently change their identity. A hash mismatch stops the reviewed launcher; it does not rewrite the pin.
+Recorded-control comparisons cover 8,700 runway and VTOL samples. Use a new output directory when replaying archived controls. [Recorded Phantom flight reproduction](tools/reproduce_recorded_phantom.py).
 
 ---
 
