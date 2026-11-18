@@ -12,9 +12,9 @@ The current build brings together an 8 km square Main Airport, a 7,800 m runway 
 
 Open **Choose vehicle** for the Phantom A10-C, Argon R6, or a Ricochet at Airport Landing or Lantern Marina. **Earlier and experimental aircraft** includes the Phantom A10-D ECU test aircraft, the recovered runway and VTOL variants, and the pinned A10-B reference. At Main Airport the Phantom starts at the west runway threshold unless you choose a different departure.
 
-| Argon R6 | Ricochet Concept A |
-| --- | --- |
-| ![Argon R6 exterior showing its four ducted rotors around the central cabin](docs/readme-images/r6-argon-exterior.jpg) | ![Ricochet exterior showing the canopy, twin sponsons and rear ducted fans](docs/readme-images/ricochet-exterior.jpg) |
+![The Argon R6 on pad A, with four white rotor ducts surrounding its dark canopy](docs/readme-images/r6-argon-pad-a.jpg)
+
+*Argon R6 on pad A at Main Airport, captured in game.*
 
 ## Current development
 
@@ -90,7 +90,9 @@ Choose a world from the cockpit before starting a flight:
 
 Choose either of two Ricochet Concept A craft, steer around the islands, and dock at Airport Landing or Lantern Marina. Save and restore keeps both boats, their controls and their berth ownership. Boats and the aircraft run together in the shared airport environment.
 
-![Ricochet craft alongside the docks at Lantern Marina](docs/readme-images/ricochet-marina.png)
+| Ricochet Concept A | Lantern Marina |
+| --- | --- |
+| ![Ricochet exterior showing the canopy, twin sponsons and rear ducted fans](docs/readme-images/ricochet-exterior.jpg) | ![Ricochet craft alongside the docks at Lantern Marina](docs/readme-images/ricochet-marina.png) |
 
 ---
 
