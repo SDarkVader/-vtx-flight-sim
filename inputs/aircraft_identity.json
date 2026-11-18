@@ -6,5 +6,14 @@
     "parameter_file_sha256": "3955457a00f9b3eadea50c4d919730099202a36d2063130e95261b466067ee3b",
     "render_asset": "/assets/phantom-a10b-visual.glb",
     "render_asset_sha256": "45364301f2950ca57e5b34ac73d29b0abe11471dd82f0fe0e5068da70418a93e"
+  },
+  "phantom-a10d": {
+    "name": "Phantom A10-D · A10-C + transition ECU · test aircraft",
+    "release_stage": "test_aircraft",
+    "note": "Test aircraft, not promoted (inputs/phantom_test_variants_v1.json): the A10-C (phantom-a10c) plus the transition ECU overlay transition_ecu_v1, on the A10-C airframe and visual. Pinned so that a changed overlay or visual is refused, never flown under this name. The A10-C itself is unchanged and is not pinned here.",
+    "config_sha256": "58d12857e3d38b50deeefa982974f4e54bd37f72823218a3e5c31b9000144ba3",
+    "parameter_file_sha256": "3955457a00f9b3eadea50c4d919730099202a36d2063130e95261b466067ee3b",
+    "render_asset": "/assets/phantom-a10b-visual.glb",
+    "render_asset_sha256": "45364301f2950ca57e5b34ac73d29b0abe11471dd82f0fe0e5068da70418a93e"
   }
 }

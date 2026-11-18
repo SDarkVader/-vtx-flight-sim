@@ -163,3 +163,4 @@ public/vehicle-livery.js text eol=lf
 Test-VTX-Vehicles.bat text eol=crlf
 inputs/phantom_overlays/transition_ecu_v1.json text eol=lf
 evidence/phantom/a10c_airbrake_ecu_20261118/** -text
+inputs/phantom_test_variants_v1.json text eol=lf

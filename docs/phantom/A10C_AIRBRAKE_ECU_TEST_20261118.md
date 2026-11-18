@@ -5,9 +5,12 @@ Offline engineering test, isolated worktree `vtx-a10c-airbrake-ecu-20261118`, br
 Data: `evidence/phantom/a10c_airbrake_ecu_20261118/` (indexed in its `README.md`).
 
 Nothing live was touched. The simulator, its aircraft, its flights and checkpoints, and the primary checkout are
-unchanged, and so are the aircraft identity pins. The reviewed-runtime pin was moved with the owner's
-authorisation, keeping the previous runtime on record (§8). The branch was pushed for a draft PR at the owner's
-request. Nothing was merged or promoted.
+unchanged. The existing aircraft identity pins are unchanged; one pin was added, for the A10-D test aircraft
+(§10). The reviewed-runtime pin was moved with the owner's authorisation, keeping the previous runtimes on record
+(§8). The branch was pushed for a draft PR at the owner's request. Nothing was merged or promoted.
+
+**A10-D (added later on 18 Nov at the owner's request):** the A10-C with this ECU is now a separate test aircraft,
+`phantom-a10d`, selectable under "Earlier and experimental aircraft". The A10-C is unchanged. See §10.
 
 ## 1. Objective and reference
 
@@ -120,7 +123,8 @@ The final runs reproduce exactly. Rerunning reference with the ECU, cruise with 
 on this branch gave files identical to the recorded r5 files.
 
 The six new ECU tests pass in about 18 s. The full Python suite passes (525), and so does the JavaScript suite
-(85). The logs are in the data folder.
+(85). With the A10-D added (§10), 537 Python tests pass, 12 of them new, and the JavaScript suite still passes (85).
+The logs are in the data folder.
 
 ## 5. Results (run r5) against 9 Nov
 
@@ -197,13 +201,13 @@ tilting the pods and spooling the fans from rest costs about 1 s of braking, and
 
 ## 8. Owner decisions
 
-- **Reviewed runtime pin: done, with the owner's authorisation (18 Nov).** The `src/vtx` edits change the runtime hash from e861234… (commit ac9f1e7, `origin/main`) to a3052315…. `inputs/flight_revisions.json` now pins a3052315…. It records e861234… and its commit under `previous_integrated_runtimes`.
+- **Reviewed runtime pin: done, with the owner's authorisation (18 Nov).** The `src/vtx` edits change the runtime hash from e861234… (commit ac9f1e7, `origin/main`). The ECU commit pinned a3052315…, and the A10-D commit pins 0d52bb96…. `inputs/flight_revisions.json` records both earlier runtimes and their commits under `previous_integrated_runtimes`.
   - The previous model is not lost. The A10-C and the flown revisions keep their configuration, parameter-file and visual pins.
   - Without the overlay they fly identically on both runtimes, with the same exact state digests (`analysis/same_physics_*.json`).
   - A flight running on the old runtime keeps running. If a server restarts into this build, it sets aside a checkpoint written by the old runtime instead of resuming it, as it does for any checkpoint from a different build.
-- **Promotion: not done.** Fitting `transition_ecu_v1` to the live `phantom-a10c` changes its config SHA (2fee0b40 → 58d12857) and its identity pins. Until that is decided, the live A10-C has no ECU and the panel button shows as unavailable.
-- **No ECU aircraft can be selected in the live game yet.** Experimental overrides can't add an overlay. A new variant would change the shared parameter file and break the existing pins. Flown revisions don't carry overlays. Flying the ECU live needs a decision on how, for example a separate flown revision with overlay support at revision level.
-- The `public/app.js` change is one cache-buster string on the `phantom-controls.js` import (line 48). It doesn't touch the vehicle selector, which Codex is changing in parallel. Expect a trivial conflict at most.
+- **Promotion: not done.** Fitting `transition_ecu_v1` to the live `phantom-a10c` changes its config SHA (2fee0b40 → 58d12857) and its identity pins. Until that is decided, the A10-C has no ECU and its panel button shows as unavailable.
+- **ECU aircraft in the game: the A10-D, at the owner's request (18 Nov).** "Make this the A10-D for testing without removing my previous model." Done as a separate test aircraft (§10), not as a promotion.
+- **Selector files.** `public/app.js` changes two cache-buster strings (line 48). `public/index.html` gains the A10-D option (line 9) and a new `app.js` cache-buster (line 18). Codex's vehicle-selector work (d7fff46) rewrote both files, so expect conflicts there. Keep both sides, add the A10-D to the new selector as a test aircraft (never as the main A10-C), and repin the runtime for the combined tree.
 
 ## 9. Files changed
 
@@ -215,6 +219,43 @@ tilting the pods and spooling the fans from rest costs about 1 s of braking, and
 | `public/phantom-controls.js`, `public/app.js` | Air-brake button, held-state sync, ECU feedback line; cache-buster |
 | `tools/phantom/a10c_airbrake_test.py`, `tools/phantom/airbrake_baseline.py` | reproducible test and 9 Nov baseline replay |
 | `tests/test_phantom_transition_ecu.py`, `tests/test_operator_controls.mjs` | opt-in identity, refusal without the ECU, engagement and release, dormant-ECU bit-exactness, checkpoint continuation, braking regression; panel held state |
-| `inputs/flight_revisions.json` | reviewed runtime repinned to a3052315…; the previous runtime e861234… recorded with its commit |
+| `inputs/flight_revisions.json` | reviewed runtime repinned to 0d52bb96…; the earlier runtimes e861234… (main) and a3052315… (ECU commit, branch only) recorded with their commits |
+| `inputs/phantom_test_variants_v1.json` | new: test aircraft kept outside the pinned parameter file; `phantom-a10d` = `phantom-a10c` + `transition_ecu_v1` |
+| `src/vtx/phantom/params.py` | loads test aircraft (name, parent and overlay rules), lists them in `VARIANTS`, records the test file's hash in the parameter snapshot |
+| `src/vtx/phantom/plant.py` | (A10-D) uses the A10-C visual |
+| `inputs/aircraft_identity.json` | new A10-D pin; the A10-B pin is unchanged |
+| `public/index.html`, `public/vtx-env/phantom-look.js`, `public/app.js` | A10-D option under "Earlier and experimental aircraft"; A10-D config in the wheel-pose table; cache-busters |
+| `tools/phantom/a10c_airbrake_test.py` | (A10-D) `--variant phantom-a10d` |
+| `tests/test_phantom_a10d.py` | A10-D identity and pin, A10-C unchanged, refusal rules for test aircraft, selector placement, live start and air-brake through the manual action path |
+| `.gitattributes` | LF for the new overlay and test-aircraft files; the data folder kept byte-exact |
 | `evidence/phantom/a10c_airbrake_ecu_20261118/` | run telemetry, baselines, analysis and its scripts, test logs, checksums |
 | `docs/phantom/A10C_AIRBRAKE_ECU_TEST_20261118.md` | this report |
+
+## 10. A10-D test aircraft
+
+The owner's request (18 Nov): "Make this the A10-D for testing without removing my previous model."
+
+- **What it is.** `phantom-a10d` is `phantom-a10c` plus the overlay `transition_ecu_v1`, defined in the new file
+  `inputs/phantom_test_variants_v1.json`. Its config is 58d12857…, the same tree the test harness built for r1–r5.
+  It has the A10-C's parameter file (3955457a…), mass, airframe and visual. Its model XML differs only in its
+  name (`VTX-PHANTOM-phantom-a10d`).
+- **Why a separate file.** The parameter-file hash covers the whole of `inputs/phantom_parameters_v1.json`, and the
+  A10-B pin and both flown A10-C revisions pin it. A new variant in that file would have broken all three. A flown
+  revision was not used either: revisions carry historical policies (boundary floor, initial stability mode,
+  nose-strut rule) that would make the aircraft differ from the A10-C in ways unrelated to the ECU.
+- **Safeguards.**
+  - A test aircraft must inherit a parameter-file variant and may add only named overlay files. It may not reuse
+    the name of a variant or a flown revision. Anything else is refused when the file is loaded.
+  - The A10-D is pinned in `inputs/aircraft_identity.json` (config, parameter file, visual). A changed overlay or
+    visual is refused rather than flown under its name.
+  - It is listed only under "Earlier and experimental aircraft", never in the main aircraft list. The main A10-C
+    and every default are unchanged.
+- **Verification.**
+  - Through the r5 test the A10-D's telemetry, input card, events and metrics are identical to r5 with the ECU,
+    from both starts (`runs/a10d_*`). Reference start: 47.8 m/s at 6 s, 0.83 g peak, 90.0° turn in 17.9 s into
+    hover at 0.009 m/s. Cruise start: 55.1 m/s at 6 s.
+  - The A10-C is unchanged. r5 reference with and without the ECU reproduce byte-identically on this tree, and the
+    three state digests equal those of main (`analysis/same_physics_a10d_runtime.json`).
+  - An A10-D flight started in an isolated lab verifies its identity. The manual panel's `airbrake: on` action
+    reaches the ECU (`tests/test_phantom_a10d.py`).
+- **Not done.** No promotion: the A10-C has no ECU. Nothing live was started or changed.

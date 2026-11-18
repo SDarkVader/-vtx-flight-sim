@@ -298,7 +298,7 @@ class PhantomAircraft:
         self.step_log = None; self.rng = np.random.default_rng(41031)
         self.peak_time_used = [0.0] * 4
         self.physics_data = load_a10b_characteristics() if variant == 'phantom-a10b' else None
-        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=('/assets/phantom-a10b-visual.glb' if variant in ('phantom-a10b', 'phantom-a10c') or revision else ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10' else f'/assets/phantom-{P.cassette_revision.lower()}.glb')),
+        self.provenance = dict(revision=f'{variant}' if variant.endswith('-a9') or 'a10' in variant else f'{variant}-a10', airframe_variant=variant, render_asset=('/assets/phantom-a10b-visual.glb' if variant in ('phantom-a10b', 'phantom-a10c', 'phantom-a10d') or revision else ('/assets/phantom-a10-blendstra-81c823e2.glb' if P.cassette_revision == 'A10' else f'/assets/phantom-{P.cassette_revision.lower()}.glb')),
                                model_xml_sha256=hashlib.sha256(self.xml.encode()).hexdigest(), parameter_file_sha256=P.file_sha256,
                                config_sha256=P.config_sha256, wing_cassette_revision=P.tree['geometry_sources']['wing_cassette_revision'],
                                physics_characteristics_uri='/evidence/phantom/a10b_characteristics.json' if variant == 'phantom-a10b' else None,

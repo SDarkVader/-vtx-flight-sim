@@ -6,10 +6,11 @@ from .flight_revisions import flight_revision, registry
 
 ROOT = Path(__file__).resolve().parents[3]
 PARAMETER_FILE = ROOT / 'inputs/phantom_parameters_v1.json'
+TEST_VARIANT_FILE = ROOT / 'inputs/phantom_test_variants_v1.json'
 MANIFEST_FILE = ROOT / 'inputs/phantom_simulation_manifest_v0.json'
 A10B_CHARACTERISTICS_FILE = ROOT / 'evidence/phantom/a10b_characteristics.json'
 LABELS = {'MEASURED-K', 'DERIVED', 'SYNTHETIC_UNVALIDATED', 'MANUFACTURER', 'REGULATORY_REFERENCE'}
-VARIANTS = ('phantom-a10b', 'phantom-a10c', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9') + tuple(registry()['revisions'])
+PARAMETER_FILE_VARIANTS = ('phantom-a10b', 'phantom-a10c', 'phantom', 'phantom-fx', 'phantom-a9', 'phantom-fx-a9')
 DEFAULT_VARIANT = 'phantom-a10b'
 CASSETTE_REVISIONS = ('A9', 'A10')
 
@@ -27,6 +28,37 @@ def load_a10b_characteristics():
 
 class PhantomConfigError(ValueError):
     pass
+
+
+def load_test_variants(path=None):
+    """Test aircraft of inputs/phantom_test_variants_v1.json and the file's hash (LF), or ({}, None) without the file.
+
+    The file is kept apart from the pinned parameter file. A test aircraft inherits a parameter-file variant and adds
+    only named overlays, so it is 'parent + overlays' and listing it changes no existing variant."""
+    path = Path(path) if path is not None else TEST_VARIANT_FILE
+    if not path.is_file():
+        return {}, None
+    data = path.read_bytes()
+    value = json.loads(data.decode('utf-8'))
+    if value.get('schema') != 1:
+        raise PhantomConfigError(f'{path.name}: unsupported schema {value.get("schema")!r}')
+    out = {}
+    for name, entry in value.get('variants', {}).items():
+        if name in PARAMETER_FILE_VARIANTS or name in registry()['revisions']:
+            raise PhantomConfigError(f'test aircraft {name!r} reuses the name of an existing variant')
+        if entry.get('inherits') not in PARAMETER_FILE_VARIANTS:
+            raise PhantomConfigError(f'test aircraft {name!r} must inherit a parameter-file variant')
+        if 'overlay' in entry:
+            raise PhantomConfigError(f'test aircraft {name!r}: only named overlay_files are allowed')
+        for overlay in entry.get('overlay_files', []):
+            if not (OVERLAY_DIR / f'{overlay}.json').is_file():
+                raise PhantomConfigError(f'test aircraft {name!r}: unknown overlay {overlay!r}')
+        out[name] = entry
+    return out, hashlib.sha256(data.replace(b'\r\n', b'\n')).hexdigest()
+
+
+TEST_VARIANTS, TEST_VARIANT_FILE_SHA256 = load_test_variants()
+VARIANTS = PARAMETER_FILE_VARIANTS + tuple(registry()['revisions']) + tuple(TEST_VARIANTS)
 
 
 def _strip(d):
@@ -64,9 +96,16 @@ class Params:
         self.requested_variant = variant
         revision = flight_revision(variant)
         self.variant = revision['base_variant'] if revision else variant
+        variants = raw['variants']
+        self.test_variant_file_sha256 = None
+        if self.variant in TEST_VARIANTS:   # a test aircraft: its parameter-file parent plus named overlays
+            if self.variant in variants:
+                raise PhantomConfigError(f'test aircraft {self.variant!r} reuses the name of a parameter-file variant')
+            variants = {**variants, self.variant: TEST_VARIANTS[self.variant]}
+            self.test_variant_file_sha256 = TEST_VARIANT_FILE_SHA256
         chain, v = [], self.variant
         while v:   # a variant may inherit another (e.g. phantom-fx-a9 = phantom-fx + A9 cassette)
-            chain.insert(0, raw['variants'][v]); v = raw['variants'][v].get('inherits')
+            chain.insert(0, variants[v]); v = variants[v].get('inherits')
         self.tree = copy.deepcopy(raw['base'])
         for entry in chain:
             for name in entry.get('overlay_files', []):      # opt-in overlays named by a variant (inputs/phantom_overlays)
@@ -75,7 +114,7 @@ class Params:
         if overrides:
             _merge(self.tree, overrides)
         self.n_numbers = _check_labels(self.tree)
-        self.variant_info = {k: v for k, v in raw['variants'][self.variant].items() if k != 'overlay'}
+        self.variant_info = {k: v for k, v in variants[self.variant].items() if k != 'overlay'}
         self.manifest_map = raw['manifest_map']
         self.revision_log = raw['revision_log']
         self.config_sha256 = hashlib.sha256(json.dumps(self.tree, sort_keys=True).encode()).hexdigest()
@@ -145,4 +184,5 @@ class Params:
         return dict(variant=self.requested_variant, parameter_file_sha256=self.file_sha256, config_sha256=self.config_sha256,
                     variant_info=self.variant_info, revision_log=self.revision_log, parameters=self.tree,
                     **({'parameter_variant':self.variant} if self.requested_variant != self.variant else {}),
+                    **({'test_variant_file_sha256':self.test_variant_file_sha256} if self.test_variant_file_sha256 else {}),
                     **({'characteristics': load_a10b_characteristics()} if self.variant == 'phantom-a10b' else {}))

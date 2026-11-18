@@ -21,6 +21,9 @@ ignored by the aircraft, so the card is replaced by its manual equivalent: pods 
 collective lever up, pitch stick centred; inputs 2-4 unchanged).
 
   python tools/phantom/a10c_airbrake_test.py --start reference --ecu on --out results/run.json
+
+--variant phantom-a10d flies the A10-D test aircraft (inputs/phantom_test_variants_v1.json), which carries the same
+overlay in its definition instead of as overrides; it has the ECU, so it takes --ecu on only.
 """
 from __future__ import annotations
 import argparse, gzip, hashlib, json, math, sys
@@ -38,6 +41,7 @@ from vtx.phantom.geometry import PODS, SIDE, WING_SIDES
 
 G = 9.80665
 VARIANT = 'phantom-a10c'
+ECU_VARIANT = 'phantom-a10d'   # test aircraft: phantom-a10c + transition_ecu_v1 in its definition
 LIVE_CONFIG_SHA = '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f'
 
 
@@ -59,9 +63,11 @@ def steps(a, seconds, every=None, cb=None):
     return False
 
 
-def build(ecu, start):
-    ov = overlays.load('transition_ecu_v1') if ecu == 'on' else None
-    a = PhantomAircraft(FlatWorld(), VARIANT, start_configuration='road', overrides=ov); a.spawn(-3500.0, 0.0, 0.0)
+def build(ecu, start, variant=VARIANT):
+    if variant == ECU_VARIANT and ecu != 'on':
+        raise ValueError(f'{ECU_VARIANT} has the ECU by definition; the aircraft without it is {VARIANT}')
+    ov = overlays.load('transition_ecu_v1') if ecu == 'on' and variant == VARIANT else None
+    a = PhantomAircraft(FlatWorld(), variant, start_configuration='road', overrides=ov); a.spawn(-3500.0, 0.0, 0.0)
     m, d, P = a.model, a.data, a.P
     a.set_command(dict(brake=[1.0] * 4, wing='deploy', canard_fold='deployed')); steps(a, 9.0)   # wings locked on the ground
     assert all(a.wing_state[s] == 'locked' for s in WING_SIDES), a.wing_state
@@ -113,8 +119,8 @@ def row(a, t0, z0):
         unmet_w=b.get('unmet_w'), soc=a.bus.soc, fuel_kg=float(a.fuel.sum()), prop_scale=a.prop_scale, support=a.support_count(), crashed=a.crashed)
 
 
-def fly(start, ecu, out):
-    a = build(ecu, start); d = a.data; mass0 = a.mass_properties()['mass_kg']
+def fly(start, ecu, out, variant=VARIANT):
+    a = build(ecu, start, variant); d = a.data; mass0 = a.mass_properties()['mass_kg']
     t0 = float(d.time); z0 = float(d.qpos[2]); log = []; card = []; st = dict(phase='brake', hdg0=None)
     def pilot_input(cue, action):
         card.append(dict(t=round(float(d.time) - t0, 3), cue=cue, input=action)); a.set_command(action)
@@ -139,8 +145,9 @@ def fly(start, ecu, out):
         end = st['phase'] == 'hover' and r['t'] > st['t_release'] + 20.0
         return a.crashed or abs(r['pitch']) > 60 or abs(r['roll']) > 80 or r['alt'] < -250 or end or r['t'] > 90.0
     steps(a, 120.0, every=0.05, cb=cb)
-    res = dict(test='phantom-a10c fan-assisted air-braking, 90 deg turn, transition to hover', start=start, ecu=ecu,
-               variant=VARIANT, config_sha256=a.P.config_sha256, live_config_sha256=LIVE_CONFIG_SHA,
+    res = dict(test=f'{variant} fan-assisted air-braking, 90 deg turn, transition to hover', start=start, ecu=ecu,
+               variant=variant, **({'ecu_fitted_by': 'variant definition (inputs/phantom_test_variants_v1.json)'} if variant == ECU_VARIANT else {}),
+               config_sha256=a.P.config_sha256, live_config_sha256=LIVE_CONFIG_SHA,
                overlays=['transition_ecu_v1'] if ecu == 'on' else [], model_xml_sha256=a.provenance['model_xml_sha256'],
                mass_kg=mass0, mass_end_kg=a.mass_properties()['mass_kg'], input_card=card, phases={k: v for k, v in st.items() if k != 'phase'},
                end_phase=st['phase'], crashed=a.crashed, events=[e for e in a.events if e.get('event') not in ('wing_state',)][-50:], log=log)
@@ -202,6 +209,9 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--start', choices=('reference', 'cruise'), default='reference')
     ap.add_argument('--ecu', choices=('on', 'off'), default='on')
+    ap.add_argument('--variant', choices=(VARIANT, ECU_VARIANT), default=VARIANT)
     ap.add_argument('--out', required=True)
     a = ap.parse_args()
-    summary(fly(a.start, a.ecu, a.out))
+    if a.variant == ECU_VARIANT and a.ecu != 'on':
+        ap.error(f'{ECU_VARIANT} has the ECU by definition; fly {VARIANT} for the aircraft without it')
+    summary(fly(a.start, a.ecu, a.out, a.variant))
