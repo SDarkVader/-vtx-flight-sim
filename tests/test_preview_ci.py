@@ -1,6 +1,10 @@
 """Preview CI contracts with offline provider responses and isolated summaries."""
 import importlib.util
 import json
+import shutil
+import subprocess
+import sys
+import tempfile
 import tomllib
 from pathlib import Path
 from unittest.mock import Mock
@@ -156,11 +160,38 @@ def test_native_git_previews_do_not_bypass_ci():
     assert config["git"]["deploymentEnabled"] is False
 
 
-def test_deployed_selector_can_read_the_same_public_tree_as_the_cdn():
+def test_deployed_selector_can_read_the_same_public_tree_as_the_cdn(tmp_path, monkeypatch):
+    from vtx.frontend_identity import server_frontend_manifest
+    from vtx.public_assets import public_directory
+
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     module = project["tool"]["vercel"]["entrypoint"].split(":")[0]
     entrypoint = module.replace(".", "/") + ".py"
     config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
-    included = {p for p in ROOT.glob(config["functions"][entrypoint]["includeFiles"]) if p.is_file()}
-    public_files = {p for p in (ROOT / "public").rglob("*") if p.is_file()}
-    assert public_files and public_files <= included
+    command, script = config["buildCommand"].split()
+    assert command == "python"
+    bundle = Path("inputs/vercel_frontend.zip")
+    hull = Path("public/assets/ricochet-concept-a.glb")
+    assert config["functions"][entrypoint]["includeFiles"] == "{" + bundle.as_posix() + "," + hull.as_posix() + "}"
+
+    build = tmp_path / "build"
+    deployed = tmp_path / "function"
+    for path in (script, hull, "public/index.html"):
+        (build / path).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / path, build / path)
+    (build / bundle.parent).mkdir()
+    subprocess.run([sys.executable, script], cwd=build, check=True)
+    expected = server_frontend_manifest(build / "public")
+    archive_bytes = (build / bundle).read_bytes()
+    subprocess.run([sys.executable, script], cwd=build, check=True)
+    assert (build / bundle).read_bytes() == archive_bytes
+    for path in (bundle, hull):
+        (deployed / path).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(build / path, deployed / path)
+    monkeypatch.delenv("VERCEL", raising=False)
+    assert public_directory(deployed) == deployed / "public"
+    monkeypatch.setattr(tempfile, "gettempdir", lambda: str(tmp_path))
+    monkeypatch.setenv("VERCEL", "1")
+    restored = public_directory(deployed)
+    assert server_frontend_manifest(restored) == expected
+    assert (deployed / hull).read_bytes() == (restored / "assets" / hull.name).read_bytes()

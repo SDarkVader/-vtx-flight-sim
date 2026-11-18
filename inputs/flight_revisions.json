@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "integrated_runtime_sha256": "6f97b2fd4c35a57cae1f8225667b801309fe14b7a79225a1599db7db823bd9b4",
+  "integrated_runtime_sha256": "ba1c9c48b237c4c7aaef90378bc8050676dc810cd359c978f1a714725e533127",
   "previous_integrated_runtimes": [
     {
       "sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
@@ -27,6 +27,12 @@
       "commit": "d7fff4683d5d590a8527f2aa6e3deb4cf047210b",
       "superseded": "2026-11-18",
       "reason": "The selector-only build predates the A10-D test aircraft. Its checkpoints retain their original build identity."
+    },
+    {
+      "sha256": "6f97b2fd4c35a57cae1f8225667b801309fe14b7a79225a1599db7db823bd9b4",
+      "commit": "bca9a77f0a70ebb433321d47924eb47cf10ee3e0",
+      "superseded": "2026-11-18",
+      "reason": "The Vercel preview now verifies the same public bytes from a compressed bundle. Aircraft configurations, numerical models, Ricochet dependencies and original asset bytes are identical."
     }
   ],
   "text_dependencies_sha256_lf": {

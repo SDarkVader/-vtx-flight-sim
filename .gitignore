@@ -19,3 +19,4 @@ tools/pilot_controls.json.bak
 
 # Isolated integration runtime evidence stays local.
 integration-test-data-*/
+/inputs/vercel_frontend.zip
