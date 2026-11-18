@@ -1,0 +1,266 @@
+........................................................................ [ 13%]
+....................................FFFF................................ [ 27%]
+.........F.............................................................. [ 41%]
+........................................................................ [ 54%]
+.......F................................................................ [ 68%]
+........................................................................ [ 82%]
+........................................................................ [ 96%]
+.....................                                                    [100%]
+================================== FAILURES ===================================
+_ test_flown_candidate_model_and_parent_identity[phantom-a10c-runway-20261112-airport-1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39] _
+
+variant = 'phantom-a10c-runway-20261112', environment = 'airport'
+model_sha = '1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39'
+
+    @pytest.mark.parametrize(('variant', 'environment', 'model_sha'), [
+        ('phantom-a10c-runway-20261112', 'airport', '1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39'),
+        ('phantom-a10c-runway-20261112', 'sandbox', '5994a751799875c2d2fa07bcca5862e6a72d59965865893ac97a7a575b0aeb92'),
+        ('phantom-a10c-vtol-20261112', 'airport', '1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39'),
+    ])
+    def test_flown_candidate_model_and_parent_identity(variant, environment, model_sha):
+        aircraft = PhantomAircraft(make_world(environment), variant, start_configuration='road')
+        result = identity.verify(aircraft, runtime_source_sha256=live_server.RUNTIME_SOURCE_SHA256)
+>       assert result['verified'] and 'promotion pending' in result['status']
+E       assert (False)
+
+tests\test_flown_revisions.py:21: AssertionError
+_ test_flown_candidate_model_and_parent_identity[phantom-a10c-runway-20261112-sandbox-5994a751799875c2d2fa07bcca5862e6a72d59965865893ac97a7a575b0aeb92] _
+
+variant = 'phantom-a10c-runway-20261112', environment = 'sandbox'
+model_sha = '5994a751799875c2d2fa07bcca5862e6a72d59965865893ac97a7a575b0aeb92'
+
+    @pytest.mark.parametrize(('variant', 'environment', 'model_sha'), [
+        ('phantom-a10c-runway-20261112', 'airport', '1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39'),
+        ('phantom-a10c-runway-20261112', 'sandbox', '5994a751799875c2d2fa07bcca5862e6a72d59965865893ac97a7a575b0aeb92'),
+        ('phantom-a10c-vtol-20261112', 'airport', '1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39'),
+    ])
+    def test_flown_candidate_model_and_parent_identity(variant, environment, model_sha):
+        aircraft = PhantomAircraft(make_world(environment), variant, start_configuration='road')
+        result = identity.verify(aircraft, runtime_source_sha256=live_server.RUNTIME_SOURCE_SHA256)
+>       assert result['verified'] and 'promotion pending' in result['status']
+E       assert (False)
+
+tests\test_flown_revisions.py:21: AssertionError
+_ test_flown_candidate_model_and_parent_identity[phantom-a10c-vtol-20261112-airport-1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39] _
+
+variant = 'phantom-a10c-vtol-20261112', environment = 'airport'
+model_sha = '1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39'
+
+    @pytest.mark.parametrize(('variant', 'environment', 'model_sha'), [
+        ('phantom-a10c-runway-20261112', 'airport', '1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39'),
+        ('phantom-a10c-runway-20261112', 'sandbox', '5994a751799875c2d2fa07bcca5862e6a72d59965865893ac97a7a575b0aeb92'),
+        ('phantom-a10c-vtol-20261112', 'airport', '1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39'),
+    ])
+    def test_flown_candidate_model_and_parent_identity(variant, environment, model_sha):
+        aircraft = PhantomAircraft(make_world(environment), variant, start_configuration='road')
+        result = identity.verify(aircraft, runtime_source_sha256=live_server.RUNTIME_SOURCE_SHA256)
+>       assert result['verified'] and 'promotion pending' in result['status']
+E       assert (False)
+
+tests\test_flown_revisions.py:21: AssertionError
+_________ test_selecting_and_checkpointing_candidate_retains_identity _________
+
+tmp_path = WindowsPath('C:/Users/steve/AppData/Local/Temp/pytest-of-steve/pytest-373/test_selecting_and_checkpointi0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000296857CA890>
+
+    def test_selecting_and_checkpointing_candidate_retains_identity(tmp_path, monkeypatch):
+        lab = live_server.Laboratory(data_root=tmp_path)
+        monkeypatch.setattr(live_server, 'lab', lab)
+        variant = 'phantom-a10c-runway-20261112'
+>       view = asyncio.run(live_server.model_preview({'airframe_variant': variant,
+                                                       'start_configuration': 'road', 'departure': [-700, 0]}))
+
+tests\test_flown_revisions.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+request = {'airframe_variant': 'phantom-a10c-runway-20261112', 'start_configuration': 'road', 'departure': [-700, 0]}
+
+    @app.post('/api/model-preview')
+    async def model_preview(request:dict):
+        """Switch the idle inspection aircraft without creating a flight record."""
+        if lab.active:raise HTTPException(409,'End and retain the current sortie before choosing another vehicle')
+        if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before changing vehicles')
+        if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.get('airframe_variant')!='r6':
+            raise HTTPException(409,'This cockpit is pinned to R6')
+        target_world=lab.world
+        if request.get('environment') is not None:
+            try:env_key=resolve_environment_key(request.get('environment'))
+            except ValueError as e:raise HTTPException(422,str(e))
+            if getattr(lab.world,'environment_key','airport')!=env_key:
+                target_world=make_world(env_key,seed=lab.world.seed)
+        dep_default=list(getattr(target_world,'default_departure',[0,0])) if request.get('environment') is not None else [0,0]
+        try:selection=Mission(environment=request.get('environment'),airframe_variant=request.get('airframe_variant'), departure=request.get('departure',dep_default), phantom={'start_configuration': request.get('start_configuration','vtol')})
+        except ValidationError as e:raise HTTPException(422,str(e))
+        point=MapPoint(*selection.departure)
+        if phantom_live.is_phantom_variant(selection.airframe_variant):
+            from .phantom.mission import validate_phantom
+            verdict=validate_phantom(target_world,point,selection.airframe_variant)
+            if not verdict['ok']:raise HTTPException(422,verdict['reason'])
+        else:
+            verdict=target_world.validate(point,'departure')
+            if not verdict.valid:raise HTTPException(422,verdict.reason)
+        lab.preview_generation+=1
+        generation=lab.preview_generation
+        def build():
+            if phantom_live.is_phantom_variant(selection.airframe_variant):
+                aircraft=phantom_live.make_aircraft(target_world,selection)
+            else:
+                aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
+                                  fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
+                                  engine_power_limit_kw=selection.engine_power_limit_kw,
+                                  atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
+            aircraft.spawn(*selection.departure,target_world.surface_z(*selection.departure))
+            return aircraft
+        aircraft=await asyncio.to_thread(build)
+        if lab.active or generation!=lab.preview_generation:
+            raise HTTPException(409,'The flight or model selection changed while the inspection model was loading')
+        if getattr(aircraft,'is_phantom',False):
+            from .phantom import identity as aircraft_identity_pins
+            check=aircraft_identity_pins.verify(aircraft,experimental=bool(aircraft.experimental_overrides),runtime_source_sha256=RUNTIME_SOURCE_SHA256)
+            if check['pinned'] and check['mismatches']:
+>               raise HTTPException(409,'Aircraft identity mismatch: '+check['status'])
+E               fastapi.exceptions.HTTPException: 409: Aircraft identity mismatch: MISMATCH: runtime_source_sha256 expected e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7 loaded a3052315e1d08ebff2b021d69297714b976962750576fed5d9583234ef5a5359
+
+src\vtx\live_server.py:1673: HTTPException
+_____________ test_explicit_inspection_selection_survives_restart _____________
+
+tmp_path = WindowsPath('C:/Users/steve/AppData/Local/Temp/pytest-of-steve/pytest-373/test_explicit_inspection_selec0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000029685797930>
+
+    def test_explicit_inspection_selection_survives_restart(tmp_path, monkeypatch):
+        lab=server.Laboratory(data_root=tmp_path)
+        monkeypatch.setattr(server,'lab',lab)
+        assert lab.view()['inspection_selection_known'] is False
+        with pytest.raises(HTTPException,match='Select an aircraft explicitly'):
+            asyncio.run(server.set_environment({'environment':'sandbox'}))
+        variant='phantom-a10c-vtol-20261112'
+>       selected=asyncio.run(server.model_preview({'environment':'sandbox','airframe_variant':variant,
+            'start_configuration':'vtol','departure':[-700,0]}))
+
+tests\test_inspection_selection.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+request = {'environment': 'sandbox', 'airframe_variant': 'phantom-a10c-vtol-20261112', 'start_configuration': 'vtol', 'departure': [-700, 0]}
+
+    @app.post('/api/model-preview')
+    async def model_preview(request:dict):
+        """Switch the idle inspection aircraft without creating a flight record."""
+        if lab.active:raise HTTPException(409,'End and retain the current sortie before choosing another vehicle')
+        if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before changing vehicles')
+        if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.get('airframe_variant')!='r6':
+            raise HTTPException(409,'This cockpit is pinned to R6')
+        target_world=lab.world
+        if request.get('environment') is not None:
+            try:env_key=resolve_environment_key(request.get('environment'))
+            except ValueError as e:raise HTTPException(422,str(e))
+            if getattr(lab.world,'environment_key','airport')!=env_key:
+                target_world=make_world(env_key,seed=lab.world.seed)
+        dep_default=list(getattr(target_world,'default_departure',[0,0])) if request.get('environment') is not None else [0,0]
+        try:selection=Mission(environment=request.get('environment'),airframe_variant=request.get('airframe_variant'), departure=request.get('departure',dep_default), phantom={'start_configuration': request.get('start_configuration','vtol')})
+        except ValidationError as e:raise HTTPException(422,str(e))
+        point=MapPoint(*selection.departure)
+        if phantom_live.is_phantom_variant(selection.airframe_variant):
+            from .phantom.mission import validate_phantom
+            verdict=validate_phantom(target_world,point,selection.airframe_variant)
+            if not verdict['ok']:raise HTTPException(422,verdict['reason'])
+        else:
+            verdict=target_world.validate(point,'departure')
+            if not verdict.valid:raise HTTPException(422,verdict.reason)
+        lab.preview_generation+=1
+        generation=lab.preview_generation
+        def build():
+            if phantom_live.is_phantom_variant(selection.airframe_variant):
+                aircraft=phantom_live.make_aircraft(target_world,selection)
+            else:
+                aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
+                                  fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
+                                  engine_power_limit_kw=selection.engine_power_limit_kw,
+                                  atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
+            aircraft.spawn(*selection.departure,target_world.surface_z(*selection.departure))
+            return aircraft
+        aircraft=await asyncio.to_thread(build)
+        if lab.active or generation!=lab.preview_generation:
+            raise HTTPException(409,'The flight or model selection changed while the inspection model was loading')
+        if getattr(aircraft,'is_phantom',False):
+            from .phantom import identity as aircraft_identity_pins
+            check=aircraft_identity_pins.verify(aircraft,experimental=bool(aircraft.experimental_overrides),runtime_source_sha256=RUNTIME_SOURCE_SHA256)
+            if check['pinned'] and check['mismatches']:
+>               raise HTTPException(409,'Aircraft identity mismatch: '+check['status'])
+E               fastapi.exceptions.HTTPException: 409: Aircraft identity mismatch: MISMATCH: runtime_source_sha256 expected e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7 loaded a3052315e1d08ebff2b021d69297714b976962750576fed5d9583234ef5a5359
+
+src\vtx\live_server.py:1673: HTTPException
+____ test_pending_controls_and_telemetry_continue_without_a_second_header _____
+
+tmp_path = WindowsPath('C:/Users/steve/AppData/Local/Temp/pytest-of-steve/pytest-373/test_pending_controls_and_tele0')
+
+    def test_pending_controls_and_telemetry_continue_without_a_second_header(tmp_path):
+        lab = live_server.Laboratory(data_root=tmp_path)
+>       lab.start(live_server.Mission(airframe_variant='phantom-a10c-runway-20261112',
+                                      phantom={'start_configuration': 'road'}))
+
+tests\test_phantom_checkpoint_continuation.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <vtx.live_server.Laboratory object at 0x00000296857D3230>
+request = Mission(departure=[0.0, 0.0], destination=[-50.0, 20.0], authority='manual', time_scale=1.0, stability_assist=0.0, ref...des=None, buffer_soc=None, engines_running=True, wind_world_m_s=None, policy_version=None, card_id=None, attempt=None))
+
+    def start(self,request:Mission):
+        if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.airframe_variant!='r6':
+            raise HTTPException(409,'This cockpit is pinned to R6; use a separate experimental runtime for other airframes')
+        if self.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before starting another mission')
+        if self.active:raise HTTPException(409,'End the current sortie explicitly before a new mission')
+        target_world=self.world
+        if request.environment is not None:
+            target_env=resolve_environment_key(request.environment)
+            if getattr(self.world,'environment_key','airport')!=target_env:
+                target_world=make_world(target_env,seed=self.world.seed)
+        flight_world=copy.copy(target_world) if request.ignore_scenery_collisions else target_world
+        if request.ignore_scenery_collisions:flight_world.obstacles=[]
+        self.preview_generation+=1
+        departure_check=landing_support(flight_world,MapPoint(*request.departure),'departure',request.airframe_variant)
+        if not departure_check.valid:raise ValueError('INVALID_DEPARTURE: '+departure_check.reason)
+        target=MapPoint(*request.destination)
+        if max(abs(target.x_m),abs(target.y_m))>flight_world.half-8:
+            raise ValueError('Destination outside surveyed map boundary')
+        arrival_check=landing_support(flight_world,target,'destination',request.airframe_variant)
+        target_z=flight_world.surface_z(*request.destination)
+        if phantom_live.is_phantom_variant(request.airframe_variant):
+            candidate=phantom_live.make_aircraft(flight_world,request)
+            # A pinned aircraft flies only as itself: physics configuration, parameter file and visual asset must match the pin.
+            from .phantom import identity as aircraft_identity_pins
+            check=aircraft_identity_pins.verify(candidate,experimental=bool(candidate.experimental_overrides),runtime_source_sha256=RUNTIME_SOURCE_SHA256)
+            if check['pinned'] and check['mismatches']:
+                self.log('flight_refused_identity_mismatch',check) if getattr(self,'log_path',None) else None
+>               raise HTTPException(409,'Flight refused: '+check['name']+' does not match its pinned identity. '+check['status'])
+E               fastapi.exceptions.HTTPException: 409: Flight refused: Phantom A10-C · runway 12 Nov does not match its pinned identity. MISMATCH: runtime_source_sha256 expected e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7 loaded a3052315e1d08ebff2b021d69297714b976962750576fed5d9583234ef5a5359
+
+src\vtx\live_server.py:1033: HTTPException
+=========================== short test summary info ===========================
+FAILED tests/test_flown_revisions.py::test_flown_candidate_model_and_parent_identity[phantom-a10c-runway-20261112-airport-1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39]
+FAILED tests/test_flown_revisions.py::test_flown_candidate_model_and_parent_identity[phantom-a10c-runway-20261112-sandbox-5994a751799875c2d2fa07bcca5862e6a72d59965865893ac97a7a575b0aeb92]
+FAILED tests/test_flown_revisions.py::test_flown_candidate_model_and_parent_identity[phantom-a10c-vtol-20261112-airport-1e04c9e9f82fe55fe6aae60ce3aaf15520c0ea593ea4658389259ac86a0e8d39]
+FAILED tests/test_flown_revisions.py::test_selecting_and_checkpointing_candidate_retains_identity
+FAILED tests/test_inspection_selection.py::test_explicit_inspection_selection_survives_restart
+FAILED tests/test_phantom_checkpoint_continuation.py::test_pending_controls_and_telemetry_continue_without_a_second_header
+6 failed, 519 passed in 319.18s (0:05:19)
+exit 1

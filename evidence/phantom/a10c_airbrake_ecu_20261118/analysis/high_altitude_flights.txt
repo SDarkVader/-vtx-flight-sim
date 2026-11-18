@@ -1,0 +1,13 @@
+  3248.3 m  20261117T115702-adf7ae  phantom-a10c                 2fee0b40  collision
+  2629.1 m  20261117T121144-5ed3f8  phantom-a10c                 2fee0b40  collision
+  2591.5 m  20261117T115127-2bb7d5  phantom-a10c                 2fee0b40  collision
+  2564.4 m  20261117T114151-71e782  phantom-a10c                 2fee0b40  airborne attempt ended
+  2427.8 m  20261113T103316-8341e0  phantom-a10c                 2fee0b40  collision
+  2376.2 m  20261112T204732-17cc37  phantom-a10c                 2fee0b40  collision
+  2141.1 m  20261117T113519-bc3ee7  phantom-a10c                 2fee0b40  collision
+  1956.0 m  20261114T082936-be0f06  phantom-a10c                 c832296b  collision
+  1783.9 m  20261112T203317-27a163  phantom-a10c                 2fee0b40  collision
+  1111.5 m  20261115T100010-c6136e  phantom-a10c                 2fee0b40  collision
+  1090.0 m  20261112T202443-0cabad  phantom-a10c                 2fee0b40  collision
+  1072.3 m  20261112T211016-e9d0ab  phantom-a10c                 2fee0b40  collision
+   823.8 m  20261113T193631-93d698  phantom-a10c                 2fee0b40  collision

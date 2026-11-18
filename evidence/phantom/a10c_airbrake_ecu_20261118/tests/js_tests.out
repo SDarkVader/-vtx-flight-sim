@@ -1,0 +1,246 @@
+(node:21392) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ only the active live vehicle supplies the navigation fix (0.8707ms)
+✔ compass follows each airframe’s forward axis (0.3234ms)
+✔ both chart sizes place the same readable marker at GNSS, with independent ground track (3.712ms)
+(node:20984) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+map projection and airport/world scales verified
+✔ tests\airport-map-scale.test.mjs (124.4766ms)
+(node:29440) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Unified airport fleet, versioned A10, terrain containment and runway scheduling passed
+✔ tests\airport-operations.test.mjs (382.0244ms)
+(node:27080) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\argon-cutaway.test.mjs (171.2294ms)
+(node:42244) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\boat-avionics.test.mjs (174.8055ms)
+(node:3056) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Phantom instruments use live sensor readings and ground reference (1.3624ms)
+✔ R6 sensors and real zero readings remain available (0.1402ms)
+✔ missing, malformed, or non-finite readings are not invented (0.1318ms)
+(node:34964) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+far forest stays outside the physical terrain
+✔ tests\far-forest-boundary.test.mjs (180.9313ms)
+(node:22072) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\flight-display.test.mjs (183.4322ms)
+(node:23180) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Ground path acceleration, braking, pose and steering checks passed
+✔ tests\ground-path.test.mjs (115.0552ms)
+(node:14660) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\harbour-camera.test.mjs (186.7957ms)
+(node:35956) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Harbour island holes, world/map parity, physical body poses, identity and asynchronous teardown passed
+✔ tests\harbour-rendering.test.mjs (256.5891ms)
+(node:16952) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\map-scale-zoom.test.mjs (130.5034ms)
+(node:36776) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Mission start sends the extended Phantom runway threshold while retaining explicit and sandbox departures
+✔ tests\mission-departure.test.mjs (149.8782ms)
+(node:38208) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Model selector keeps the server aircraft at startup and applies explicit preview safely
+✔ tests\model-selector.test.mjs (177.2464ms)
+(node:39524) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Pinned Phantom forward and both side sightlines clear; exterior visibility and model transforms retained
+✔ tests\phantom-cockpit-visibility.test.mjs (378.1562ms)
+(node:20692) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Phantom thrust and wheel presentation checks passed
+✔ tests\phantom-effects.test.mjs (129.2522ms)
+(node:17900) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\physical-camera-target.test.mjs (147.9882ms)
+(node:28040) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\physical-visual.test.mjs (244.9216ms)
+(node:12888) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Runway endpoints, lighting, legacy fallback, Sandbox isolation and actual minimap contract passed
+✔ tests\runway-layout.test.mjs (139.1485ms)
+(node:5176) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Scenery camera selection, passenger clearance and physical-ownship boundaries passed
+✔ tests\scenery-view.test.mjs (148.216ms)
+(node:11828) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ unknown aircraft cannot become the selected mission by default (1.0982ms)
+✔ flown selection reports its recorded environments and limitations (0.2429ms)
+(node:14212) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Phantom pitch and bank follow its physical axes in both directions (1.3809ms)
+✔ R6 quaternion output agrees with the existing cabin-axis convention (0.6207ms)
+✔ missing, malformed or zero quaternions never appear as level attitude (0.2899ms)
+✔ live, replay, stale and unavailable states are visible and recover (1.061ms)
+(node:33704) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Camera zoom limits passed
+✔ tests\test_camera_zoom.mjs (126.3731ms)
+(node:18768) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\test_cockpit_avionics.mjs (136.8264ms)
+(node:23800) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\test_cockpit_axes.mjs (136.4175ms)
+(node:38020) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\test_cockpit_visibility.mjs (155.777ms)
+(node:20680) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the cockpit explains actual flap interlocks without inventing a limit (0.7228ms)
+(node:37660) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ an open panel that the operator never touched sends nothing (0.8459ms)
+✔ an engaged panel sends changes only for its own run and manual authority (0.1312ms)
+✔ cockpit ArrowRight tilts toward the pilot right (-X) at zero cabin yaw (0.2151ms)
+✔ operator sends only changed fields and holds the other side of an array (0.8881ms)
+✔ in-flight failure preserves newer edits and cannot resurrect after disengagement (0.3695ms)
+✔ readouts clear unavailable values and distinguish zero from missing (0.1708ms)
+✔ restored held commands determine toggle actions without sending new commands (0.6017ms)
+✔ the air-brake button follows the held transition-ECU command (0.1963ms)
+✔ unacknowledged edits and unavailable commands cannot be replaced by an old snapshot (0.3703ms)
+(node:12304) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ visual wheels preserve authored dimensions and attachment datums while following measured articulation (1097.0845ms)
+✔ recorded rolling wheels retain measured body phase when joint sample is one physics step later (1.2594ms)
+(node:25668) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ measured suspension and steering move the wheel, not the pod (6.4031ms)
+✔ physical presentation hides a wheel with missing joints and restores it from a later complete frame (4.5115ms)
+✔ stabilator follows physical position without a second cosmetic controller (0.452ms)
+(node:13400) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ replay requires this frame to match the recorded model, variant, config and asset (0.7245ms)
+✔ replay sensor gaps remain unavailable while recorded fuel is shown (0.6554ms)
+✔ terrain must match its recorded key, revision, seed and fingerprint (0.2028ms)
+✔ R6 frames may omit a separate top-level variant and configuration hash (0.1204ms)
+(node:21084) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 20 Hz samples can alias while intermediate frames reveal actual spin (0.7616ms)
+✔ paused, inactive and unknown speed do not invent motion (0.1752ms)
+✔ time scale and stale frame prediction are bounded (0.1347ms)
+(node:25320) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ opening the cockpit exposes controls without changing aircraft or environment (4.3628ms)
+(node:24240) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ schematic follows measured front slides and pod frames while spring-seat setting changes independently (2.7775ms)
+✔ rotated aircraft and tilted pod retain physical coordinate frames and +Z bump direction (0.4889ms)
+✔ missing and nonfinite measured state hides affected presentation and recovers without a fabricated value (0.405ms)
+✔ historical or incompatible snapshots never acquire an added schematic (0.2806ms)
+✔ recorded body-pose displacement stays aligned when the measured joint belongs to a later solver step (0.7057ms)
+✔ generated asset exposes the same measured-pose binding contract (3.9963ms)
+✔ late asset loads are discarded when aircraft changes or descriptor is removed (1.9922ms)
+✔ asset verification failures stay explicit without replacing the aircraft (0.5774ms)
+(node:41536) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+Tilt-direction mapping passed
+✔ tests\test_tilt_direction.mjs (124.6613ms)
+(node:36596) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ aircraft and environments keep separate presentation preferences across reload (2.365ms)
+✔ invalid, stale or unavailable storage never creates a guessed preference (0.2553ms)
+✔ free view preserves position and aim without corrupting its saved values (0.1929ms)
+✔ switching views restores the matching aircraft without sending simulator actions (8.4419ms)
+(node:1732) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ an unsuccessful world request is retried while mismatched terrain remains unavailable (2.698ms)
+✔ a delayed response for a previous environment cannot replace the latest world (1.5451ms)
+✔ same id and version with a different environment key is not a match (0.1925ms)
+✔ same labels with different terrain or seed cannot be treated as the current world (0.141ms)
+✔ a delayed response with matching labels but old terrain stays unavailable until the right world arrives (1.9055ms)
+(node:10756) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\traffic-count.test.mjs (475.6487ms)
+(node:20420) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ reproducible endpoints, midpoint and velocity (1.5689ms)
+✔ uniform spatial and velocity scaling, time preserved (0.2668ms)
+✔ clamps before and after route and rejects bad inputs (0.4193ms)
+(node:14776) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+phantom-a10b-visual.glb 954 lettering vertices fitted
+phantom-a10-blendstra-81c823e2.glb 954 lettering vertices fitted
+✔ tests\vehicle-livery.test.mjs (3673.5508ms)
+(node:17424) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\vehicle-workspace.test.mjs (106.6963ms)
+(node:16048) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\vendor-three-loader.mjs (102.3889ms)
+(node:16260) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+A10 28-joint deployment, wheel articulation, control surfaces and retraction passed
+Visual aircraft route bounds, CG pivot, timing, deterministic sampling and render wiring passed
+✔ tests\visual-air-traffic.test.mjs (334.2061ms)
+(node:24952) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tests\visual-identity.test.mjs (143.4456ms)
+(node:39548) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/vendor-three-loader.mjs", pathToFileURL("./")); register("./tests/vendor-three-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+A10 28-joint deployment, wheel articulation, control surfaces and retraction passed
+✔ tests\visual-phantom-animation.test.mjs (158.3315ms)
+ℹ tests 85
+ℹ suites 0
+ℹ pass 85
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4109.2425
