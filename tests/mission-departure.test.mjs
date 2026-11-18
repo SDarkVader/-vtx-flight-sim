@@ -21,7 +21,7 @@ async function startMission({variant='phantom-a10c',environment='airport',depart
  const ctx={worldUnavailable:false,world:{runway:{x0:-3900}},departure:[...departure],departureExplicit:explicit,destination:[-50,20],currentEnvironment:environment,last:{run_id:'old'},missionTransition:null,renderer:{domElement:{style:{visibility:'visible'}}},modelReady:true,
   $:id=>els[id],guard:fn=>fn,missionDeparture,stopReplay(){},updateMarkers(){},drawMaps(){},toast(){},
   api:async(url,body)=>{sent.push({url,body});if(fail)throw Error('offline refusal');return {run_id:'offline-test'};},
-  manualChannel:{postMessage(){}},manualOwned:false,track:[],command:{},dirty:false,
+  resetRotorInputs(){},manualRunId:null,manualChannel:{postMessage(){}},manualOwned:false,track:[],command:{},dirty:false,
   selectedFuel:()=>10,selectedWind:()=>[0,0,0]};
  vm.runInNewContext(handler,ctx);
  if(fail)await assert.rejects(els.start.onclick(),/offline refusal/);else await els.start.onclick();

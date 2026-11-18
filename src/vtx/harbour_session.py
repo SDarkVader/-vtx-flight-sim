@@ -6,6 +6,7 @@ import base64
 import gzip
 import hashlib
 import json
+import math
 import multiprocessing
 import os
 from pathlib import Path
@@ -30,6 +31,70 @@ def _publish(path, payload):
         os.replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+def _restart_boat(world, fleet, body):
+    """Stage a fresh selected vessel while retaining the fleet and water clock."""
+    from .harbour_fleet import HarbourFleet
+    from .ricochet.plant import RicochetCraft
+
+    boat_id = body["boatId"]
+    if boat_id != fleet.selectedId:
+        raise ValueError("Boat selection changed; select the boat again")
+    definition = next(v for v in fleet.definitions if v["id"] == boat_id)
+    berth_id = definition["berth_id"]
+    berth = fleet.berths[berth_id]
+    xy = body.get("position")
+    if xy is None:
+        if fleet.occupancy.get(berth_id, boat_id) != boat_id:
+            raise ValueError("Home berth occupied; choose an open water position")
+        xy = fleet.world.to_world([berth["x"], berth["y"]])
+        heading = -berth["heading"]
+    else:
+        if (not isinstance(xy, list) or len(xy) != 2 or
+                any(type(n) not in (int, float) or not math.isfinite(n) for n in xy) or
+                not fleet.world.mask(*xy)):
+            raise ValueError("Choose a position in harbour water, in world metres")
+        berth_id = None
+        heading = fleet._pose(boat_id)[1]
+
+    # spawn resets a craft's water field. Spawn on its private field before
+    # attaching the existing shared field, so the other vessel keeps its wake.
+    result = HarbourFleet.restore(world, fleet.serialize())
+    # The single-craft decoder recomputes this display channel before the fleet
+    # reinstates the shared hydrodynamic cache. Retain the other craft's reading.
+    for other_id, other in fleet.crafts.items():
+        if other_id != boat_id:
+            result.crafts[other_id].last_munk_moment_nm = other.last_munk_moment_nm.copy()
+    old = result.crafts[boat_id]
+    craft = RicochetCraft(result.world, variant=old.variant, hull_variant=old.hull_variant,
+                          water_config=result.water.config, load_case="LC-01", hydro_stride=old.hydro_stride)
+    result._retime_adapter(craft)
+    craft.spawn(*xy, result.water.config.water_level_m, yaw_deg=math.degrees(heading))
+    craft.water_field = result.water
+    craft.step_count = result.step_count
+    craft.data.time = result.data.time
+    result.crafts[boat_id] = craft
+    mapping = result.mappings[boat_id]
+    for oq, sq, nq, ov, sv, nv in mapping["joints"]:
+        result.data.qpos[sq:sq+nq] = craft.data.qpos[oq:oq+nq]
+        result.data.qvel[sv:sv+nv] = 0
+        result.data.qacc_warmstart[sv:sv+nv] = 0
+        result.data.qfrc_applied[sv:sv+nv] = 0
+    for actuator in mapping["actuators"].values():
+        result.data.ctrl[actuator] = 0
+    for mapped_body in mapping["bodies"].values():
+        result.data.xfrc_applied[mapped_body] = 0
+    result._copy_masses()
+    moving = set(mapping["gids"])
+    if any((c.geom1 in moving) != (c.geom2 in moving) and c.dist < 0 for c in result.data.contact):
+        raise ValueError("Boat has insufficient clearance at this position")
+    result.release(boat_id)
+    if berth_id:
+        result.occupancy[berth_id] = boat_id
+        result.moorings[boat_id] = dict(berth_id=berth_id, xy=list(xy), heading=heading)
+    result._event("restarted", craft_id=boat_id, xy=list(xy), berth_id=berth_id)
+    return result
 
 
 def _run(connection, rate, seed, snapshot):
@@ -79,6 +144,16 @@ def _run(connection, rate, seed, snapshot):
                         result["physics"]["scheduler_backlog_s"] = max(0.0, due)
                         if fault:
                             result["error"] = fault
+                    elif action == "restart":
+                        candidate = _restart_boat(world, fleet, body)
+                        payload = _encode(candidate)
+                        history = current.parent / "harbour-history" / (uuid.uuid4().hex + ".json.gz")
+                        _publish(history, _encode(fleet))
+                        _publish(current, payload)
+                        fleet = candidate
+                        last = published = time.monotonic()
+                        due = 0.
+                        result = fleet.public()
                     else:
                         if fault:
                             raise ValueError("Harbour simulation stopped: " + fault)

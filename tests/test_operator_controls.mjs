@@ -86,6 +86,8 @@ test('the air-brake button follows the held transition-ECU command',()=>{
   assert.deepEqual(heldControlToggles({airbrake:'off'}).airbrake,{value:false,label:'Air-brake: engage'});
   assert.equal(heldControlToggles({}).airbrake,undefined);                 // aircraft without the ECU: no held state
   assert.equal(heldControlToggles({airbrake:'maybe'}).airbrake,undefined);
+  assert.deepEqual(heldControlToggles({},new Set(),{airbrake:'off'}).airbrake,{value:false,label:'Air-brake: engage'});
+  assert.equal(heldControlToggles({},new Set(['airbrake']),{airbrake:'off'}).airbrake,undefined);
   assert.equal(heldControlToggles({airbrake:'off'},new Set(['airbrake'])).airbrake,undefined);   // unacknowledged press wins
 });
 

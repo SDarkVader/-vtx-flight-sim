@@ -115,7 +115,7 @@ def test_mission_panel_requires_explicit_unpromoted_choice_and_preserves_a10_a9_
     assert 'disabled' in selected[0]['attrs'] and 'Select a test aircraft' in selected[0]['text']
     assert 'disabled' not in menus['main-aircraft']['attrs']
     main_options = {row['attrs'].get('value'): row for row in menus['main-aircraft']['options']}
-    assert set(main_options) == {'', 'r6', 'phantom-a10c'}
+    assert set(main_options) == {'', 'r6', 'phantom-a10c', 'boat:ricochet-airport', 'boat:ricochet-marina'}
     assert 'disabled' not in main_options['r6']['attrs']
     assert 'visual match pending' not in main_options['r6']['text']
     assert 'pinned reference' in options['phantom-a10b']['text']
