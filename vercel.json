@@ -3,6 +3,11 @@
   "env": {
     "VTX_DATA_ROOT": "/tmp/vtx"
   },
+  "functions": {
+    "src/vtx/live_server.py": {
+      "includeFiles": "public/**/*"
+    }
+  },
   "git": {
     "deploymentEnabled": false
   }

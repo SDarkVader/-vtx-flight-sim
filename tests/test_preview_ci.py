@@ -1,6 +1,7 @@
 """Preview CI contracts with offline provider responses and isolated summaries."""
 import importlib.util
 import json
+import tomllib
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -153,3 +154,13 @@ def test_missing_optional_secret_fails_before_any_request(scripts, monkeypatch):
 def test_native_git_previews_do_not_bypass_ci():
     config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
     assert config["git"]["deploymentEnabled"] is False
+
+
+def test_deployed_selector_can_read_the_same_public_tree_as_the_cdn():
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    module = project["tool"]["vercel"]["entrypoint"].split(":")[0]
+    entrypoint = module.replace(".", "/") + ".py"
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    included = {p for p in ROOT.glob(config["functions"][entrypoint]["includeFiles"]) if p.is_file()}
+    public_files = {p for p in (ROOT / "public").rglob("*") if p.is_file()}
+    assert public_files and public_files <= included
