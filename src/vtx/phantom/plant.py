@@ -416,10 +416,25 @@ class PhantomAircraft:
 
     # ------------------------------------------------------------ commands
     def set_command(self, action):
+        if action.get('airbrake') is not None and not self.fcc.transition:
+            self.events.append(dict(event='airbrake_unavailable', t_s=float(self.data.time), requested=action['airbrake'],
+                                    reason='this aircraft configuration has no transition ECU (fbw_transition overlay)'))
+        elif action.get('airbrake') is not None:
+            self.events.append(dict(event='airbrake', t_s=float(self.data.time), state=action['airbrake']))
         self.fcc.apply(action, float(self.data.time))
         for e in self.fcc.pti.log[-2:]:
             if e not in self.events:
                 self.events.append(e)
+
+    def ecu_status(self):
+        """Transition ECU readout for the cockpit (display only)."""
+        fl = self.fcc.last or {}
+        r = lambda x, n=1: None if x is None else round(float(x), n)
+        return dict(fitted=True, airbrake=self.fcc.cmd.get('airbrake', 'off'), wing_borne_weight=r(fl.get('transition_weight'), 2),
+                    airbrake_weight=r(fl.get('airbrake_weight'), 2), wing_lift_estimate_n=r(fl.get('other_lift_estimate_n'), 0),
+                    lift_relief_n=r(fl.get('lift_relief_n'), 0), stab_airbrake_deg=r(fl.get('stab_airbrake_te_up_deg')),
+                    attitude_cmd_deg=[r(x) for x in fl['attitude_cmd_deg']] if fl.get('attitude_cmd_deg') else None,
+                    yaw_rate_cmd_deg_s=r(fl.get('yaw_rate_cmd_deg_s')), collective_applied=r(fl.get('collective_applied'), 3))
 
     @property
     def command(self):
@@ -512,6 +527,13 @@ class PhantomAircraft:
                       p=w[0] + n(0, 3e-4), q_up=-w[1] + n(0, 3e-4), r_left=w[2] + n(0, 3e-4), vz=float(d.qvel[2]) + n(0, 0.005))
         va = vb - self.R().T @ self.wind                     # air data (used by the wing-borne law only)
         sensed.update(qdyn=0.5 * P['atmosphere.density_kg_m3'] * float(va @ va), beta=math.atan2(float(va[1]), max(abs(float(va[0])), 1.0)))
+        if self.fcc.transition:
+            # transition ECU inputs (no random draws, so runs without the ECU keep their exact noise sequence):
+            # air/ground state, fan vertical thrust (rpm + pod angle), GNSS ground velocity in the heading frame
+            cy, sy = math.cos(att['yaw_left']), math.sin(att['yaw_left'])
+            sensed.update(airborne=self.support_count() == 0,
+                          fan_vertical_n=float(sum(st.get('thrust_n', 0.0) * self.pod_axis(k)[2] for k, st in zip(PODS, self.fan_state))),
+                          u_ground=float(cy * d.qvel[0] + sy * d.qvel[1]), v_ground_left=float(-sy * d.qvel[0] + cy * d.qvel[1]))
         joint_positions = {name: float(self.joint(name)[0]) for name in self.L.bodies if name in self.jid}
         led = self.L.mass_properties(joint_positions, fuel_kg=list(self.fuel))
         fan_en = {k: abs(self.joint(f'pod_{k}')[0]) >= math.radians(P['pods.fan_enable_tilt_deg']) for k in PODS}
@@ -548,6 +570,9 @@ class PhantomAircraft:
             rate = P['proposals.p6_stab_rate_deg_s']
             if np.mean(c['brake']) > 0.3 and self.support_count() > 0 and v_air > 12.0:
                 tgt = P['proposals.p6_airbrake_te_up_deg']    # airbrake while braking on the ground
+            ab = (self.fcc.last or {}).get('stab_airbrake_te_up_deg')
+            if ab:   # transition ECU: in-flight airbrake (attitude priority applied in the FCC) + pitch demand on top
+                tgt = float(np.clip(rest + ab + P['proposals.p6_stab_gain_deg_per_demand'] * dem, rest + lo, P['proposals.p6_airbrake_te_up_deg']))
             step = math.radians(rate) * dt
             self.stab_te_up += float(np.clip(math.radians(tgt) - self.stab_te_up, -step, step))
         if self.eff:
@@ -885,6 +910,7 @@ class PhantomAircraft:
                                  fan_thrust_max_n=float(self.fan.thrust_max),
                                  booster_engine=(self.jet['kind'] if self.jet else 'edf'),
                                  drs_deg=(math.degrees(self.stab_te_up) if self.p6 else None),
+                                 **({'transition_ecu': self.ecu_status()} if self.fcc.transition else {}),
                                  nose_lift_m=float(self.nose_lift),
                                  flap_interlock=self.flap_interlock,
                                  booster_vector_deg=float(self.P['proposals.p3_booster_vector_angle_deg'] + math.degrees(self.tvc[0])),
@@ -962,6 +988,7 @@ class PhantomAircraft:
                         fan_heights=getattr(self, 'fan_heights', None), peak_time_used=self.peak_time_used,
                         bus_last=self.bus.last, flap_interlock=self.flap_interlock,
                         ring_i=self.ring_i, ring_full=self.ring_full,
+                        **({'transition_ecu': self.fcc.ecu_state()} if self.fcc.transition else {}),
                         ring_zlib_b64=base64.b64encode(zlib.compress(self.ring.tobytes(), 1)).decode('ascii'))
         return checkpoint_json(dict(checkpoint_format=3, integration_spec=int(spec), integration_state=integration,
                     sensor_calibration=dict(schema=1, radar_ground_reference_m=getattr(self, 'radar_ground_reference_m', None)),
@@ -1039,6 +1066,8 @@ class PhantomAircraft:
         self.first_contact_sink = e['first_contact_sink']; self.peak_time_used = list(e['peak_time_used'])
         if e['fan_heights'] is not None:self.fan_heights = list(e['fan_heights'])
         self.bus.last = e['bus_last']; self.flap_interlock = e['flap_interlock']
+        if self.fcc.transition:
+            self.fcc.restore_ecu_state(e.get('transition_ecu'))
         try:
             ring = np.frombuffer(zlib.decompress(base64.b64decode(e['ring_zlib_b64'], validate=True)), dtype=self.ring.dtype)
         except (ValueError, zlib.error) as exc:

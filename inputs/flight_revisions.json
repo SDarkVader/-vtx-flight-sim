@@ -1,6 +1,15 @@
 {
   "schema": 1,
-  "integrated_runtime_sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
+  "integrated_runtime_sha256": "a3052315e1d08ebff2b021d69297714b976962750576fed5d9583234ef5a5359",
+  "previous_integrated_runtimes": [
+    {
+      "sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
+      "commit": "ac9f1e72b5a5fc9830dd13554885bc48537400a1",
+      "superseded": "2026-11-18",
+      "reason": "Transition ECU for fan-assisted air-braking added as an opt-in overlay (inputs/phantom_overlays/transition_ecu_v1.json; src/vtx/phantom/controls.py, plant.py). Repin authorised by the owner on 18 Nov 2026, with the instruction to keep the previous model.",
+      "previous_model": "Unchanged. phantom-a10c config 2fee0b40... and the revisions below keep their configuration, parameter file and visual pins; without the overlay the A10-C and phantom-a10c-runway-20261112 give bit-identical state digests under both runtimes (vertical take-off and manoeuvre, runway roll, manual air-braking). Checkpoints written by this runtime are set aside, not resumed, by the newer build; this runtime remains at the commit above."
+    }
+  ],
   "text_dependencies_sha256_lf": {
     "evidence/phantom/a10_handover.json": "50b3068409ce2040ecf798cac148d72bcd561388ce265d7acb281ff1aea105ec",
     "evidence/phantom/phantom_geometry.json": "a9c7f9805a307350639267fd5411318d0070b8a055cfa903a0ebf9655746f24a"

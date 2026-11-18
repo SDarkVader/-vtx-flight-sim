@@ -76,6 +76,7 @@ class PhantomAction(BaseModel):
     brake: list[float] | None = None
     leg_extension_m: list[float] | None = None
     wing: Literal['hold', 'deploy', 'stow'] | None = None
+    airbrake: Literal['on', 'off'] | None = None   # transition ECU (fbw_transition overlay): fan-assisted air-braking into hover
     pti: PTI | None = None
 
     _t = field_validator('pod_tilt_deg')(classmethod(lambda c, v: _fixed(4, 0, 90, 'pod_tilt_deg')(v)))
@@ -143,6 +144,46 @@ class FlightControl:
         self.pti = PTIGenerator()
         self.last = {}
         self.pod_x = {k: (P['pods.hinge_x_front_m'] if FRONT[k] else P['pods.hinge_x_rear_m']) for k in PODS}
+        # transition ECU (opt-in, fbw_transition overlay): filtered estimate of the vertical force carried by
+        # everything except the lift fans (wing/hull lift, booster), from the vertical-acceleration sensor
+        self.transition = P.get('fbw_transition.enabled', 0.0) > 0.5
+        self.other_lift_est_n = 0.0
+        self.ecu_vz_prev = None
+        self.ecu_pitch_offset = 0.0     # rad: wing unloading while the fans sit on their braking floor
+        self.ecu_airbrake_factor = 1.0  # 0..1: stabilator airbrake share left after attitude priority
+
+    def ecu_state(self):
+        return dict(other_lift_est_n=self.other_lift_est_n, ecu_vz_prev=self.ecu_vz_prev, ecu_pitch_offset=self.ecu_pitch_offset,
+                    ecu_airbrake_factor=self.ecu_airbrake_factor)
+
+    def restore_ecu_state(self, s):
+        if s:
+            self.other_lift_est_n = float(s['other_lift_est_n']); self.ecu_vz_prev = s['ecu_vz_prev']
+            self.ecu_pitch_offset = float(s.get('ecu_pitch_offset', 0.0)); self.ecu_airbrake_factor = float(s.get('ecu_airbrake_factor', 1.0))
+
+    def airbrake_engaged(self):
+        return self.transition and self.cmd.get('airbrake') == 'on'
+
+    def transition_weight(self, sensed):
+        """0 in hover -> 1 once the wing carries meaningful load (dynamic-pressure ramp); 0 when the ECU is off."""
+        if not self.transition or not sensed.get('airborne', False):
+            return 0.0
+        q0, q1 = self.P['fbw_transition.q_ramp_pa']
+        return float(np.clip((sensed.get('qdyn', 0.0) - q0) / (q1 - q0), 0.0, 1.0))
+
+    def update_lift_estimate(self, sensed, mass_kg, g):
+        """Vertical force carried by everything except the lift fans (wing, hull, canards, boosters):
+        m (a_z + g) - fan vertical thrust, from the vertical-speed sensor (differentiated) and fan rpm / pod angle.
+        Measured, so it needs no aerodynamic model; low-pass filtered. Zero on the ground."""
+        if not sensed.get('airborne', False) or 'fan_vertical_n' not in sensed:
+            self.other_lift_est_n = 0.0; self.ecu_vz_prev = None; return
+        dt = 0.01
+        if self.ecu_vz_prev is None:     # first airborne sample: start from the unaccelerated balance, not from zero
+            self.ecu_vz_prev = sensed['vz']; self.other_lift_est_n = mass_kg * g - sensed['fan_vertical_n']; return
+        az = (sensed['vz'] - self.ecu_vz_prev) / dt
+        self.ecu_vz_prev = sensed['vz']
+        raw = mass_kg * (az + g) - sensed['fan_vertical_n']
+        self.other_lift_est_n += (raw - self.other_lift_est_n) * min(1.0, dt / self.P['fbw_transition.lift_estimate_tau_s'])
 
     def wingborne_blend(self, sensed):
         """0 (hover gains) -> 1 (wing-borne gains) with dynamic pressure; 0 unless the control_effectors overlay is on."""
@@ -156,6 +197,14 @@ class FlightControl:
         for k in COMMAND_FIELDS:
             if action.get(k) is not None:
                 self.cmd[k] = action[k]
+        if action.get('airbrake') is not None and self.transition:
+            self.cmd['airbrake'] = action['airbrake']
+            if action['airbrake'] == 'on':
+                # ECU configuration for fan-assisted braking (written into the held command, so it is visible and the
+                # pilot can override any of it afterwards): pods facing down, boosters off, vertical-speed hold armed.
+                self.cmd.update(pod_tilt_deg=[90.0] * 4, booster_throttle=[0.0, 0.0], stability_mode='attitude_vs',
+                                collective=max(self.cmd['collective'], 0.5),
+                                vertical_speed_m_s=action['vertical_speed_m_s'] if action.get('vertical_speed_m_s') is not None else 0.0)
         if action.get('pti'):
             p = action['pti']
             if p.get('command') == 'abort':
@@ -187,6 +236,18 @@ class FlightControl:
             phi_c = stick['roll'] * math.radians(bank_max)
             th_c = stick['pitch'] * math.radians(P['fbw.attitude_pitch_max_deg'])
             r_c = stick['yaw'] * math.radians(P['fbw.yaw_rate_max_deg_s'])
+            w_tr = self.transition_weight(sensed)
+            if w_tr > 0:   # transition ECU: coordinated-turn yaw rate for the sensed bank, r = g sin(phi) cos(theta) / V
+                v_air = max(math.sqrt(2.0 * sensed['qdyn'] / P['atmosphere.density_kg_m3']), P['fbw_transition.coordination_min_speed_m_s'])
+                r_c += w_tr * P['atmosphere.gravity_m_s2'] * math.sin(sensed['roll']) * math.cos(sensed['pitch_up']) / v_air
+            if self.airbrake_engaged() and sensed.get('airborne', False):
+                # braking attitude with the stick centred, fading to level hover trim as the wing unloads
+                th_c += w_tr * math.radians(P['fbw_transition.braking_pitch_deg']) + self.ecu_pitch_offset
+                # hover drift damping (translational-rate damping, engaged air-brake only): centred stick = zero ground
+                # velocity; tilt opposite the heading-frame ground velocity, faded in as the wing-borne regime ends
+                k = 1.0 - w_tr; kv = P['fbw_transition.hover_drift_gain_rad_per_m_s']; lim_v = math.radians(P['fbw_transition.hover_drift_tilt_max_deg'])
+                th_c += k * float(np.clip(kv * sensed.get('u_ground', 0.0), -lim_v, lim_v))
+                phi_c += k * float(np.clip(kv * sensed.get('v_ground_left', 0.0), -lim_v, lim_v))
             ka_ = list(ka); kd_ = list(kd)
             if s_wb > 0:   # wing-borne law (control_effectors overlay): gains scheduled on dynamic pressure
                 W = P['fbw_wingborne.attitude_gain']; Wd = P['fbw_wingborne.rate_gain_s']
@@ -202,7 +263,11 @@ class FlightControl:
         demand = np.clip(pil + aug, -1, 1)
         # collective / vertical speed
         T_rated = 4 * self.fan.thrust_max
-        trim = mass_kg * g / max(math.cos(sensed['roll']) * math.cos(sensed['pitch_up']), 0.5) / T_rated
+        lift_relief = 0.0
+        if self.transition:
+            self.update_lift_estimate(sensed, mass_kg, g)
+            lift_relief = self.transition_weight(sensed) * max(0.0, self.other_lift_est_n)
+        trim = max(0.0, mass_kg * g - lift_relief) / max(math.cos(sensed['roll']) * math.cos(sensed['pitch_up']), 0.5) / T_rated
         vs_contrib = 0.0
         if mode == 'attitude_vs':
             dt = 0.01
@@ -210,7 +275,19 @@ class FlightControl:
             self.vs_int += (err - self.vs_int / P['fbw.vs_leak_tau_s']) * dt
             vs_contrib = float(np.clip(P['fbw.vs_kp_per_m_s'] * err + P['fbw.vs_ki_per_m'] * self.vs_int, -P['fbw.vs_authority'], P['fbw.vs_authority']))
             coll = float(np.clip(trim + vs_contrib, 0, 1)) if c['collective'] > 0.05 else 0.0
+            if self.airbrake_engaged() and sensed.get('airborne', False) and c['collective'] > 0.05:
+                # braking floor: the fans keep a minimum collective (their ram drag is the brake, their differential the
+                # pitch/roll authority). If the floor over-lifts, the wing is unloaded by pitching down (vertical speed
+                # then held through pitch, as in a conventional transition); the offset relaxes as the wing unloads.
+                floor = P['fbw_transition.brake_collective_floor']
+                deficit = max(0.0, floor - (trim + vs_contrib))
+                tgt = -float(np.clip(P['fbw_transition.unload_pitch_rad_per_collective'] * deficit, 0.0, math.radians(P['fbw_transition.unload_pitch_max_deg'])))
+                self.ecu_pitch_offset += (tgt - self.ecu_pitch_offset) * min(1.0, dt / P['fbw_transition.unload_pitch_tau_s'])
+                coll = max(coll, floor)
+            else:
+                self.ecu_pitch_offset = 0.0
         else:
+            self.ecu_pitch_offset = 0.0
             self.vs_int = 0.0
             coll = float(np.clip(c['collective'] + stick['heave'], 0, 1))
         # allocation: trim shares from declared CG (hover pitch trim from front/rear differential only)
@@ -249,9 +326,30 @@ class FlightControl:
         # surfaces: pilot + trim; roll -> ailerons, pitch -> canards (effect physical, nil at zero airspeed)
         ail = [c['aileron_trim_deg'][0] + 20 * demand[0], c['aileron_trim_deg'][1] - 20 * demand[0]]
         can = [c['canard_pitch_deg'][i] + 15 * demand[1] for i in range(2)]
+        brake_w = 0.0; stab_airbrake = None
+        if self.airbrake_engaged() and sensed.get('airborne', False):
+            # air-brake surfaces, scheduled with the wing-borne weight so they retract into the hover:
+            # both ailerons trailing edge up (spoilerons: dump wing lift onto the fans, whose ram drag brakes the
+            # aircraft), roll differential kept on top; DRS stabilator trailing edge up as a drag brake (its
+            # nose-up moment is held by the canard / fan pitch loop).
+            brake_w = self.transition_weight(sensed)
+            sp = brake_w * P['fbw_transition.spoileron_deg']
+            ail = [ail[0] - sp, ail[1] - sp]
+            # attitude priority: the stabilator airbrake retracts (filtered) while nose-down pitch demand is large
+            tgt = float(np.clip(1.0 + 2.0 * min(float(demand[1]), 0.0), 0.0, 1.0))
+            self.ecu_airbrake_factor += (tgt - self.ecu_airbrake_factor) * min(1.0, 0.01 / P['fbw_transition.airbrake_priority_tau_s'])
+            stab_airbrake = brake_w * self.ecu_airbrake_factor * P['fbw_transition.stab_airbrake_te_up_deg']
+        else:
+            self.ecu_airbrake_factor = 1.0
         self.last = dict(mode=mode, pilot_moment=pil.tolist(), augmentation_moment=aug.tolist(), moment_demand=demand.tolist(),
                          collective_cmd=c['collective'], collective_applied=coll, vs_cmd=c['vertical_speed_m_s'], vs_contribution=vs_contrib, vs_integrator=self.vs_int,
-                         trim_collective_estimate=trim, trim_front_share=f, pti_axis=pti_axis, pti_value=pti_val, pod_thrust_cmd=[T[k] for k in PODS],
+                         trim_collective_estimate=trim, trim_front_share=f,
+                         **({'transition_weight': self.transition_weight(sensed), 'other_lift_estimate_n': self.other_lift_est_n,
+                             'lift_relief_n': lift_relief, 'airbrake': self.cmd.get('airbrake', 'off'), 'airbrake_weight': brake_w,
+                             'stab_airbrake_te_up_deg': stab_airbrake,
+                             'yaw_rate_cmd_deg_s': math.degrees(r_c) if mode in ('attitude', 'attitude_vs') else None,
+                             'attitude_cmd_deg': [math.degrees(phi_c), math.degrees(th_c)] if mode in ('attitude', 'attitude_vs') else None}
+                            if self.transition else {}), pti_axis=pti_axis, pti_value=pti_val, pod_thrust_cmd=[T[k] for k in PODS],
                          saturated=sat, tilt_cmd=tilt, aileron_cmd=ail, canard_cmd=can)
         return dict(thrust=[T[k] for k in PODS], tilt_deg=tilt, aileron_deg=[float(np.clip(a, -20, 20)) for a in ail],
                     canard_deg=[float(np.clip(x, -20, 25)) for x in can])
