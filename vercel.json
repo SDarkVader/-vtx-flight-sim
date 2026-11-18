@@ -1,7 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python scripts/package_vercel_frontend.py",
   "env": {
     "VTX_DATA_ROOT": "/tmp/vtx"
+  },
+  "functions": {
+    "src/vtx/live_server.py": {
+      "includeFiles": "{inputs/vercel_frontend.zip,public/assets/ricochet-concept-a.glb}"
+    }
   },
   "git": {
     "deploymentEnabled": false

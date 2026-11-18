@@ -287,6 +287,8 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     <div class="map-tools"><button type="button" data-harbour="focus">View selected boat</button><button type="button" data-harbour="cockpit">Cockpit camera</button></div>
     <label class="control-label">Berth<select data-harbour="berth"><option value="">Choose a berth</option></select></label>
     <div class="map-tools"><button type="button" data-harbour="dock">Dock at berth</button><button type="button" data-harbour="undock">Release mooring</button></div>
+    <label class="control-label">Restart position · east, north (m)<input data-harbour="position" placeholder="Home berth"></label>
+    <button type="button" data-harbour="restart">Restart selected boat</button>
     <div role="group" aria-label="Helm"><div class="section-label">Helm</div>
       <label class="range-label">Throttle <output data-value="throttle">0%</output><input data-command="throttle" aria-label="Boat throttle" type="range" min="0" max="1" step=".01" value="0"></label>
       <label class="range-label">Rudder <output data-value="rudder_deg">0°</output><input data-command="rudder_deg" aria-label="Boat rudder angle" type="range" min="-30" max="30" step=".5" value="0"></label>
@@ -336,6 +338,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     el('cockpit').disabled = !boat || !finiteArray(boat.position, 3) || !boat.body_poses?.airframe;
     el('lake').disabled = !world?.harbour;
     el('cut').disabled = !live || !boat;
+    el('restart').disabled = !live || !boat;
     el('save').disabled = !live;
     el('restore').disabled = !enabled || !state?.available || !state.saved || busy;
     for (const input of fields) {
@@ -367,7 +370,11 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
         const response = await api('/api/harbour/action', payload);
         if (response?.ok === false) throw Error(response.reason || 'Harbour action refused');
         status = response?.reason || ({save: 'Harbour saved.', restore: 'Saved harbour restored.', dock: 'Mooring secured.', undock: 'Mooring released.'}[payload.action] || '');
-        await refresh({snap: payload.action === 'restore' || payload.action === 'dock'});
+        if (epoch !== worldEpoch || !enabled) throw Error('Harbour view changed.');
+        // Adopt the action's authoritative state before another poll can race its refresh.
+        if (Array.isArray(response?.boats)) {
+          revision++; state = response; lastSuccess = Date.now(); onState(state, {snap:payload.action !== 'command'});
+        } else await refresh({snap:true});
       } catch (error) {status = error.message; toast(error.message); if (throwOnError) throw error;}
       finally {pendingActions--; render();}
     });
@@ -400,6 +407,15 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
   el('cut').addEventListener('click', () => {flushHelm(); void send({action: 'command', boatId: state.selectedId, command: {throttle: 0}});});
   el('save').addEventListener('click', () => {flushHelm(); void send({action: 'save'});});
   el('restore').addEventListener('click', () => {discardHelm(); void send({action: 'restore'});});
+  el('restart').addEventListener('click', () => {
+    const text = el('position').value.trim();
+    const parts = text.split(',').map(v=>v.trim());
+    if (text && (parts.length !== 2 || parts.some(v=>!v || !Number.isFinite(Number(v))))) {
+      toast('Enter two harbour coordinates in metres or leave both blank for the home berth.'); return;
+    }
+    discardHelm();
+    void send({action:'restart', boatId:state.selectedId, position:text ? parts.map(Number) : null});
+  });
   el('focus').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat', boat.id);});
   el('cockpit').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat-cockpit', boat.id);});
   el('lake').addEventListener('click', () => {
@@ -414,15 +430,18 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
   }, 100);
   return {
     panel, refresh, get state() {return enabled && Date.now() - lastSuccess < 2000 ? state : null;},
-    async chooseBoat(boatId) {
+    async chooseBoat(boatId, restoreFocus = false, current = () => true) {
       if (!enabled || !world?.harbour) throw Error('Select Main Airport to use the harbour.');
       await flushHelm();
       if (!ready()) await refresh();
+      if (!current()) throw Error('Vehicle selection changed.');
+      if (restoreFocus && (!ready() || state.selectedId !== boatId)) throw Error('Previous helm is unavailable.');
       if (!state?.initialized) await send({action: 'activate'}, {throwOnError: true});
       if (!state?.initialized) throw Error(status || 'Could not start the harbour.');
-      if (state.selectedId !== boatId) await send({action: 'select', boatId}, {throwOnError: true});
+      if (!current()) throw Error('Vehicle selection changed.');
+      if (!restoreFocus) await send({action: 'select', boatId}, {throwOnError: true});
       const boat = selected();
-      if (!boat || boat.id !== boatId) throw Error(status || 'Could not select the boat.');
+      if (!current() || !ready() || boat?.id !== boatId) throw Error(status || 'Could not select the boat.');
       panel.open = true;
       onFocus(boat.position, 'boat-cockpit', boat.id);
       return boat;

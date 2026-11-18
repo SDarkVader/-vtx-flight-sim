@@ -10,10 +10,12 @@ export function heartbeatDue({engaged,pending,view,dirty,beat,engagedRun}){
 }
 // Buttons describe the held command and offer the opposite group action.
 // Pending local edits retain their optimistic state until the plant confirms them.
-export function heldControlToggles(command={},optimisticFields=new Set()){
+export function heldControlToggles(command={},optimisticFields=new Set(),transitionEcu){
   const result={};
   if(!optimisticFields.has('wing')&&['deploy','stow'].includes(command.wing))result.wing={value:command.wing==='deploy',label:'Wing '+(command.wing==='deploy'?'stow':'deploy')};
   if(!optimisticFields.has('canard_fold')&&['deployed','folded'].includes(command.canard_fold))result.can={value:command.canard_fold==='deployed',label:'Canards '+(command.canard_fold==='deployed'?'fold':'deploy')};
+  const brakeState=command.airbrake??transitionEcu?.airbrake;
+  if(!optimisticFields.has('airbrake')&&['on','off'].includes(brakeState))result.airbrake={value:brakeState==='on',label:brakeState==='on'?'Air-brake ON: release':'Air-brake: engage'};
   for(const [field,key,threshold] of [['pod_tilt_deg','vtol',45],['leg_extension_m','legsExtended',.26],['brake','brakes',.5]]){
     const values=command[field];
     if(optimisticFields.has(field)||!Array.isArray(values)||values.length!==4||!values.every(Number.isFinite))continue;
@@ -32,7 +34,7 @@ import {renderReadout} from './phantom-readouts.js?v=1';
 import {createPatchQueue, editArrayCommand} from './phantom-command-queue.js?v=1';
 const FIELDS=[['collective',0,1,0.01,0],['vertical_speed_m_s',-3,3,0.1,0],['pitch',-1,1,0.02,0],['roll',-1,1,0.02,0],['yaw',-1,1,0.02,0],['engine',0,1,0.05,1]];
 export function createPhantomPanel({api,toast,canControl=()=>true}){
-  let dirty=false,beat=0,pending=false,lastView=null,engaged=false,engagedRun,voiceReason=null,pendingVoice=null; let vtol=true,legsExtended=true,brakes=true,wing=false,can=false;
+  let dirty=false,beat=0,pending=false,lastView=null,engaged=false,engagedRun,voiceReason=null,pendingVoice=null; let vtol=true,legsExtended=true,brakes=true,wing=false,can=false,airbrake=false;
   const patchQueue=createPatchQueue();
   const optimisticFields=new Set();
   function engage(){if(!engaged){engaged=true;engagedRun=lastView?.run_id;toast?.('Phantom panel has taken manual control');}}
@@ -46,7 +48,7 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
     el.style.display='none';
     el.innerHTML='<b id="ph-aircraft">PHANTOM</b><div id="ph-feedback" style="margin:8px 0;font:12px monospace;white-space:pre-line"></div><div id="ph-surface-controls"></div><div id="ph-sliders"></div>'+
       '<label>Mode <select id="ph-mode"><option>attitude</option><option>rate_damping</option><option>attitude_vs</option><option>off</option></select></label> '+
-      '<button id="ph-voice" title="Push to talk: boost 50 percent, brakes off, drive 80 percent, take-off configuration, downforce, nose up 8, status, confirm">🎙 Voice</button> <button id="ph-take">Take control</button> <button id="ph-gear">Pods / wheels: 90°</button> <button id="ph-legs">Legs: extended</button> <button id="ph-brake">Brakes on</button> <button id="ph-wing">Wing deploy</button> <button id="ph-canard">Canards deploy</button>'+
+      '<button id="ph-voice" title="Push to talk: boost 50 percent, brakes off, drive 80 percent, take-off configuration, downforce, nose up 8, status, confirm">🎙 Voice</button> <button id="ph-take">Take control</button> <button id="ph-gear">Pods / wheels: 90°</button> <button id="ph-legs">Legs: extended</button> <button id="ph-brake">Brakes on</button> <button id="ph-wing">Wing deploy</button> <button id="ph-canard">Canards deploy</button> <button id="ph-airbrake" title="Transition ECU: fan-assisted air-braking into hover. Engaging sets pods 90°, boosters off and vertical-speed mode; the ECU runs fans, spoilerons, DRS airbrake, canards and turn coordination. Stick, pedal and vertical speed stay yours.">Air-brake: engage</button>'+
       '<input id="ph-say" type="text" placeholder="Type an instruction to the pilot, then Enter" aria-label="Typed pilot instruction" style="width:100%;margin-top:6px">'+
       '<div id="ph-voice-log" style="margin-top:6px;font-size:12px;color:#9fe6d6"></div><div id="ph-state" style="margin-top:6px;white-space:pre-wrap;font-family:monospace;font-size:11px"></div>';
     document.querySelector('.controls-panel').appendChild(el);
@@ -79,6 +81,7 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
     el.querySelector('#ph-brake').onclick=e=>{brakes=!brakes;queuePatch({brake:Array(4).fill(brakes?1:0)});e.target.textContent='Brakes '+(brakes?'on':'off');};
     el.querySelector('#ph-wing').onclick=e=>{wing=!wing;queuePatch({wing:wing?'deploy':'stow'});e.target.textContent='Wing '+(wing?'stow':'deploy');};
     el.querySelector('#ph-canard').onclick=e=>{can=!can;queuePatch({canard_fold:can?'deployed':'folded'});e.target.textContent='Canards '+(can?'fold':'deploy');};
+    el.querySelector('#ph-airbrake').onclick=e=>{airbrake=!airbrake;queuePatch({airbrake:airbrake?'on':'off'});e.target.textContent=airbrake?'Air-brake ON: release':'Air-brake: engage';};
     // ---- voice pilot: patches this same cmd (same run and authority rules as the sliders)
     const vlog=el.querySelector('#ph-voice-log');
     const syncUi=()=>{for(const l of s.children){const k=l.firstChild.textContent.trim();if(k in cmd){l.querySelector('input').value=cmd[k];l.querySelector('output').value=cmd[k];}}
@@ -138,16 +141,26 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
         if(!engaged)for(const key of Object.keys(cmd))if(key!=='schema'&&t.command[key]!=null)cmd[key]=structuredClone(t.command[key]);
         if(!dirty&&!pending)for(const input of el.querySelectorAll('[data-live-field]')){const raw=t.command[input.dataset.liveField];const value=input.dataset.liveIndex!=null?raw?.[Number(input.dataset.liveIndex)]:raw;if(value!=null&&document.activeElement!==input){input.value=value;input.parentElement.querySelector('output').value=Number(value).toFixed(2);}}
         if(!dirty&&!pending&&document.activeElement!==el.querySelector('#ph-mode'))el.querySelector('#ph-mode').value=t.command.stability_mode||'attitude';
-        const held=heldControlToggles(t.command,optimisticFields);
+        const held=heldControlToggles(t.command,optimisticFields,t.phantom?.transition_ecu);
         if(held.vtol){vtol=held.vtol.value;el.querySelector('#ph-gear').textContent=held.vtol.label;}
         if(held.legsExtended){legsExtended=held.legsExtended.value;el.querySelector('#ph-legs').textContent=held.legsExtended.label;}
         if(held.brakes){brakes=held.brakes.value;el.querySelector('#ph-brake').textContent=held.brakes.label;}
         if(held.wing){wing=held.wing.value;el.querySelector('#ph-wing').textContent=held.wing.label;}
         if(held.can){can=held.can.value;el.querySelector('#ph-canard').textContent=held.can.label;}
+        if(held.airbrake){airbrake=held.airbrake.value;el.querySelector('#ph-airbrake').textContent=held.airbrake.label;}
+      }
+      const airbrakeButton=el.querySelector('#ph-airbrake');
+      airbrakeButton.dataset.ecuTitle??=airbrakeButton.title;
+      if(t.phantom?.transition_ecu) airbrakeButton.title=airbrakeButton.dataset.ecuTitle;
+      else {
+        airbrake=false;
+        airbrakeButton.disabled=true;
+        airbrakeButton.textContent='Air-brake unavailable';
+        airbrakeButton.title='This aircraft has no transition ECU (air-brake unavailable)';
       }
       const fmt=(x)=>x!=null&&Number.isFinite(Number(x))?Number(x).toFixed(1)+'°':'—'; const pair=(x)=>Array.isArray(x)?x.map(fmt).join(' / '):'—'; const truth=t.phantom||{};
       el.querySelector('#ph-aircraft').textContent=(o.configuration?.airframe_variant||'phantom').toUpperCase()+' · LIVE CONTROLS';
-      el.querySelector('#ph-feedback').textContent=['COMMAND: collective '+Number(t.command?.collective||0).toFixed(2)+' · pitch '+Number(t.command?.pitch||0).toFixed(2)+' · roll '+Number(t.command?.roll||0).toFixed(2)+' · yaw '+Number(t.command?.yaw||0).toFixed(2)+' · engine '+Number(t.command?.engine||0).toFixed(2)+' · vertical speed '+Number(t.command?.vertical_speed_m_s||0).toFixed(2),'ACTUAL SURFACES  LEFT / RIGHT','Ailerons  '+pair(o.aileron_deg),'Flaps     '+pair(o.flap_deg),'Canards   '+pair(o.canard_pitch_deg),'Canard fold '+pair(o.canard_fold_deg),'DRS '+fmt(truth.drs_deg)+' · booster vector '+fmt(truth.booster_vector_deg),'Rudder '+fmt(truth.rudder_deg),'Wheel steering '+pair(truth.steer_deg),'Wheel speed (rad/s) '+(truth.wheel_rad_s||[]).map(x=>Number(x).toFixed(2)).join(' / '),'Booster spool L/R '+(t.boosters||[]).map(x=>(100*Number(x.spool||0)).toFixed(0)+'%').join(' / '),'Booster thrust L/R '+(t.boosters||[]).map(x=>Number(x.thrust_n||0).toFixed(0)+' N').join(' / '),'Pods '+pair(o.pod_tilt_deg),'Wings '+[o.wing_state?.left||'—',o.wing_state?.right||'—'].join(' / '),'Legs (m) '+(o.leg_extension_m||[]).map(x=>Number(x).toFixed(2)).join(' / ')].join('\n');
+      el.querySelector('#ph-feedback').textContent=['COMMAND: collective '+Number(t.command?.collective||0).toFixed(2)+' · pitch '+Number(t.command?.pitch||0).toFixed(2)+' · roll '+Number(t.command?.roll||0).toFixed(2)+' · yaw '+Number(t.command?.yaw||0).toFixed(2)+' · engine '+Number(t.command?.engine||0).toFixed(2)+' · vertical speed '+Number(t.command?.vertical_speed_m_s||0).toFixed(2),'ACTUAL SURFACES  LEFT / RIGHT','Ailerons  '+pair(o.aileron_deg),'Flaps     '+pair(o.flap_deg),'Canards   '+pair(o.canard_pitch_deg),'Canard fold '+pair(o.canard_fold_deg),'DRS '+fmt(truth.drs_deg)+' · booster vector '+fmt(truth.booster_vector_deg),...(truth.transition_ecu?['ECU air-brake '+truth.transition_ecu.airbrake.toUpperCase()+' · wing-borne '+Number(truth.transition_ecu.wing_borne_weight??0).toFixed(2)+' · wing lift '+Number(truth.transition_ecu.wing_lift_estimate_n??0).toFixed(0)+' N · attitude cmd '+(truth.transition_ecu.attitude_cmd_deg||[]).map(fmt).join(' / ')]:[]),'Rudder '+fmt(truth.rudder_deg),'Wheel steering '+pair(truth.steer_deg),'Wheel speed (rad/s) '+(truth.wheel_rad_s||[]).map(x=>Number(x).toFixed(2)).join(' / '),'Booster spool L/R '+(t.boosters||[]).map(x=>(100*Number(x.spool||0)).toFixed(0)+'%').join(' / '),'Booster thrust L/R '+(t.boosters||[]).map(x=>Number(x.thrust_n||0).toFixed(0)+' N').join(' / '),'Pods '+pair(o.pod_tilt_deg),'Wings '+[o.wing_state?.left||'—',o.wing_state?.right||'—'].join(' / '),'Legs (m) '+(o.leg_extension_m||[]).map(x=>Number(x).toFixed(2)).join(' / ')].join('\n');
       for(const input of surfaceControls.querySelectorAll('[data-command-field]')){const val=t.command?.[input.dataset.commandField]?.[Number(input.dataset.commandIndex)];if(val!=null&&document.activeElement!==input)input.value=val;}
       const actualFields={aileron_trim_deg:o.aileron_deg,flap_deg:o.flap_deg,canard_pitch_deg:o.canard_pitch_deg,pod_tilt_deg:o.pod_tilt_deg,leg_extension_m:o.leg_extension_m,booster_throttle:(t.boosters||[]).map(x=>x.spool),wheel_drive:t.command?.wheel_drive,brake:t.command?.brake};const commandOnly=['wheel_drive','brake'];
       for(const item of surfaceControls.querySelectorAll('[data-actual-field]')){const field=item.dataset.actualField,val=actualFields[field]?.[Number(item.dataset.actualIndex)],command=commandOnly.includes(field);renderReadout(item,val,{unit:command?'':field==='leg_extension_m'?' m':field==='booster_throttle'?' spool':'°',title:command?'Command in effect':'Actual position'});}

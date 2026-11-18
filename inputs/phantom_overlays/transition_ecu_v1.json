@@ -1,0 +1,19 @@
+{
+  "_note": "Transition ECU (18 Nov 2026 air-braking investigation): fan-assisted air-braking from wing-borne flight into hover, engaged by the pilot with the 'airbrake' command. Software only: no mass, geometry or physics parameter changes. Adds lift-aware collective trim for the vertical-speed mode, turn coordination, in-flight spoileron and DRS-stabilator airbrake scheduling, a braking attitude and hover drift damping while engaged. Opt-in; variants that do not list this overlay are unchanged (identical configuration SHA, no extra random draws).",
+  "fbw_transition": {
+    "enabled": {"v": 1.0, "u": "-", "l": "SYNTHETIC_UNVALIDATED", "s": "transition ECU on"},
+    "q_ramp_pa": {"v": [50.0, 400.0], "u": "Pa", "l": "SYNTHETIC_UNVALIDATED", "s": "dynamic pressure over which the wing-borne functions (lift relief, coordination, braking surfaces, braking attitude) fade in: 9 to 26 m/s; below 9 m/s the wing carries under 1 % of the weight"},
+    "lift_estimate_tau_s": {"v": 0.3, "u": "s", "l": "SYNTHETIC_UNVALIDATED", "s": "low-pass time constant of the measured non-fan vertical force (m (a_z + g) - fan vertical thrust); wing lift changes over seconds during braking"},
+    "coordination_min_speed_m_s": {"v": 15.0, "u": "m/s", "l": "SYNTHETIC_UNVALIDATED", "s": "airspeed floor in the coordinated-turn yaw rate g sin(phi) cos(theta) / V (same floor as the 9 Nov test pilot)"},
+    "braking_pitch_deg": {"v": 4.0, "u": "deg", "l": "DERIVED", "s": "stick-centred pitch attitude while braking wing-borne: +4 deg, the 9 Nov V2/V3 trimmed attitude at 95 m/s; fades to level hover trim"},
+    "spoileron_deg": {"v": 12.0, "u": "deg", "l": "SYNTHETIC_UNVALIDATED", "s": "symmetric aileron trailing-edge-up bias while braking; leaves 8 deg for roll on the upgoing side within the +/-20 deg travel (Moog-class actuator, handover control_limits)"},
+    "stab_airbrake_te_up_deg": {"v": 49.0, "u": "deg", "l": "DERIVED", "s": "DRS stabilator increment above its 6 deg rest while braking: 55 deg total, the existing P6 ground-airbrake setting of the same actuator"},
+    "brake_collective_floor": {"v": 0.15, "u": "-", "l": "SYNTHETIC_UNVALIDATED", "s": "minimum fan collective while braking airborne (about 1 kN per fan, the 9 Nov fan load 2 s into the braking): fan ram drag is the brake and fan differential keeps pitch/roll authority"},
+    "unload_pitch_rad_per_collective": {"v": 0.15, "u": "rad", "l": "SYNTHETIC_UNVALIDATED", "s": "pitch-down per unit collective by which the vertical-speed loop asks for less than the braking floor (wing unloading); 0.6 dipped the nose to -0.8 deg and spiked the braking to 1.02 g in run r4 (lift over-dumped onto the fans), 0.15 holds +2.8 to +4.5 deg"},
+    "unload_pitch_max_deg": {"v": 6.0, "u": "deg", "l": "SYNTHETIC_UNVALIDATED", "s": "limit of the wing-unloading pitch offset"},
+    "unload_pitch_tau_s": {"v": 1.0, "u": "s", "l": "SYNTHETIC_UNVALIDATED", "s": "filter time constant of the wing-unloading pitch offset (slower than the 0.3 s lift estimate so the two do not overshoot together)"},
+    "airbrake_priority_tau_s": {"v": 1.0, "u": "s", "l": "SYNTHETIC_UNVALIDATED", "s": "filter on the stabilator airbrake retraction under nose-down demand (unfiltered it limit-cycled 5-55 deg at 0.5 Hz in run r2)"},
+    "hover_drift_gain_rad_per_m_s": {"v": 0.015, "u": "rad/(m/s)", "l": "SYNTHETIC_UNVALIDATED", "s": "translational-rate damping in hover with the air-brake engaged: attitude per m/s of heading-frame ground velocity (0.86 deg per m/s; 2 deg per m/s limit-cycled +/-8 deg against the hover attitude loop in run r2)"},
+    "hover_drift_tilt_max_deg": {"v": 6.0, "u": "deg", "l": "SYNTHETIC_UNVALIDATED", "s": "attitude limit of the hover drift damping"}
+  }
+}

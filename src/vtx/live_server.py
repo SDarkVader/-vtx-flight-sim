@@ -262,6 +262,14 @@ class Laboratory:
         snapshot['displayed_world_sha256']=self._displayed_world_sha256
         return snapshot
 
+    def airport_harbour_world(self):
+        if self.world.environment_key == 'airport':
+            return self.world
+        airport = getattr(self, '_harbour_airport', None)
+        if airport is None or airport.seed != self.world.seed:
+            self._harbour_airport = make_world('airport', seed=self.world.seed)
+        return self._harbour_airport
+
     def __init__(self, data_root=None):
         self.world=TestWorld();self.flight_world=self.world;self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
@@ -272,6 +280,7 @@ class Laboratory:
         self.retry_hint=None
         self.data_root=Path(data_root if data_root is not None else os.environ.get('VTX_DATA_ROOT',str(ROOT))).resolve()
         self.harbour_session=HarbourSession(self.data_root)
+        self.harbour_helm_outside_airport=False
         self.checkpoint_path=self.data_root/'pilot/live-flight-checkpoint.json'
         self.saved_flights_path=self.data_root/'pilot/saved-flights'
         self.inspection_path=self.data_root/'pilot/inspection-selection.json'
@@ -286,9 +295,10 @@ class Laboratory:
         # Never replace or classify a saved sortie merely because its checkpoint
         # cannot be decoded by this build. It remains available for recovery.
         self.recovery_blocked=self.checkpoint_path.exists() and not restored
+        inspection_request=None
         if restored:self.inspection_selection_known=True
         elif not self.recovery_blocked and self.inspection_path.exists():
-            try:self._restore_inspection_selection()
+            try:inspection_request=self._restore_inspection_selection()
             except (OSError,ValueError,KeyError,TypeError) as exc:
                 self.error='Saved aircraft selection unavailable: '+str(exc)
                 self.recovery_blocked=True
@@ -326,6 +336,8 @@ class Laboratory:
                 self.end_summary=interrupted
             except (ValueError,KeyError,OSError):
                 pass
+        if inspection_request and self.retry_hint and inspection_request!=self.retry_hint['request']:
+            self.retry_hint=None;self.end_summary=None
 
     def _remember_inspection_selection(self,request,aircraft,world):
         """Persist an explicit selection, independently of a flight checkpoint."""
@@ -380,6 +392,7 @@ class Laboratory:
         self.world=world;self.flight_world=flight_world;self.aircraft=aircraft
         self.server_frontend_identity=frontend
         self.inspection_selection_known=True
+        return state['request']
 
     def checkpoint(self, force=False):
         """Crash-consistent physics checkpoint, never a flight-control decision."""
@@ -857,6 +870,12 @@ class Laboratory:
                 break
         if candidate is None:
             raise ValueError('Checkpoint model or Phantom configuration differs from current physics')
+        from .phantom import identity as aircraft_identity_pins
+        check = aircraft_identity_pins.verify(candidate, experimental=bool(candidate.experimental_overrides),
+                                              runtime_source_sha256=RUNTIME_SOURCE_SHA256)
+        if check['mismatches']:
+            raise ValueError('Checkpoint aircraft differs from its pinned identity: ' + check['status'])
+        candidate._identity = check
         if environment!=environment_identity(restored_world,flight_world,candidate):
             raise ValueError('Checkpoint environment data or heightfield differs from its recording')
         self._verify_checkpoint_visual(state,candidate)
@@ -1304,6 +1323,8 @@ class Laboratory:
         if self.active:raise HTTPException(409,'End and retain the current sortie before retrying')
         hint=self.retry_hint
         if not hint:raise HTTPException(409,'No retained mission to retry')
+        if 'expected_previous_run_id' in request and request['expected_previous_run_id']!=hint['run_id']:
+            raise HTTPException(409,'Retained mission changed; refresh before retrying')
         old=hint['request']
         def retained(name):
             if name in request:return request[name]
@@ -1349,6 +1370,7 @@ class Laboratory:
 
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
+                    start_configuration=getattr(self.aircraft,'start_configuration',None),
                     runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
                     server_frontend_last_capture_sha256=(self.server_frontend_identity or {}).get('sha256'),
                     browser_frontend_verified=False,
@@ -1364,7 +1386,7 @@ class Laboratory:
                     rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,objective=self.objective,
                     pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback=self.fallback_status,
                     recent_decisions=[{k:v for k,v in a.items() if k!='observation'} for a in self.action_log[-8:]],
-                    end_summary=self.end_summary,retry_available=bool(self.retry_hint or self.aircraft.crashed))
+                    end_summary=self.end_summary,retry_available=bool(self.retry_hint))
 
 # Laboratory initialization restores checkpoints and may write evidence; it
 # belongs at server startup rather than at module import (audit F16).
@@ -1382,7 +1404,9 @@ async def physical_clock():
         await asyncio.sleep(.005)
         now=time.monotonic();delta=now-last;last=now
         harbour_rate = lab.time_scale if lab.active else 1.
-        if (lab.active and lab.paused) or not getattr(lab.world,'harbour',None):
+        if not getattr(lab.world,'harbour',None) and lab.harbour_helm_outside_airport:
+            harbour_rate = 1.
+        elif (lab.active and lab.paused) or not getattr(lab.world,'harbour',None):
             harbour_rate = 0.
         lab.harbour_session.set_rate(harbour_rate)
         if not lab.active or lab.paused:accum=0.;continue
@@ -1459,33 +1483,41 @@ async def login(request:Request):
 @app.get('/api/world')
 async def world():return lab.world_snapshot()
 
+@app.get('/api/harbour/world')
+async def harbour_world():
+    airport = lab.airport_harbour_world()
+    return dict(airport.public(), displayed_world_sha256=world_fingerprint(airport))
+
 @app.get('/api/harbour')
-async def harbour_status():
+async def harbour_status(airport:bool=False):
     try:
-        return await asyncio.to_thread(lab.harbour_session.status,lab.world)
+        return await asyncio.to_thread(lab.harbour_session.status,lab.airport_harbour_world() if airport else lab.world)
     except (OSError,ValueError) as exc:
         raise HTTPException(409,str(exc)) from exc
 
 @app.get('/api/harbour/model')
-async def harbour_model(boatId:str):
+async def harbour_model(boatId:str,airport:bool=False):
     try:
-        return await asyncio.to_thread(lab.harbour_session.model,lab.world,boatId)
+        return await asyncio.to_thread(lab.harbour_session.model,lab.airport_harbour_world() if airport else lab.world,boatId)
     except (OSError,ValueError,KeyError) as exc:
         raise HTTPException(409,str(exc)) from exc
 
 @app.post('/api/harbour/action')
-async def harbour_action(request:dict):
+async def harbour_action(request:dict,airport:bool=False):
     action=request.get('action')
-    if action not in ('activate','select','command','dock','undock','save','restore'):
+    if action not in ('activate','select','command','dock','undock','save','restore','restart'):
         raise HTTPException(422,'Unknown harbour action')
-    if action in ('select','command','dock','undock') and not isinstance(request.get('boatId'),str):
+    if action in ('select','command','dock','undock','restart') and not isinstance(request.get('boatId'),str):
         raise HTTPException(422,'Select the boat explicitly')
     if action=='dock' and not isinstance(request.get('berthId'),str):
         raise HTTPException(422,'Select the berth explicitly')
     if action=='command' and not isinstance(request.get('command'),dict):
         raise HTTPException(422,'Expected a boat command')
     try:
-        return await asyncio.to_thread(lab.harbour_session.act,lab.world,action,request)
+        result=await asyncio.to_thread(lab.harbour_session.act,lab.airport_harbour_world() if airport else lab.world,action,request)
+        if airport and action in ('activate','select','command','undock','restart'):
+            lab.harbour_helm_outside_airport=not bool(getattr(lab.world,'harbour',None))
+        return result
     except (OSError,ValueError,KeyError) as exc:
         raise HTTPException(409,str(exc)) from exc
 @app.get('/api/observe')
@@ -1629,8 +1661,10 @@ async def phantom_physics(variant:str='phantom-a10b'):
     return Params(variant).snapshot()
 @app.post('/api/model-preview')
 async def model_preview(request:dict):
-    """Switch the idle inspection aircraft without creating a flight record."""
-    if lab.active:raise HTTPException(409,'End and retain the current sortie before choosing another vehicle')
+    """Validate the replacement before parking the explicitly named flight."""
+    save_run = request.get('save_run_id')
+    if (lab.run_id if lab.active else None) != save_run:
+        raise HTTPException(409,'Flight changed; refresh before switching vehicles')
     if lab.recovery_blocked:raise HTTPException(409,'Saved checkpoint requires recovery before changing vehicles')
     if os.environ.get('VTX_ENFORCE_RELEASE')=='1' and request.get('airframe_variant')!='r6':
         raise HTTPException(409,'This cockpit is pinned to R6')
@@ -1641,30 +1675,42 @@ async def model_preview(request:dict):
         if getattr(lab.world,'environment_key','airport')!=env_key:
             target_world=make_world(env_key,seed=lab.world.seed)
     dep_default=list(getattr(target_world,'default_departure',[0,0])) if request.get('environment') is not None else [0,0]
-    try:selection=Mission(environment=request.get('environment'),airframe_variant=request.get('airframe_variant'), departure=request.get('departure',dep_default), phantom={'start_configuration': request.get('start_configuration','vtol')})
+    variant=request.get('airframe_variant')
+    options={}
+    if lab.inspection_selection_known and lab.inspection_path.is_file():
+        previous=json.loads(lab.inspection_path.read_text(encoding='utf-8'))['request']
+        if previous.get('airframe_variant')==variant:
+            options=previous
+            if not options.pop('fuel_kg_explicit',True):options.pop('fuel_kg',None)
+    phantom={**(options.get('phantom') or {}),'start_configuration':request.get('start_configuration','vtol')}
+    options.update(environment=request.get('environment'),airframe_variant=variant,departure=request.get('departure',dep_default),phantom=phantom)
+    try:selection=Mission(**options)
     except ValidationError as e:raise HTTPException(422,str(e))
+    flight_world=copy.copy(target_world) if selection.ignore_scenery_collisions else target_world
+    if selection.ignore_scenery_collisions:flight_world.obstacles=[]
     point=MapPoint(*selection.departure)
     if phantom_live.is_phantom_variant(selection.airframe_variant):
         from .phantom.mission import validate_phantom
-        verdict=validate_phantom(target_world,point,selection.airframe_variant)
+        verdict=validate_phantom(flight_world,point,selection.airframe_variant)
         if not verdict['ok']:raise HTTPException(422,verdict['reason'])
     else:
-        verdict=target_world.validate(point,'departure')
+        verdict=flight_world.validate(point,'departure')
         if not verdict.valid:raise HTTPException(422,verdict.reason)
     lab.preview_generation+=1
     generation=lab.preview_generation
     def build():
         if phantom_live.is_phantom_variant(selection.airframe_variant):
-            aircraft=phantom_live.make_aircraft(target_world,selection)
+            aircraft=phantom_live.make_aircraft(flight_world,selection)
         else:
-            aircraft=Aircraft(target_world,selection.gear_variant,selection.reference_rpm,
+            aircraft=Aircraft(flight_world,selection.gear_variant,selection.reference_rpm,
                               fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
                               engine_power_limit_kw=selection.engine_power_limit_kw,
                               atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
-        aircraft.spawn(*selection.departure,target_world.surface_z(*selection.departure))
+        aircraft.spawn(*selection.departure,flight_world.surface_z(*selection.departure))
         return aircraft
-    aircraft=await asyncio.to_thread(build)
-    if lab.active or generation!=lab.preview_generation:
+    try:aircraft=await asyncio.to_thread(build)
+    except ValueError as e:raise HTTPException(422,str(e)) from e
+    if (lab.run_id if lab.active else None) != save_run or generation!=lab.preview_generation:
         raise HTTPException(409,'The flight or model selection changed while the inspection model was loading')
     if getattr(aircraft,'is_phantom',False):
         from .phantom import identity as aircraft_identity_pins
@@ -1672,10 +1718,14 @@ async def model_preview(request:dict):
         if check['pinned'] and check['mismatches']:
             raise HTTPException(409,'Aircraft identity mismatch: '+check['status'])
         aircraft._identity=check
+    if save_run:
+        lab.save_flight_for_switching(save_run)
     try:lab._remember_inspection_selection(selection,aircraft,target_world)
     except ValueError as e:raise HTTPException(409,str(e))
-    lab.world=target_world;lab.flight_world=target_world;lab.aircraft=aircraft;lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
+    lab.world=target_world;lab.flight_world=flight_world;lab.aircraft=aircraft;lab.last_obs=None;lab.last_sensor_t=-1.;lab.obs_id=0;lab.observations={}
     lab.action_log=[];lab.run_id=None;lab.mission=None;lab.error=None;lab.paused=False
+    lab.retry_hint=None;lab.end_summary=None;lab.objective=None;lab.last_landing=None
+    lab.pilot_owner=None;lab.pending_pilot=None;lab.fallback_status=None;lab.fallback_controller=None
     return lab.view()
 @app.post('/api/environment')
 async def set_environment(request:dict):
@@ -1863,6 +1913,18 @@ async def action(request:Request):
 async def stop(request:dict):return lab.stop(str(request.get('reason','Operator ended sortie')))
 @app.post('/api/save-flight')
 async def save_flight(request:dict):return lab.save_flight_for_switching(request.get('run_id'))
+
+@app.post('/api/restart-flight')
+async def restart_flight(request:dict):
+    if not lab.active or not lab.run_id or request.get('run_id') != lab.run_id:
+        raise HTTPException(409,'Flight changed; refresh before restarting')
+    saved = json.loads((lab.log_path/'metadata.json').read_text(encoding='utf-8'))['request']
+    if not saved.pop('fuel_kg_explicit', True):
+        saved.pop('fuel_kg', None)
+    selection = Mission(**{**saved, 'destination':lab.mission['destination'],
+                           'time_scale':lab.time_scale, 'authority':lab.authority})
+    lab.save_flight_for_switching(lab.run_id)
+    return lab.start(selection)
 @app.get('/api/saved-flights')
 async def saved_flights():return lab.saved_flights()
 @app.post('/api/restore-flight')
@@ -2255,5 +2317,5 @@ install_experiment_routes(app, get_lab, Laboratory, Mission, parse_action, DT)
 app.mount('/docs/phantom',StaticFiles(directory=ROOT/'docs/phantom'),name='phantom_docs')
 app.mount('/evidence',StaticFiles(directory=ROOT/'evidence'),name='evidence')
 # Vercel serves public/ as CDN assets and omits it from the function bundle.
-if not os.environ.get('VERCEL') or (ROOT/'public').is_dir():
+if not os.environ.get('VERCEL') or (ROOT/'public/index.html').is_file():
     app.mount('/',StaticFiles(directory=ROOT/'public',html=True),name='frontend')

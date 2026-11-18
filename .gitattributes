@@ -117,6 +117,7 @@ src/vtx/dashboard_site.py text eol=crlf
 src/vtx/ducted_fan_screen.py text eol=crlf
 src/vtx/experiments.py text eol=crlf
 src/vtx/frontend_identity.py text eol=lf
+src/vtx/public_assets.py text eol=lf
 src/vtx/governor.py text eol=crlf
 src/vtx/live_server.py text eol=lf
 src/vtx/mission_selection.py text eol=crlf
@@ -161,3 +162,6 @@ src/vtx/water/*.py text eol=crlf
 public/argon-cutaway.js text eol=lf
 public/vehicle-livery.js text eol=lf
 Test-VTX-Vehicles.bat text eol=crlf
+inputs/phantom_overlays/transition_ecu_v1.json text eol=lf
+evidence/phantom/a10c_airbrake_ecu_20261118/** -text
+inputs/phantom_test_variants_v1.json text eol=lf

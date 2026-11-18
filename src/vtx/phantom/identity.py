@@ -8,6 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 from .params import ROOT
 from .flight_revisions import flight_revision, registry
+from ..public_assets import public_directory
 
 IDENTITY_FILE = ROOT / 'inputs/aircraft_identity.json'
 
@@ -23,7 +24,7 @@ def _asset_sha256(path, mtime, size):
 
 
 def asset_sha256(uri):
-    path = ROOT / 'public' / str(uri).lstrip('/')
+    path = public_directory(ROOT) / str(uri).lstrip('/')
     if not path.is_file():
         return None
     st = path.stat()

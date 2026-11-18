@@ -81,6 +81,16 @@ test('restored held commands determine toggle actions without sending new comman
     wing:{value:false,label:'Wing deploy'},can:{value:false,label:'Canards deploy'}});
 });
 
+test('the air-brake button follows the held transition-ECU command',()=>{
+  assert.deepEqual(heldControlToggles({airbrake:'on'}).airbrake,{value:true,label:'Air-brake ON: release'});
+  assert.deepEqual(heldControlToggles({airbrake:'off'}).airbrake,{value:false,label:'Air-brake: engage'});
+  assert.equal(heldControlToggles({}).airbrake,undefined);                 // aircraft without the ECU: no held state
+  assert.equal(heldControlToggles({airbrake:'maybe'}).airbrake,undefined);
+  assert.deepEqual(heldControlToggles({},new Set(),{airbrake:'off'}).airbrake,{value:false,label:'Air-brake: engage'});
+  assert.equal(heldControlToggles({},new Set(['airbrake']),{airbrake:'off'}).airbrake,undefined);
+  assert.equal(heldControlToggles({airbrake:'off'},new Set(['airbrake'])).airbrake,undefined);   // unacknowledged press wins
+});
+
 test('unacknowledged edits and unavailable commands cannot be replaced by an old snapshot',()=>{
   const state=heldControlToggles({wing:'stow',brake:[0,0,0,0],pod_tilt_deg:[90,90,90,90]},new Set(['wing','brake']));
   assert.equal(state.wing,undefined);assert.equal(state.brakes,undefined);

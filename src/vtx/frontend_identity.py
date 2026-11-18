@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from .public_assets import public_directory
 
-PUBLIC_ROOT = Path(__file__).resolve().parents[2] / 'public'
+PUBLIC_ROOT = public_directory(Path(__file__).resolve().parents[2])
 
 
 def _digest_file(path: Path, expected_size: int, expected_mtime_ns: int) -> str:

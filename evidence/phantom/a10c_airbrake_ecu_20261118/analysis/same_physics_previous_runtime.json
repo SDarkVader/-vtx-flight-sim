@@ -1,0 +1,1 @@
+{"S1_vtol": ["e3015e9ab9efb101", 35.752339, "touchdown"], "S2_runway_rev": ["767e073afe0c100a", 18.295463, {"left": "locked", "right": "locked"}], "S3_airbrake_manual": ["e3b4670b1b02687b", 33.583402, 304.727266], "config": "2fee0b4036382d03", "runtime_sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7", "source": "base_ac9f1e7"}

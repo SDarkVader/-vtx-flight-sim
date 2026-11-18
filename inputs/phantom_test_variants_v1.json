@@ -1,0 +1,13 @@
+{
+  "_purpose": "Test aircraft kept outside the pinned parameter file. inputs/phantom_parameters_v1.json is pinned by its whole-file hash (the A10-B identity pin and the flown A10-C revisions), so a test aircraft is listed here instead: adding one changes no existing variant's parameter-file hash, configuration or behaviour. Each entry inherits a variant of the parameter file and adds only named overlays from inputs/phantom_overlays. Being listed here does not promote an aircraft.",
+  "schema": 1,
+  "variants": {
+    "phantom-a10d": {
+      "inherits": "phantom-a10c",
+      "overlay_files": ["transition_ecu_v1"],
+      "release_stage": "test_aircraft",
+      "description": "A10-D: TEST AIRCRAFT, not promoted. The A10-C (phantom-a10c) with the transition ECU fitted (overlay transition_ecu_v1): pilot-commanded fan-assisted air-braking, with the fans, pods, boosters and surfaces coordinated by the flight computer. Same airframe, mass, model XML and visual as the A10-C. The A10-C itself is unchanged and has no ECU. Added 18 Nov 2026 at the owner's request, for testing. See docs/phantom/A10C_AIRBRAKE_ECU_TEST_20261118.md.",
+      "design_proposals": ["all A10-C proposals", "transition ECU: fan-assisted air-braking (overlay transition_ecu_v1)"]
+    }
+  }
+}

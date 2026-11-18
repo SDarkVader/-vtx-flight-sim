@@ -259,6 +259,7 @@ const tmp = new THREE.Quaternion(); const ZUP = new THREE.Vector3(0,0,1);
 const fixedRearSteerConfigs = {
   'phantom-a10b': '3ecae1a925a637825d422886d5e0c1f94fdd674e5b9dd35f572590bd2b13cb01',
   'phantom-a10c': '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f',
+  'phantom-a10d': '58d12857e3d38b50deeefa982974f4e54bd37f72823218a3e5c31b9000144ba3',   // A10-C + transition ECU (test aircraft)
   'phantom-a10c-runway-20261112': '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f',
   'phantom-a10c-vtol-20261112': '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f',
 };

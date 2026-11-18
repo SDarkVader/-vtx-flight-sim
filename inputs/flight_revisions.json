@@ -1,6 +1,40 @@
 {
   "schema": 1,
-  "integrated_runtime_sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
+  "integrated_runtime_sha256": "ba1c9c48b237c4c7aaef90378bc8050676dc810cd359c978f1a714725e533127",
+  "previous_integrated_runtimes": [
+    {
+      "sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
+      "commit": "ac9f1e72b5a5fc9830dd13554885bc48537400a1",
+      "superseded": "2026-11-18",
+      "reason": "Transition ECU for fan-assisted air-braking added as an opt-in overlay (inputs/phantom_overlays/transition_ecu_v1.json; src/vtx/phantom/controls.py, plant.py). Repin authorised by the owner on 18 Nov 2026, with the instruction to keep the previous model.",
+      "previous_model": "Unchanged. phantom-a10c config 2fee0b40... and the revisions below keep their configuration, parameter file and visual pins; without the overlay the A10-C and phantom-a10c-runway-20261112 give bit-identical state digests under both runtimes (vertical take-off and manoeuvre, runway roll, manual air-braking). Checkpoints written by this runtime are set aside, not resumed, by the newer build; this runtime remains at the commit above."
+    },
+    {
+      "sha256": "a3052315e1d08ebff2b021d69297714b976962750576fed5d9583234ef5a5359",
+      "commit": "258e6658a4a1338ff769b15811e4baa2b64fd750",
+      "superseded": "2026-11-18",
+      "reason": "Branch-only runtime of PR 62 (never on main): the transition ECU as an opt-in overlay. Superseded the same day by the A10-D test aircraft (inputs/phantom_test_variants_v1.json; src/vtx/phantom/params.py, plant.py), added at the owner's request 'Make this the A10-D for testing without removing my previous model'.",
+      "previous_model": "Unchanged. phantom-a10c config 2fee0b40... and the revisions below keep their configuration, parameter file and visual pins, and give the same state digests under this runtime and the next. Checkpoints written by this runtime are set aside, not resumed, by the newer build."
+    },
+    {
+      "sha256": "0d52bb96e5e1a19eb58da769b05713ea8325c64ab7e40f30276199e0dae44bc5",
+      "commit": "ced8439bb8b44781330ece82383ad0920f4b39eb",
+      "superseded": "2026-11-18",
+      "reason": "PR 62 introduced the pinned A10-D test aircraft. The combined runtime also supports the vehicle selector and checks the aircraft pin when restoring a Phantom checkpoint."
+    },
+    {
+      "sha256": "121c38e986c1f35cc3516909a096385798fe1c5984dae6cbafb463540f49b968",
+      "commit": "d7fff4683d5d590a8527f2aa6e3deb4cf047210b",
+      "superseded": "2026-11-18",
+      "reason": "The selector-only build predates the A10-D test aircraft. Its checkpoints retain their original build identity."
+    },
+    {
+      "sha256": "6f97b2fd4c35a57cae1f8225667b801309fe14b7a79225a1599db7db823bd9b4",
+      "commit": "bca9a77f0a70ebb433321d47924eb47cf10ee3e0",
+      "superseded": "2026-11-18",
+      "reason": "The Vercel preview now verifies the same public bytes from a compressed bundle. Aircraft configurations, numerical models, Ricochet dependencies and original asset bytes are identical."
+    }
+  ],
   "text_dependencies_sha256_lf": {
     "evidence/phantom/a10_handover.json": "50b3068409ce2040ecf798cac148d72bcd561388ce265d7acb281ff1aea105ec",
     "evidence/phantom/phantom_geometry.json": "a9c7f9805a307350639267fd5411318d0070b8a055cfa903a0ebf9655746f24a"

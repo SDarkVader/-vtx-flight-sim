@@ -170,3 +170,8 @@ html[data-vtx-replay="1"] #ride-controls { visibility:hidden !important; }
 #view-tools #suspension-schematic-toggle[aria-pressed="true"]{background:#164555;border-color:#8cdce6;color:#c5f5fa}
 
 #map,#large-map{touch-action:none}
+
+html[data-boat-focus^="ricochet-"] .mission-panel > :not(.aircraft-choice):not(#validation):not(#open-records),
+html[data-boat-focus^="ricochet-"] :is(#attitude,#consequence,#retry-bar,#suspension-schematic-status,footer,#main-aircraft-note) {
+ display:none !important;
+}
