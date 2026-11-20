@@ -1,6 +1,16 @@
 # Vaderland media
 
-## Showcase trailer
+## Phantom A10-D · Manual flight
+
+[![Phantom A10-D flying towards the Meridian skyline in Vaderland 32](readme-images/vaderland/a10d-manual-flight-poster.jpg)](readme-images/vaderland/a10d-manual-flight-v32.mp4?raw=true)
+
+[Watch or download the A10-D flight reel](readme-images/vaderland/a10d-manual-flight-v32.mp4?raw=true) · 49 seconds · Vaderland 32 · 720p
+
+The pilot lifts off vertically from Runway 08, climbs to 1,698 m above the world datum and approaches Meridian from the northwest. The hover attempt gives way to pitch oscillations, a descent and a terrain strike. The final frame shows the recorded contact at 370.13 s of simulated time.
+
+The reel cuts between sections of the same retained manual flight in its original terrain, with the pinned A10-D model and recorded poses at their original coordinates. The camera, dusk lighting, VTX score and brief hold at impact are editorial. [Read the field report](VADERLAND_32_VERIFICATION.md).
+
+## World showcase
 
 [![Two white-duct Argons on the Meridian Arrivals transport apron in the Vaderland trailer](readme-images/vaderland/showcase-poster.jpg)](readme-images/vaderland/vaderland-showcase.mp4?raw=true)
 
