@@ -8,6 +8,8 @@ Vaderland is the world of **VTX · Vader’s Taxis**, a simulation game for expe
 
 [Watch the showcase](docs/VADERLAND_MEDIA.md) · [Vaderland 32 field report](docs/VADERLAND_32_VERIFICATION.md) · [Open the browser cockpit](https://vtx-flight-sim.vercel.app/)
 
+The showcase uses recorded physics-based simulation runs, including failed attempts. Camera angles and cuts are editorial; vehicle movement and outcomes come from the source runs.
+
 ## Explore the world
 
 | Area | What to try |
