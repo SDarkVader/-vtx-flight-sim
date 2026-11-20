@@ -12,7 +12,7 @@ The pinned Phantom A10-D lifted vertically from the west threshold of Runway 08 
 
 On the northwest approach, about **940 m** from the Crest, groundspeed slowed to **4.6 m/s** while the aircraft climbed at **3.1 m/s** at about **494 m** elevation. Its nose began rising while pitch demand was steady at **0.8°** nose-up. Recorded pitch reached **37.6°** as the climb reversed. Later corrections reached the control limits. The right canard struck terrain at **370.13 s** of simulated time.
 
-That sortie verified runway departure, the airborne approach and physical contact with the terrain. Sustained hover and controlled landing remain separate tests. The original flight telemetry, pilot input stream, and crash recorder stay on the test PC.
+That sortie verified runway departure, the airborne approach and physical contact with the terrain. Sustained hover and controlled landing remain separate tests. The original flight telemetry, pilot input stream and crash recorder stay on the test PC. The flight reel retains the exact terminal pose at contact. [Watch the A10-D flight reel](VADERLAND_MEDIA.md#phantom-a10-d--manual-flight).
 
 ## Road and water checks
 
@@ -34,7 +34,9 @@ A follow-up browser test used the same terrain, recorded A10-D telemetry and Hig
 | Meridian approach | 18.3 FPS | 60.1 FPS |
 | Crest district | 18.5 FPS | 60.0 FPS |
 
-The candidate’s 95th-percentile draw interval was **18.5–18.7 ms**. It uses the same recorded poses and telemetry cadence and labels data age separately. A full manual run with the candidate and sustained **1×** solver throughput remain open. [Draft frame-pacing PR](https://github.com/SDarkVader/-vtx-flight-sim/pull/67)
+The candidate’s 95th-percentile draw interval was **18.5–18.7 ms**. It uses the same recorded poses and telemetry cadence and labels data age separately. A full manual run with the candidate remains open. [Draft frame-pacing PR](https://github.com/SDarkVader/-vtx-flight-sim/pull/67)
+
+A separate offline scheduler candidate using the recorded runway inputs advanced from **0.880× to 0.998×** over a 12-second paired test. All 2,400 compared integration states matched byte for byte. Sustained real-time performance in manual play remains open.
 
 ## Verification scope
 
