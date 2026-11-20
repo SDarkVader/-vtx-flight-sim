@@ -166,7 +166,8 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
     ET.SubElement(default,'geom',friction='.75 .005 .0001',condim='4',solref='.008 1',solimp='.98 .999 .001',density='0',margin='.001')
     ET.SubElement(default,'joint',damping='0',armature='0')
     asset=ET.SubElement(xml,'asset')
-    ET.SubElement(asset,'hfield',name='terrain',nrow=str(world.n),ncol=str(world.n),size=f'{world.half} {world.half} 70 2')
+    terrain_scale = getattr(world, 'height_scale_m', 70)
+    ET.SubElement(asset,'hfield',name='terrain',nrow=str(world.n),ncol=str(world.n),size=f'{world.half} {world.half} {terrain_scale} 2')
     wb=ET.SubElement(xml,'worldbody')
     ET.SubElement(wb,'geom',name='terrain',type='hfield',hfield='terrain',contype='1',conaffinity='2')
     # Current variants retain the later floor; the named historical candidate
@@ -174,6 +175,10 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
     if boundary_floor:
         ET.SubElement(wb, 'geom', name='boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
     for o in world.obstacles:
+        if o['kind']=='mesh':
+            from .scenery_mesh import add_static_mesh
+            add_static_mesh(asset,wb,o,name=o['id'],contype='1',conaffinity='2')
+            continue
         args=dict(name=o['id'],type=o['kind'],pos=fmt(o['center']),contype='1',conaffinity='2')
         args['size']=fmt(o['half']) if o['kind']=='box' else fmt([o['half'][0],o['half'][2]])
         ET.SubElement(wb,'geom',**args)
@@ -299,9 +304,12 @@ def build_model(ledger,world,gear_variant='baseline',fuel_kg=60.,rpm=800.,tank_f
     ET.SubElement(sensor,'subtreeangmom',name='total_H',body='airframe')
     ET.SubElement(sensor,'subtreelinvel',name='total_v',body='airframe')
     ET.SubElement(sensor,'subtreecom',name='total_cg',body='airframe')
+    if getattr(world,'moving_scenery',False):
+        from .scenery_mesh import finish_scenery
+        finish_scenery(xml,wb)
     text=ET.tostring(xml,encoding='unicode')
     model=mj.MjModel.from_xml_string(text)
-    model.hfield_data[:]=(world.heights/70).ravel()
+    model.hfield_data[:]=(world.heights/terrain_scale).ravel()
     return model,text
 
 
@@ -333,6 +341,8 @@ class Aircraft:
         self.gear_variant=gear_variant;self.reference_rpm=float(rpm)
         self.model,self.xml=build_model(self.ledger,self.world,gear_variant,fuel_kg,rpm,tank_fuel_kg=tank_fuel_kg,variator_package=self.variator_package,boundary_floor=not historical,historical_xml=historical)
         self.data=mj.MjData(self.model)
+        from .scenery_mesh import native_scenery
+        self.scenery=native_scenery(self.model,self.data,self.world)
         self.bids={name:mj.mj_name2id(self.model,mj.mjtObj.mjOBJ_BODY,name) for name in self.ledger['bodies']}
         self.foot_geoms=[i for i in range(self.model.ngeom) if (mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_BODY,int(self.model.geom_bodyid[i])) or '').startswith('gear')]
         self.jids={mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_JOINT,i):i for i in range(self.model.njnt)}
@@ -592,6 +602,7 @@ class Aircraft:
         self.power=dict(engine_w=engine_power,rotor_aero_w=aero_power,servo_w=servo_power,
                         gear_loss_w=torque*max(omega,0)*(1/.95-1),fuel_chemical_w=chemical)
         for k,vv in self.power.items():self.energy[k.replace('_w','_j')]+=vv*DT
+        if self.scenery:self.scenery.apply(d)
         mj.mj_step(m,d)
         if d.time-self.last_mass_update>=.1:
             for i,bid in enumerate(self.fuel_bids):
@@ -624,6 +635,9 @@ class Aircraft:
             if c.dist>.002:continue
             g1,g2=int(c.geom1),int(c.geom2)
             b1,b2=int(self.model.geom_bodyid[g1]),int(self.model.geom_bodyid[g2])
+            if self.scenery:
+                if self.model.body_mocapid[b1]>=0:b1=0
+                if self.model.body_mocapid[b2]>=0:b2=0
             if b1 and b2:continue
             geom=g2 if b1==0 else g1;body=int(self.model.geom_bodyid[geom])
             name=mj.mj_id2name(self.model,mj.mjtObj.mjOBJ_BODY,body)

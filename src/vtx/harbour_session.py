@@ -20,6 +20,35 @@ def _encode(fleet):
     return gzip.compress(raw, compresslevel=1, mtime=0)
 
 
+def _public_fleet(fleet):
+    """Attach read-only free-surface samples from the same instant as the boat poses."""
+    state=fleet.public()
+    if getattr(fleet,'scenery',None):state['iris']=fleet.scenery.doors(fleet.data)
+    survey=getattr(fleet.world.source,'vaderland',{}).get('harbour_surface')
+    if not survey:
+        return state
+    import numpy as np
+
+    n,spacing,snap=survey['samples'],survey['spacing_m'],survey['snap_m']
+    width=(n-1)*spacing
+    axis=np.arange(n)*spacing
+    gx,gy=np.meshgrid(axis,axis)
+    patches=[]
+    seen=set()
+    for boat in state['boats']:
+        x,y=(np.round(np.asarray(boat['position'][:2])/snap)*snap-width/2).tolist()
+        if (x,y) in seen:
+            continue
+        seen.add((x,y))
+        sample=fleet.water.evaluate(gx+x,gy+y,t=state['t_s'],eta_only=True)
+        # Dry samples have no free surface and must not lift the chart up a
+        # steep shore. The chart boundary already excludes land and islands.
+        offsets=np.where(sample.depth>0,sample.eta-state['water_level_m'],0).astype('<f4')
+        patches.append(dict(origin=[x,y],offset_f32le=base64.b64encode(offsets.tobytes()).decode('ascii')))
+    state['water_surface']=dict(samples=n,spacing_m=spacing,patches=patches)
+    return state
+
+
 def _publish(path, payload):
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name("." + path.name + "." + uuid.uuid4().hex + ".tmp")
@@ -35,7 +64,6 @@ def _publish(path, payload):
 
 def _restart_boat(world, fleet, body):
     """Stage a fresh selected vessel while retaining the fleet and water clock."""
-    from .harbour_fleet import HarbourFleet
     from .ricochet.plant import RicochetCraft
 
     boat_id = body["boatId"]
@@ -44,7 +72,13 @@ def _restart_boat(world, fleet, body):
     definition = next(v for v in fleet.definitions if v["id"] == boat_id)
     berth_id = definition["berth_id"]
     berth = fleet.berths[berth_id]
-    xy = body.get("position")
+    stage = body.get('timeTrial', False)
+    if type(stage) is not bool:
+        raise ValueError('Invalid time trial staging request')
+    trial = fleet.world.harbour.get('timeTrial') if stage else None
+    if stage and trial is None:
+        raise ValueError('This harbour has no time trial')
+    xy = trial['position'] if trial else body.get("position")
     if xy is None:
         if fleet.occupancy.get(berth_id, boat_id) != boat_id:
             raise ValueError("Home berth occupied; choose an open water position")
@@ -56,11 +90,11 @@ def _restart_boat(world, fleet, body):
                 not fleet.world.mask(*xy)):
             raise ValueError("Choose a position in harbour water, in world metres")
         berth_id = None
-        heading = fleet._pose(boat_id)[1]
+        heading = trial["heading_rad"] if trial else fleet._pose(boat_id)[1]
 
     # spawn resets a craft's water field. Spawn on its private field before
     # attaching the existing shared field, so the other vessel keeps its wake.
-    result = HarbourFleet.restore(world, fleet.serialize())
+    result = type(fleet).restore(world, fleet.serialize())
     # The single-craft decoder recomputes this display channel before the fleet
     # reinstates the shared hydrodynamic cache. Retain the other craft's reading.
     for other_id, other in fleet.crafts.items():
@@ -93,21 +127,25 @@ def _restart_boat(world, fleet, body):
     if berth_id:
         result.occupancy[berth_id] = boat_id
         result.moorings[boat_id] = dict(berth_id=berth_id, xy=list(xy), heading=heading)
+    if hasattr(result,'reset_trial'):
+        result.reset_trial(boat_id)
     result._event("restarted", craft_id=boat_id, xy=list(xy), berth_id=berth_id)
     return result
 
 
-def _run(connection, rate, seed, snapshot):
+def _run(connection, rate, seed, snapshot, environment):
     """Only this process mutates the fleet. Commands and snapshots run between solver steps."""
     try:
         from .world import make_world
-        from .harbour_fleet import DT, HarbourFleet
+        from .harbour_fleet import DT
+        from .harbour_trial import fleet_type
 
-        world = make_world("airport", seed=seed)
+        world = make_world(environment, seed=seed)
+        fleet_class = fleet_type(world)
         fleet = (
-            HarbourFleet.restore(world, json.loads(gzip.decompress(snapshot)))
+            fleet_class.restore(world, json.loads(gzip.decompress(snapshot)))
             if snapshot is not None
-            else HarbourFleet(world)
+            else fleet_class(world)
         )
         connection.send((True, None))
     except Exception as exc:
@@ -135,12 +173,18 @@ def _run(connection, rate, seed, snapshot):
                         current = path
                         last = published = time.monotonic()
                         result = None
+                    elif action == "iris":
+                        import mujoco as mj
+                        fleet.scenery.command(fleet.data,body['door'],body['open'],body['snap'])
+                        mj.mj_forward(fleet.model,fleet.data)
+                        if current:_publish(current,_encode(fleet))
+                        result=fleet.scenery.doors(fleet.data)
                     elif action == "snapshot":
                         result = _encode(fleet)
                     elif action == "model":
                         result = fleet.visual_geometry(body)
                     elif action == "status":
-                        result = fleet.public()
+                        result = _public_fleet(fleet)
                         result["physics"]["scheduler_backlog_s"] = max(0.0, due)
                         if fault:
                             result["error"] = fault
@@ -153,7 +197,7 @@ def _run(connection, rate, seed, snapshot):
                         fleet = candidate
                         last = published = time.monotonic()
                         due = 0.
-                        result = fleet.public()
+                        result = _public_fleet(fleet)
                     else:
                         if fault:
                             raise ValueError("Harbour simulation stopped: " + fault)
@@ -172,7 +216,7 @@ def _run(connection, rate, seed, snapshot):
                         if action != "command" and current:
                             _publish(current, _encode(fleet))
                             published = time.monotonic()
-                        result = fleet.public()
+                        result = _public_fleet(fleet)
                     connection.send((True, result))
                 except (ValueError, KeyError, TypeError, IndexError, OSError) as exc:
                     connection.send((False, str(exc)))
@@ -203,12 +247,12 @@ def _run(connection, rate, seed, snapshot):
 
 
 class FleetWorker:
-    def __init__(self, seed, payload):
+    def __init__(self, seed, payload, environment="airport"):
         ctx = multiprocessing.get_context("spawn")
         self.generation = uuid.uuid4().hex
         self.rate = ctx.Value("d", 0.0, lock=False)
         self.pipe, child = ctx.Pipe()
-        self.process = ctx.Process(target=_run, args=(child, self.rate, seed, payload), daemon=True)
+        self.process = ctx.Process(target=_run, args=(child, self.rate, seed, payload, environment), daemon=True)
         try:
             self.process.start()
             child.close()
@@ -251,11 +295,13 @@ class FleetWorker:
 
 
 class HarbourSession:
-    def __init__(self, data_root):
+    def __init__(self, data_root, environment="airport"):
         self.directory = Path(data_root) / "pilot"
+        self.environment = environment
         self.worker = None
         self.lock = threading.RLock()
         self.rate = 0.0
+        self.iris_targets={}
 
     @property
     def current(self):
@@ -272,10 +318,10 @@ class HarbourSession:
             worker.rate.value = rate
 
     def _replace(self, seed, payload):
-        incoming = FleetWorker(seed, payload)
-        self.install(incoming)
+        incoming = FleetWorker(seed, payload, self.environment)
+        self.install(incoming,fresh=payload is None)
 
-    def install(self, incoming):
+    def install(self, incoming, *, fresh=False):
         """A rejected fleet is never attached. The outgoing fleet remains usable on failure."""
         with self.lock:
             outgoing = self.worker
@@ -289,6 +335,9 @@ class HarbourSession:
                     outgoing.rate.value = self.rate
                 incoming.close()
                 raise
+            if fresh:
+                for door,opened in self.iris_targets.items():
+                    incoming.request('iris',dict(door=door,open=opened,snap=True))
             self.worker = incoming
             self.worker.rate.value = self.rate
             if outgoing:
@@ -337,6 +386,11 @@ class HarbourSession:
                     self.worker.request(action, body)
             return self.status(world, resume=False)
 
+    def set_iris(self,door,opened,snap):
+        with self.lock:
+            if self.worker:self.worker.request('iris',dict(door=door,open=opened,snap=snap or not self.rate))
+            self.iris_targets[door]=opened
+
     def model(self, world, boat_id):
         with self.lock:
             if not getattr(world, "harbour", None) or not self.worker:
@@ -362,7 +416,7 @@ class HarbourSession:
         )
 
     @staticmethod
-    def stage(seed, envelope):
+    def stage(seed, envelope, environment="airport"):
         if not isinstance(envelope, dict):
             raise ValueError("Invalid harbour checkpoint")
         if envelope.get("schema") != "airport-harbour-gzip-1":
@@ -370,7 +424,7 @@ class HarbourSession:
         payload = base64.b64decode(envelope["data"], validate=True)
         if hashlib.sha256(payload).hexdigest() != envelope.get("sha256"):
             raise ValueError("Harbour checkpoint digest mismatch")
-        return FleetWorker(seed, payload)
+        return FleetWorker(seed, payload, environment)
 
     def restore_flight(self, state, staged):
         if "harbour_fleet" not in state:

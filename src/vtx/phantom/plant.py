@@ -102,7 +102,8 @@ def build_xml(L: PhantomLedger, world):
     d = ET.SubElement(x, 'default')
     ET.SubElement(d, 'geom', friction='.75 .005 .0001', condim='4', solref='.008 1', solimp='.98 .999 .001', density='0', margin='.001')
     asset = ET.SubElement(x, 'asset')
-    ET.SubElement(asset, 'hfield', name='terrain', nrow=str(world.n), ncol=str(world.n), size=f'{world.half} {world.half} 70 2')
+    terrain_scale = getattr(world, 'height_scale_m', 70)
+    ET.SubElement(asset, 'hfield', name='terrain', nrow=str(world.n), ncol=str(world.n), size=f'{world.half} {world.half} {terrain_scale} 2')
     pieces = P.geometry['hull']['convex_pieces']
     for i, pc in enumerate(pieces):
         ET.SubElement(asset, 'mesh', name=f'hull_{i}', vertex=f3(pc['vertices']))
@@ -115,6 +116,10 @@ def build_xml(L: PhantomLedger, world):
     elif revision['boundary_floor'] == 'sandbox_only' and getattr(world, 'environment_key', None) == 'sandbox':
         ET.SubElement(wb, 'geom', name='sandbox_boundary_floor', type='plane', pos='0 0 -0.2', size='0 0 0.1', contype='1', conaffinity='2')
     for o in world.obstacles:
+        if o['kind']=='mesh':
+            from ..scenery_mesh import add_static_mesh
+            add_static_mesh(asset,wb,o,name=o['id'],contype='1',conaffinity='2',group='0')
+            continue
         a = dict(name=o['id'], type=o['kind'], pos=f3(o['center']), contype='1', conaffinity='2', group='0')
         a['size'] = f3(o['half']) if o['kind'] == 'box' else f3([o['half'][0], o['half'][2]])
         ET.SubElement(wb, 'geom', **a)
@@ -215,6 +220,9 @@ def build_xml(L: PhantomLedger, world):
     eq = ET.SubElement(x, 'equality')
     for s in WING_SIDES:
         ET.SubElement(eq, 'joint', name=f'lock_{s}', joint1=f'wing_{s}', polycoef='0 0 0 0 0', active='false', solref='.004 1')
+    if getattr(world,'moving_scenery',False):
+        from ..scenery_mesh import finish_scenery
+        finish_scenery(x,wb)
     return ET.tostring(x, encoding='unicode')
 
 
@@ -249,10 +257,12 @@ class PhantomAircraft:
         self.xml = build_xml(self.L, world)
         self.suspension = suspension_design(self.P, self.L, self.L.body_inertials())
         self.model = mj.MjModel.from_xml_string(self.xml)
-        self.model.hfield_data[:] = (world.heights / 70).ravel()
+        self.model.hfield_data[:] = (world.heights / self.model.hfield_size[0, 2]).ravel()
         self.data = mj.MjData(self.model)
+        from ..scenery_mesh import native_scenery
+        self.scenery=native_scenery(self.model,self.data,world)
         m = self.model
-        self.bids = {m.body(i).name: i for i in range(m.nbody)}
+        self.bids = {m.body(i).name: i for i in range(m.nbody) if m.body_mocapid[i]<0}
         self.jid = {m.joint(i).name: i for i in range(m.njnt)}
         self.aid = {m.actuator(i).name: i for i in range(m.nu)}
         self.eqid = {m.eq(i).name: i for i in range(m.neq)}
@@ -824,6 +834,7 @@ class PhantomAircraft:
         if self.step_count % 4 == 0:
             self.control_update(4 * DT)
         self.apply_forces()
+        if self.scenery:self.scenery.apply(self.data)
         mj.mj_step(self.model, self.data)
         self.step_count += 1
         if not np.all(np.isfinite(self.data.qpos)):
@@ -1038,6 +1049,7 @@ class PhantomAircraft:
         mj.mj_setConst(m, scratch)
         mj.mj_setState(m, d, integration, spec)
         warmstart = d.qacc_warmstart.copy()
+        if self.scenery:self.scenery.apply(d)
         mj.mj_forward(m, d)
         d.qacc_warmstart[:] = warmstart
         for name in CHECKPOINT_DERIVED_FIELDS:

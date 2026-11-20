@@ -1,6 +1,7 @@
 // Additive Main Airport harbour. Boat meshes follow the fleet's body poses;
 // no aircraft selection, flight command or independent motion is generated here.
 import * as THREE from 'three';
+import {buildLanternMarks} from './lantern-marks.js';
 import {harbourWorldPoint} from './harbour-map.js?v=20261116-harbour-3';
 
 const finiteArray = (values, length) => Array.isArray(values) && values.length === length && values.every(Number.isFinite);
@@ -167,6 +168,9 @@ export function buildHarbour(world, {fetchModel, onError = () => {}} = {}) {
   const water = new THREE.Mesh(harbourWaterGeometry(harbour), new THREE.MeshPhysicalMaterial({color: '#2f8296', roughness: .23,
     metalness: .08, side: THREE.DoubleSide}));
   water.name = 'harbour-water'; water.position.z = harbour.waterLevelM; water.receiveShadow = true; root.add(water);
+  let tide=null;
+  const updateTrialMarks=buildLanternMarks(root,world);
+  updateTrialMarks?.(null);
   const routes = new THREE.Group(); routes.name = 'harbour-routes'; root.add(routes);
   for (const [index, route] of (harbour.layout.routes || []).entries()) {
     const color = ['#efd48b', '#a4ddd2', '#b9b7ee'][index % 3];
@@ -225,10 +229,18 @@ export function buildHarbour(world, {fetchModel, onError = () => {}} = {}) {
   };
   return {
     root, water, routes, boats, berthNodes, structureNodes,
+    setWaterSurface(surface){
+      tide?.dispose();tide=surface;
+      if(latest)tide.update(latest);
+    },
     update(state, {snap = false, now = performance.now()} = {}) {
       const advancing = latest?.available && latest.generation === state?.generation &&
         Number.isFinite(latest.t_s) && state?.t_s > latest.t_s;
       latest = state;
+      tide?.update(state);
+      updateTrialMarks?.(state);
+      if(tide && water.material.uniforms?.waterClock)
+        water.material.uniforms.waterClock.value=tide.time;
       if (Number.isFinite(state?.water_level_m)) {
         water.position.z = state.water_level_m; routes.position.z = state.water_level_m - harbour.waterLevelM;
         for (const mark of berthNodes.values()) mark.position.z = state.water_level_m + .14;
@@ -264,7 +276,7 @@ export function buildHarbour(world, {fetchModel, onError = () => {}} = {}) {
     },
     setBoatsVisible(visible) {boatsVisible = visible; for (const rig of boats.values()) rig.root.visible = visible && !!latest?.available;},
     setRoutesVisible(visible) {routes.visible = !!visible;},
-    dispose() {disposed = true; pending.clear(); disposeTree(root); boats.clear();},
+    dispose() {disposed = true; pending.clear(); tide?.dispose(); disposeTree(root); boats.clear();},
   };
 }
 
@@ -284,6 +296,11 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     <div class="map-tools"><button type="button" data-harbour="activate">Initialize two Concept A boats</button><button type="button" data-harbour="lake">View harbour</button></div>
     <label class="control-label">Boat<select data-harbour="boat"><option value="">Choose a boat</option></select></label>
     <p data-harbour="telemetry" class="muted small">No boat selected.</p>
+    <section data-harbour="trial" hidden aria-label="Lantern Islet Trial">
+      <div class="section-label">Lantern Islet Trial</div>
+      <button type="button" data-harbour="stage-trial" title="Save the selected boat’s current state and move it to the trial staging water">Stage selected boat for trial</button>
+      <p data-harbour="trial-status" class="muted small" aria-live="polite"></p>
+    </section>
     <div class="map-tools"><button type="button" data-harbour="focus">View selected boat</button><button type="button" data-harbour="cockpit">Cockpit camera</button></div>
     <label class="control-label">Berth<select data-harbour="berth"><option value="">Choose a berth</option></select></label>
     <div class="map-tools"><button type="button" data-harbour="dock">Dock at berth</button><button type="button" data-harbour="undock">Release mooring</button></div>
@@ -306,6 +323,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
   host.append(panel);
   const el = name => panel.querySelector(`[data-harbour="${name}"]`), fields = [...panel.querySelectorAll('[data-command]')];
   let world = null, state = null, enabled = false, disposed = false, pendingActions = 0, pendingGets = 0;
+  const routePreferences = new Map();
   let revision = 0, worldEpoch = 0, lastSuccess = 0, status = '', helmTimer = null, helmBoat = null, helmPatch = {}, chain = Promise.resolve();
   const dirty = new Map();
   const selected = () => state?.boats?.find(boat => boat.id === state.selectedId);
@@ -339,6 +357,21 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     el('lake').disabled = !world?.harbour;
     el('cut').disabled = !live || !boat;
     el('restart').disabled = !live || !boat;
+    const trial=world.harbour.timeTrial;
+    el('trial').hidden=!trial;
+    el('stage-trial').disabled=!live || !boat || !trial;
+    if(trial){
+      const run=state?.lantern_trial?.runs?.[boat?.id];
+      const parts=[];
+      if(run?.foul)parts.push(run.foul);
+      if(run?.start==null)parts.push('Cross the first gate to start');
+      else parts.push(run.next===0?'Finish gate':'Next gate '+(run.next+1)+' of '+trial.gates.length);
+      if(run?.splits?.length)parts.push('Split '+run.splits.at(-1).toFixed(2)+' s');
+      if(run?.last!=null)parts.push('Last '+run.last.toFixed(2)+' s');
+      if(run?.best!=null)parts.push('Best '+run.best.toFixed(2)+' s');
+      const text=parts.join(' · ');
+      if(el('trial-status').textContent!==text) el('trial-status').textContent=text;
+    }
     el('save').disabled = !live;
     el('restore').disabled = !enabled || !state?.available || !state.saved || busy;
     for (const input of fields) {
@@ -416,6 +449,18 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     discardHelm();
     void send({action:'restart', boatId:state.selectedId, position:text ? parts.map(Number) : null});
   });
+  el('stage-trial').addEventListener('click', async () => {
+    const boat=selected();
+    if(!boat || !ready() || !world?.harbour.timeTrial)return;
+    discardHelm();
+    const epoch=worldEpoch;
+    try{
+      await send({action:'restart',boatId:boat.id,timeTrial:true},{throwOnError:true});
+      if(epoch!==worldEpoch)return;
+      const staged=selected();
+      if(staged?.id===boat.id)onFocus(staged.position,'boat',staged.id);
+    }catch{}
+  });
   el('focus').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat', boat.id);});
   el('cockpit').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat-cockpit', boat.id);});
   el('lake').addEventListener('click', () => {
@@ -446,7 +491,13 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
       onFocus(boat.position, 'boat-cockpit', boat.id);
       return boat;
     },
-    setWorld(next) {worldEpoch++; revision++; discardHelm(); world = next; state = null; status = ''; lastSuccess = 0; onRoutes(el('routes').checked); render(); if (enabled) void refresh();},
+    setWorld(next) {
+      const routes = el('routes');
+      if (world) routePreferences.set(world.environment, routes.checked);
+      routes.checked = routePreferences.get(next.environment) ?? !next.vaderland;
+      worldEpoch++; revision++; discardHelm(); world = next; state = null; status = ''; lastSuccess = 0;
+      onRoutes(routes.checked); render(); if (enabled) void refresh();
+    },
     setEnabled(next) {if (enabled === !!next) return; enabled = !!next; revision++; if (!enabled) {worldEpoch++; discardHelm(); onState(null);} else void refresh(); render();},
     dispose() {disposed = true; revision++; clearInterval(timer); clearTimeout(helmTimer); panel.remove();},
   };

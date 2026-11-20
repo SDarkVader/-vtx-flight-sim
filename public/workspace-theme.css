@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('./vendor/fonts/workspace.css');
 :root { font-family:'DM Sans',sans-serif; --line:#293131; --muted:#89958f; --accent:#d4f66a; color:#eef2ed; background:#0d1112; }
 body, button, input, select, textarea { font-family:'DM Sans',sans-serif; }
 h1,h2,h3,.brand { font-family:'Space Grotesk',sans-serif; }

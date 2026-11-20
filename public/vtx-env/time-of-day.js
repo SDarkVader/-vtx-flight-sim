@@ -15,20 +15,27 @@ export function createTimeOfDay({ scene, sky, renderer, getPost, environment }) 
     const p = new THREE.Points(g, new THREE.PointsMaterial({ color: '#cfd8ff', size: 2.2, sizeAttenuation: false, fog: false, depthWrite: false, transparent: true, opacity: 0.85 }));
     p.name = 'night-stars'; p.frustumCulled = false; p.renderOrder = -95; return p;
   }
-  function night() {
+  function lowLight(dusk) {
     saved = { skyVisible: sky.group.children.map((c) => c.visible), background: scene.background, fog: scene.fog.color.clone(),
       sunI: sky.sun.intensity, sunC: sky.sun.color.clone(), hemiI: sky.hemi.intensity, hemiC: sky.hemi.color.clone(), hemiG: sky.hemi.groundColor.clone(),
       env: scene.environmentIntensity, exposure: renderer.toneMappingExposure };
     sky.group.children.forEach((c) => { c.visible = false; });
-    if (!stars) { stars = makeStars(); } sky.group.add(stars); stars.visible = true;
+    if (!dusk) { if (!stars) stars=makeStars(); sky.group.add(stars); stars.visible=true; }
     scene.background = new THREE.Color().setRGB(0.006, 0.010, 0.026, THREE.LinearSRGBColorSpace);
     scene.fog.color.setRGB(0.010, 0.014, 0.030, THREE.LinearSRGBColorSpace);
     sky.sun.intensity = 0.45; sky.sun.color.set('#9fb4ff');            // moonlight
     sky.hemi.intensity = 0.22; sky.hemi.color.set('#3a4f80'); sky.hemi.groundColor.set('#1a1410');
     scene.environmentIntensity = 0.12; renderer.toneMappingExposure = 1.15;
+    if (dusk) {
+      scene.background=new THREE.Color(0x344361);
+      scene.fog.color.set(0x655b72);
+      sky.sun.intensity=1.8; sky.sun.color.set('#ffb378');
+      sky.hemi.intensity=.64; sky.hemi.color.set('#8f9ccf'); sky.hemi.groundColor.set('#51414b');
+      scene.environmentIntensity=.42; renderer.toneMappingExposure=1.08;
+    }
     scene.traverse((o) => {
       const ms = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
-      for (const m of ms) if (m.emissive && !boosted.has(m) && (m.emissive.r + m.emissive.g + m.emissive.b) > 0.05) { boosted.set(m, m.emissiveIntensity ?? 1); m.emissiveIntensity = (m.emissiveIntensity ?? 1) * 1.8; }
+      for (const m of ms) if (m.emissive && !boosted.has(m) && (m.emissive.r + m.emissive.g + m.emissive.b) > 0.05) { boosted.set(m, m.emissiveIntensity ?? 1); m.emissiveIntensity = (m.emissiveIntensity ?? 1) * (dusk ? 1.35 : 1.8); }
     });
   }
   function day() {
@@ -43,9 +50,19 @@ export function createTimeOfDay({ scene, sky, renderer, getPost, environment }) 
   }
   return {
     get mode() { return mode; },
-    // Re-applies the current mode (call after the world is rebuilt so new materials are included).
-    refresh() { if (mode === 'night') { day(); night(); } environment.kit?.setNight(mode === 'night'); getPost()?.setLook(mode); },
-    set(next) { if (next === mode) return; mode = next === 'night' ? 'night' : 'day'; if (mode === 'night') night(); else day(); environment.kit?.setNight(mode === 'night'); getPost()?.setLook(mode); },
-    toggle() { this.set(mode === 'night' ? 'day' : 'night'); return mode; },
+    get nextMode(){return mode==='day'&&environment.vaderland?.hasDusk?'dusk':mode==='night'?'day':'night';},
+    refresh(){
+      day();
+      if(mode==='dusk'&&!environment.vaderland?.hasDusk)mode='day';
+      if(mode!=='day')lowLight(mode==='dusk');
+      environment.kit?.setNight(mode==='night');
+      getPost()?.setLook(mode,environment.vaderland?.cityGlow);
+    },
+    set(next){
+      const chosen=next==='night'||(next==='dusk'&&environment.vaderland?.hasDusk)?next:'day';
+      if(chosen===mode)return;
+      mode=chosen;this.refresh();
+    },
+    toggle(){this.set(this.nextMode);return mode;},
   };
 }
