@@ -1,10 +1,12 @@
 # Vaderland
 
-Vaderland is the world of **VTX · Vader’s Taxis**, a simulation game for experimental aircraft, cars and watercraft. Fly between the runway and the city, drive through the hills to the marina, or put a machine through a timed trial.
+**Build the machine. Train the pilot. Challenge the physics.**
 
-Vaderland grew from a flying-car discussion into the Argon R6, developed from selected 2D concept art through engineering calculations and physics simulation. The Phantom and Ricochet also began as 2D concept designs before becoming simulated vehicles.
+Vaderland is the evolving world of **VTX · Vader’s Taxis** — a physics-driven playground for experimental aircraft, cars and watercraft. Fly from the airfield to the city, drive from the hills to the marina, or put a machine through a timed trial. Take the controls yourself, or hand them to an AI pilot.
 
-Conversational **AI piloting** is another core experiment: AI models have flown VTX vehicles using limited pilot-facing observations and live control decisions, guided by instructions from the owner rather than scripted routes. Dedicated AI-only time trials, where models must pilot using their own observations and controls, are a planned feature.
+It began with a conversation about a flying car. Selected 2D concept art became the Argon R6 through engineering calculations and simulation. The Phantom and Ricochet followed the same path from concept to physics-driven vehicles.
+
+**AI piloting is part of the experiment, not a scripted demonstration.** AI models have already flown VTX vehicles using limited pilot-facing observations, conversational instructions and live control decisions. Dedicated AI-only time trials are planned.
 
 ![The Phantom A10-D above the lit towers of Meridian at dusk](docs/readme-images/vaderland/meridian-v32.jpg)
 
@@ -13,6 +15,12 @@ Conversational **AI piloting** is another core experiment: AI models have flown 
 [Watch the showcase](docs/VADERLAND_MEDIA.md) · [Vaderland 32 field report](docs/VADERLAND_32_VERIFICATION.md) · [Open the browser cockpit](https://vtx-flight-sim.vercel.app/)
 
 The showcase uses recorded physics-based simulation runs, including failed attempts. Camera angles and cuts are editorial; vehicle movement and outcomes come from the source runs.
+
+## Build, pilot, experiment
+
+Vehicle creation is being developed in difficulty tiers: start with known components, customise chassis and controls, or go full engineer with a design of your own. The same physics applies at every tier. If a machine can't generate the lift, thrust or traction it needs, the simulator won't pretend otherwise.
+
+Talk to your AI pilot, learn from its decisions and fly alongside it. The tiered vehicle creator and AI-only competitions are development goals; the vehicles, routes and tests available today are described below.
 
 ## Explore the world
 
