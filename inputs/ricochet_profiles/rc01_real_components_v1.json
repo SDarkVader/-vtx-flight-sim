@@ -1,9 +1,16 @@
 {
   "schema": "vtx-ricochet-profile-1",
   "profile_id": "rc01-real-components-v1",
-  "status": "experimental, opt-in, unvalidated",
-  "description": "Ricochet RC-01 Concept A with the selected off-the-shelf actuators on every surface (limits read from docs/ricochet/components/components.json) and hinged planing skis with fins under the outboard sponson pods. Legacy Concept A is unchanged when no profile is selected.",
+  "model_revision": "RC01-CA-1",
+  "model_name": "Ricochet RC-01CA-1 (Concept A Real Components · Rev 1)",
+  "revision_series": "RC01-CA",
+  "revision_number": 1,
+  "status": "experimental, opt-in, calibrated-baseline",
+  "description": "Ricochet RC-01 Concept A with selected off-the-shelf actuators (Volz DA 30-HT-D, Volz DA 58-D, Exlar GSX30) and hinged planing skis under the outboard sponson pods. Calibrated for passive 100 Hz / 400 Hz operation with Raymer aero_buildup drag and cleared rudder hinge cove. Legacy Concept A is unchanged when no profile is selected.",
   "components_register": "docs/ricochet/components/components.json",
+  "aero_buildup_drag": true,
+  "aero_parasite_cda_m2": 0.535,
+  "rudder_cove_clear": true,
   "surface_actuators": {
     "aileron_port_servo": {"component": "volz_da30htd", "joint": "aileron_port_hinge", "channel": "aileron_deg"},
     "aileron_stbd_servo": {"component": "volz_da30htd", "joint": "aileron_stbd_hinge", "channel": "aileron_deg"},
@@ -33,6 +40,7 @@
     "lock_note": "Mechanical over-centre lock carries the jet load at full deployment; actuator only moves the bucket."
   },
   "skis": {
+    "hydro_mode": "planing",
     "pivot_in_sponson_m": [0.30, 0.0, -0.10],
     "length_m": 2.0,
     "beam_m": 0.50,
@@ -44,13 +52,23 @@
     "joint_range_deg": [-3.0, 12.0],
     "incidence_command_deg": [0.0, 10.0],
     "differential_command_deg": [-4.0, 4.0],
-    "actuator": {"component": "exlar_gsx30_2stack_0p2in", "lever_m": 0.44, "stroke_mm": 152.4,
-                 "stroke_note": "Iteration 1: the register's 76 mm stroke on a 0.44 m lever gives only 9.9 deg of travel; collective 0-10 deg plus +/-4 deg differential within the -3..12 deg joint needs 15 deg (115 mm). 152.4 mm (6 in) is within the published 76-457 mm range and gives 20 deg.",
-                 "linkage_mass_kg": 1.5, "linkage_mass_status": "assumed",
-                 "servo_stiffness_nm_per_rad": 115000.0, "servo_damping_ratio": 1.0, "reflected_armature_kg_m2": 0.5,
-                 "loop_assumed": true},
+    "actuator": {
+      "component": "exlar_gsx30_2stack_0p2in",
+      "lever_m": 0.44,
+      "stroke_mm": 152.4,
+      "stroke_note": "152.4 mm (6 in) is within the published 76-457 mm range and gives 20 deg travel on a 0.44 m lever.",
+      "linkage_mass_kg": 1.5,
+      "linkage_mass_status": "assumed",
+      "servo_stiffness_nm_per_rad": 30000.0,
+      "servo_damping_ratio": 1.0,
+      "reflected_armature_kg_m2": 2.0,
+      "joint_damping": 5.0,
+      "solreflimit": "0.005 1",
+      "solimplimit": "0.995 0.999 0.0002",
+      "loop_assumed": true
+    },
     "fin": {"x_from_pivot_m": -0.85, "span_m": 0.30, "chord_m": 0.30, "cl_max_submerged": 0.9, "cl_max_piercing": 0.6, "steer_link_from_rudder": 0.0},
-    "hydro_model": "Savitsky planing (flat bottom, zero deadrise) with geometric wetted length; low-aspect-ratio submerged plate when the leading edge is under water, blended over half a beam of leading-edge depth; Helmbold fin lift with ventilation cap; ITTC-57 friction."
+    "hydro_model": "Calibrated Savitsky planing + regularized submerged plate with C^1 added-inertia ramp, Wagner slamming damping, centroidal heave drag, and 6-strip chordwise pitch-rate damping."
   },
   "pack_cg_f03_m": null,
   "capsize_classification": true

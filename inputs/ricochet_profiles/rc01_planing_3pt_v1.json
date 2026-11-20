@@ -1,0 +1,144 @@
+{
+  "schema": "vtx-ricochet-profile-1",
+  "profile_id": "rc01-planing-3pt-v1",
+  "model_revision": "RC01-P1-R1",
+  "model_name": "Ricochet RC-01P-1 (3-Point Planing · Rev 1)",
+  "revision_series": "RC01-P1",
+  "revision_number": 1,
+  "status": "experimental, opt-in, option-1-3pt-planing",
+  "description": "Option 1 (3-Point Planing): preserves RC-01 Concept A hull and buoyant outboard sponsons for static roll stability, adds lowered forward strut-mounted planing skis ahead of CG + compact aft stern planing trim ski + telemetry-only speed-scheduled ECU driving real Volz/Exlar actuators.",
+  "components_register": "docs/ricochet/components/components.json",
+  "aero_buildup_drag": true,
+  "aero_parasite_cda_m2": 0.545,
+  "rudder_cove_clear": true,
+  "surface_actuators": {
+    "aileron_port_servo": {"component": "volz_da30htd", "joint": "aileron_port_hinge", "channel": "aileron_deg"},
+    "aileron_stbd_servo": {"component": "volz_da30htd", "joint": "aileron_stbd_hinge", "channel": "aileron_deg"},
+    "elevator_servo": {"component": "volz_da30htd", "joint": "elevator_hinge", "channel": "elevator_deg"},
+    "rudder_servo": {"component": "volz_da58d", "joint": "rudder_hinge", "channel": "rudder_deg"},
+    "reverse_bucket_port_servo": {"component": "volz_da58d", "joint": "reverse_bucket_port_hinge", "channel": "reverse_bucket"},
+    "reverse_bucket_stbd_servo": {"component": "volz_da58d", "joint": "reverse_bucket_stbd_hinge", "channel": "reverse_bucket"}
+  },
+  "servo_loop": {
+    "stiffness_rule": "kp = rated torque / 1 deg",
+    "damping_ratio": 1.0,
+    "assumed": true
+  },
+  "actuator_mounts_vtx_m": {
+    "aileron_port_servo": [-0.586, 3.17, 1.039],
+    "aileron_stbd_servo": [-0.586, -3.17, 1.039],
+    "elevator_servo": [-3.14, 0.0, 2.302],
+    "rudder_servo": [-2.59, 0.0, 1.58],
+    "reverse_bucket_port_servo": [-2.33, 0.78, 1.56],
+    "reverse_bucket_stbd_servo": [-2.33, -0.78, 1.56]
+  },
+  "reverse_bucket": {
+    "jet_load_factor": 1.55,
+    "hinge_offset_from_load_line_m": 0.04,
+    "lock_engage_fraction": 0.97
+  },
+  "skis": {
+    "hydro_mode": "planing",
+    "pivot_in_sponson_m": [1.10, 0.0, -0.48],
+    "length_m": 1.90,
+    "beam_m": 0.62,
+    "thickness_m": 0.045,
+    "deadrise_deg": 4.0,
+    "hinge_from_trailing_edge_m": 1.12,
+    "bottom_below_pivot_m": 0.10,
+    "mass_kg": 11.5,
+    "mass_status": "assumed: carbon sandwich planing ski + titanium yoke + fin",
+    "joint_range_deg": [-3.0, 12.0],
+    "incidence_command_deg": [-2.0, 10.0],
+    "differential_command_deg": [-4.0, 4.0],
+    "strut": {
+      "chord_m": 0.18,
+      "thickness_m": 0.036,
+      "top_above_pivot_m": 0.44,
+      "x_from_pivot_m": 0.0
+    },
+    "actuator": {
+      "component": "exlar_gsx30_2stack_0p2in",
+      "lever_m": 0.44,
+      "stroke_mm": 152.4,
+      "linkage_mass_kg": 1.8,
+      "servo_stiffness_nm_per_rad": 30000.0,
+      "servo_damping_ratio": 1.0,
+      "reflected_armature_kg_m2": 2.0,
+      "joint_damping": 5.0,
+      "solreflimit": "0.005 1",
+      "solimplimit": "0.995 0.999 0.0002",
+      "loop_assumed": true
+    },
+    "fin": {
+      "x_from_pivot_m": -0.92,
+      "span_m": 0.26,
+      "chord_m": 0.28,
+      "cl_max_submerged": 0.9,
+      "cl_max_piercing": 0.6,
+      "steer_link_from_rudder": 0.20
+    },
+    "hydro_model": "Savitsky 4-deg deadrise planing ski on lowered strut ahead of CG + surface-piercing strut & spray drag."
+  },
+  "aft_ski": {
+    "hydro_mode": "planing",
+    "pivot_in_airframe_m": [-1.45, 0.0, 0.04],
+    "length_m": 0.95,
+    "beam_m": 0.56,
+    "thickness_m": 0.035,
+    "deadrise_deg": 6.0,
+    "hinge_from_trailing_edge_m": 0.61,
+    "bottom_below_pivot_m": 0.08,
+    "mass_kg": 5.5,
+    "joint_range_deg": [-4.0, 10.0],
+    "incidence_command_deg": [-3.0, 8.0],
+    "strut": {
+      "chord_m": 0.16,
+      "thickness_m": 0.030,
+      "top_above_pivot_m": 0.34,
+      "anchor_z_airframe_m": 0.36,
+      "x_from_pivot_m": 0.0
+    },
+    "actuator": {
+      "component": "volz_da58d",
+      "linkage_mass_kg": 1.0,
+      "servo_stiffness_nm_per_rad": 12000.0,
+      "servo_damping_ratio": 1.0,
+      "reflected_armature_kg_m2": 0.8,
+      "joint_damping": 4.0,
+      "solreflimit": "0.005 1",
+      "solimplimit": "0.995 0.999 0.0002"
+    },
+    "fin": {
+      "x_from_pivot_m": -0.40,
+      "span_m": 0.18,
+      "chord_m": 0.22,
+      "cl_max_submerged": 0.9,
+      "cl_max_piercing": 0.6,
+      "steer_link_from_rudder": 0.30
+    }
+  },
+  "ecu": {
+    "enabled": true,
+    "default_assist": 1.0,
+    "ski_schedule_mps_deg": [[0.0, 0.0], [3.0, 8.5], [9.0, 9.0], [14.0, 6.0], [22.0, 3.5], [35.0, 1.5]],
+    "aft_ski_schedule_mps_deg": [[0.0, 0.0], [4.0, 2.0], [12.0, 2.5], [25.0, 1.5], [35.0, 0.5]],
+    "target_keel_clear_m": 0.10,
+    "target_nose_up_deg": 3.2,
+    "k_height_deg_per_m": 4.0,
+    "k_ski_pitch_deg_per_deg": 0.30,
+    "k_ski_pitch_rate_s": 0.10,
+    "k_aft_pitch_deg_per_deg": 0.55,
+    "k_aft_pitch_rate_s": 0.22,
+    "k_ski_roll_deg_per_deg": 0.45,
+    "k_ski_roll_rate_s": 0.14,
+    "k_ail_roll_deg_per_deg": 0.80,
+    "k_ail_roll_rate_s": 0.25,
+    "k_elev_pitch_deg_per_deg": 1.5,
+    "k_elev_pitch_rate_s": 0.45,
+    "elev_hump_bias_deg": 6.0,
+    "k_rud_yaw_rate_s": 0.60
+  },
+  "pack_cg_f03_m": [1.15, 0.0, 0.40],
+  "capsize_classification": true
+}

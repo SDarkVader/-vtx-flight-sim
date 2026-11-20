@@ -283,6 +283,7 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     <p class="muted">Choose a boat, then approach a free berth slowly and align with it.</p>
     <div class="map-tools"><button type="button" data-harbour="activate">Initialize two Concept A boats</button><button type="button" data-harbour="lake">View harbour</button></div>
     <label class="control-label">Boat<select data-harbour="boat"><option value="">Choose a boat</option></select></label>
+    <label class="control-label">Hydro profile<select data-harbour="profile"><option value="">RC01-CA-0 · Legacy Concept A (no skis)</option><option value="rc01-planing-3pt-v1">RC01-P1-R1 · Option 1 (3-Point Planing Skis)</option><option value="rc01-hydrofoil-ski-v1">RC01-H1-R1 · Option 2 (Cambered Hydrofoil Skis)</option><option value="rc01-real-components-v1">RC01-CA-1 · Baseline (Real-Component Skis)</option></select></label>
     <p data-harbour="telemetry" class="muted small">No boat selected.</p>
     <div class="map-tools"><button type="button" data-harbour="focus">View selected boat</button><button type="button" data-harbour="cockpit">Cockpit camera</button></div>
     <label class="control-label">Berth<select data-harbour="berth"><option value="">Choose a berth</option></select></label>
@@ -294,11 +295,18 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
       <label class="range-label">Rudder <output data-value="rudder_deg">0°</output><input data-command="rudder_deg" aria-label="Boat rudder angle" type="range" min="-30" max="30" step=".5" value="0"></label>
       <label class="range-label">Reverse bucket <output data-value="reverse_bucket">0%</output><input data-command="reverse_bucket" aria-label="Boat reverse bucket" type="range" min="0" max="1" step=".05" value="0"></label>
       <button type="button" data-harbour="cut">Cut throttle</button>
-      <details><summary class="section-label">Surface trim</summary>
+      <details open><summary class="section-label">Surface trim</summary>
         <label class="range-label">Differential thrust <output data-value="differential_thrust">0%</output><input data-command="differential_thrust" aria-label="Boat differential thrust" type="range" min="-1" max="1" step=".02" value="0"></label>
         <label class="range-label">Elevator <output data-value="elevator_deg">0°</output><input data-command="elevator_deg" aria-label="Boat elevator angle" type="range" min="-20" max="20" step=".5" value="0"></label>
         <label class="range-label">Ailerons <output data-value="aileron_deg">0°</output><input data-command="aileron_deg" aria-label="Boat aileron angle" type="range" min="-25" max="25" step=".5" value="0"></label>
       </details>
+      <details data-harbour="ski-controls" open hidden><summary class="section-label">Hydro-skis &amp; ECU</summary>
+        <label class="range-label" data-channel-row="ski_incidence_deg">Ski collective <output data-value="ski_incidence_deg">0°</output><input data-command="ski_incidence_deg" aria-label="Boat ski collective incidence" type="range" min="-6" max="12" step=".25" value="0"></label>
+        <label class="range-label" data-channel-row="ski_differential_deg">Ski differential <output data-value="ski_differential_deg">0°</output><input data-command="ski_differential_deg" aria-label="Boat ski differential incidence" type="range" min="-4" max="4" step=".25" value="0"></label>
+        <label class="range-label" data-channel-row="aft_ski_incidence_deg" hidden>Aft trim ski <output data-value="aft_ski_incidence_deg">0°</output><input data-command="aft_ski_incidence_deg" aria-label="Boat aft trim ski incidence" type="range" min="-8" max="10" step=".25" value="0"></label>
+        <label class="range-label" data-channel-row="ecu_assist" hidden>Trim ECU assist <output data-value="ecu_assist">100%</output><input data-command="ecu_assist" aria-label="Boat trim ECU assist" type="range" min="0" max="1" step=".05" value="1"></label>
+      </details>
+      <p data-harbour="actuator-telemetry" class="muted small" hidden></p>
     </div>
     <label><input type="checkbox" data-harbour="routes" checked> Show marked boat routes</label>
     <div class="map-tools"><button type="button" data-harbour="save">Save harbour</button><button type="button" data-harbour="restore">Restore saved harbour</button></div>
@@ -329,6 +337,10 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
       return option(b.id, `${b.name || b.id}${owner ? ` · ${ownerName}` : ''}${!compatible ? ' · size not compatible' : ''}`, !!(owner && owner !== boat?.id) || !compatible);
     })], berthChoice);
     el('boat').disabled = !live;
+    if (el('profile')) {
+      el('profile').disabled = !live || !boat;
+      if (!busy && doc.activeElement !== el('profile')) el('profile').value = boat?.profile_id || '';
+    }
     el('berth').disabled = !live || !boat;
     el('activate').hidden = !!state?.initialized || (state?.boats?.length || 0) > 0;
     el('activate').disabled = !enabled || !state?.available || busy;
@@ -341,11 +353,48 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     el('restart').disabled = !live || !boat;
     el('save').disabled = !live;
     el('restore').disabled = !enabled || !state?.available || !state.saved || busy;
+    const skiChannels = ['ski_incidence_deg', 'ski_differential_deg', 'aft_ski_incidence_deg', 'ecu_assist'];
+    const limitsMap = boat?.surface_limits || {};
+    let hasSkiChannel = false;
+    for (const key of skiChannels) {
+      const supported = !!(boat && (key in (boat.command || {}) || key in limitsMap));
+      const row = panel.querySelector(`[data-channel-row="${key}"]`);
+      if (row) row.hidden = !supported;
+      if (supported) hasSkiChannel = true;
+    }
+    const skiBox = el('ski-controls');
+    if (skiBox) skiBox.hidden = !hasSkiChannel;
     for (const input of fields) {
       const key = input.dataset.command;
-      input.disabled = !ready() || !boat;
+      const supported = !skiChannels.includes(key) || !!(boat && (key in (boat.command || {}) || key in limitsMap));
+      const lim = limitsMap[key];
+      if (lim && Number.isFinite(lim.min) && Number.isFinite(lim.max)) {
+        input.min = String(lim.min);
+        input.max = String(lim.max);
+      }
+      input.disabled = !ready() || !boat || !supported;
       if (!dirty.has(key) && doc.activeElement !== input && Number.isFinite(boat?.command?.[key])) input.value = String(boat.command[key]);
       panel.querySelector(`[data-value="${key}"]`).textContent = format(key, Number(input.value));
+    }
+    const actTel = el('actuator-telemetry');
+    if (actTel) {
+      const cs = boat?.control_surfaces;
+      if (boat && cs) {
+        const parts = [];
+        if (boat.model_revision) parts.push(boat.model_revision);
+        if (cs.ecu?.mode) parts.push(`ECU ${cs.ecu.mode}`);
+        if (cs.rudder) parts.push(`Rud ${cs.rudder.achieved_deg?.toFixed?.(1) ?? '—'}°${cs.rudder.saturated ? ' [SAT]' : ''}`);
+        if (cs.elevator) parts.push(`Elev ${cs.elevator.achieved_deg?.toFixed?.(1) ?? '—'}°${cs.elevator.saturated ? ' [SAT]' : ''}`);
+        if (cs.aileron) parts.push(`Ail ${cs.aileron.achieved_deg?.toFixed?.(1) ?? '—'}°${cs.aileron.saturated ? ' [SAT]' : ''}`);
+        if (cs.skis) parts.push(`Skis P/S ${cs.skis.port_achieved_deg?.toFixed?.(1) ?? '—'}/${cs.skis.stbd_achieved_deg?.toFixed?.(1) ?? '—'}° (${Math.max(cs.skis.port_load_pct || 0, cs.skis.stbd_load_pct || 0).toFixed(0)}%${cs.skis.saturated ? ' SAT' : ''})`);
+        if (cs.aft_ski) parts.push(`Aft ${cs.aft_ski.achieved_deg?.toFixed?.(1) ?? '—'}°`);
+        if (boat.capsized || boat.flags?.includes?.('CAPSIZED')) parts.push('CAPSIZED');
+        actTel.hidden = parts.length === 0;
+        actTel.textContent = parts.join(' · ');
+      } else {
+        actTel.hidden = true;
+        actTel.textContent = '';
+      }
     }
     el('telemetry').textContent = boat ? `${boat.name || boat.id} · ${Number.isFinite(boat.speed_mps) ? boat.speed_mps.toFixed(2) + ' m/s' : 'speed unavailable'} · ${boat.dockedAt ? 'Moored at ' + (state.berths?.find(b => b.id === boat.dockedAt)?.name || boat.dockedAt) : 'Under way'}` : 'No boat selected.';
     el('status').textContent = !enabled ? 'Boat controls are unavailable in this view.' : state?.error ? 'Harbour stopped: ' + state.error : Date.now() - lastSuccess >= 2000 && state?.initialized ? 'Harbour data is stale. Controls unavailable.' : status || (state?.initialized ? 'Boat positions and moorings are retained when you switch boats.' : 'Initialize the two boats to use the harbour.');
@@ -407,15 +456,18 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
   el('cut').addEventListener('click', () => {flushHelm(); void send({action: 'command', boatId: state.selectedId, command: {throttle: 0}});});
   el('save').addEventListener('click', () => {flushHelm(); void send({action: 'save'});});
   el('restore').addEventListener('click', () => {discardHelm(); void send({action: 'restore'});});
-  el('restart').addEventListener('click', () => {
+  const restartBoat = () => {
     const text = el('position').value.trim();
     const parts = text.split(',').map(v=>v.trim());
     if (text && (parts.length !== 2 || parts.some(v=>!v || !Number.isFinite(Number(v))))) {
       toast('Enter two harbour coordinates in metres or leave both blank for the home berth.'); return;
     }
+    const profile = el('profile') ? (el('profile').value || null) : null;
     discardHelm();
-    void send({action:'restart', boatId:state.selectedId, position:text ? parts.map(Number) : null});
-  });
+    void send({action:'restart', boatId:state.selectedId, profile, position:text ? parts.map(Number) : null});
+  };
+  el('profile')?.addEventListener('change', () => {if (selected() && ready()) restartBoat();});
+  el('restart').addEventListener('click', restartBoat);
   el('focus').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat', boat.id);});
   el('cockpit').addEventListener('click', () => {const boat = selected(); if (boat) onFocus(boat.position, 'boat-cockpit', boat.id);});
   el('lake').addEventListener('click', () => {

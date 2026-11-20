@@ -35,13 +35,22 @@ def _publish(path, payload):
 
 def _restart_boat(world, fleet, body):
     """Stage a fresh selected vessel while retaining the fleet and water clock."""
-    from .harbour_fleet import HarbourFleet
+    from copy import deepcopy
+    import mujoco as mj
+    from .harbour_fleet import HarbourFleet, _WaterReference
     from .ricochet.plant import RicochetCraft
+    from .ricochet.real_components import resolve_profile_id
 
     boat_id = body["boatId"]
     if boat_id != fleet.selectedId:
         raise ValueError("Boat selection changed; select the boat again")
     definition = next(v for v in fleet.definitions if v["id"] == boat_id)
+    old_craft = fleet.crafts[boat_id]
+    if "profile" in body:
+        target_profile = resolve_profile_id(body["profile"])
+    else:
+        target_profile = old_craft.profile_id
+
     berth_id = definition["berth_id"]
     berth = fleet.berths[berth_id]
     xy = body.get("position")
@@ -60,15 +69,68 @@ def _restart_boat(world, fleet, body):
 
     # spawn resets a craft's water field. Spawn on its private field before
     # attaching the existing shared field, so the other vessel keeps its wake.
-    result = HarbourFleet.restore(world, fleet.serialize())
-    # The single-craft decoder recomputes this display channel before the fleet
-    # reinstates the shared hydrodynamic cache. Retain the other craft's reading.
-    for other_id, other in fleet.crafts.items():
-        if other_id != boat_id:
-            result.crafts[other_id].last_munk_moment_nm = other.last_munk_moment_nm.copy()
+    if target_profile != old_craft.profile_id:
+        new_defs = deepcopy(fleet.definitions)
+        for d in new_defs:
+            if d["id"] == boat_id:
+                if target_profile is None:
+                    d.pop("profile", None)
+                else:
+                    d["profile"] = target_profile
+        result = HarbourFleet(world, vessels=new_defs, water_config=fleet.water.config)
+        result.water.restore_state(fleet.water.checkpoint_state())
+        result.step_count = fleet.step_count
+        result.data.time = fleet.data.time
+        result.selectedId = fleet.selectedId
+        result.events = deepcopy(fleet.events)
+        result.occupancy = deepcopy(fleet.occupancy)
+        result.moorings = deepcopy(fleet.moorings)
+        for other_id, other in fleet.crafts.items():
+            if other_id == boat_id:
+                continue
+            other_water = other.water_field
+            other.water_field = _WaterReference(other_water)
+            try:
+                other_state = other.checkpoint_state()
+            finally:
+                other.water_field = other_water
+            res_other = result.crafts[other_id]
+            res_other.water_field = _WaterReference(result.water)
+            try:
+                res_other.restore_state(other_state)
+            finally:
+                res_other.water_field = result.water
+            res_other.step_count = result.step_count
+            res_other.data.time = result.data.time
+            res_other.last_hydro = deepcopy(other.last_hydro)
+            res_other.last_munk_moment_nm = other.last_munk_moment_nm.copy()
+            res_other._mass_version = other._mass_version
+            res_other.hydro_stride = other.hydro_stride
+            res_other._raw_hydro_cache = None
+            old_map = fleet.mappings[other_id]
+            new_map = result.mappings[other_id]
+            for (_, sq_old, nq, _, sv_old, nv), (_, sq_new, _, _, sv_new, _) in zip(
+                old_map["joints"], new_map["joints"]
+            ):
+                result.data.qpos[sq_new : sq_new + nq] = fleet.data.qpos[sq_old : sq_old + nq]
+                result.data.qvel[sv_new : sv_new + nv] = fleet.data.qvel[sv_old : sv_old + nv]
+                result.data.qacc_warmstart[sv_new : sv_new + nv] = fleet.data.qacc_warmstart[sv_old : sv_old + nv]
+                result.data.qfrc_applied[sv_new : sv_new + nv] = fleet.data.qfrc_applied[sv_old : sv_old + nv]
+            for a_idx, sa_old in old_map["actuators"].items():
+                result.data.ctrl[new_map["actuators"][a_idx]] = fleet.data.ctrl[sa_old]
+            for b_idx, sb_old in old_map["bodies"].items():
+                result.data.xfrc_applied[new_map["bodies"][b_idx]] = fleet.data.xfrc_applied[sb_old]
+    else:
+        result = HarbourFleet.restore(world, fleet.serialize())
+        # The single-craft decoder recomputes this display channel before the fleet
+        # reinstates the shared hydrodynamic cache. Retain the other craft's reading.
+        for other_id, other in fleet.crafts.items():
+            if other_id != boat_id:
+                result.crafts[other_id].last_munk_moment_nm = other.last_munk_moment_nm.copy()
     old = result.crafts[boat_id]
     craft = RicochetCraft(result.world, variant=old.variant, hull_variant=old.hull_variant,
-                          water_config=result.water.config, load_case="LC-01", hydro_stride=old.hydro_stride)
+                          water_config=result.water.config, load_case="LC-01", hydro_stride=old.hydro_stride,
+                          profile=target_profile)
     result._retime_adapter(craft)
     craft.spawn(*xy, result.water.config.water_level_m, yaw_deg=math.degrees(heading))
     craft.water_field = result.water
@@ -86,6 +148,7 @@ def _restart_boat(world, fleet, body):
     for mapped_body in mapping["bodies"].values():
         result.data.xfrc_applied[mapped_body] = 0
     result._copy_masses()
+    mj.mj_forward(result.model, result.data)
     moving = set(mapping["gids"])
     if any((c.geom1 in moving) != (c.geom2 in moving) and c.dist < 0 for c in result.data.contact):
         raise ValueError("Boat has insufficient clearance at this position")
@@ -93,7 +156,7 @@ def _restart_boat(world, fleet, body):
     if berth_id:
         result.occupancy[berth_id] = boat_id
         result.moorings[boat_id] = dict(berth_id=berth_id, xy=list(xy), heading=heading)
-    result._event("restarted", craft_id=boat_id, xy=list(xy), berth_id=berth_id)
+    result._event("restarted", craft_id=boat_id, xy=list(xy), berth_id=berth_id, profile_id=target_profile)
     return result
 
 
@@ -144,12 +207,13 @@ def _run(connection, rate, seed, snapshot):
                         result["physics"]["scheduler_backlog_s"] = max(0.0, due)
                         if fault:
                             result["error"] = fault
-                    elif action == "restart":
+                    elif action in ("restart", "set_profile"):
                         candidate = _restart_boat(world, fleet, body)
                         payload = _encode(candidate)
-                        history = current.parent / "harbour-history" / (uuid.uuid4().hex + ".json.gz")
-                        _publish(history, _encode(fleet))
-                        _publish(current, payload)
+                        if current is not None:
+                            history = current.parent / "harbour-history" / (uuid.uuid4().hex + ".json.gz")
+                            _publish(history, _encode(fleet))
+                            _publish(current, payload)
                         fleet = candidate
                         last = published = time.monotonic()
                         due = 0.

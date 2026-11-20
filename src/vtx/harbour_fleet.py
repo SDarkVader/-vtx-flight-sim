@@ -70,6 +70,12 @@ def dependency_fingerprint():
         ROOT / "experiments/ricochet/rc01_f03/model/RC01_F03_cad_stations.npz",
         ROOT / "public/assets/ricochet-concept-a.glb",
     ]
+    profiles_dir = ROOT / "inputs" / "ricochet_profiles"
+    if profiles_dir.is_dir():
+        paths += list(profiles_dir.glob("*.json"))
+    components_reg = ROOT / "docs/ricochet/components/components.json"
+    if components_reg.is_file():
+        paths.append(components_reg)
     digest = hashlib.sha256()
     for path in sorted(paths):
         name = path.relative_to(ROOT).as_posix().encode()
@@ -129,10 +135,14 @@ class HarbourFleet:
                 ),
             ]
         self.definitions = deepcopy(vessels)
+        required_vessel_keys = {"id", "name", "variant", "berth_id"}
+        allowed_vessel_keys = required_vessel_keys | {"profile"}
         if any(
-            set(v) != set(("id", "name", "variant", "berth_id"))
+            not required_vessel_keys.issubset(v)
+            or not set(v).issubset(allowed_vessel_keys)
             or not isinstance(v.get("name"), str)
             or not 1 <= len(v["name"]) <= 100
+            or (v.get("profile") is not None and not isinstance(v.get("profile"), str))
             for v in vessels
         ):
             raise ValueError("Invalid vessel definition")
@@ -192,6 +202,7 @@ class HarbourFleet:
                 water_config=config,
                 load_case="LC-01",
                 hydro_stride=HYDRO_STRIDE,
+                profile=definition.get("profile"),
             )
             self._retime_adapter(craft)
             craft.water_field = self.water
@@ -382,6 +393,9 @@ class HarbourFleet:
             for old, new in self.mappings[boat_id]["bodies"].items():
                 for key in ("body_mass", "body_inertia", "body_ipos", "body_iquat"):
                     getattr(self.model, key)[new] = getattr(craft.model, key)[old]
+            for _, _, _, ov, sv, nv in self.mappings[boat_id]["joints"]:
+                self.model.dof_armature[sv : sv + nv] = craft.model.dof_armature[ov : ov + nv]
+                self.model.dof_damping[sv : sv + nv] = craft.model.dof_damping[ov : ov + nv]
         mj.mj_setConst(self.model, self.data)
         self._set_integration_state(state)
 
@@ -410,6 +424,9 @@ class HarbourFleet:
         for oq, sq, nq, ov, sv, nv in mapping["joints"]:
             d.qpos[oq : oq + nq] = self.data.qpos[sq : sq + nq]
             d.qvel[ov : ov + nv] = self.data.qvel[sv : sv + nv]
+        for old, new in mapping["actuators"].items():
+            d.ctrl[old] = self.data.ctrl[new]
+            d.actuator_force[old] = self.data.actuator_force[new]
         d.time = self.data.time
         mj.mj_forward(craft.model, d)
 
@@ -435,16 +452,14 @@ class HarbourFleet:
             return dict(ok=True, selectedId=craft_id)
 
     def action(self, craft_id, command):
-        from .ricochet.plant import RICOCHET_SURFACE_LIMITS
-
         with self._lock:
             self._require(craft_id)
-            if not isinstance(command, dict) or set(command) - set(
-                RICOCHET_SURFACE_LIMITS
-            ):
+            craft = self.crafts[craft_id]
+            surface_limits = craft.surface_limits
+            if not isinstance(command, dict) or set(command) - set(surface_limits):
                 raise ValueError("Unknown harbour control channel")
             for key, value in command.items():
-                limits = RICOCHET_SURFACE_LIMITS[key]
+                limits = surface_limits[key]
                 if (
                     isinstance(value, bool)
                     or not isinstance(value, (float, int))
@@ -454,7 +469,7 @@ class HarbourFleet:
                     raise ValueError("Invalid harbour control " + key)
             if craft_id in self.moorings and command.get("throttle", 0) > 0.02:
                 raise ValueError("Release the berth before applying propulsion")
-            self.crafts[craft_id].set_command(command)
+            craft.set_command(command)
             self._event("command", craft_id=craft_id, command=deepcopy(command))
             return dict(ok=True)
 
@@ -547,13 +562,25 @@ class HarbourFleet:
                 mf, mt = self._moor_load(boat_id)
                 force = force + mf
                 torque = torque + mt
-                craft._last_ext_force_m = force.copy()
-                craft._last_ext_torque_m = torque.copy()
+                ski_w = (
+                    craft._ski_wrenches(float(self.data.time))
+                    if craft.profile is not None
+                    else []
+                )
+                ext_f = force.copy()
+                ext_t = torque.copy()
+                if ski_w:
+                    xi_af = d.xipos[craft.bids["airframe"]]
+                    for bid_s, f_s, m_s in ski_w:
+                        ext_f = ext_f + f_s
+                        ext_t = ext_t + m_s + np.cross(d.xipos[bid_s] - xi_af, f_s)
+                craft._last_ext_force_m = ext_f.copy()
+                craft._last_ext_torque_m = ext_t.copy()
                 craft._evaluate_and_cache_hydro(
                     t=float(self.data.time),
                     force_eval=craft.step_count == 0,
-                    ext_force_m=force,
-                    ext_torque_m=torque,
+                    ext_force_m=ext_f,
+                    ext_torque_m=ext_t,
                     update_stride_state=True,
                 )
                 # Predict the current microstep midpoint from the two most
@@ -573,8 +600,19 @@ class HarbourFleet:
                     )
                 self.data.xfrc_applied[mapping["bid"], :3] += force
                 self.data.xfrc_applied[mapping["bid"], 3:] += torque
+                for bid_s, f_s, m_s in ski_w:
+                    sb = mapping["bodies"][bid_s]
+                    self.data.xfrc_applied[sb, :3] += np.clip(f_s, -8e4, 8e4)
+                    self.data.xfrc_applied[sb, 3:] += np.clip(m_s, -8e4, 8e4)
                 for oq, sq, nq, ov, sv, nv in mapping["joints"]:
                     self.data.qfrc_applied[sv : sv + nv] += d.qfrc_applied[ov : ov + nv]
+                    if craft.profile is not None:
+                        self.model.dof_armature[sv : sv + nv] = craft.model.dof_armature[
+                            ov : ov + nv
+                        ]
+                        self.model.dof_damping[sv : sv + nv] = craft.model.dof_damping[
+                            ov : ov + nv
+                        ]
                 for old, new in mapping["actuators"].items():
                     self.data.ctrl[new] = d.ctrl[old]
             mj.mj_step(self.model, self.data)
@@ -598,6 +636,15 @@ class HarbourFleet:
                 craft.flags.discard("FUEL_EXHAUSTED")
                 if craft.fuel[0] <= 1e-4:
                     craft.flags.add("FUEL_EXHAUSTED")
+                if any(craft._last_servo_saturated.values()):
+                    craft.flags.add("SERVO_SATURATED")
+                else:
+                    craft.flags.discard("SERVO_SATURATED")
+                if craft.profile is not None and craft.profile.get("capsize_classification"):
+                    if float(craft.data.xmat[craft.bids["airframe"]].reshape(3, 3)[2, 2]) < 0.0:
+                        craft.capsized = True
+                    if craft.capsized:
+                        craft.flags.add("CAPSIZED")
                 p, h, v = self._pose(boat_id)
                 hydro = craft.last_hydro
                 if hydro is not None:
@@ -681,27 +728,34 @@ class HarbourFleet:
                     )
                     for name, old in craft.bids.items()
                 }
-                boats.append(
-                    dict(
-                        id=boat_id,
-                        name=definition["name"],
-                        variant=craft.variant,
-                        position=p.tolist(),
-                        heading_rad=h,
-                        speed_mps=float(np.linalg.norm(v[3:5])),
-                        command=deepcopy(craft.command),
-                        dockedAt=(self.moorings.get(boat_id) or {}).get("berth_id"),
-                        body_poses=poses,
-                        configuration=dict(
-                            hull_variant=craft.hull_bundle.variant_id,
-                            geometry_sha256=craft.hull_bundle.main_hull.mesh.geometry_sha256,
-                            model_xml_sha256=craft.provenance["model_xml_sha256"],
-                        ),
-                        crashed=craft.crashed,
-                        flags=sorted(craft.flags),
-                        fuel_kg=float(craft.fuel[0]),
-                    )
+                boat_entry = dict(
+                    id=boat_id,
+                    name=definition["name"],
+                    variant=craft.variant,
+                    profile_id=craft.profile_id,
+                    model_revision=getattr(craft, "model_revision", "RC01-CA-0"),
+                    model_name=getattr(craft, "model_name", "Ricochet RC-01CA-0 (Legacy Concept A)"),
+                    position=p.tolist(),
+                    heading_rad=h,
+                    speed_mps=float(np.linalg.norm(v[3:5])),
+                    command=deepcopy(craft.command),
+                    surface_limits=deepcopy(craft.surface_limits),
+                    control_surfaces=craft.control_surface_telemetry(),
+                    dockedAt=(self.moorings.get(boat_id) or {}).get("berth_id"),
+                    body_poses=poses,
+                    configuration=dict(
+                        hull_variant=craft.hull_bundle.variant_id,
+                        geometry_sha256=craft.hull_bundle.main_hull.mesh.geometry_sha256,
+                        model_xml_sha256=craft.provenance["model_xml_sha256"],
+                    ),
+                    crashed=craft.crashed,
+                    capsized=bool(craft.capsized),
+                    flags=sorted(craft.flags),
+                    fuel_kg=float(craft.fuel[0]),
                 )
+                if craft.profile is not None and craft.last_ski_telemetry:
+                    boat_entry["skis"] = deepcopy(craft.last_ski_telemetry)
+                boats.append(boat_entry)
             berths = [
                 dict(
                     b,
@@ -721,6 +775,12 @@ class HarbourFleet:
                 selectedId=self.selectedId,
                 boats=boats,
                 berths=berths,
+                available_profiles=[
+                    dict(id=None, revision="RC01-CA-0", label="RC01-CA-0 · Legacy Concept A (no skis)"),
+                    dict(id="rc01-planing-3pt-v1", revision="RC01-P1-R1", label="RC01-P1-R1 · Option 1 (3-Point Planing Rev 1)"),
+                    dict(id="rc01-hydrofoil-ski-v1", revision="RC01-H1-R1", label="RC01-H1-R1 · Option 2 (Hydrofoil-Ski Rev 1)"),
+                    dict(id="rc01-real-components-v1", revision="RC01-CA-1", label="RC01-CA-1 · Baseline (Real-Component Skis Rev 1)"),
+                ],
                 occupancy=deepcopy(self.occupancy),
                 events=deepcopy(self.events[-16:]),
                 structures=deepcopy(self.world.structures),
@@ -831,16 +891,15 @@ class HarbourFleet:
                 != craft.provenance["model_xml_sha256"]
             ):
                 raise ValueError("Checkpoint boat model identity differs")
-            from .ricochet.plant import RICOCHET_SURFACE_LIMITS
-
+            surface_limits = craft.surface_limits
             for channel_set in ("command", "targets"):
                 commands = saved["native"].get(channel_set)
                 if not isinstance(commands, dict) or set(commands) != set(
-                    RICOCHET_SURFACE_LIMITS
+                    surface_limits
                 ):
                     raise ValueError("Invalid saved vessel controls")
                 for key, value in commands.items():
-                    limit = RICOCHET_SURFACE_LIMITS[key]
+                    limit = surface_limits[key]
                     if (
                         isinstance(value, bool)
                         or not isinstance(value, (int, float))

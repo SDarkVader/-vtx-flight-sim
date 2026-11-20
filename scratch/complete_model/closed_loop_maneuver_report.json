@@ -1,0 +1,1488 @@
+{
+  "schema": "vtx-ricochet-closed-loop-qualification-1",
+  "contract": "ricochet.live.sensor_observation -> normalize_ricochet_action -> RicochetAction -> craft.set_command",
+  "all_passed": true,
+  "wall_s": 118.08,
+  "profiles": {
+    "rc01-planing-3pt-v1": {
+      "profile_id": "rc01-planing-3pt-v1",
+      "model_revision": "RC01-P1-R1",
+      "model_name": "Ricochet RC-01P-1 (3-Point Planing \u00b7 Rev 1)",
+      "all_passed": true,
+      "wall_s": 53.16,
+      "maneuvers": {
+        "B_takeoff_and_cruise": {
+          "maneuver": "B_closed_loop_takeoff_hump_clearance_cruise",
+          "profile_id": "rc01-planing-3pt-v1",
+          "passed": true,
+          "rest_vol_hull_m3": 0.7039,
+          "rest_vol_sp_m3": 0.1516,
+          "hull_liftoff_t_s": 7.983,
+          "t_to_12mps_s": 14.49,
+          "t_to_18mps_s": 21.315,
+          "peak_speed_mps": 18.72,
+          "final_speed_mps": 18.72,
+          "min_vol_hull_m3": 0.0,
+          "min_vol_sp_m3": 0.0,
+          "nose_up_range_deg": [
+            -0.49,
+            2.51
+          ],
+          "max_abs_roll_deg": 0.02,
+          "max_abs_yaw_deg": 0.08,
+          "max_sponson_flex_stroke_mm": 61.185,
+          "max_sponson_vertical_force_n": 4414.3,
+          "max_actuator_load_pct": {
+            "rudder": 0.0,
+            "elevator": 6.0,
+            "aileron": 0.0,
+            "reverse_bucket": 0.0,
+            "skis": 82.1,
+            "aft_ski": 42.9
+          },
+          "max_actuator_load_nm": {
+            "rudder": 0.0,
+            "elevator": 3.8,
+            "aileron": 0.0,
+            "reverse_bucket": 0.0,
+            "skis": 1163.0,
+            "aft_ski": 85.9
+          },
+          "capsized": false,
+          "warning_lamps": [],
+          "samples": [
+            {
+              "t_s": 0.0,
+              "u_mps": 0.0,
+              "z_m": 6.436,
+              "nose_up_deg": 1.29,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.0,
+              "vol_hull_m3": 0.704,
+              "vol_sp_m3": 0.1515,
+              "ski_feedback_deg": [
+                -0.13,
+                -0.13
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 2.0,
+              "u_mps": 3.44,
+              "z_m": 6.472,
+              "nose_up_deg": 0.51,
+              "roll_deg": 0.0,
+              "yaw_deg": -0.0,
+              "vol_hull_m3": 0.5726,
+              "vol_sp_m3": 0.0969,
+              "ski_feedback_deg": [
+                10.12,
+                10.12
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 4.0,
+              "u_mps": 5.16,
+              "z_m": 6.538,
+              "nose_up_deg": 1.95,
+              "roll_deg": 0.0,
+              "yaw_deg": -0.02,
+              "vol_hull_m3": 0.3114,
+              "vol_sp_m3": 0.0283,
+              "ski_feedback_deg": [
+                10.64,
+                10.64
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 6.0,
+              "u_mps": 5.93,
+              "z_m": 6.616,
+              "nose_up_deg": 2.5,
+              "roll_deg": -0.01,
+              "yaw_deg": -0.02,
+              "vol_hull_m3": 0.1433,
+              "vol_sp_m3": 0.0001,
+              "ski_feedback_deg": [
+                10.72,
+                10.71
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 8.0,
+              "u_mps": 6.8,
+              "z_m": 6.775,
+              "nose_up_deg": 2.3,
+              "roll_deg": -0.02,
+              "yaw_deg": 0.04,
+              "vol_hull_m3": 0.0187,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                10.2,
+                10.15
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 10.0,
+              "u_mps": 8.23,
+              "z_m": 6.921,
+              "nose_up_deg": 0.89,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.08,
+              "vol_hull_m3": 0.0011,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                9.56,
+                9.55
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 12.0,
+              "u_mps": 9.78,
+              "z_m": 6.972,
+              "nose_up_deg": 0.23,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.07,
+              "vol_hull_m3": 0.0002,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                9.05,
+                9.04
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 14.0,
+              "u_mps": 11.53,
+              "z_m": 7.002,
+              "nose_up_deg": -0.09,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.05,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                7.62,
+                7.61
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 16.0,
+              "u_mps": 13.47,
+              "z_m": 7.017,
+              "nose_up_deg": -0.12,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.03,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                6.11,
+                6.11
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 18.0,
+              "u_mps": 15.35,
+              "z_m": 7.026,
+              "nose_up_deg": -0.11,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.02,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                5.03,
+                5.03
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 20.0,
+              "u_mps": 17.03,
+              "z_m": 7.031,
+              "nose_up_deg": -0.1,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                4.29,
+                4.29
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 22.0,
+              "u_mps": 18.43,
+              "z_m": 7.034,
+              "nose_up_deg": -0.17,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                3.81,
+                3.81
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 22.5,
+              "u_mps": 18.72,
+              "z_m": 7.035,
+              "nose_up_deg": -0.18,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                3.69,
+                3.69
+              ],
+              "warning_lamps": []
+            }
+          ]
+        },
+        "C_coordinated_s_turn": {
+          "maneuver": "C_high_speed_coordinated_s_turn",
+          "profile_id": "rc01-planing-3pt-v1",
+          "passed": true,
+          "entry_speed_mps": 13.5,
+          "min_speed_mps": 13.5,
+          "max_speed_mps": 19.08,
+          "exit_speed_mps": 19.08,
+          "max_port_yaw_deg": 11.31,
+          "min_stbd_yaw_deg": -10.53,
+          "heading_swing_deg": 21.84,
+          "final_yaw_deg": -0.97,
+          "max_abs_roll_deg": 0.52,
+          "max_abs_yaw_rate_deg_s": 17.36,
+          "capsized": false,
+          "warning_lamps": [
+            "SERVO_SATURATED"
+          ],
+          "samples": [
+            {
+              "t_turn_s": 0.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 13.5,
+              "yaw_deg": 0.02,
+              "roll_deg": 0.01,
+              "nose_up_deg": -0.11,
+              "yaw_rate_deg_s": -0.01,
+              "rudder_deg": 0.01
+            },
+            {
+              "t_turn_s": 0.5,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 13.82,
+              "yaw_deg": 3.95,
+              "roll_deg": -0.07,
+              "nose_up_deg": -0.05,
+              "yaw_rate_deg_s": 10.67,
+              "rudder_deg": 8.39
+            },
+            {
+              "t_turn_s": 1.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 14.1,
+              "yaw_deg": 7.26,
+              "roll_deg": -0.07,
+              "nose_up_deg": -0.2,
+              "yaw_rate_deg_s": 4.12,
+              "rudder_deg": 9.67
+            },
+            {
+              "t_turn_s": 1.5,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 14.44,
+              "yaw_deg": 8.68,
+              "roll_deg": -0.11,
+              "nose_up_deg": 0.05,
+              "yaw_rate_deg_s": 2.22,
+              "rudder_deg": 7.96
+            },
+            {
+              "t_turn_s": 2.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 14.81,
+              "yaw_deg": 9.59,
+              "roll_deg": -0.08,
+              "nose_up_deg": 0.05,
+              "yaw_rate_deg_s": 1.49,
+              "rudder_deg": 5.92
+            },
+            {
+              "t_turn_s": 2.5,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 15.2,
+              "yaw_deg": 10.22,
+              "roll_deg": -0.05,
+              "nose_up_deg": -0.13,
+              "yaw_rate_deg_s": 1.09,
+              "rudder_deg": 4.33
+            },
+            {
+              "t_turn_s": 3.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 15.58,
+              "yaw_deg": 10.72,
+              "roll_deg": -0.04,
+              "nose_up_deg": -0.2,
+              "yaw_rate_deg_s": 0.82,
+              "rudder_deg": 3.1
+            },
+            {
+              "t_turn_s": 3.5,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 15.95,
+              "yaw_deg": 11.05,
+              "roll_deg": -0.02,
+              "nose_up_deg": -0.15,
+              "yaw_rate_deg_s": 0.63,
+              "rudder_deg": 2.27
+            },
+            {
+              "t_turn_s": 4.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 16.3,
+              "yaw_deg": 11.31,
+              "roll_deg": -0.01,
+              "nose_up_deg": -0.08,
+              "yaw_rate_deg_s": 0.44,
+              "rudder_deg": 1.63
+            },
+            {
+              "t_turn_s": 4.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 16.3,
+              "yaw_deg": 11.3,
+              "roll_deg": -0.02,
+              "nose_up_deg": -0.07,
+              "yaw_rate_deg_s": 0.44,
+              "rudder_deg": 1.63
+            },
+            {
+              "t_turn_s": 4.5,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 16.45,
+              "yaw_deg": 5.96,
+              "roll_deg": 0.29,
+              "nose_up_deg": 0.19,
+              "yaw_rate_deg_s": -17.36,
+              "rudder_deg": -18.37
+            },
+            {
+              "t_turn_s": 5.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 16.41,
+              "yaw_deg": -0.51,
+              "roll_deg": 0.25,
+              "nose_up_deg": 0.17,
+              "yaw_rate_deg_s": -8.91,
+              "rudder_deg": -20.08
+            },
+            {
+              "t_turn_s": 5.5,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 16.5,
+              "yaw_deg": -4.1,
+              "roll_deg": 0.16,
+              "nose_up_deg": 0.17,
+              "yaw_rate_deg_s": -5.87,
+              "rudder_deg": -17.23
+            },
+            {
+              "t_turn_s": 6.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 16.68,
+              "yaw_deg": -6.48,
+              "roll_deg": 0.1,
+              "nose_up_deg": 0.11,
+              "yaw_rate_deg_s": -3.87,
+              "rudder_deg": -12.97
+            },
+            {
+              "t_turn_s": 6.5,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 16.93,
+              "yaw_deg": -8.06,
+              "roll_deg": 0.08,
+              "nose_up_deg": 0.06,
+              "yaw_rate_deg_s": -2.68,
+              "rudder_deg": -9.5
+            },
+            {
+              "t_turn_s": 7.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 17.22,
+              "yaw_deg": -9.16,
+              "roll_deg": 0.05,
+              "nose_up_deg": 0.07,
+              "yaw_rate_deg_s": -1.91,
+              "rudder_deg": -6.77
+            },
+            {
+              "t_turn_s": 7.5,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 17.51,
+              "yaw_deg": -9.96,
+              "roll_deg": 0.07,
+              "nose_up_deg": 0.06,
+              "yaw_rate_deg_s": -1.39,
+              "rudder_deg": -4.89
+            },
+            {
+              "t_turn_s": 8.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 17.78,
+              "yaw_deg": -10.53,
+              "roll_deg": 0.04,
+              "nose_up_deg": 0.1,
+              "yaw_rate_deg_s": -0.95,
+              "rudder_deg": -3.46
+            },
+            {
+              "t_turn_s": 8.0,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 17.78,
+              "yaw_deg": -10.55,
+              "roll_deg": 0.04,
+              "nose_up_deg": 0.07,
+              "yaw_rate_deg_s": -0.95,
+              "rudder_deg": -3.43
+            },
+            {
+              "t_turn_s": 8.5,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 17.93,
+              "yaw_deg": -6.53,
+              "roll_deg": -0.15,
+              "nose_up_deg": 0.34,
+              "yaw_rate_deg_s": 8.63,
+              "rudder_deg": 8.08
+            },
+            {
+              "t_turn_s": 9.0,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 18.13,
+              "yaw_deg": -3.85,
+              "roll_deg": -0.09,
+              "nose_up_deg": 0.24,
+              "yaw_rate_deg_s": 3.25,
+              "rudder_deg": 8.09
+            },
+            {
+              "t_turn_s": 9.5,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 18.39,
+              "yaw_deg": -2.63,
+              "roll_deg": -0.05,
+              "nose_up_deg": 0.29,
+              "yaw_rate_deg_s": 1.86,
+              "rudder_deg": 6.16
+            },
+            {
+              "t_turn_s": 10.0,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 18.66,
+              "yaw_deg": -1.87,
+              "roll_deg": -0.05,
+              "nose_up_deg": 0.4,
+              "yaw_rate_deg_s": 1.27,
+              "rudder_deg": 4.42
+            },
+            {
+              "t_turn_s": 10.5,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 18.86,
+              "yaw_deg": -1.33,
+              "roll_deg": -0.04,
+              "nose_up_deg": 2.05,
+              "yaw_rate_deg_s": 0.92,
+              "rudder_deg": 3.28
+            },
+            {
+              "t_turn_s": 11.0,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 19.08,
+              "yaw_deg": -0.99,
+              "roll_deg": -0.02,
+              "nose_up_deg": -0.22,
+              "yaw_rate_deg_s": 0.76,
+              "rudder_deg": 2.17
+            }
+          ]
+        },
+        "D_reverse_bucket_braking": {
+          "maneuver": "D_high_speed_reverse_bucket_braking_and_stop",
+          "profile_id": "rc01-planing-3pt-v1",
+          "passed": true,
+          "entry_speed_mps": 18.72,
+          "final_speed_mps": 0.68,
+          "stop_t_s": 8.4,
+          "peak_decel_mps2": 3.68,
+          "min_nose_up_deg": -0.18,
+          "max_nose_up_deg": 5.6,
+          "max_abs_roll_deg": 0.03,
+          "max_reverse_bucket_fraction": 1.0,
+          "final_reverse_bucket_fraction": 0.0,
+          "max_bucket_hinge_nm": 26.41,
+          "capsized": false,
+          "warning_lamps": [],
+          "samples": [
+            {
+              "t_brake_s": 0.0,
+              "u_mps": 18.72,
+              "nose_up_deg": -0.18,
+              "roll_deg": 0.01,
+              "yaw_deg": -0.0,
+              "reverse_bucket_fraction": 0.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 0.6,
+              "u_mps": 17.98,
+              "nose_up_deg": 1.15,
+              "roll_deg": -0.0,
+              "yaw_deg": -0.0,
+              "reverse_bucket_fraction": 0.678,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 1.2,
+              "u_mps": 16.53,
+              "nose_up_deg": 1.72,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.0,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 1.8,
+              "u_mps": 15.09,
+              "nose_up_deg": 2.01,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 2.4,
+              "u_mps": 13.77,
+              "nose_up_deg": 1.64,
+              "roll_deg": 0.01,
+              "yaw_deg": -0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 3.0,
+              "u_mps": 12.56,
+              "nose_up_deg": 0.84,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 3.6,
+              "u_mps": 11.0,
+              "nose_up_deg": 2.73,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.0,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 4.2,
+              "u_mps": 9.47,
+              "nose_up_deg": 4.13,
+              "roll_deg": 0.0,
+              "yaw_deg": -0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 4.8,
+              "u_mps": 8.22,
+              "nose_up_deg": 1.24,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 5.4,
+              "u_mps": 6.53,
+              "nose_up_deg": 5.12,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 6.0,
+              "u_mps": 5.01,
+              "nose_up_deg": 4.21,
+              "roll_deg": -0.02,
+              "yaw_deg": 0.0,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 6.6,
+              "u_mps": 3.45,
+              "nose_up_deg": 5.6,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 7.2,
+              "u_mps": 2.26,
+              "nose_up_deg": 2.83,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 7.8,
+              "u_mps": 1.58,
+              "nose_up_deg": 1.91,
+              "roll_deg": 0.01,
+              "yaw_deg": -0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 8.4,
+              "u_mps": 1.06,
+              "nose_up_deg": 2.09,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 0.999,
+              "phase": "stowed_stop"
+            },
+            {
+              "t_brake_s": 9.0,
+              "u_mps": 0.87,
+              "nose_up_deg": 1.24,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.0,
+              "reverse_bucket_fraction": 0.301,
+              "phase": "stowed_stop"
+            },
+            {
+              "t_brake_s": 9.6,
+              "u_mps": 0.74,
+              "nose_up_deg": 1.68,
+              "roll_deg": 0.01,
+              "yaw_deg": -0.01,
+              "reverse_bucket_fraction": 0.0,
+              "phase": "stowed_stop"
+            },
+            {
+              "t_brake_s": 9.9,
+              "u_mps": 0.68,
+              "nose_up_deg": 1.56,
+              "roll_deg": -0.01,
+              "yaw_deg": -0.0,
+              "reverse_bucket_fraction": 0.0,
+              "phase": "stowed_stop"
+            }
+          ]
+        }
+      }
+    },
+    "rc01-hydrofoil-ski-v1": {
+      "profile_id": "rc01-hydrofoil-ski-v1",
+      "model_revision": "RC01-H1-R1",
+      "model_name": "Ricochet RC-01H-1 (Hydrofoil-Ski \u00b7 Rev 1)",
+      "all_passed": true,
+      "wall_s": 64.91,
+      "maneuvers": {
+        "B_takeoff_and_cruise": {
+          "maneuver": "B_closed_loop_takeoff_hump_clearance_cruise",
+          "profile_id": "rc01-hydrofoil-ski-v1",
+          "passed": true,
+          "rest_vol_hull_m3": 0.7332,
+          "rest_vol_sp_m3": 0.1601,
+          "hull_liftoff_t_s": 3.742,
+          "t_to_12mps_s": 8.24,
+          "t_to_18mps_s": 12.97,
+          "peak_speed_mps": 22.28,
+          "final_speed_mps": 22.18,
+          "min_vol_hull_m3": 0.0,
+          "min_vol_sp_m3": 0.0,
+          "nose_up_range_deg": [
+            -0.38,
+            2.05
+          ],
+          "max_abs_roll_deg": 0.0,
+          "max_abs_yaw_deg": 0.01,
+          "max_sponson_flex_stroke_mm": 61.197,
+          "max_sponson_vertical_force_n": 4397.5,
+          "max_actuator_load_pct": {
+            "rudder": 0.0,
+            "elevator": 3.1,
+            "aileron": 0.1,
+            "reverse_bucket": 0.0,
+            "skis": 51.8,
+            "aft_ski": 25.8
+          },
+          "max_actuator_load_nm": {
+            "rudder": 0.0,
+            "elevator": 2.0,
+            "aileron": 0.1,
+            "reverse_bucket": 0.0,
+            "skis": 733.3,
+            "aft_ski": 51.6
+          },
+          "capsized": false,
+          "warning_lamps": [],
+          "samples": [
+            {
+              "t_s": 0.0,
+              "u_mps": 0.0,
+              "z_m": 6.431,
+              "nose_up_deg": 1.25,
+              "roll_deg": -0.0,
+              "yaw_deg": -0.0,
+              "vol_hull_m3": 0.7333,
+              "vol_sp_m3": 0.16,
+              "ski_feedback_deg": [
+                -0.05,
+                -0.05
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 2.0,
+              "u_mps": 3.41,
+              "z_m": 6.503,
+              "nose_up_deg": 0.66,
+              "roll_deg": 0.0,
+              "yaw_deg": -0.0,
+              "vol_hull_m3": 0.452,
+              "vol_sp_m3": 0.0513,
+              "ski_feedback_deg": [
+                9.7,
+                9.7
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 4.0,
+              "u_mps": 5.77,
+              "z_m": 6.843,
+              "nose_up_deg": 2.05,
+              "roll_deg": 0.0,
+              "yaw_deg": -0.01,
+              "vol_hull_m3": 0.0054,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                7.54,
+                7.55
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 6.0,
+              "u_mps": 8.72,
+              "z_m": 7.003,
+              "nose_up_deg": 1.05,
+              "roll_deg": -0.0,
+              "yaw_deg": -0.01,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                5.24,
+                5.25
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 8.0,
+              "u_mps": 11.66,
+              "z_m": 7.04,
+              "nose_up_deg": 1.13,
+              "roll_deg": -0.0,
+              "yaw_deg": -0.01,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                2.99,
+                2.99
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 10.0,
+              "u_mps": 14.47,
+              "z_m": 7.071,
+              "nose_up_deg": 1.39,
+              "roll_deg": -0.0,
+              "yaw_deg": -0.0,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                1.78,
+                1.78
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 12.0,
+              "u_mps": 16.95,
+              "z_m": 7.094,
+              "nose_up_deg": 1.57,
+              "roll_deg": -0.0,
+              "yaw_deg": -0.0,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                0.86,
+                0.86
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 14.0,
+              "u_mps": 18.98,
+              "z_m": 7.085,
+              "nose_up_deg": 1.63,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.0,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                0.23,
+                0.23
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 16.0,
+              "u_mps": 20.44,
+              "z_m": 7.065,
+              "nose_up_deg": 1.66,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.0,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                -0.26,
+                -0.26
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 18.0,
+              "u_mps": 21.4,
+              "z_m": 7.062,
+              "nose_up_deg": 1.65,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.0,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                -0.45,
+                -0.45
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 20.0,
+              "u_mps": 22.02,
+              "z_m": 7.054,
+              "nose_up_deg": 1.63,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.0,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                -0.67,
+                -0.68
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 22.0,
+              "u_mps": 22.25,
+              "z_m": 7.038,
+              "nose_up_deg": 1.56,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                -1.02,
+                -1.02
+              ],
+              "warning_lamps": []
+            },
+            {
+              "t_s": 22.5,
+              "u_mps": 22.18,
+              "z_m": 7.031,
+              "nose_up_deg": 1.52,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.0,
+              "vol_hull_m3": 0.0,
+              "vol_sp_m3": 0.0,
+              "ski_feedback_deg": [
+                -1.18,
+                -1.19
+              ],
+              "warning_lamps": []
+            }
+          ]
+        },
+        "C_coordinated_s_turn": {
+          "maneuver": "C_high_speed_coordinated_s_turn",
+          "profile_id": "rc01-hydrofoil-ski-v1",
+          "passed": true,
+          "entry_speed_mps": 16.95,
+          "min_speed_mps": 13.16,
+          "max_speed_mps": 19.8,
+          "exit_speed_mps": 17.57,
+          "max_port_yaw_deg": 11.91,
+          "min_stbd_yaw_deg": -23.21,
+          "heading_swing_deg": 35.13,
+          "final_yaw_deg": -0.39,
+          "max_abs_roll_deg": 4.81,
+          "max_abs_yaw_rate_deg_s": 32.84,
+          "capsized": false,
+          "warning_lamps": [],
+          "samples": [
+            {
+              "t_turn_s": 0.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 16.96,
+              "yaw_deg": -0.01,
+              "roll_deg": 0.01,
+              "nose_up_deg": 1.57,
+              "yaw_rate_deg_s": 0.0,
+              "rudder_deg": 0.03
+            },
+            {
+              "t_turn_s": 0.5,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 17.27,
+              "yaw_deg": 4.29,
+              "roll_deg": -0.85,
+              "nose_up_deg": 1.24,
+              "yaw_rate_deg_s": 13.26,
+              "rudder_deg": 4.23
+            },
+            {
+              "t_turn_s": 1.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 17.46,
+              "yaw_deg": 8.88,
+              "roll_deg": -0.56,
+              "nose_up_deg": 1.41,
+              "yaw_rate_deg_s": 5.41,
+              "rudder_deg": 1.84
+            },
+            {
+              "t_turn_s": 1.5,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 17.82,
+              "yaw_deg": 10.58,
+              "roll_deg": -0.35,
+              "nose_up_deg": 1.54,
+              "yaw_rate_deg_s": 1.88,
+              "rudder_deg": 1.78
+            },
+            {
+              "t_turn_s": 2.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 18.22,
+              "yaw_deg": 11.21,
+              "roll_deg": -0.24,
+              "nose_up_deg": 1.59,
+              "yaw_rate_deg_s": 0.87,
+              "rudder_deg": 1.27
+            },
+            {
+              "t_turn_s": 2.5,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 18.62,
+              "yaw_deg": 11.52,
+              "roll_deg": -0.16,
+              "nose_up_deg": 1.63,
+              "yaw_rate_deg_s": 0.48,
+              "rudder_deg": 0.84
+            },
+            {
+              "t_turn_s": 3.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 19.0,
+              "yaw_deg": 11.74,
+              "roll_deg": -0.11,
+              "nose_up_deg": 1.67,
+              "yaw_rate_deg_s": 0.3,
+              "rudder_deg": 0.3
+            },
+            {
+              "t_turn_s": 3.5,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 19.35,
+              "yaw_deg": 11.84,
+              "roll_deg": -0.06,
+              "nose_up_deg": 1.66,
+              "yaw_rate_deg_s": 0.2,
+              "rudder_deg": 0.19
+            },
+            {
+              "t_turn_s": 4.0,
+              "phase": "port_turn_plus12",
+              "target_yaw_deg": 12.0,
+              "u_mps": 19.68,
+              "yaw_deg": 11.91,
+              "roll_deg": -0.04,
+              "nose_up_deg": 1.65,
+              "yaw_rate_deg_s": 0.12,
+              "rudder_deg": 0.05
+            },
+            {
+              "t_turn_s": 4.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 19.68,
+              "yaw_deg": 11.9,
+              "roll_deg": -0.04,
+              "nose_up_deg": 1.66,
+              "yaw_rate_deg_s": 0.11,
+              "rudder_deg": 0.05
+            },
+            {
+              "t_turn_s": 4.5,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 19.69,
+              "yaw_deg": 5.94,
+              "roll_deg": 1.52,
+              "nose_up_deg": 1.0,
+              "yaw_rate_deg_s": -23.06,
+              "rudder_deg": -13.1
+            },
+            {
+              "t_turn_s": 5.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 19.1,
+              "yaw_deg": -2.77,
+              "roll_deg": 3.81,
+              "nose_up_deg": 0.22,
+              "yaw_rate_deg_s": -11.91,
+              "rudder_deg": -9.44
+            },
+            {
+              "t_turn_s": 5.5,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 16.07,
+              "yaw_deg": -14.66,
+              "roll_deg": 3.98,
+              "nose_up_deg": -0.42,
+              "yaw_rate_deg_s": -32.84,
+              "rudder_deg": 29.84
+            },
+            {
+              "t_turn_s": 6.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 13.4,
+              "yaw_deg": -23.21,
+              "roll_deg": -2.8,
+              "nose_up_deg": 1.57,
+              "yaw_rate_deg_s": 4.5,
+              "rudder_deg": 26.48
+            },
+            {
+              "t_turn_s": 6.5,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 13.28,
+              "yaw_deg": -16.89,
+              "roll_deg": -1.12,
+              "nose_up_deg": 2.07,
+              "yaw_rate_deg_s": 13.25,
+              "rudder_deg": -4.55
+            },
+            {
+              "t_turn_s": 7.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 13.79,
+              "yaw_deg": -13.54,
+              "roll_deg": -0.36,
+              "nose_up_deg": 1.38,
+              "yaw_rate_deg_s": 2.28,
+              "rudder_deg": 1.2
+            },
+            {
+              "t_turn_s": 7.5,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 14.39,
+              "yaw_deg": -12.95,
+              "roll_deg": -0.24,
+              "nose_up_deg": 1.38,
+              "yaw_rate_deg_s": 0.71,
+              "rudder_deg": 2.11
+            },
+            {
+              "t_turn_s": 8.0,
+              "phase": "stbd_turn_minus12",
+              "target_yaw_deg": -12.0,
+              "u_mps": 14.98,
+              "yaw_deg": -12.62,
+              "roll_deg": -0.2,
+              "nose_up_deg": 1.45,
+              "yaw_rate_deg_s": 0.56,
+              "rudder_deg": 1.39
+            },
+            {
+              "t_turn_s": 8.0,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 14.98,
+              "yaw_deg": -12.64,
+              "roll_deg": -0.2,
+              "nose_up_deg": 1.42,
+              "yaw_rate_deg_s": 0.56,
+              "rudder_deg": 1.43
+            },
+            {
+              "t_turn_s": 8.5,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 15.38,
+              "yaw_deg": -8.68,
+              "roll_deg": -0.89,
+              "nose_up_deg": 1.06,
+              "yaw_rate_deg_s": 12.99,
+              "rudder_deg": 7.34
+            },
+            {
+              "t_turn_s": 9.0,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 15.67,
+              "yaw_deg": -3.75,
+              "roll_deg": -0.58,
+              "nose_up_deg": 1.27,
+              "yaw_rate_deg_s": 6.13,
+              "rudder_deg": 2.79
+            },
+            {
+              "t_turn_s": 9.5,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 16.11,
+              "yaw_deg": -1.82,
+              "roll_deg": -0.35,
+              "nose_up_deg": 1.42,
+              "yaw_rate_deg_s": 2.23,
+              "rudder_deg": 2.58
+            },
+            {
+              "t_turn_s": 10.0,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 16.61,
+              "yaw_deg": -1.07,
+              "roll_deg": -0.25,
+              "nose_up_deg": 1.5,
+              "yaw_rate_deg_s": 1.11,
+              "rudder_deg": 1.86
+            },
+            {
+              "t_turn_s": 10.5,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 17.11,
+              "yaw_deg": -0.64,
+              "roll_deg": -0.17,
+              "nose_up_deg": 1.56,
+              "yaw_rate_deg_s": 0.67,
+              "rudder_deg": 1.23
+            },
+            {
+              "t_turn_s": 11.0,
+              "phase": "straighten_zero",
+              "target_yaw_deg": 0.0,
+              "u_mps": 17.57,
+              "yaw_deg": -0.41,
+              "roll_deg": -0.11,
+              "nose_up_deg": 1.59,
+              "yaw_rate_deg_s": 0.39,
+              "rudder_deg": 0.74
+            }
+          ]
+        },
+        "D_reverse_bucket_braking": {
+          "maneuver": "D_high_speed_reverse_bucket_braking_and_stop",
+          "profile_id": "rc01-hydrofoil-ski-v1",
+          "passed": true,
+          "entry_speed_mps": 22.18,
+          "final_speed_mps": 0.69,
+          "stop_t_s": 10.95,
+          "peak_decel_mps2": 3.02,
+          "min_nose_up_deg": 0.31,
+          "max_nose_up_deg": 9.81,
+          "max_abs_roll_deg": 0.02,
+          "max_reverse_bucket_fraction": 1.0,
+          "final_reverse_bucket_fraction": 0.0,
+          "max_bucket_hinge_nm": 26.41,
+          "capsized": false,
+          "warning_lamps": [],
+          "samples": [
+            {
+              "t_brake_s": 0.0,
+              "u_mps": 22.18,
+              "nose_up_deg": 1.52,
+              "roll_deg": 0.01,
+              "yaw_deg": -0.01,
+              "reverse_bucket_fraction": 0.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 0.6,
+              "u_mps": 21.46,
+              "nose_up_deg": 2.58,
+              "roll_deg": -0.01,
+              "yaw_deg": -0.01,
+              "reverse_bucket_fraction": 0.679,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 1.2,
+              "u_mps": 20.1,
+              "nose_up_deg": 2.83,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 1.8,
+              "u_mps": 18.78,
+              "nose_up_deg": 2.95,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.02,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 2.4,
+              "u_mps": 17.51,
+              "nose_up_deg": 2.9,
+              "roll_deg": 0.0,
+              "yaw_deg": -0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 3.0,
+              "u_mps": 16.24,
+              "nose_up_deg": 2.84,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 3.6,
+              "u_mps": 14.99,
+              "nose_up_deg": 2.79,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 4.2,
+              "u_mps": 13.76,
+              "nose_up_deg": 2.76,
+              "roll_deg": 0.0,
+              "yaw_deg": -0.0,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 4.8,
+              "u_mps": 12.52,
+              "nose_up_deg": 2.78,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 5.4,
+              "u_mps": 11.28,
+              "nose_up_deg": 2.86,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 6.0,
+              "u_mps": 9.99,
+              "nose_up_deg": 2.94,
+              "roll_deg": -0.02,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 6.6,
+              "u_mps": 8.67,
+              "nose_up_deg": 3.17,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 7.2,
+              "u_mps": 7.32,
+              "nose_up_deg": 3.62,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 7.8,
+              "u_mps": 6.01,
+              "nose_up_deg": 4.59,
+              "roll_deg": 0.01,
+              "yaw_deg": 0.0,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 8.4,
+              "u_mps": 4.72,
+              "nose_up_deg": 6.29,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.03,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 9.0,
+              "u_mps": 3.49,
+              "nose_up_deg": 7.29,
+              "roll_deg": -0.0,
+              "yaw_deg": 0.02,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 9.6,
+              "u_mps": 2.35,
+              "nose_up_deg": 9.57,
+              "roll_deg": 0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 10.2,
+              "u_mps": 1.77,
+              "nose_up_deg": 0.62,
+              "roll_deg": 0.01,
+              "yaw_deg": 0.02,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 10.8,
+              "u_mps": 1.21,
+              "nose_up_deg": 2.76,
+              "roll_deg": 0.0,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 1.0,
+              "phase": "reverse_braking"
+            },
+            {
+              "t_brake_s": 11.4,
+              "u_mps": 0.92,
+              "nose_up_deg": 1.18,
+              "roll_deg": -0.02,
+              "yaw_deg": -0.01,
+              "reverse_bucket_fraction": 0.478,
+              "phase": "stowed_stop"
+            },
+            {
+              "t_brake_s": 12.0,
+              "u_mps": 0.77,
+              "nose_up_deg": 1.69,
+              "roll_deg": -0.01,
+              "yaw_deg": 0.01,
+              "reverse_bucket_fraction": 0.0,
+              "phase": "stowed_stop"
+            },
+            {
+              "t_brake_s": 12.45,
+              "u_mps": 0.69,
+              "nose_up_deg": 1.67,
+              "roll_deg": 0.01,
+              "yaw_deg": -0.0,
+              "reverse_bucket_fraction": 0.0,
+              "phase": "stowed_stop"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

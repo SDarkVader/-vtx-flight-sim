@@ -969,8 +969,14 @@ def build_pass3_elevator() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarr
     return verts, faces, fc, fm
 
 
-def build_pass3_rudder() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Build articulated swept vertical-fin rudder in local coordinates around RUDDER_HINGE_VTX."""
+def build_pass3_rudder(rudder_cove_clear: bool = False) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build articulated swept vertical-fin rudder in local coordinates around RUDDER_HINGE_VTX.
+
+    When ``rudder_cove_clear=True`` (opt-in for updated RC-01 revisions/profiles), lifts the
+    lower-station leading-edge clamp from 0.84 -> 0.95 so the rudder clears the vertical fin's
+    trailing cove across the full span and full +/-30 deg travel with zero vertex interference.
+    Default ``False`` preserves byte-identical legacy Concept A geometry.
+    """
     zs = np.linspace(0.98, 2.17, 12)
     n_z = len(zs)
     n_af = 20
@@ -979,12 +985,14 @@ def build_pass3_rudder() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray
     hinge_origin = np.array(RUDDER_HINGE_VTX, dtype=np.float64)
 
     rings = []
+    f_cap = 0.95 if rudder_cove_clear else 0.84
+    nose_lead = 0.002 if rudder_cove_clear else 0.008
     for z in zs:
         s = (z - 0.78) / (2.31 - 0.78)
         x_le = -0.92 - 1.56 * s
         chord = 1.18 * (1.0 - 0.25 * s)
         x_hinge_z = -2.12 - 0.758 * (z - 0.96)
-        f_start = min(0.84, max(0.58, (x_le - (x_hinge_z - 0.005)) / chord))
+        f_start = min(f_cap, max(0.58, (x_le - (x_hinge_z - 0.005)) / chord))
         xc_eff = f_start + (1.0 - f_start) * xc_half
         zu, zl = _naca_4digit(xc_eff, thickness=0.125, camber=0.0)
         pts = []
@@ -992,7 +1000,7 @@ def build_pass3_rudder() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray
         for j in range(n_c - 1, 0, -1):
             dy_te = 0.003 if j == n_c - 1 else 0.0
             pts.append([x_le - xc_eff[j] * chord, +zu[j] * chord + dy_te, z] - hinge_origin)
-        pts.append([x_hinge_z + 0.008, 0.0, z] - hinge_origin)
+        pts.append([x_hinge_z + nose_lead, 0.0, z] - hinge_origin)
         for j in range(1, n_c):
             dy_te = -0.003 if j == n_c - 1 else 0.0
             pts.append([x_le - xc_eff[j] * chord, +zl[j] * chord + dy_te, z] - hinge_origin)
@@ -1412,6 +1420,203 @@ def build_concept_a_glb(out_path: Path = DEFAULT_CONCEPT_A_OUT, target_draft_m: 
         'hydro_1050kg': stab_1050,
         'aero_drag_estimate': canopy_and_craft_cd0(windshield_rake_deg=24.0, canopy_fineness_ratio=4.0),
     }
+
+
+def build_profile_ski_mesh(ski_spec: dict[str, Any]) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build watertight carbon-satin ski blade (planing or cambered hydrofoil) + yoke + optional fin.
+
+    Geometry is in the ski body frame: origin (0, 0, 0) at incidence hinge pivot, +X forward, +Y port, +Z up.
+    """
+    L = float(ski_spec['length_m'])
+    b = float(ski_spec['beam_m'])
+    t_pl = float(ski_spec['thickness_m'])
+    a = float(ski_spec['hinge_from_trailing_edge_m'])
+    zb = float(ski_spec['bottom_below_pivot_m'])
+    hydro_mode = str(ski_spec.get('hydro_mode', 'planing'))
+    x_te = -a
+    x_le = L - a
+    parts: list[tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]] = []
+
+    if hydro_mode == 'hydrofoil_ski':
+        b_f = float(ski_spec.get('foil_span_m', b))
+        c_f = float(ski_spec.get('foil_chord_m', L))
+        tc = float(ski_spec.get('foil_tc', 0.11))
+        camber = max(0.0, min(0.06, -float(ski_spec.get('foil_alpha0_deg', -3.5)) / 100.0))
+        ys = np.linspace(-0.5 * b_f, 0.5 * b_f, 18)
+        n_af = 22
+        ang = np.linspace(0.0, math.pi, n_af // 2 + 1)
+        xc_half = 0.5 * (1.0 - np.cos(ang))
+        zu, zl = _naca_4digit(xc_half, thickness=tc, camber=camber)
+        z_center = -zb + 0.5 * max(t_pl, tc * c_f)
+        rings = []
+        for y in ys:
+            eta = abs(y) / max(0.5 * b_f, 1e-6)
+            taper = 1.0 - 0.25 * (max(0.0, (eta - 0.72) / 0.28) ** 1.6)
+            c_loc = c_f * taper
+            x_le_loc = x_le - 0.25 * (c_f - c_loc)
+            pts = []
+            n_c = len(xc_half)
+            for j in range(n_c - 1, 0, -1):
+                dz_te = 0.0015 if j == n_c - 1 else 0.0
+                pts.append([x_le_loc - xc_half[j] * c_loc, y, z_center + zu[j] * c_loc + dz_te])
+            pts.append([x_le_loc, y, z_center])
+            for j in range(1, n_c):
+                dz_te = -0.0015 if j == n_c - 1 else 0.0
+                pts.append([x_le_loc - xc_half[j] * c_loc, y, z_center + zl[j] * c_loc + dz_te])
+            rings.append(np.asarray(pts, dtype=np.float64))
+        v_bl, f_bl = _loft_closed_rings(rings, close_ends=True)
+        m_r = rings[0].shape[0]
+        fc_bl = np.tile(np.array(COL_CARBON, dtype=np.float32), (f_bl.shape[0], 1))
+        fm_bl = np.zeros(f_bl.shape[0], dtype=np.int32)
+        le_idx = len(xc_half) - 1
+        for fi in range((len(ys) - 1) * m_r * 2):
+            k_seg = (fi % (m_r * 2)) // 2
+            if abs(k_seg - le_idx) <= 1:
+                fc_bl[fi] = COL_GOLD
+                fm_bl[fi] = 1
+        parts.append((v_bl, f_bl, fc_bl, fm_bl))
+        z_top_blade = z_center + 0.5 * tc * c_f
+    else:
+        # Planing hydro-ski with crisp flat/shallow-V bottom, gold side rails, and upturned bow tip
+        deadrise = math.radians(max(0.0, float(ski_spec.get('deadrise_deg', 0.0))))
+        xs = np.linspace(x_te, x_le, 18)
+        rings = []
+        for x in xs:
+            u = (x - x_te) / max(L, 1e-6)  # 0 TE -> 1 LE
+            bow_t = max(0.0, (u - 0.82) / 0.18)
+            hw = 0.5 * b * (1.0 - 0.72 * (bow_t ** 1.7))
+            hw = max(hw, 0.025)
+            z_rise = 0.055 * (bow_t ** 2.0)
+            z_keel = -zb + z_rise
+            z_chine = z_keel + hw * math.tan(deadrise)
+            t_loc = t_pl * (1.0 - 0.35 * bow_t)
+            z_deck_edge = z_chine + 0.65 * t_loc
+            z_deck_crown = z_chine + t_loc
+            pts = np.array([
+                [x, 0.0, z_keel],
+                [x, 0.5 * hw, 0.5 * (z_keel + z_chine)],
+                [x, hw, z_chine],
+                [x, hw, z_deck_edge],
+                [x, 0.65 * hw, z_deck_crown],
+                [x, 0.0, z_deck_crown + 0.008],
+                [x, -0.65 * hw, z_deck_crown],
+                [x, -hw, z_deck_edge],
+                [x, -hw, z_chine],
+                [x, -0.5 * hw, 0.5 * (z_keel + z_chine)],
+            ], dtype=np.float64)
+            rings.append(pts)
+        v_bl, f_bl = _loft_closed_rings(rings, close_ends=True)
+        m_r = rings[0].shape[0]
+        fc_bl = np.tile(np.array(COL_CARBON, dtype=np.float32), (f_bl.shape[0], 1))
+        fm_bl = np.zeros(f_bl.shape[0], dtype=np.int32)
+        for fi in range((len(xs) - 1) * m_r * 2):
+            k_seg = (fi % (m_r * 2)) // 2
+            if k_seg in (2, 7):  # VTX gold outer rail stripes
+                fc_bl[fi] = COL_GOLD
+                fm_bl[fi] = 1
+        parts.append((v_bl, f_bl, fc_bl, fm_bl))
+        z_top_blade = -zb + t_pl
+
+    # Machined Ti-6Al-4V incidence hinge yoke collar connecting blade spine to pivot (0, 0, 0)
+    yoke_h = max(0.025, 0.5 * abs(z_top_blade))
+    yoke_cz = 0.5 * z_top_blade
+    parts.append(_add_box_part(0.0, 0.0, yoke_cz, min(0.11, 0.25 * L), min(0.055, 0.16 * b), yoke_h + 0.012, COL_TITANIUM, 2))
+    parts.append(_add_box_part(0.0, 0.0, 0.0, 0.045, min(0.075, 0.20 * b), 0.028, COL_GOLD, 1))
+
+    # Optional streamlined NACA 0012 tracking fin beneath the ski
+    fin = ski_spec.get('fin')
+    if fin:
+        fx = float(fin['x_from_pivot_m'])
+        f_span = float(fin['span_m'])
+        f_chord = float(fin['chord_m'])
+        n_af = 16
+        ang = np.linspace(0.0, math.pi, n_af // 2 + 1)
+        xc_half = 0.5 * (1.0 - np.cos(ang))
+        zu_f, zl_f = _naca_4digit(xc_half, thickness=0.12, camber=0.0)
+        zs_f = np.linspace(-zb + 0.005, -zb - f_span, 8)
+        rings_f = []
+        for idx_z, z in enumerate(zs_f):
+            s = idx_z / max(len(zs_f) - 1, 1)
+            c_loc = f_chord * (1.0 - 0.22 * s)
+            x_le_f = fx + 0.5 * f_chord - 0.15 * f_chord * s
+            pts = []
+            n_c = len(xc_half)
+            for j in range(n_c - 1, 0, -1):
+                dy = 0.0015 if j == n_c - 1 else 0.0
+                pts.append([x_le_f - xc_half[j] * c_loc, +zu_f[j] * c_loc + dy, z])
+            pts.append([x_le_f, 0.0, z])
+            for j in range(1, n_c):
+                dy = -0.0015 if j == n_c - 1 else 0.0
+                pts.append([x_le_f - xc_half[j] * c_loc, +zl_f[j] * c_loc + dy, z])
+            rings_f.append(np.asarray(pts, dtype=np.float64))
+        vf, ff = _loft_closed_rings(rings_f, close_ends=True)
+        fc_f = np.tile(np.array(COL_CARBON_DARK, dtype=np.float32), (ff.shape[0], 1))
+        fm_f = np.zeros(ff.shape[0], dtype=np.int32)
+        m_rf = rings_f[0].shape[0]
+        for fi in range((len(zs_f) - 1) * m_rf * 2):
+            strip = fi // (m_rf * 2)
+            if strip >= len(zs_f) - 2:
+                fc_f[fi] = COL_GOLD
+                fm_f[fi] = 1
+        parts.append((vf, ff, fc_f, fm_f))
+
+    return _merge_disjoint_parts(parts)
+
+
+def build_profile_ski_strut_mesh(
+    pivot_local: tuple[float, float, float] | list[float],
+    anchor_local: tuple[float, float, float] | list[float],
+    *,
+    chord_m: float = 0.18,
+    thickness_m: float = 0.036,
+    aft_brace_anchor: tuple[float, float, float] | list[float] | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build streamlined Ti-6Al-4V ski strut (+ optional diagonal brace) in parent body local frame."""
+    p0 = np.asarray(anchor_local, dtype=np.float64)
+    p1 = np.asarray(pivot_local, dtype=np.float64)
+    if float(np.linalg.norm(p1 - p0)) < 0.03:
+        p0 = p1 + np.array([0.0, 0.0, 0.08], dtype=np.float64)
+    parts = [
+        _streamline_strut(p0, p1, chord_m, thickness_m, COL_TITANIUM, 2),
+        _add_box_part(float(p0[0]), float(p0[1]), float(p0[2]), 0.55 * chord_m, max(0.035, 0.9 * thickness_m), 0.022, COL_GOLD, 1),
+    ]
+    if aft_brace_anchor is not None:
+        pb = np.asarray(aft_brace_anchor, dtype=np.float64)
+        if float(np.linalg.norm(p1 - pb)) > 0.12:
+            parts.append(_streamline_strut(pb, p1 + np.array([0.0, 0.0, 0.03]), 0.65 * chord_m, 0.72 * thickness_m, COL_TITANIUM, 2))
+            parts.append(_add_box_part(float(pb[0]), float(pb[1]), float(pb[2]), 0.40 * chord_m, max(0.03, 0.75 * thickness_m), 0.02, COL_GOLD, 1))
+    return _merge_disjoint_parts(parts)
+
+
+def _part_tuple_to_watertight_mesh(
+    name: str,
+    part: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    source_id: str = 'procedural_profile',
+):
+    """Wrap (verts, faces, face_colors, face_mats) into a WatertightMesh with sharp visual buffers."""
+    from vtx.water.hydrodynamics import WatertightMesh
+
+    v, f, fc, fm = part
+    _check_watertight(v, f, name)
+    wmesh = WatertightMesh(name=name, vertices=v, faces=f, source_id=source_id)
+    prims = _split_sharp_and_color_seams(v, f, fc, fm, crease_deg=34.0)
+    vis_v, vis_n, vis_c, vis_f = [], [], [], []
+    v_off = 0
+    for pr in prims:
+        pv = np.asarray(pr['pos'], dtype=np.float64)
+        pn = np.asarray(pr['norm'], dtype=np.float32)
+        pc = np.asarray(pr['col'], dtype=np.float32)[:, :3]
+        pi = np.asarray(pr['idx'], dtype=np.int32).reshape(-1, 3) + v_off
+        vis_v.append(pv)
+        vis_n.append(pn)
+        vis_c.append(pc)
+        vis_f.append(pi)
+        v_off += pv.shape[0]
+    wmesh._visual_vertices = np.concatenate(vis_v, axis=0)  # type: ignore[attr-defined]
+    wmesh._visual_normals = np.concatenate(vis_n, axis=0)  # type: ignore[attr-defined]
+    wmesh._visual_colors_rgb = np.concatenate(vis_c, axis=0)  # type: ignore[attr-defined]
+    wmesh._visual_faces = np.concatenate(vis_f, axis=0)  # type: ignore[attr-defined]
+    return wmesh
 
 
 if __name__ == '__main__':

@@ -1,0 +1,1458 @@
+{
+ "method": "Export the RC-01 articulation rig and a MuJoCo bench sweep for the complete Blender model (offline, isolated).\n\nEverything the Blender rig uses comes from the compiled MuJoCo model of Concept A with the\nrc01-real-components-v1 profile, not from hand-copied numbers:\n  * hinge points, hinge axes and joint ranges (model.body_pos / body_quat / jnt_axis / jnt_range, chained to the\n    airframe body frame, which is the GLB / VTX frame: +X forward, +Y port, +Z up);\n  * channel limits and slew rates (craft.surface_limits, i.e. the actuators' published no-load speeds);\n  * which visual GLB node rides on which physical body (hull_geometry.CONCEPT_A_AIRFRAME_NODE_SPECS), and the\n    GLB node translations are compared with the MuJoCo body origins;\n  * the command -> joint mapping the plant applies (plant._apply_actuator_controls / _profile_actuator_targets),\n    stated below and then CHECKED against what MuJoCo actually does in the sweep.\nKinematic checks per surface mesh (as exported by craft.visual_geometry()): the hinge axis distance from the\nsurface's leading edge, the trailing-edge direction for +q, and how many surface vertices end up inside the\nfixed neighbouring mesh at full travel (interference, ray-parity point-in-mesh).\nBench sweep: the craft floats at rest in the isolated harbour basin (still water, nothing live) and each command\nis stepped through its full range at the actuators' real rates; joint angles and every articulated body's pose\nrelative to the airframe are sampled at 24 fps for the Blender animation and for the Blender-vs-MuJoCo check.\nUsage: python export_rig.py <worktree> <out_dir>\n",
+ "profile": "rc01-planing-3pt-v1",
+ "frame": "VTX airframe body frame = GLB frame (+X forward, +Y port, +Z up), metres",
+ "glb": "C:\\Users\\steve\\.gemini\\antigravity\\worktrees\\-vtx-flight-sim\\ricochet_control_surfaces\\public\\assets\\ricochet-concept-a.glb",
+ "bodies": {
+  "fan_rotor_port": {
+   "chain": [
+    "fan_rotor_port"
+   ],
+   "origin_af": [
+    -2.05,
+    0.78,
+    1.56
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "fan_rotor_port_hinge",
+     "type": "hinge",
+     "pos_af": [
+      -2.05,
+      0.78,
+      1.56
+     ],
+     "axis_af": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "limited": false,
+     "range": [
+      0.0,
+      0.0
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": [
+    {
+     "part": "fan_rotor_port",
+     "node": "Ricochet_Fan_Rotor_Port",
+     "material_role": "fan_rotor",
+     "glb_translation_vtx": [
+      -2.05,
+      0.78,
+      1.56
+     ],
+     "origin_mismatch_m": 0.0
+    },
+    {
+     "part": "fan_spinner_port",
+     "node": "Ricochet_Fan_Spinner_Port",
+     "material_role": "vtx_gold",
+     "glb_translation_vtx": [
+      -2.05,
+      0.78,
+      1.56
+     ],
+     "origin_mismatch_m": 0.0
+    }
+   ]
+  },
+  "fan_rotor_stbd": {
+   "chain": [
+    "fan_rotor_stbd"
+   ],
+   "origin_af": [
+    -2.05,
+    -0.78,
+    1.56
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "fan_rotor_stbd_hinge",
+     "type": "hinge",
+     "pos_af": [
+      -2.05,
+      -0.78,
+      1.56
+     ],
+     "axis_af": [
+      -1.0,
+      0.0,
+      0.0
+     ],
+     "limited": false,
+     "range": [
+      0.0,
+      0.0
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": [
+    {
+     "part": "fan_rotor_stbd",
+     "node": "Ricochet_Fan_Rotor_Stbd",
+     "material_role": "fan_rotor",
+     "glb_translation_vtx": [
+      -2.05,
+      -0.78,
+      1.56
+     ],
+     "origin_mismatch_m": 0.0
+    },
+    {
+     "part": "fan_spinner_stbd",
+     "node": "Ricochet_Fan_Spinner_Stbd",
+     "material_role": "vtx_gold",
+     "glb_translation_vtx": [
+      -2.05,
+      -0.78,
+      1.56
+     ],
+     "origin_mismatch_m": 0.0
+    }
+   ]
+  },
+  "aileron_port": {
+   "chain": [
+    "aileron_port"
+   ],
+   "origin_af": [
+    -0.58602,
+    3.17,
+    1.03902
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "aileron_port_hinge",
+     "type": "hinge",
+     "pos_af": [
+      -0.58602,
+      3.17,
+      1.03902
+     ],
+     "axis_af": [
+      -0.09798600661165502,
+      0.9932870670225438,
+      0.061478004148259206
+     ],
+     "limited": true,
+     "range": [
+      -25.0,
+      25.0
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": [
+    {
+     "part": "aileron_port",
+     "node": "Ricochet_Aileron_Port",
+     "material_role": "carbon_satin",
+     "glb_translation_vtx": [
+      -0.5860173543689322,
+      3.17,
+      1.0390169902912623
+     ],
+     "origin_mismatch_m": 4e-06
+    }
+   ]
+  },
+  "aileron_stbd": {
+   "chain": [
+    "aileron_stbd"
+   ],
+   "origin_af": [
+    -0.58602,
+    -3.17,
+    1.03902
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "aileron_stbd_hinge",
+     "type": "hinge",
+     "pos_af": [
+      -0.58602,
+      -3.17,
+      1.03902
+     ],
+     "axis_af": [
+      0.09798600661165502,
+      0.9932870670225438,
+      -0.061478004148259206
+     ],
+     "limited": true,
+     "range": [
+      -25.0,
+      25.0
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": [
+    {
+     "part": "aileron_stbd",
+     "node": "Ricochet_Aileron_Stbd",
+     "material_role": "carbon_satin",
+     "glb_translation_vtx": [
+      -0.5860173543689322,
+      -3.17,
+      1.0390169902912623
+     ],
+     "origin_mismatch_m": 4e-06
+    }
+   ]
+  },
+  "elevator": {
+   "chain": [
+    "elevator"
+   ],
+   "origin_af": [
+    -3.14,
+    0.0,
+    2.302
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "elevator_hinge",
+     "type": "hinge",
+     "pos_af": [
+      -3.14,
+      0.0,
+      2.302
+     ],
+     "axis_af": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "limited": true,
+     "range": [
+      -20.0,
+      20.0
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": [
+    {
+     "part": "elevator",
+     "node": "Ricochet_Elevator",
+     "material_role": "carbon_satin",
+     "glb_translation_vtx": [
+      -3.14,
+      0.0,
+      2.302
+     ],
+     "origin_mismatch_m": 0.0
+    }
+   ]
+  },
+  "rudder": {
+   "chain": [
+    "rudder"
+   ],
+   "origin_af": [
+    -2.59,
+    0.0,
+    1.58
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "rudder_hinge",
+     "type": "hinge",
+     "pos_af": [
+      -2.59,
+      0.0,
+      1.58
+     ],
+     "axis_af": [
+      0.6041048701023642,
+      0.0,
+      -0.7969048286455576
+     ],
+     "limited": true,
+     "range": [
+      -29.999999999999996,
+      29.999999999999996
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": [
+    {
+     "part": "rudder",
+     "node": "Ricochet_Rudder",
+     "material_role": "carbon_satin",
+     "glb_translation_vtx": [
+      -2.59,
+      0.0,
+      1.58
+     ],
+     "origin_mismatch_m": 0.0
+    }
+   ]
+  },
+  "reverse_bucket_port": {
+   "chain": [
+    "reverse_bucket_port"
+   ],
+   "origin_af": [
+    -2.33,
+    0.78,
+    1.56
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "reverse_bucket_port_hinge",
+     "type": "hinge",
+     "pos_af": [
+      -2.33,
+      0.78,
+      1.56
+     ],
+     "axis_af": [
+      0.0,
+      -1.0,
+      0.0
+     ],
+     "limited": true,
+     "range": [
+      0.0,
+      85.0
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": [
+    {
+     "part": "reverse_bucket_port",
+     "node": "Ricochet_Reverse_Bucket_Port",
+     "material_role": "titanium_strut",
+     "glb_translation_vtx": [
+      -2.33,
+      0.78,
+      1.56
+     ],
+     "origin_mismatch_m": 0.0
+    }
+   ]
+  },
+  "reverse_bucket_stbd": {
+   "chain": [
+    "reverse_bucket_stbd"
+   ],
+   "origin_af": [
+    -2.33,
+    -0.78,
+    1.56
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "reverse_bucket_stbd_hinge",
+     "type": "hinge",
+     "pos_af": [
+      -2.33,
+      -0.78,
+      1.56
+     ],
+     "axis_af": [
+      0.0,
+      -1.0,
+      0.0
+     ],
+     "limited": true,
+     "range": [
+      0.0,
+      85.0
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": [
+    {
+     "part": "reverse_bucket_stbd",
+     "node": "Ricochet_Reverse_Bucket_Stbd",
+     "material_role": "titanium_strut",
+     "glb_translation_vtx": [
+      -2.33,
+      -0.78,
+      1.56
+     ],
+     "origin_mismatch_m": 0.0
+    }
+   ]
+  },
+  "sponson_port": {
+   "chain": [
+    "sponson_port"
+   ],
+   "origin_af": [
+    -0.34,
+    3.8,
+    0.48
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "sponson_port_flex_z",
+     "type": "slide",
+     "pos_af": [
+      -0.34,
+      3.8,
+      0.48
+     ],
+     "axis_af": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "limited": true,
+     "range": [
+      -0.06,
+      0.06
+     ],
+     "range_unit": "m"
+    }
+   ],
+   "visual_nodes": []
+  },
+  "sponson_stbd": {
+   "chain": [
+    "sponson_stbd"
+   ],
+   "origin_af": [
+    -0.34,
+    -3.8,
+    0.48
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "sponson_stbd_flex_z",
+     "type": "slide",
+     "pos_af": [
+      -0.34,
+      -3.8,
+      0.48
+     ],
+     "axis_af": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "limited": true,
+     "range": [
+      -0.06,
+      0.06
+     ],
+     "range_unit": "m"
+    }
+   ],
+   "visual_nodes": []
+  },
+  "ski_port": {
+   "chain": [
+    "sponson_port",
+    "ski_port"
+   ],
+   "origin_af": [
+    0.76,
+    3.8,
+    0.0
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "ski_port_incidence",
+     "type": "hinge",
+     "pos_af": [
+      0.76,
+      3.8,
+      0.0
+     ],
+     "axis_af": [
+      0.0,
+      -1.0,
+      0.0
+     ],
+     "limited": true,
+     "range": [
+      -3.0000000000000004,
+      12.000000000000002
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": []
+  },
+  "ski_stbd": {
+   "chain": [
+    "sponson_stbd",
+    "ski_stbd"
+   ],
+   "origin_af": [
+    0.76,
+    -3.8,
+    0.0
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "ski_stbd_incidence",
+     "type": "hinge",
+     "pos_af": [
+      0.76,
+      -3.8,
+      0.0
+     ],
+     "axis_af": [
+      0.0,
+      -1.0,
+      0.0
+     ],
+     "limited": true,
+     "range": [
+      -3.0000000000000004,
+      12.000000000000002
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": []
+  },
+  "ski_aft": {
+   "chain": [
+    "ski_aft"
+   ],
+   "origin_af": [
+    -1.45,
+    0.0,
+    0.04
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "ski_aft_incidence",
+     "type": "hinge",
+     "pos_af": [
+      -1.45,
+      0.0,
+      0.04
+     ],
+     "axis_af": [
+      0.0,
+      -1.0,
+      0.0
+     ],
+     "limited": true,
+     "range": [
+      -4.0,
+      10.0
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": []
+  }
+ },
+ "glb_node_vs_mujoco_origin_max_m": 4e-06,
+ "command_map": {
+  "aileron_port_hinge": {
+   "terms": [
+    [
+     "aileron_deg",
+     -1.0
+    ]
+   ],
+   "note": "+aileron_deg = right roll => port TE down (-q)"
+  },
+  "aileron_stbd_hinge": {
+   "terms": [
+    [
+     "aileron_deg",
+     1.0
+    ]
+   ],
+   "note": "+aileron_deg = right roll => stbd TE up (+q)"
+  },
+  "elevator_hinge": {
+   "terms": [
+    [
+     "elevator_deg",
+     1.0
+    ]
+   ]
+  },
+  "rudder_hinge": {
+   "terms": [
+    [
+     "rudder_deg",
+     1.0
+    ]
+   ]
+  },
+  "reverse_bucket_port_hinge": {
+   "terms": [
+    [
+     "reverse_bucket",
+     85.0
+    ]
+   ],
+   "note": "fraction x 85 deg"
+  },
+  "reverse_bucket_stbd_hinge": {
+   "terms": [
+    [
+     "reverse_bucket",
+     85.0
+    ]
+   ],
+   "note": "fraction x 85 deg"
+  },
+  "ski_port_incidence": {
+   "terms": [
+    [
+     "ski_incidence_deg",
+     1.0
+    ],
+    [
+     "ski_differential_deg",
+     1.0
+    ]
+   ],
+   "clip_deg": [
+    -3.0,
+    12.0
+   ],
+   "note": "collective + differential, clipped to the joint range and the rod stroke"
+  },
+  "ski_stbd_incidence": {
+   "terms": [
+    [
+     "ski_incidence_deg",
+     1.0
+    ],
+    [
+     "ski_differential_deg",
+     -1.0
+    ]
+   ],
+   "clip_deg": [
+    -3.0,
+    12.0
+   ],
+   "note": "collective - differential, clipped to the joint range and the rod stroke"
+  },
+  "ski_aft_incidence": {
+   "terms": [
+    [
+     "aft_ski_incidence_deg",
+     1.0
+    ]
+   ],
+   "clip_deg": [
+    -4.0,
+    10.0
+   ],
+   "note": "aft trim ski incidence, clipped to joint range"
+  }
+ },
+ "channel_limits": {
+  "throttle": {
+   "min": 0.0,
+   "max": 1.0,
+   "unit": "fraction",
+   "rate_per_s": 2.5
+  },
+  "differential_thrust": {
+   "min": -1.0,
+   "max": 1.0,
+   "unit": "fraction",
+   "rate_per_s": 4.0
+  },
+  "rudder_deg": {
+   "min": -30.0,
+   "max": 30.0,
+   "unit": "deg",
+   "rate_deg_s": 100.0
+  },
+  "elevator_deg": {
+   "min": -20.0,
+   "max": 20.0,
+   "unit": "deg",
+   "rate_deg_s": 165.0
+  },
+  "aileron_deg": {
+   "min": -25.0,
+   "max": 25.0,
+   "unit": "deg",
+   "rate_deg_s": 165.0
+  },
+  "reverse_bucket": {
+   "min": 0.0,
+   "max": 1.0,
+   "unit": "fraction",
+   "rate_per_s": 1.1764705882352942,
+   "max_deg": 85.0
+  },
+  "ski_incidence_deg": {
+   "min": -2.0,
+   "max": 10.0,
+   "unit": "deg",
+   "rate_deg_s": 33.07529090073388
+  },
+  "ski_differential_deg": {
+   "min": -4.0,
+   "max": 4.0,
+   "unit": "deg",
+   "rate_deg_s": 33.07529090073388
+  },
+  "aft_ski_incidence_deg": {
+   "min": -3.0,
+   "max": 8.0,
+   "unit": "deg",
+   "rate_deg_s": 100.0
+  },
+  "ecu_assist": {
+   "min": 0.0,
+   "max": 1.0,
+   "unit": "fraction",
+   "rate_per_s": 4.0
+  }
+ },
+ "actuator_envelopes": {
+  "aileron_port_servo": {
+   "rated_nm": 36.0,
+   "peak_nm": 64.0,
+   "no_load_deg_s": 165.0,
+   "rated_deg_s": 115.0
+  },
+  "aileron_stbd_servo": {
+   "rated_nm": 36.0,
+   "peak_nm": 64.0,
+   "no_load_deg_s": 165.0,
+   "rated_deg_s": 115.0
+  },
+  "elevator_servo": {
+   "rated_nm": 36.0,
+   "peak_nm": 64.0,
+   "no_load_deg_s": 165.0,
+   "rated_deg_s": 115.0
+  },
+  "rudder_servo": {
+   "rated_nm": 80.0,
+   "peak_nm": 200.0,
+   "no_load_deg_s": 100.0,
+   "rated_deg_s": 80.0
+  },
+  "reverse_bucket_port_servo": {
+   "rated_nm": 80.0,
+   "peak_nm": 200.0,
+   "no_load_deg_s": 100.0,
+   "rated_deg_s": 80.0
+  },
+  "reverse_bucket_stbd_servo": {
+   "rated_nm": 80.0,
+   "peak_nm": 200.0,
+   "no_load_deg_s": 100.0,
+   "rated_deg_s": 80.0
+  }
+ },
+ "ski_actuator_envelope": {
+  "rated_nm": 1416.36,
+  "peak_nm": 1416.36,
+  "no_load_deg_s": 33.07529090073388,
+  "rated_deg_s": 33.07529090073388,
+  "stroke_mm": 152.4,
+  "travel_deg": 19.945736991487856
+ },
+ "actuator_mounts_vtx_m": {
+  "aileron_port_servo": [
+   -0.586,
+   3.17,
+   1.039
+  ],
+  "aileron_stbd_servo": [
+   -0.586,
+   -3.17,
+   1.039
+  ],
+  "elevator_servo": [
+   -3.14,
+   0.0,
+   2.302
+  ],
+  "rudder_servo": [
+   -2.59,
+   0.0,
+   1.58
+  ],
+  "reverse_bucket_port_servo": [
+   -2.33,
+   0.78,
+   1.56
+  ],
+  "reverse_bucket_stbd_servo": [
+   -2.33,
+   -0.78,
+   1.56
+  ]
+ },
+ "surface_actuators": {
+  "aileron_port_servo": {
+   "component": "volz_da30htd",
+   "joint": "aileron_port_hinge",
+   "channel": "aileron_deg"
+  },
+  "aileron_stbd_servo": {
+   "component": "volz_da30htd",
+   "joint": "aileron_stbd_hinge",
+   "channel": "aileron_deg"
+  },
+  "elevator_servo": {
+   "component": "volz_da30htd",
+   "joint": "elevator_hinge",
+   "channel": "elevator_deg"
+  },
+  "rudder_servo": {
+   "component": "volz_da58d",
+   "joint": "rudder_hinge",
+   "channel": "rudder_deg"
+  },
+  "reverse_bucket_port_servo": {
+   "component": "volz_da58d",
+   "joint": "reverse_bucket_port_hinge",
+   "channel": "reverse_bucket"
+  },
+  "reverse_bucket_stbd_servo": {
+   "component": "volz_da58d",
+   "joint": "reverse_bucket_stbd_hinge",
+   "channel": "reverse_bucket"
+  }
+ },
+ "components": {
+  "exlar_gsx30_2stack_0p2in": {
+   "name": "Exlar (Curtiss-Wright) GSX30 integrated-motor roller-screw actuator, 2-stack, 0.2 in (5.08 mm) lead",
+   "kind": "linear_electromechanical_actuator",
+   "source_page": "https://actuation.curtisswright.com/en-gb/products/integrated-motor-actuators/gsx-series-integrated-motor-actuator",
+   "datasheet_pdf_url": "https://actuation.curtisswright.com/sites/default/files/InfoCenter/2026%20GSX%20Product%20Catalog.9-26.pdf",
+   "datasheet_archived": false,
+   "archive_note": "Values transcribed from the manufacturer's product page on 2026-11-20; PDF catalogue not yet downloaded/archived (needs owner OK). Verify against the catalogue before acceptance.",
+   "force_n": {
+    "continuous_motor_limited": 3219,
+    "peak": "not published"
+   },
+   "speed_mm_s": {
+    "max": 254
+   },
+   "stroke_mm": {
+    "min": 76,
+    "max": 457,
+    "selected": 76
+   },
+   "mass_kg": {
+    "zero_stroke": 3.47,
+    "per_inch_stroke": 0.5,
+    "at_selected_stroke": 4.97
+   },
+   "supply": "Stator bus 115/230/400/460 Vrms via external servo drive (drive mass not included); brake 24 VDC 0.5 A",
+   "not_published_on_page": [
+    "peak force",
+    "IP rating",
+    "backlash",
+    "operating temperature",
+    "force-speed curve"
+   ],
+   "modelling_rule": "Continuous force is used as the absolute force limit (no peak published); constant max speed (no force-speed curve published)."
+  },
+  "volz_da30htd": {
+   "name": "Volz DA 30-HT-D duplex rotary EMA (DA 30-HT-D-30-...)",
+   "kind": "rotary_electromechanical_actuator",
+   "supply_v": {
+    "rated": 28,
+    "range": [
+     12,
+     32
+    ]
+   },
+   "current_a": {
+    "standby": 0.1,
+    "rated": 4.5,
+    "peak": 7.8
+   },
+   "torque_nm": {
+    "rated_at_rated_speed": 36,
+    "peak": 64
+   },
+   "speed_deg_s": {
+    "no_load": 165,
+    "at_rated_torque": 115
+   },
+   "degraded_one_channel": {
+    "rated_torque_nm": 14,
+    "peak_torque_nm": 26,
+    "no_load_deg_s_max": 100,
+    "rated_deg_s_max": 75
+   },
+   "travel_deg": {
+    "default": [
+     -170,
+     170
+    ]
+   },
+   "backlash_deg_max": 0.6,
+   "position_error_deg_no_load_over_temp": 1.0,
+   "operating_temp_c": [
+    -30,
+    70
+   ],
+   "mass_kg": 1.85,
+   "mass_note": "with D-Sub connectors (.S9), +/-10%",
+   "interface": "RS-485 (duplex, two ACE units)",
+   "not_in_datasheet": [
+    "rotor/reflected inertia",
+    "position-loop bandwidth",
+    "peak-torque duration / thermal limit"
+   ]
+  },
+  "volz_da58d": {
+   "name": "Volz DA 58-Duplex rotary EMA (DA 58-D-30-8848...)",
+   "kind": "rotary_electromechanical_actuator",
+   "supply_v": {
+    "rated": 28,
+    "range": [
+     12,
+     32
+    ]
+   },
+   "current_a": {
+    "standby": 0.1,
+    "rated": 8.0,
+    "peak": 19.0
+   },
+   "torque_nm": {
+    "rated_at_rated_speed": 80,
+    "peak": 200
+   },
+   "speed_deg_s": {
+    "no_load": 100,
+    "at_rated_torque": 80
+   },
+   "degraded_one_channel": {
+    "rated_torque_nm": 40,
+    "peak_torque_nm": 100,
+    "no_load_deg_s_max": 100,
+    "rated_deg_s_max": 80
+   },
+   "travel_deg": {
+    "default": [
+     -45,
+     45
+    ],
+    "max": [
+     -160,
+     160
+    ]
+   },
+   "backlash_deg_max": 0.6,
+   "resolution_deg": 0.1,
+   "position_error_deg_no_load_over_temp": 1.0,
+   "operating_temp_c": [
+    -30,
+    70
+   ],
+   "mass_kg": 5.6,
+   "case_mm": [
+    240,
+    307,
+    58
+   ],
+   "interface": "RS-485 and/or CAN (duplex)",
+   "not_in_datasheet": [
+    "rotor/reflected inertia",
+    "position-loop bandwidth",
+    "peak-torque duration / thermal limit"
+   ]
+  }
+ },
+ "ski": {
+  "hydro_mode": "planing",
+  "pivot_in_sponson_m": [
+   1.1,
+   0.0,
+   -0.48
+  ],
+  "length_m": 1.9,
+  "beam_m": 0.62,
+  "thickness_m": 0.045,
+  "deadrise_deg": 4.0,
+  "hinge_from_trailing_edge_m": 1.12,
+  "bottom_below_pivot_m": 0.1,
+  "mass_kg": 11.5,
+  "mass_status": "assumed: carbon sandwich planing ski + titanium yoke + fin",
+  "joint_range_deg": [
+   -3.0,
+   12.0
+  ],
+  "incidence_command_deg": [
+   -2.0,
+   10.0
+  ],
+  "differential_command_deg": [
+   -4.0,
+   4.0
+  ],
+  "strut": {
+   "chord_m": 0.18,
+   "thickness_m": 0.036,
+   "top_above_pivot_m": 0.44,
+   "x_from_pivot_m": 0.0
+  },
+  "actuator": {
+   "component": "exlar_gsx30_2stack_0p2in",
+   "lever_m": 0.44,
+   "stroke_mm": 152.4,
+   "linkage_mass_kg": 1.8,
+   "servo_stiffness_nm_per_rad": 30000.0,
+   "servo_damping_ratio": 1.0,
+   "reflected_armature_kg_m2": 2.0,
+   "joint_damping": 5.0,
+   "solreflimit": "0.005 1",
+   "solimplimit": "0.995 0.999 0.0002",
+   "loop_assumed": true
+  },
+  "fin": {
+   "x_from_pivot_m": -0.92,
+   "span_m": 0.26,
+   "chord_m": 0.28,
+   "cl_max_submerged": 0.9,
+   "cl_max_piercing": 0.6,
+   "steer_link_from_rudder": 0.2
+  },
+  "hydro_model": "Savitsky 4-deg deadrise planing ski on lowered strut ahead of CG + surface-piercing strut & spray drag."
+ },
+ "aft_ski": {
+  "hydro_mode": "planing",
+  "pivot_in_airframe_m": [
+   -1.45,
+   0.0,
+   0.04
+  ],
+  "length_m": 0.95,
+  "beam_m": 0.56,
+  "thickness_m": 0.035,
+  "deadrise_deg": 6.0,
+  "hinge_from_trailing_edge_m": 0.61,
+  "bottom_below_pivot_m": 0.08,
+  "mass_kg": 5.5,
+  "joint_range_deg": [
+   -4.0,
+   10.0
+  ],
+  "incidence_command_deg": [
+   -3.0,
+   8.0
+  ],
+  "strut": {
+   "chord_m": 0.16,
+   "thickness_m": 0.03,
+   "top_above_pivot_m": 0.34,
+   "anchor_z_airframe_m": 0.36,
+   "x_from_pivot_m": 0.0
+  },
+  "actuator": {
+   "component": "volz_da58d",
+   "linkage_mass_kg": 1.0,
+   "servo_stiffness_nm_per_rad": 12000.0,
+   "servo_damping_ratio": 1.0,
+   "reflected_armature_kg_m2": 0.8,
+   "joint_damping": 4.0,
+   "solreflimit": "0.005 1",
+   "solimplimit": "0.995 0.999 0.0002"
+  },
+  "fin": {
+   "x_from_pivot_m": -0.4,
+   "span_m": 0.18,
+   "chord_m": 0.22,
+   "cl_max_submerged": 0.9,
+   "cl_max_piercing": 0.6,
+   "steer_link_from_rudder": 0.3
+  }
+ },
+ "aft_ski_actuator_envelope": {
+  "rated_nm": 80.0,
+  "peak_nm": 200.0,
+  "no_load_deg_s": 100.0,
+  "rated_deg_s": 80.0,
+  "travel_deg": 90.0
+ },
+ "rudder_cove_clear": true,
+ "kinematics": {
+  "aileron_port": {
+   "hinge_axis_to_nearest_vertex_m": 0.0185,
+   "surface_chord_from_hinge_m": 0.4485,
+   "te_motion_for_plus5deg_af_m": [
+    0.0016,
+    -0.0022,
+    0.0386
+   ],
+   "interference_at_travel": {
+    "-25deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 444,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+0deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 444,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+25deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 444,
+     "max_radius_from_hinge_m": 0.0
+    }
+   }
+  },
+  "aileron_stbd": {
+   "hinge_axis_to_nearest_vertex_m": 0.0185,
+   "surface_chord_from_hinge_m": 0.4485,
+   "te_motion_for_plus5deg_af_m": [
+    0.0016,
+    0.0022,
+    0.0386
+   ],
+   "interference_at_travel": {
+    "-25deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 444,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+0deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 444,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+25deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 444,
+     "max_radius_from_hinge_m": 0.0
+    }
+   }
+  },
+  "elevator": {
+   "hinge_axis_to_nearest_vertex_m": 0.0082,
+   "surface_chord_from_hinge_m": 0.294,
+   "te_motion_for_plus5deg_af_m": [
+    0.001,
+    0.0,
+    0.0252
+   ],
+   "interference_at_travel": {
+    "-20deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 502,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+0deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 502,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+20deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 502,
+     "max_radius_from_hinge_m": 0.0
+    }
+   }
+  },
+  "rudder": {
+   "hinge_axis_to_nearest_vertex_m": 0.0016,
+   "surface_chord_from_hinge_m": 0.1689,
+   "te_motion_for_plus5deg_af_m": [
+    0.0005,
+    0.0145,
+    0.0004
+   ],
+   "interference_at_travel": {
+    "-30deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 414,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+0deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 414,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+30deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 414,
+     "max_radius_from_hinge_m": 0.0
+    }
+   }
+  },
+  "reverse_bucket_port": {
+   "hinge_axis_to_nearest_vertex_m": 0.0,
+   "surface_chord_from_hinge_m": 0.5966,
+   "te_motion_for_plus5deg_af_m": [
+    -0.0433,
+    0.0,
+    -0.0263
+   ],
+   "interference_at_travel": {
+    "+0deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 516,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+85deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 516,
+     "max_radius_from_hinge_m": 0.0
+    }
+   }
+  },
+  "reverse_bucket_stbd": {
+   "hinge_axis_to_nearest_vertex_m": 0.0,
+   "surface_chord_from_hinge_m": 0.5966,
+   "te_motion_for_plus5deg_af_m": [
+    -0.0433,
+    0.0,
+    -0.0263
+   ],
+   "interference_at_travel": {
+    "+0deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 516,
+     "max_radius_from_hinge_m": 0.0
+    },
+    "+85deg": {
+     "vertices_inside_neighbour": 0,
+     "of": 516,
+     "max_radius_from_hinge_m": 0.0
+    }
+   }
+  }
+ }
+}

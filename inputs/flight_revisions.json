@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "integrated_runtime_sha256": "ba1c9c48b237c4c7aaef90378bc8050676dc810cd359c978f1a714725e533127",
+  "integrated_runtime_sha256": "f0bdcf8d5040e4b1c05e8367d93634ab8ecf95816da4ef401b658b1eb405ed80",
   "previous_integrated_runtimes": [
     {
       "sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
@@ -33,6 +33,12 @@
       "commit": "bca9a77f0a70ebb433321d47924eb47cf10ee3e0",
       "superseded": "2026-11-18",
       "reason": "The Vercel preview now verifies the same public bytes from a compressed bundle. Aircraft configurations, numerical models, Ricochet dependencies and original asset bytes are identical."
+    },
+    {
+      "sha256": "ba1c9c48b237c4c7aaef90378bc8050676dc810cd359c978f1a714725e533127",
+      "commit": "7839f2095b1309f80a10d5bb8b498cf0f9e5361e",
+      "superseded": "2026-11-20",
+      "reason": "Ricochet RC-01 19-DOF / 9-control-surface real-component actuation, SWE reflective boundaries, 5-mode ECU, RicochetAction live contract, and selectable model revisions RC01-P1-R1 and RC01-H1-R1."
     }
   ],
   "text_dependencies_sha256_lf": {

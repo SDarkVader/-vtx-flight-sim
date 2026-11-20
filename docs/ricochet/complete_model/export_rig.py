@@ -28,6 +28,7 @@ import numpy as np
 
 WT = pathlib.Path(sys.argv[1])
 OUT = pathlib.Path(sys.argv[2])
+PROFILE = sys.argv[3] if len(sys.argv) > 3 else 'rc01-real-components-v1'
 OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(WT / 'src'))
 sys.path.insert(0, str(WT / 'tests'))
@@ -38,7 +39,6 @@ from vtx.ricochet.hull_geometry import CONCEPT_A_AIRFRAME_NODE_SPECS, CONCEPT_A_
 from vtx.ricochet.plant import ARTICULATED_CHILD_SPECS, RicochetCraft  # noqa: E402
 from vtx.water.datum import WaterEnvironmentConfig  # noqa: E402
 
-PROFILE = 'rc01-real-components-v1'
 FPS = 24
 t_wall = time.time()
 
@@ -109,6 +109,14 @@ COMMAND_MAP = {
     'ski_stbd_incidence': dict(terms=[['ski_incidence_deg', 1.0], ['ski_differential_deg', -1.0]], clip_deg=[j0s, ski_hi],
                                note='collective - differential, clipped to the joint range and the rod stroke'),
 }
+aski = c.profile.get('aft_ski')
+if aski:
+    j0a, j1a = (float(v) for v in aski['joint_range_deg'])
+    aski_hi = min(j1a, j0a + float(c.profile['_aft_ski_env'].get('travel_deg', j1a - j0a)))
+    COMMAND_MAP['ski_aft_incidence'] = dict(
+        terms=[['aft_ski_incidence_deg', 1.0]], clip_deg=[j0a, aski_hi],
+        note='aft trim ski incidence, clipped to joint range',
+    )
 
 
 def mapped_deg(joint, cmd):
@@ -126,6 +134,8 @@ for part_key, node_name, role, _pin, _off, body in CONCEPT_A_AIRFRAME_NODE_SPECS
     visual_by_body.setdefault(body, []).append(dict(part=part_key, node=node_name, material_role=role))
 
 RIG_BODIES = [s['body'] for s in ARTICULATED_CHILD_SPECS] + ['sponson_port', 'sponson_stbd', 'ski_port', 'ski_stbd']
+if aski:
+    RIG_BODIES.append('ski_aft')
 rig = {}
 node_err = 0.0
 for name in RIG_BODIES:
@@ -244,6 +254,10 @@ for body, neighbours in NEIGHBOUR.items():
 # --- bench sweep in MuJoCo ----------------------------------------------------------------------------------------
 BASE = dict(throttle=0.0, differential_thrust=0.0, rudder_deg=0.0, elevator_deg=0.0, aileron_deg=0.0,
             reverse_bucket=0.0, ski_incidence_deg=0.0, ski_differential_deg=0.0)
+if aski:
+    BASE['aft_ski_incidence_deg'] = 0.0
+if 'ecu_assist' in c.command:
+    BASE['ecu_assist'] = 0.0
 SEQ = [
     ('neutral', 0.6, {}),
     ('aileron +25 (right roll)', 1.0, dict(aileron_deg=25.0)),
@@ -262,11 +276,19 @@ SEQ = [
     ('ski differential -4', 1.4, dict(ski_incidence_deg=10.0, ski_differential_deg=-4.0)),
     ('ski differential 0', 1.2, dict(ski_incidence_deg=10.0)),
     ('ski collective 0', 1.4, {}),
+]
+if aski:
+    SEQ.extend([
+        ('aft ski +6', 1.0, dict(aft_ski_incidence_deg=6.0)),
+        ('aft ski -3', 1.0, dict(aft_ski_incidence_deg=-3.0)),
+        ('aft ski 0', 0.8, {}),
+    ])
+SEQ.extend([
     ('combined', 1.5, dict(aileron_deg=25.0, elevator_deg=-20.0, rudder_deg=30.0, reverse_bucket=0.5, ski_incidence_deg=6.0)),
     ('neutral', 1.5, {}),
     ('fans 35% throttle', 4.0, dict(throttle=0.35)),
     ('fans throttle 0', 3.0, {}),
-]
+])
 JOINTS = list(COMMAND_MAP)
 FANS = ['fan_rotor_port_hinge', 'fan_rotor_stbd_hinge']
 POSE_BODIES = [b for b in RIG_BODIES]
@@ -336,9 +358,15 @@ spec = dict(
     ski_actuator_envelope=c.profile['_ski_env'],
     actuator_mounts_vtx_m=c.profile['actuator_mounts_vtx_m'],
     surface_actuators=c.profile['surface_actuators'],
-    components={k: c.profile['_components'][k] for k in sorted({a['component'] for a in c.profile['surface_actuators'].values()}
-                                                                 | {ski['actuator']['component']})},
+    components={k: c.profile['_components'][k] for k in sorted(
+        {a['component'] for a in c.profile['surface_actuators'].values()}
+        | {ski['actuator']['component']}
+        | ({aski['actuator']['component']} if aski else set())
+    )},
     ski=ski,
+    aft_ski=aski,
+    aft_ski_actuator_envelope=c.profile.get('_aft_ski_env'),
+    rudder_cove_clear=bool(c.profile.get('rudder_cove_clear', False)),
     kinematics=kin,
 )
 json.dump(spec, open(OUT / 'rig_spec.json', 'w'), indent=1, default=str)

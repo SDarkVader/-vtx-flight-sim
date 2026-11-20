@@ -40,6 +40,8 @@ from .r6_hold import R6HoldController
 from .phantom import live as phantom_live
 from .phantom.controls import PhantomAction
 from .phantom.identity import asset_sha256
+from .ricochet import live as ricochet_live
+from .ricochet.live import RicochetAction, normalize_ricochet_action
 from .frontend_identity import server_frontend_manifest
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
@@ -964,6 +966,12 @@ class Laboratory:
             if len(self.observations)>3000:del self.observations[min(self.observations)]
             self.log('observation',obs)
             return obs
+        if getattr(p,'is_ricochet',False):
+            obs=ricochet_live.sensor_observation(self)
+            self.last_obs=obs;self.observations[self.obs_id]=obs
+            if len(self.observations)>3000:del self.observations[min(self.observations)]
+            self.log('observation',obs)
+            return obs
         bid=p.bids['airframe'];q=d.xquat[bid]
         euler=Rotation.from_quat([q[1],q[2],q[3],q[0]]).as_euler('xyz',degrees=True)
         velocity=np.zeros(6);mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_BODY,bid,velocity,0)
@@ -1138,6 +1146,8 @@ class Laboratory:
             raise HTTPException(409,'Flight changed; refresh before sending controls')
         if isinstance(a,PhantomAction)!=bool(getattr(self.aircraft,'is_phantom',False)):
             raise HTTPException(409,'Action schema does not match the active airframe (Phantom requires schema phantom-fbw-1)')
+        if isinstance(a,RicochetAction)!=bool(getattr(self.aircraft,'is_ricochet',False)):
+            raise HTTPException(409,'Action schema does not match the active airframe (Ricochet requires schema ricochet-1)')
         if a.authority!=self.authority:raise HTTPException(409,'This operator does not hold control authority')
         if a.authority=='colin' and getattr(a,'pti',None) is not None and a.pti.command!='abort':
             raise HTTPException(409,'Timed test excitation is offline only; pilot decisions must be individual telemetry-based commands')
@@ -1172,7 +1182,7 @@ class Laboratory:
         self.action_sequence+=1
         row=dict(sequence=self.action_sequence,issued_t_s=float(self.aircraft.data.time),
                  apply_t_s=float(self.aircraft.data.time)+.02,observation=obs,decision=a.reason,
-                 issued=a.model_dump(by_alias=True,exclude_none=True) if isinstance(a,PhantomAction) else a.model_dump())
+                 issued=a.model_dump(by_alias=True,exclude_none=True) if isinstance(a,(PhantomAction,RicochetAction)) else a.model_dump())
         if isinstance(a,PhantomAction):phantom_live.accept_timing(self,row)
         self.action_log.append(row);self.last_command_time=float(self.aircraft.data.time);self.lease_expired=False
         self.log('pilot_decision',row)
@@ -1193,6 +1203,10 @@ class Laboratory:
         p=self.aircraft
         if getattr(p,'is_phantom',False):
             phantom_live.integrate(self);self.compact_actions()
+            if p.crashed:self.reset_after_failure('Physical crash detected')
+            return
+        if getattr(p,'is_ricochet',False):
+            ricochet_live.integrate(self);self.compact_actions()
             if p.crashed:self.reset_after_failure('Physical crash detected')
             return
         if self.fallback_controller and p.data.time-self.fallback_controller.last_time>=.05:
@@ -1505,9 +1519,9 @@ async def harbour_model(boatId:str,airport:bool=False):
 @app.post('/api/harbour/action')
 async def harbour_action(request:dict,airport:bool=False):
     action=request.get('action')
-    if action not in ('activate','select','command','dock','undock','save','restore','restart'):
+    if action not in ('activate','select','command','dock','undock','save','restore','restart','set_profile'):
         raise HTTPException(422,'Unknown harbour action')
-    if action in ('select','command','dock','undock','restart') and not isinstance(request.get('boatId'),str):
+    if action in ('select','command','dock','undock','restart','set_profile') and not isinstance(request.get('boatId'),str):
         raise HTTPException(422,'Select the boat explicitly')
     if action=='dock' and not isinstance(request.get('berthId'),str):
         raise HTTPException(422,'Select the berth explicitly')
@@ -1515,7 +1529,7 @@ async def harbour_action(request:dict,airport:bool=False):
         raise HTTPException(422,'Expected a boat command')
     try:
         result=await asyncio.to_thread(lab.harbour_session.act,lab.airport_harbour_world() if airport else lab.world,action,request)
-        if airport and action in ('activate','select','command','undock','restart'):
+        if airport and action in ('activate','select','command','undock','restart','set_profile'):
             lab.harbour_helm_outside_airport=not bool(getattr(lab.world,'harbour',None))
         return result
     except (OSError,ValueError,KeyError) as exc:
@@ -1889,11 +1903,17 @@ async def destination(request:dict):
         raise HTTPException(422,str(e))
 
 def parse_action(body):
-    """One endpoint, two schemas: 'phantom-fbw-1' -> PhantomAction, anything else -> the unchanged legacy Action."""
-    model=PhantomAction if isinstance(body,dict) and body.get('schema')=='phantom-fbw-1' else Action
-    try:return model.model_validate(body)
+    """One endpoint, three schemas: 'phantom-fbw-1' -> PhantomAction, 'ricochet-1' -> RicochetAction, anything else -> the unchanged legacy Action."""
+    try:
+        if isinstance(body,dict) and body.get('schema')=='phantom-fbw-1':
+            return PhantomAction.model_validate(body)
+        if isinstance(body,dict) and body.get('schema')=='ricochet-1':
+            return RicochetAction.model_validate(normalize_ricochet_action(body))
+        return Action.model_validate(body)
     except ValidationError as e:
         raise RequestValidationError([{**err,'loc':('body',*err['loc'])} for err in e.errors()])
+    except ValueError as e:
+        raise RequestValidationError([{'type':'value_error','loc':('body',),'msg':str(e),'input':body}])
 @app.post('/api/action')
 async def action(request:Request):
     try:body=await request.json()

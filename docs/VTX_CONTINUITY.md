@@ -2,6 +2,35 @@
 
 # VTX continuity — working record
 
+- **20 Nov, wrap-up of PR #66 — Ricochet RC-01 19-DOF / 9-control-surface real-component actuation, SWE reflective boundaries, 5-mode ECU, Blendstra articulated rig & dual selectable hydro-ski profiles (RC01-P1-R1 & RC01-H1-R1) (Claude; offline only; PR #66 ready).** Worktree `ricochet_control_surfaces`, branch `claude/ricochet-control-surfaces-20261120`, PR [SDarkVader/-vtx-flight-sim#66](https://github.com/SDarkVader/-vtx-flight-sim/pull/66).
+  - **Authoritative User Deliverables Completed:**
+    1. **Both High-Speed Ski Architectures Selectable in Simulator & UI:**
+       - **`RC01-P1-R1`** (`rc01-planing-3pt-v1`): Option 1 — 3-point planing skis with dual aft sponson skegs + bow planning ski, 19 DOFs, 9 surfaces, 5-mode ECU ($C_L=0.28$, $C_D=0.045$, transom draft 0.528 m, hump clearance 26.8 cm).
+       - **`RC01-H1-R1`** (`rc01-hydrofoil-ski-v1`): Option 2 — Cambered hydrofoil-section skis with dihedral foil-struts, 19 DOFs, 9 surfaces, 5-mode ECU ($C_L=0.55$, $C_D=0.038$, transom draft 0.448 m, hump clearance 35.6 cm).
+       - **`RC01-CA-1`** (`rc01-real-components-v1`): Baseline real-components aft sponson skis (18 DOFs).
+       - **`RC01-CA-0`** (`profile=None`): Legacy Concept A (16 DOFs, no skis, bit-identical physics, XML and qpos).
+       - Both profiles selectable in `HarbourFleet`, `harbour_session.py`, `live_server.py`, and `public/vtx-env/harbour.js`.
+    2. **Physics & Control Logic for 19 DOFs & 9 Control Surfaces:**
+       - Actuator sizing with real off-the-shelf components: Volz DA 30-HT-D on elevator and both ailerons (30.0 N·m rated, 60.0 N·m peak); Volz DA 58-D on rudder and both reverse buckets (58.0 N·m rated, 116.0 N·m peak); Curtiss-Wright Exlar GTX080 linear electro-mechanical actuators on ski pitch collective/differential (1,416 N·m peak moment); twin EMRAX 228 permanent-magnet synchronous motors for ducted fan thrust.
+       - 5-mode ECU state machine (`displacement`, `hump_transition`, `on_plane_foil`, `wig_skim`, `braking_flare`) with active gain scheduling and pitch/roll stabilization.
+       - Added `/api/observe` -> `/api/action` telemetry and actuation loop contract (`RicochetAction`) with $[-1, +1]$ normalized inputs and fail-safe clamping.
+    3. **Solved Ski Hydro / Rest Energy Gain & Water-Drop Issue:**
+       - Replaced unpicklable `deepcopy(fleet.water)` in `src/vtx/harbour_session.py` with `result.water.restore_state(fleet.water.checkpoint_state())`.
+       - Implemented SWE reflective basin boundaries in `src/vtx/water/shallow_water.py`, preserving fluid mass and momentum and eliminating artificial water-surface drop.
+    4. **Resolved 2 Blendstra / Blender Complete Model Issues:**
+       - Fixed vertex color & PBR material sharing in `docs/ricochet/complete_model/build_complete_model.py`: unified shader nodes with `ShaderNodeVertexColor('Color')` to `Base Color` (preserving clean alpha blend for canopy glass), mapped all imported mesh slots to the canonical 7 PBR materials, and purged `.001` duplicate material slots. Procedural rudder and ski meshes split with crisp 34° split normals matching Concept A.
+       - Fixed mesh parenting / unlinked data and added slide Z drivers for `sponson_port_flex_m` and `sponson_stbd_flex_m` on `RC01_Controls`.
+       - Headless Blender 5.2.3 builds verified: `ricochet_rc01_blendstra_articulated.glb` and `ricochet_rc01_opt2_blendstra_articulated.glb` (0.0 m position error, < 0.06° rotation error, 14 verified physical body containers).
+    5. **CI Regression Pass & Runtime Repin:**
+       - Normalized line endings per `.gitattributes` (`text eol=crlf` on `src/vtx/ricochet/*.py` and `src/vtx/water/*.py`; `text eol=lf` on `src/vtx/harbour_*.py`, `src/vtx/live_server.py`, `inputs/flight_revisions.json`).
+       - Repinned `inputs/flight_revisions.json` integrated_runtime_sha256 from `ba1c9c48...` to `f0bdcf8d5040e4b1c05e8367d93634ab8ecf95816da4ef401b658b1eb405ed80`.
+       - Verified 45/45 Python regression tests pass (`test_flown_revisions.py`, `test_inspection_selection.py`, `test_phantom_checkpoint_continuation.py`, `test_ricochet_real_components.py`, `test_harbour_fleet.py`, `test_ricochet_control_surfaces_dof.py`).
+       - Verified 86/86 JavaScript frontend and harbour tests pass (`tests/harbour-helm-controls.test.mjs`, `tests/test_phantom_physical_wheel_fit.mjs`, etc.).
+       - Verified `scripts/run_reference.py` completes with zero errors.
+       - Concept A baseline GLB `public/assets/ricochet-concept-a.glb` remains bit-identical (`SHA-256: 00f7d9cff2092fe433c9b66a0846774724de26486e92ba592736cd2ae1647124`).
+       - Primary checkout `C:\Users\steve\Documents\Github\-vtx-flight-sim` completely preserved and untouched.
+
+
 Updated: 2026-11-15. This is the single working handoff; reconcile it with the filesystem and running processes at the start of every session. The owner’s detailed brief is at `C:/Users/steve/.codex/attachments/15e34905-09e9-4ac4-a85f-a6b8878d9f1b/Pasted text.txt`. Owner authorizes bounded, reversible isolated development and offline tests; restarting, pausing, resetting or replacing the live simulator, changing its aircraft, creating another live cockpit, merging, pushing or deploying require explicit approval. Promotion is the owner’s decision. Preserve 400 Hz physics and existing dashboard, control, instrument and environment work.
 
 ## Current live state after calibrated verification

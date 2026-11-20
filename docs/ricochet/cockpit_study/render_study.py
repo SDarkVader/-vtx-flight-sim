@@ -14,9 +14,14 @@ import bpy
 from mathutils import Euler, Vector
 
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
-STUDY = pathlib.Path(argv[0])
-OUT = pathlib.Path(argv[1])
+STUDY = pathlib.Path(argv[0]).resolve()
+OUT = pathlib.Path(argv[1]).resolve()
 DO_RENDER = '--no-render' not in argv
+PROFILE_ARG = None
+if '--profile' in argv:
+    p_idx = argv.index('--profile')
+    if p_idx + 1 < len(argv):
+        PROFILE_ARG = pathlib.Path(argv[p_idx + 1]).resolve()
 WT = STUDY.resolve().parents[2] if STUDY.parent.name == 'cockpit_study' and STUDY.parent.parent.name == 'scratch' else None
 data = json.loads(STUDY.read_text(encoding='utf-8'))
 results = data['results']
@@ -102,44 +107,73 @@ def import_case(glb: pathlib.Path, offset: Vector, keep=None):
     return new
 
 
-PROFILE = json.loads((WT / 'inputs' / 'ricochet_profiles' / 'rc01_real_components_v1.json').read_text(encoding='utf-8')) if WT else None
+if PROFILE_ARG is not None and PROFILE_ARG.exists():
+    PROFILE = json.loads(PROFILE_ARG.read_text(encoding='utf-8'))
+elif WT is not None:
+    PROFILE = json.loads((WT / 'inputs' / 'ricochet_profiles' / 'rc01_real_components_v1.json').read_text(encoding='utf-8'))
+else:
+    PROFILE = None
 SPONSON_MOUNT = (-0.34, 3.80, 0.48)  # hull_geometry / concept_a_builder SPONSON_MOUNT_CONCEPT_A_VTX
 
 
-def _ski_material():
-    m = bpy.data.materials.get('ski_as_simulated') or bpy.data.materials.new('ski_as_simulated')
+def _ski_material(name='ski_as_simulated', color=(0.05, 0.22, 0.62, 1.0), metallic=0.2, roughness=0.45):
+    m = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     m.use_nodes = True
     p = m.node_tree.nodes['Principled BSDF']
-    p.inputs['Base Color'].default_value = (0.05, 0.22, 0.62, 1.0)
-    p.inputs['Roughness'].default_value = 0.45
+    p.inputs['Base Color'].default_value = color
+    p.inputs['Metallic'].default_value = metallic
+    p.inputs['Roughness'].default_value = roughness
     return m
 
 
 def add_skis(offset: Vector, coll):
-    """Skis exactly as the rc01-real-components-v1 physics profile simulates them (not in the Concept A GLB)."""
+    """Skis, struts, fins and optional aft trim ski matching the active Ricochet physics profile."""
     if PROFILE is None or 'skis' not in PROFILE:
         return []
     ski = PROFILE['skis']
-    L, b, t = ski['length_m'], ski['beam_m'], ski['thickness_m']
-    a_te, zb = ski['hinge_from_trailing_edge_m'], ski['bottom_below_pivot_m']
+    L, b, t = float(ski['length_m']), float(ski['beam_m']), float(ski['thickness_m'])
+    a_te, zb = float(ski['hinge_from_trailing_edge_m']), float(ski['bottom_below_pivot_m'])
     pv = ski['pivot_in_sponson_m']
-    fin = ski['fin']
+    fin = ski.get('fin')
+    strut = ski.get('strut')
     mat = _ski_material()
+    mat_strut = _ski_material('ski_strut_ti', (0.55, 0.59, 0.65, 1.0), metallic=0.8, roughness=0.3)
     out = []
+
+    def _add_box(centre, size, material):
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=Vector(centre) + offset)
+        o = bpy.context.active_object
+        o.scale = size
+        o.data.materials.append(material)
+        for c in list(o.users_collection):
+            c.objects.unlink(o)
+        coll.objects.link(o)
+        out.append(o)
+
     for sy in (1.0, -1.0):
-        piv = Vector((SPONSON_MOUNT[0] + pv[0], sy * SPONSON_MOUNT[1], SPONSON_MOUNT[2] + pv[2]))
+        piv = Vector((SPONSON_MOUNT[0] + pv[0], sy * (SPONSON_MOUNT[1] + pv[1]), SPONSON_MOUNT[2] + pv[2]))
         te_x = piv.x - a_te
-        parts = [((te_x + 0.5 * L, piv.y, piv.z - zb + 0.5 * t), (L, b, t)),
-                 ((piv.x + fin['x_from_pivot_m'], piv.y, piv.z - zb - 0.5 * fin['span_m']), (fin['chord_m'], 0.012, fin['span_m']))]
-        for centre, size in parts:
-            bpy.ops.mesh.primitive_cube_add(size=1.0, location=Vector(centre) + offset)
-            o = bpy.context.active_object
-            o.scale = size
-            o.data.materials.append(mat)
-            for c in list(o.users_collection):
-                c.objects.unlink(o)
-            coll.objects.link(o)
-            out.append(o)
+        _add_box((te_x + 0.5 * L, piv.y, piv.z - zb + 0.5 * t), (L, b, t), mat)
+        if fin:
+            _add_box((piv.x + fin['x_from_pivot_m'], piv.y, piv.z - zb - 0.5 * fin['span_m']),
+                     (fin['chord_m'], 0.016, fin['span_m']), mat)
+        st_h = max(0.08, (SPONSON_MOUNT[2] - 0.10) - (piv.z - zb + t))
+        st_c = float(strut['chord_m']) if strut else 0.16
+        st_t = float(strut['thickness_m']) if strut else 0.032
+        _add_box((piv.x, piv.y, (piv.z - zb + t) + 0.5 * st_h), (st_c, st_t, st_h), mat_strut)
+
+    aski = PROFILE.get('aft_ski')
+    if aski:
+        pva = Vector(aski['pivot_in_airframe_m'])
+        La, ba, ta = float(aski['length_m']), float(aski['beam_m']), float(aski['thickness_m'])
+        aa_te, zba = float(aski['hinge_from_trailing_edge_m']), float(aski['bottom_below_pivot_m'])
+        _add_box((pva.x - aa_te + 0.5 * La, pva.y, pva.z - zba + 0.5 * ta), (La, ba, ta), mat)
+        st_ha = max(0.08, 0.36 - (pva.z - zba + ta))
+        _add_box((pva.x, pva.y, (pva.z - zba + ta) + 0.5 * st_ha), (0.14, 0.028, st_ha), mat_strut)
+        afin = aski.get('fin')
+        if afin:
+            _add_box((pva.x + afin['x_from_pivot_m'], pva.y, pva.z - zba - 0.5 * afin['span_m']),
+                     (afin['chord_m'], 0.014, afin['span_m']), mat)
     return out
 
 
@@ -203,6 +237,10 @@ def build_grid(name, view_dir, dc, dr, keep=None, text_size=0.32, label_drop=1.0
                 continue
             off = (j - centre_c) * dc * right - (i - centre_r) * dr * up
             glb = (WT / r['glb']) if WT else pathlib.Path(r['glb'])
+            if not glb.is_file():
+                alt_glb = STUDY.parent / pathlib.Path(r['glb']).name
+                if alt_glb.is_file():
+                    glb = alt_glb
             objs = import_case(glb, off, keep)
             for o in objs:
                 for c in list(o.users_collection):

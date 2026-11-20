@@ -36,6 +36,17 @@ _CHANNEL_ALIAS_GROUPS: dict[str, tuple[str, ...]] = {
     'elevator_deg': ('elevator_deg', 'elevator', 'elevators', 'pitch_deg', 'pitch', 'stabilator', 'stab', 'elevator_rad', 'elevator_norm'),
     'aileron_deg': ('aileron_deg', 'aileron', 'ailerons', 'roll_deg', 'roll', 'bank_deg', 'bank', 'aileron_rad', 'aileron_norm'),
     'reverse_bucket': ('reverse_bucket', 'reverser', 'reverse', 'bucket', 'buckets', 'reverse_thrust', 'reverse_deg', 'reverser_deg', 'reverse_pct'),
+    'ski_incidence_deg': ('ski_incidence_deg', 'ski_incidence', 'ski_collective', 'ski_pitch', 'ski_aoa', 'skis_deg', 'collective'),
+    'ski_differential_deg': ('ski_differential_deg', 'ski_differential', 'ski_diff', 'ski_roll', 'ski_bank'),
+    'aft_ski_incidence_deg': ('aft_ski_incidence_deg', 'aft_ski', 'stern_ski', 'aft_ski_deg', 'stern_ski_deg'),
+    'ecu_assist': ('ecu_assist', 'ecu', 'trim_ecu'),
+}
+
+_EXTENDED_CHANNEL_LIMITS: dict[str, dict[str, float]] = {
+    'ski_incidence_deg': {'min': -6.0, 'max': 12.0},
+    'ski_differential_deg': {'min': -4.0, 'max': 4.0},
+    'aft_ski_incidence_deg': {'min': -8.0, 'max': 10.0},
+    'ecu_assist': {'min': 0.0, 'max': 1.0},
 }
 
 _ALIAS_TO_CHANNEL: dict[str, tuple[str, str]] = {
@@ -59,6 +70,9 @@ _SIGNED_DIR_WORDS: dict[str, dict[str, float]] = {
     'elevator_deg': {'up': +1.0, 'nose up': +1.0, 'pitch up': +1.0, 'pull': +1.0, 'climb': +1.0, 'down': -1.0, 'nose down': -1.0, 'pitch down': -1.0, 'push': -1.0, 'dive': -1.0},
     'aileron_deg': {'right': +1.0, 'starboard': +1.0, 'stbd': +1.0, 'bank right': +1.0, 'roll right': +1.0, 'left': -1.0, 'port': -1.0, 'bank left': -1.0, 'roll left': -1.0},
     'differential_thrust': {'right': +1.0, 'starboard': +1.0, 'stbd': +1.0, 'left': -1.0, 'port': -1.0},
+    'ski_incidence_deg': {'up': +1.0, 'ski up': +1.0, 'skis up': +1.0, 'nose up': +1.0, 'pitch up': +1.0, 'raise': +1.0, 'positive': +1.0, 'down': -1.0, 'ski down': -1.0, 'skis down': -1.0, 'nose down': -1.0, 'pitch down': -1.0, 'lower': -1.0, 'negative': -1.0},
+    'ski_differential_deg': {'right': +1.0, 'starboard': +1.0, 'stbd': +1.0, 'bank right': +1.0, 'roll right': +1.0, 'ski bank right': +1.0, 'port up': +1.0, 'left': -1.0, 'port': -1.0, 'bank left': -1.0, 'roll left': -1.0, 'ski bank left': -1.0, 'stbd up': -1.0},
+    'aft_ski_incidence_deg': {'up': +1.0, 'aft ski up': +1.0, 'stern ski up': +1.0, 'raise': +1.0, 'positive': +1.0, 'down': -1.0, 'aft ski down': -1.0, 'stern ski down': -1.0, 'lower': -1.0, 'negative': -1.0},
 }
 
 
@@ -79,7 +93,7 @@ def _resolve_scalar_command(
     notes: list[str],
 ) -> float:
     """Resolve numeric, unit-tagged, percentage, sequence, or qualitative pilot values into mechanical bounds."""
-    lim = RICOCHET_SURFACE_LIMITS[channel]
+    lim = RICOCHET_SURFACE_LIMITS.get(channel) or _EXTENDED_CHANNEL_LIMITS[channel]
     lo, hi = float(lim['min']), float(lim['max'])
     abs_max = max(abs(lo), abs(hi))
 
@@ -103,7 +117,7 @@ def _resolve_scalar_command(
         elif source_key.endswith(('_norm', '_frac')):
             val = val * abs_max
             notes.append(f'{source_key}->deg')
-        elif source_key.endswith('_pct') or (channel in ('throttle', 'reverse_bucket') and val > 1.0 and val <= 100.0 and source_key != 'reverse_deg'):
+        elif source_key.endswith('_pct') or (channel in ('throttle', 'reverse_bucket', 'ecu_assist') and val > 1.0 and val <= 100.0 and source_key != 'reverse_deg'):
             # Interpret values in (1, 100] on fractional channels? Wait: only if _pct or string '%' unless ambiguous!
             # For safety on raw > 1 without %, clamp and note below unless source_key implies deg/pct:
             if source_key.endswith('_pct'):
@@ -127,7 +141,8 @@ def _resolve_scalar_command(
         if num_match:
             num = float(num_match.group(0))
             if '%' in s:
-                val = (num * 0.01) * (abs_max if dir_sign is not None or channel != 'reverse_bucket' else 1.0)
+                span = (hi if (dir_sign or 1.0) > 0 else abs(lo)) if dir_sign is not None else (abs_max if channel not in ('reverse_bucket', 'throttle', 'ecu_assist') else 1.0)
+                val = (num * 0.01) * span
                 if dir_sign is not None and num >= 0:
                     val = dir_sign * abs(val)
             elif 'rad' in s:
@@ -147,14 +162,15 @@ def _resolve_scalar_command(
                 if re.search(rf'\b{re.escape(word)}\b', s):
                     mag = _MAGNITUDE_WORDS[word]
                     break
-            if channel in ('throttle', 'reverse_bucket'):
+            if channel in ('throttle', 'reverse_bucket', 'ecu_assist'):
                 if mag is None:
                     raise ValueError(f'Unrecognized qualitative {channel} command: {raw_val!r}')
                 val = mag
             else:
                 if dir_sign is not None:
                     frac = 0.5 if mag is None else mag
-                    val = dir_sign * frac * abs_max
+                    span = hi if dir_sign > 0 else abs(lo)
+                    val = dir_sign * frac * span
                 elif mag is not None and mag == 0.0:
                     val = 0.0
                 elif mag is not None and channel == 'differential_thrust':
@@ -177,9 +193,17 @@ def _parse_text_command_clauses(text: str, notes: list[str]) -> dict[str, float]
     clauses = [c.strip() for c in re.split(r'[,;\n]+|\band\b', text, flags=re.IGNORECASE) if c.strip()]
     for clause in clauses:
         low = clause.lower()
-        # Handle reverse bucket synonyms cleanly before rudder/elevator keyword search
+        # Handle ski, ECU, and reverse bucket synonyms cleanly before rudder/elevator keyword search
         matched_chan: str | None = None
-        if any(k in low for k in ('reverser', 'reverse bucket', 'reverse thrust', 'bucket', 'stow', 'deploy')):
+        if any(k in low for k in ('aft ski', 'aft_ski', 'stern ski', 'stern_ski')):
+            matched_chan = 'aft_ski_incidence_deg'
+        elif any(k in low for k in ('ski diff', 'ski_diff', 'ski bank', 'ski roll', 'ski differential', 'differential ski')):
+            matched_chan = 'ski_differential_deg'
+        elif any(k in low for k in ('ski', 'skis', 'collective', 'foil incidence')):
+            matched_chan = 'ski_incidence_deg'
+        elif any(k in low for k in ('ecu', 'trim assist', 'trim_ecu')):
+            matched_chan = 'ecu_assist'
+        elif any(k in low for k in ('reverser', 'reverse bucket', 'reverse thrust', 'bucket', 'stow', 'deploy')):
             matched_chan = 'reverse_bucket'
         elif any(k in low for k in ('diff', 'asymmetric', 'split thrust')):
             matched_chan = 'differential_thrust'
@@ -262,6 +286,10 @@ class RicochetAction(BaseModel):
     elevator_deg: float | None = Field(default=None, ge=-20.0, le=20.0)
     aileron_deg: float | None = Field(default=None, ge=-25.0, le=25.0)
     reverse_bucket: float | None = Field(default=None, ge=0.0, le=1.0)
+    ski_incidence_deg: float | None = Field(default=None, ge=-6.0, le=12.0)
+    ski_differential_deg: float | None = Field(default=None, ge=-4.0, le=4.0)
+    aft_ski_incidence_deg: float | None = Field(default=None, ge=-8.0, le=10.0)
+    ecu_assist: float | None = Field(default=None, ge=0.0, le=1.0)
 
 
 def default_interactive_water_config() -> WaterEnvironmentConfig:
@@ -290,6 +318,7 @@ def make_aircraft(
     fuel_mass_kg: float | None = None,
     propulsion_installation: PropulsionInstallation | None = None,
     propulsion_off: bool | None = None,
+    profile: str | None = None,
 ) -> RicochetCraft:
     if not isinstance(world, RicochetLakeWorld):
         raise ValueError('Ricochet craft requires the ricochet_lake environment')
@@ -310,6 +339,7 @@ def make_aircraft(
         fuel_mass_kg=fuel_mass_kg,
         propulsion_installation=propulsion_installation,
         propulsion_off=propulsion_off,
+        profile=profile,
     )
     return craft
 
@@ -356,6 +386,8 @@ def sensor_observation(lab: Any) -> dict[str, Any]:
         lamps.append('FUEL_EXHAUSTED')
     if 'SERVO_SATURATED' in p.flags:
         lamps.append('SERVO_SATURATED')
+    if getattr(p, 'capsized', False) or 'CAPSIZED' in p.flags:
+        lamps.append('CAPSIZED')
 
     rud_fb = float(ctrl_surf['rudder']['achieved_deg'])
     elev_fb = float(ctrl_surf['elevator']['achieved_deg'])
@@ -408,7 +440,7 @@ def sensor_observation(lab: Any) -> dict[str, Any]:
         reverse_bucket_feedback_deg=[round(rev_p_fb, 2), round(rev_s_fb, 2)],
         reverse_bucket_fraction=round(rev_frac, 3),
         control_surfaces=ctrl_surf,
-        surface_limits=RICOCHET_SURFACE_LIMITS,
+        surface_limits=p.surface_limits,
         command=dict(p.command),
         command_help=(
             'Partial updates supported under hold_until_changed; numeric, unit-tagged '
@@ -454,6 +486,22 @@ def sensor_observation(lab: Any) -> dict[str, Any]:
         time_scale=lab.time_scale,
         sensor_status='Ricochet LAKE MuJoCo 400 Hz + HybridWaterField pilot avionics (full ROM + hold_until_changed)',
     )
+    if getattr(p, 'profile_id', None) is not None:
+        obs['profile_id'] = p.profile_id
+        obs['model_revision'] = getattr(p, 'model_revision', p.profile_id)
+        obs['model_name'] = getattr(p, 'model_name', p.profile_id)
+        obs['capsized'] = bool(getattr(p, 'capsized', False))
+        if 'skis' in ctrl_surf:
+            obs['ski_feedback_deg'] = [
+                round(float(ctrl_surf['skis']['port_achieved_deg']), 2),
+                round(float(ctrl_surf['skis']['stbd_achieved_deg']), 2),
+            ]
+        if 'aft_ski' in ctrl_surf:
+            obs['aft_ski_feedback_deg'] = round(float(ctrl_surf['aft_ski']['achieved_deg']), 2)
+        if 'ecu' in ctrl_surf:
+            obs['ecu_status'] = dict(ctrl_surf['ecu'])
+        if getattr(p, 'last_ski_telemetry', None):
+            obs['ski_telemetry'] = dict(p.last_ski_telemetry)
     return obs
 
 

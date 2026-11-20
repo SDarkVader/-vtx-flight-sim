@@ -286,6 +286,28 @@ class ShallowWaterSolver:
             h_dry,
         )
 
+        # --- Reflective solid-wall outer boundaries (exact hydrostatic wall pressure 0.5*g*h^2, zero mass flux) ---
+        fxl_h, fxl_hu, fxl_hv, _, p_xl_wall = _audusse_rusanov_flux_1d(
+            self.h[:, 0], -self.hu[:, 0], self.hv[:, 0], self.bed[:, 0],
+            self.h[:, 0], self.hu[:, 0], self.hv[:, 0], self.bed[:, 0],
+            g, h_dry,
+        )
+        fxr_h, fxr_hu, fxr_hv, p_xr_wall, _ = _audusse_rusanov_flux_1d(
+            self.h[:, -1], self.hu[:, -1], self.hv[:, -1], self.bed[:, -1],
+            self.h[:, -1], -self.hu[:, -1], self.hv[:, -1], self.bed[:, -1],
+            g, h_dry,
+        )
+        fyb_h, fyb_hv, fyb_hu, _, p_yb_wall = _audusse_rusanov_flux_1d(
+            self.h[0, :], -self.hv[0, :], self.hu[0, :], self.bed[0, :],
+            self.h[0, :], self.hv[0, :], self.hu[0, :], self.bed[0, :],
+            g, h_dry,
+        )
+        fyt_h, fyt_hv, fyt_hu, p_yt_wall, _ = _audusse_rusanov_flux_1d(
+            self.h[-1, :], self.hv[-1, :], self.hu[-1, :], self.bed[-1, :],
+            self.h[-1, :], -self.hv[-1, :], self.hu[-1, :], self.bed[-1, :],
+            g, h_dry,
+        )
+
         dh = np.zeros_like(self.h)
         dhu = np.zeros_like(self.hu)
         dhv = np.zeros_like(self.hv)
@@ -293,23 +315,35 @@ class ShallowWaterSolver:
         inv_dx = 1.0 / self.dx
         inv_dy = 1.0 / self.dy
 
-        # X divergences (zero normal mass flux at outer domain walls -> exact conservation)
+        # X divergences (reflective solid outer walls -> exact mass conservation & lake-at-rest C-property)
         dh[:, :-1] -= inv_dx * fx_h
         dh[:, 1:] += inv_dx * fx_h
+        dh[:, 0] += inv_dx * fxl_h
+        dh[:, -1] -= inv_dx * fxr_h
 
         dhu[:, :-1] -= inv_dx * (fx_hu - p_xl)
         dhu[:, 1:] += inv_dx * (fx_hu - p_xr)
+        dhu[:, 0] += inv_dx * (fxl_hu - p_xl_wall)
+        dhu[:, -1] -= inv_dx * (fxr_hu - p_xr_wall)
         dhv[:, :-1] -= inv_dx * fx_hv
         dhv[:, 1:] += inv_dx * fx_hv
+        dhv[:, 0] += inv_dx * fxl_hv
+        dhv[:, -1] -= inv_dx * fxr_hv
 
         # Y divergences
         dh[:-1, :] -= inv_dy * fy_h
         dh[1:, :] += inv_dy * fy_h
+        dh[0, :] += inv_dy * fyb_h
+        dh[-1, :] -= inv_dy * fyt_h
 
         dhv[:-1, :] -= inv_dy * (fy_hv - p_yl)
         dhv[1:, :] += inv_dy * (fy_hv - p_yr)
+        dhv[0, :] += inv_dy * (fyb_hv - p_yb_wall)
+        dhv[-1, :] -= inv_dy * (fyt_hv - p_yt_wall)
         dhu[:-1, :] -= inv_dy * fy_hu
         dhu[1:, :] += inv_dy * fy_hu
+        dhu[0, :] += inv_dy * fyb_hu
+        dhu[-1, :] -= inv_dy * fyt_hu
 
         # Explicit Euler mass update
         h_new = np.maximum(0.0, self.h + dt * dh)
