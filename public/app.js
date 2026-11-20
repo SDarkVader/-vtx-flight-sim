@@ -15,6 +15,7 @@ import {createSuspensionSchematic,suspensionSchematicDescriptor} from './suspens
 import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
 import {missionDeparture} from './mission-departure.js?v=20261116-start';
 import {startupFrameReady} from './startup-visibility.js?v=20261116-start';
+import {createFrameGate} from './frame-pacing.js';
 import {cockpitTelemetry} from './cockpit-telemetry.js?v=1';
 import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=20261117-clear-sight-4';
 import {isArgonRotorHousing} from './argon-cutaway.js?v=3';
@@ -133,7 +134,7 @@ const mobileView=mobile;
 // Phones default to the lighter display path. The physics and model are unchanged.
 const lightweightView=mobile||new URLSearchParams(location.search).has('lite');
 // Rendering quality tier (visual only; physics unaffected): phone low, ?lite lite, desktop high, ?quality= overrides.
-import {resolveQuality} from './vtx-env/quality.js?v=gfx-20261111-ultra';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
+import {resolveQuality} from './vtx-env/quality.js?v=20261120-frame-pacing';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
 import {createPost} from './vtx-env/post.js?v=2';import {createTimeOfDay} from './vtx-env/time-of-day.js?v=2';import {buildAirfieldKit} from './vtx-env/airfield-kit.js?v=1';
 import {createGameAudio} from './vtx-env/game-audio.js';
 const quality=resolveQuality({mobile,search:location.search});scene.userData.quality=quality.name;
@@ -300,7 +301,7 @@ const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);post?.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 const worldGroup=new THREE.Group();worldGroup.name='vtx-world';scene.add(worldGroup);
 const phantomAvionics=createPhantomAvionics();scene.add(phantomAvionics.root);
-let harbourLayer=null,harbourOverviewState=null,harbourViewActive=false,boatViewId=null;
+let harbourLayer=null,harbourOverviewState=null,boatViewId=null;
 let harbourEnvironment=null,helmRequest=0;
 function setBoatFocus(id){
  boatViewId=id;document.documentElement.dataset.boatFocus=id||'';
@@ -320,7 +321,6 @@ function clearAircraftInput(){
  manualOwned=false;dirty=false;keys.clear();tiltSpin.fill(0);phantomPanel?.disengage();
 }
 function restoreHarbourOverview(){
- harbourViewActive=false;
  if(!harbourOverviewState)return;
  const saved=harbourOverviewState;harbourOverviewState=null;
  if(saved.fog)Object.assign(saved.fog,saved.fogValues);
@@ -341,7 +341,6 @@ const harbourControls=createHarbourControls({host:document.querySelector('.missi
    return;
   }
   setCameraMode('free');
-  harbourViewActive=true;
   const [x,y,z]=point;
   if(kind==='harbour'&&world?.harbour){
    const view=harbourOverviewView(world.harbour,camera),fog=scene.fog;
@@ -1401,7 +1400,14 @@ function connect(){
 }
 api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&&w.default_departure.length===2){departure=[...w.default_departure];$('dep').value=departure.join(', ');}buildWorld(w);connect();let helm;try{helm=sessionStorage.getItem('vtx-helm');}catch{}if(helm)void openBoat(helm,true).catch(error=>toast(error.message));}).catch(error=>{console.warn('Unable to load selected environment',error);return fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{visualOnlyOffline=true;buildWorld(w);$('view-sync').textContent= 'SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';});}).catch(e=>{$('loading').textContent='Unable to load airport: '+e.message;console.error('Airport world',e);});
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
-let lastFrameMs=0;
+const frameDue=createFrameGate(lightweightView?15:60);
+let frameSampleStart=null, drawnFrames=0, viewFps=null;
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)return;
+ frameSampleStart=null;
+ drawnFrames=0;
+ viewFps=null;
+});
 function audibleTraffic(){
  const traffic=[];
  for(const actor of visualTraffic?.actors??[]){
@@ -1422,13 +1428,10 @@ function audibleTraffic(){
  return traffic;
 }
 if(new URLSearchParams(location.search).has('debug'))window.__vtx={post,timeOfDay,scene,worldGroup,camera,renderer,orbit,freeCam,THREE,sky,environment,setCameraMode,switchEnvironment,get currentEnvironment(){return currentEnvironment;},get model(){return model;},get loadedAsset(){return loadedAsset;},get modelReady(){return modelReady;},get last(){return last;},get world(){return world;},get harbourState(){return harbourControls.state;},get harbourLayer(){return harbourLayer;},bodyNodes,setReplay(frames,index){replayFrames=frames;replayFrame=index;},setRideTime(t){if(!rideEnabled||!rideRoute)return false;rideTime=Math.min(rideRoute.duration,Math.max(0,Number(t)||0));rideLastFrame=performance.now();ridePaused=true;return true;}};
-function animate(){
+function animate(frameTimestamp){
  requestAnimationFrame(animate);
- if(document.hidden)return;
+ if(document.hidden||!frameDue(frameTimestamp))return;
  const now=performance.now();
- const frameMs=lightweightView?67:(quality.frameMs??(harbourViewActive&&quality.name==='high'?15:50));
- if(now-lastFrameMs<frameMs)return;
- lastFrameMs=now;
  const truth=replayFrames?replayFrames[replayFrame]:last?.rendering_truth;
  harbourControls.setEnabled(!!world?.harbour&&!replayFrames&&!worldUnavailable);
  if(!replayFrames)harbourLayer?.animate(now);
@@ -1470,7 +1473,7 @@ function animate(){
   const physicalTarget=physicalCameraTarget(truth);if(physicalTarget)pos.set(...physicalTarget);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
   else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position);if(truth.phantom)camera.position.add(new THREE.Vector3(0,.15,.30).applyQuaternion(q));if(!truth.phantom)camera.position.add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);const sight=truth.phantom?new THREE.Vector3(Math.cos(cockpitYaw)*cp,Math.sin(cockpitYaw)*cp,Math.sin(cockpitPitch)):new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch));cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));camera.lookAt(cameraTarget);}
-  else if(cameraMode==='free'){freeCam.update(0.08);}
+  else if(cameraMode==='free'){freeCam.update(Math.min(.08,frameDt));}
   else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);
  }
@@ -1549,13 +1552,25 @@ function animate(){
  const revealReady=startupFrameReady({worldReady:!!world,offline:visualOnlyOffline,physicalPosition:physicalFix,transition:missionTransition,view:last});
  if(revealReady&&!window.__vtxNoRender){
   if(post)post.render();else renderer.render(scene,camera);
+  if(frameSampleStart===null)frameSampleStart=frameTimestamp;
+  else{
+   drawnFrames++;
+   const elapsedMs=frameTimestamp-frameSampleStart;
+   if(elapsedMs>=400){
+    viewFps=Math.round(1000*drawnFrames/elapsedMs);
+    frameSampleStart=frameTimestamp;
+    drawnFrames=0;
+   }
+  }
   renderer.domElement.style.visibility='visible';
   if(missionTransition){missionTransition=null;if(modelReady)$('loading').hidden=true;}
  }
  const age=now-latestTruthReceivedMs;
  if(last&&!replayFrames&&age>2000&&!panelWasStale){aircraftFx?.updateAvionics?.(last.observation,true);panelWasStale=true;showAttitude(last.rendering_truth,'STALE');drawMaps(true);}
  const status=$('view-sync');if(status&&!rideEnabled&&!boatViewId&&now-(status._last||0)>400){status._last=now;
-  status.textContent=replayFrames&&worldUnavailable?'REPLAY · RECORDED TERRAIN UNAVAILABLE':worldUnavailable?'TERRAIN UNAVAILABLE · WAITING FOR MATCHING WORLD':replayFrames?`REPLAY · t ${truth?.t_s?.toFixed(1)??'--'}s`:!last?'WAITING FOR DATA':age>2000?'DISPLAY STALE':!modelReady?'LOADING AIRCRAFT':`LIVE VIEW · ${Math.round(age)} ms · ${Math.round(last?.observation?.rotor_rpm?.[0]||0)} RPM · t ${last?.observation?.t_s?.toFixed(1)??'--'}s`;
+  const fpsLabel=viewFps===null?'':` · ${viewFps} FPS`;
+  status.textContent=replayFrames&&worldUnavailable?'REPLAY · RECORDED TERRAIN UNAVAILABLE':worldUnavailable?'TERRAIN UNAVAILABLE · WAITING FOR MATCHING WORLD':replayFrames?`REPLAY · t ${truth?.t_s?.toFixed(1)??'--'}s`:!last?'WAITING FOR DATA':age>2000?'DISPLAY STALE':!modelReady?'LOADING AIRCRAFT':`LIVE VIEW${fpsLabel} · ${Math.round(age)} ms data age · ${Math.round(last?.observation?.rotor_rpm?.[0]||0)} RPM · t ${last?.observation?.t_s?.toFixed(1)??'--'}s`;
   status.style.color=(worldUnavailable||(!replayFrames&&age>2000))?'#ffb19d':'#b6f6d8';
  }
-}animate();
+}
+requestAnimationFrame(animate);
