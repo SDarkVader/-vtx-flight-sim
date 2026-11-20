@@ -494,3 +494,48 @@ def test_calm_turn_has_bounded_roll_after_docking_release_and_native_restore():
     assert peak_roll < 0.1  # The delayed force interpolation grew past5deg here.
     assert peak_wrench < 3e4
     assert not any(c.crashed for c in fleet.crafts.values())
+
+
+def test_optional_lantern_clock_restores_order_and_leaves_base_fleets_unchanged():
+    from vtx.harbour_trial import LanternTrialFleet, fleet_type
+
+    world = harbour_world()
+    assert fleet_type(world) is HarbourFleet
+    course = {
+        'id': 'test-water-event', 'name': 'Test Water Event',
+        'gates': [
+            {'center': [x, -18., 7.], 'normal': [1., 0.],
+             'width_m': 16., 'marks': [f'gate-{i}-a', f'gate-{i}-b']}
+            for i, x in enumerate((0., 30., 60.))
+        ],
+    }
+    world.harbour['timeTrial'] = course
+    for gate in course['gates']:
+        x, y, _ = gate['center']
+        for side, key in zip((-10., 10.), gate['marks']):
+            world.obstacles.append(
+                dict(id=key, kind='cylinder', center=[x, y+side, 7.],
+                     half=[.6, .6, 4.], role='race-mark', landable=False)
+            )
+    fleet = fleet_type(world)(world)
+    assert isinstance(fleet, LanternTrialFleet)
+    boat_id = 'ricochet-marina'
+    fleet.release(boat_id)
+    for _ in range(32):
+        fleet.step()
+    clock = fleet.race_clocks[boat_id]
+    for t, x in ((.05, 3.), (.10, -3.), (.15, 3.), (.20, 60.), (.25, 23.), (.30, 34.)):
+        clock.sample(t, (x, -18., 7.))
+    run = clock.runs[course['name']]
+    assert run['laps'] == 0 and run['next'] == 2
+
+    restored = LanternTrialFleet.restore(world, json.loads(json.dumps(fleet.serialize())))
+    assert restored.public()['lantern_trial'] == fleet.public()['lantern_trial']
+    persisted = restored.race_clocks[boat_id]
+    for t, x in ((.35, 57.), (.40, 64.), (.45, -5.), (.50, 4.)):
+        persisted.sample(t, (x, -18., 7.))
+    run = persisted.runs[course['name']]
+    assert run['laps'] == 1 and run['last'] == run['best']
+    restored.reset_trial(boat_id, 'Course marker contact')
+    assert run['start'] is None and run['next'] == 0 and run['laps'] == 1
+    assert restored.public()['lantern_trial']['runs'][boat_id]['foul'] == 'Course marker contact'

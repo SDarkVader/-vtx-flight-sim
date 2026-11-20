@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "integrated_runtime_sha256": "ba1c9c48b237c4c7aaef90378bc8050676dc810cd359c978f1a714725e533127",
+  "integrated_runtime_sha256": "477dfaefcd49c734485ca97521c885783cf946bc6b753627c2192555c4c17b5c",
   "previous_integrated_runtimes": [
     {
       "sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
@@ -33,6 +33,49 @@
       "commit": "bca9a77f0a70ebb433321d47924eb47cf10ee3e0",
       "superseded": "2026-11-18",
       "reason": "The Vercel preview now verifies the same public bytes from a compressed bundle. Aircraft configurations, numerical models, Ricochet dependencies and original asset bytes are identical."
+    },
+    {
+      "sha256": "ba1c9c48b237c4c7aaef90378bc8050676dc810cd359c978f1a714725e533127",
+      "commit": "e69620dde66d9cb2f44d40e61d9a4ad7d69c955e",
+      "superseded": "2026-11-18",
+      "reason": "Local Vaderland environment branch adds versioned scenery, terrain height range and world-specific harbour loading. The original airport runtime and its recorded checkpoints remain at the named commit."
+    },
+    {
+      "sha256": "716c52fb7ff45d535069aa0a1aed060bccbac1110ade2539893b3a500c40291a",
+      "commit": "f23beaf17640a75cd4fbabdb36cd45af55d9d60f",
+      "superseded": "2026-11-19",
+      "reason": "Local Vaderland Falls Bridge, Lantern Gallery and Lantern Sound surveys with native free-surface samples for the client.",
+      "previous_model": "All earlier vehicles, environment surveys and their source revision remain recoverable."
+    },
+    {
+      "sha256": "684b8c2b396d7e53631ddb8de04693d7c07467069f6b2005444934cca60484b6",
+      "commit": "af1cbb5c895cb4ba1bfd8512a98427987fcb33ec",
+      "superseded": "2026-11-19",
+      "reason": "The local 09 and 10 worlds add Meridian Airfield and its connected landing. Earlier worlds and their vehicle records remain available at this commit."
+    },
+    {
+      "sha256": "a15500a1167e72542c34deb34242ea64ae656c03ef39b2a8d1e598806773aeff",
+      "commit": "bf554873e653eccf0201762a0fef418bc1e2f398",
+      "superseded": "2026-11-19",
+      "reason": "The separately selectable Meridian Arrivals world loads the curved terminal as static environment meshes in the three native scenery builders."
+    },
+    {
+      "sha256": "2425c98f253a4c60ba9d3a83e3044e5ac89b1a44c7d88a974f98c86344820dcc",
+      "commit": "b8e2252e6d15a45326be0d8f70c63186eebf7989",
+      "superseded": "2026-11-19",
+      "reason": "Locally versioned Meridian Operations and Aviator Plaza add zero-mass kinematic scenery, shared iris controls and trackside timing. Vehicle dynamics, inputs and variants are preserved."
+    },
+    {
+      "sha256": "3f73227143e53e4426bfe1e3826ed17df89002408e6a9bc857412d6b663358fe",
+      "commit": "4e451e0b335dc87717f7842471de2abcfa5c48ec",
+      "superseded": "2026-11-19",
+      "reason": "Meridian Market Quarter adds occupied architecture and clock-synchronised environmental pedestrians."
+    },
+    {
+      "sha256": "c61a3baf1922d0b3a58fb2cdce7fa68c547b2119b541ec8adfe426d9168adf25",
+      "commit": "ceca99fe9fbe1e37649645b8f1792d7432d932b8",
+      "superseded": "2026-11-20",
+      "reason": "Meridian City Lights is independently selectable. The new scenery extends the Market Quarter and inherits its water-cell reuse. Aircraft source, settings and assets retain their reviewed versions."
     }
   ],
   "text_dependencies_sha256_lf": {
@@ -41,7 +84,7 @@
   },
   "revisions": {
     "phantom-a10c-runway-20261112": {
-      "name": "Phantom A10-C · runway 12 Nov",
+      "name": "Phantom A10-C ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· runway 12 Nov",
       "status": "Integrated test candidate derived from flown revision; promotion pending",
       "base_variant": "phantom-a10c",
       "parent_commit": "b38d5f1b10c2869e603f948f8abd9d1f0411c326",
@@ -74,7 +117,7 @@
       }
     },
     "phantom-a10c-vtol-20261112": {
-      "name": "Phantom A10-C · VTOL 12 Nov",
+      "name": "Phantom A10-C ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· VTOL 12 Nov",
       "status": "Integrated test candidate derived from flown revision; promotion pending",
       "base_variant": "phantom-a10c",
       "parent_commit": "eb855817be9a1318e1482dd3cd6acf677e18e865",

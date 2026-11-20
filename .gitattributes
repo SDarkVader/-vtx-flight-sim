@@ -165,3 +165,13 @@ Test-VTX-Vehicles.bat text eol=crlf
 inputs/phantom_overlays/transition_ecu_v1.json text eol=lf
 evidence/phantom/a10c_airbrake_ecu_20261118/** -text
 inputs/phantom_test_variants_v1.json text eol=lf
+src/vtx/vaderland.py text eol=lf
+src/vtx/scenery_mesh.py text eol=lf
+inputs/vaderland/*.json text eol=lf
+public/vtx-env/vaderland/*.js text eol=lf
+src/vtx/course_timing.py text eol=lf
+src/vtx/lantern_marina.py text eol=lf
+src/vtx/water/repeated_faces.py text eol=lf
+public/vendor/fonts/*.css text eol=lf
+public/vendor/fonts/*.ttf binary
+public/vendor/fonts/*-OFL.txt text eol=crlf

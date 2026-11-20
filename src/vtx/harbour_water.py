@@ -90,6 +90,10 @@ class HarbourWorld:
                         collidable=True,
                     )
                 )
+        # Some land worlds provide a contact mesh for the existing dock chart.
+        # Keep the chart's collider as the fleet's sole copy of that structure.
+        dock_ids = {structure["id"] for structure in self.structures}
+        self.obstacles = [obstacle for obstacle in self.obstacles if obstacle.get("harbour_structure") not in dock_ids]
         meta = dict(
             id=world.id,
             version=world.version,
@@ -175,6 +179,10 @@ class HarbourWater(HybridWaterField):
         self.grid_mask = world.mask(xx, yy)
         self.shallow.bed[~self.grid_mask] = float(config.water_level_m) + 20.0
         self._crop_to_basin()
+        self._repeated_basin = getattr(getattr(world, 'source', None), 'reuse_water_neighbourhoods', False)
+        if self._repeated_basin:
+            from .water.repeated_faces import RepeatedFaces
+            self.shallow._advance_substep=RepeatedFaces(self.shallow)
         self.shallow._harbour_mask = self.grid_mask
         self.shallow.sample = types.MethodType(self._sample, self.shallow)
         self.shallow.apply_momentum_impulse = types.MethodType(
@@ -326,19 +334,23 @@ class HarbourWater(HybridWaterField):
 
     def step(self, dt):
         with self._guard:
+            previous=self.shallow.substep_count
             super().step(dt)
             # The original SWE intentionally skips advancement when disabled.
             # Retain a consistent scheduled clock without evolving its arrays.
             if not self.config.shallow_water_enabled:
                 self.shallow.t = self.sim_time_s - self._swe_accum_s
-            self._enforce()
+            if not self._repeated_basin or self.shallow.substep_count!=previous:
+                self._enforce()
 
     def apply_for(self, vessel_id, **kwargs):
         with self._guard:
             super().apply_vessel_disturbance(**kwargs)
             self.wakes[vessel_id] = deepcopy(self._vessel_wake)
             self._vessel_wake = self._default_wake_state()
-            self._enforce()
+            # The charted impulse writes only its local patch and explicitly zeros dry cells.
+            if not self._repeated_basin:
+                self._enforce()
 
     def get_wake_state(self):
         return dict(vessels=deepcopy(self.wakes))

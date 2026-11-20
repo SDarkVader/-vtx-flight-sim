@@ -96,6 +96,8 @@ def world_fingerprint(world):
         metadata.update(runway=world.runway, approach_corridor=world.approach_corridor)
     if hasattr(world, 'harbour'):
         metadata['harbour']=world.harbour
+    if hasattr(world, 'vaderland'):
+        metadata['vaderland']=world.vaderland
     raw=json.dumps(metadata,sort_keys=True,separators=(',',':'),allow_nan=False).encode('utf-8')
     digest=hashlib.sha256(b'vtx-world-v1\0')
     digest.update(len(raw).to_bytes(8,'big'));digest.update(raw);digest.update(heights.tobytes())
@@ -254,6 +256,8 @@ class Laboratory:
         # Display worlds are built before selection and are not mutated afterwards.
         # Compute on selection, never in the telemetry/400 Hz integration loop.
         fingerprint=world_fingerprint(world)
+        if hasattr(self,'_harbours') and self.harbour_key(self.world.environment_key)!=self.harbour_key(world.environment_key):
+            self.harbour_session.set_rate(0.)
         self._world=world
         self._displayed_world_sha256=fingerprint
 
@@ -263,12 +267,27 @@ class Laboratory:
         return snapshot
 
     def airport_harbour_world(self):
-        if self.world.environment_key == 'airport':
+        if getattr(self.world,'harbour',None):
             return self.world
         airport = getattr(self, '_harbour_airport', None)
         if airport is None or airport.seed != self.world.seed:
             self._harbour_airport = make_world('airport', seed=self.world.seed)
         return self._harbour_airport
+
+    @staticmethod
+    def harbour_key(environment):
+        # The historical sandbox/valley boat menu explicitly opens Main Airport.
+        return environment if environment.startswith('vaderland-') else 'airport'
+
+    def harbour_for(self, environment):
+        key=self.harbour_key(resolve_environment_key(environment))
+        if key not in self._harbours:
+            self._harbours[key]=HarbourSession(self.data_root/'worlds'/key, environment=key)
+        return self._harbours[key]
+
+    @property
+    def harbour_session(self):
+        return self.harbour_for(self.world.environment_key)
 
     def __init__(self, data_root=None):
         self.world=TestWorld();self.flight_world=self.world;self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
@@ -278,8 +297,9 @@ class Laboratory:
         self.audit_file=None;self.log_path=None;self.last_audit_t=-1.;self.settled_s=0.;self.left_ground=False;self.landing_recorded=False;self.last_landing=None
         self.error=None;self.recovery_notice=None;self.preview_generation=0;self.clock_lag_s=0.;self.wall_started=None;self.end_summary=None;self.clock_epoch=0
         self.retry_hint=None
+        self.inspection_clock=None
         self.data_root=Path(data_root if data_root is not None else os.environ.get('VTX_DATA_ROOT',str(ROOT))).resolve()
-        self.harbour_session=HarbourSession(self.data_root)
+        self._harbours={'airport':HarbourSession(self.data_root)}
         self.harbour_helm_outside_airport=False
         self.checkpoint_path=self.data_root/'pilot/live-flight-checkpoint.json'
         self.saved_flights_path=self.data_root/'pilot/saved-flights'
@@ -467,6 +487,7 @@ class Laboratory:
 
     def _write_checkpoint(self,state,force=False):
         d=self.aircraft.data
+        if getattr(self.world,'timing',None):state['course_timing']=self.world.timing.save()
         state['harbour_fleet']=self.harbour_session.flight_snapshot(force=force)
         payload=json.dumps(state,allow_nan=False,separators=(',',':'),default=float)
         target=self.checkpoint_path
@@ -677,8 +698,9 @@ class Laboratory:
         candidate.audit_file=(target/'events.jsonl').open('a',encoding='utf-8')
         if schema=='phantom-2':candidate.aircraft.step_log=gzip.open(target/'phantom_steps.csv.gz','at',encoding='utf-8')
         candidate.recovery_blocked=False;candidate.error=None;candidate.inspection_selection_known=True
-        self.harbour_session.take_over(candidate.harbour_session)
-        candidate.harbour_session=self.harbour_session
+        self.harbour_for(candidate.world.environment_key).take_over(candidate.harbour_session)
+        self.harbour_session.set_rate(0.)
+        candidate._harbours=self._harbours
         self.__dict__.update(candidate.__dict__)
         self.log('checkpoint_continuation',lineage)
         return dict(run_id=child,parent_run_id=parent,checkpoint_time_s=checkpoint_time,paused=True,continuation=lineage)
@@ -699,7 +721,9 @@ class Laboratory:
                 raise ValueError(f'Checkpoint has no runtime source fingerprint; source equivalence is unverified. Checkpoint retained at {path}')
             frontend=self._verify_server_frontend(state)
             if state.get('harbour_fleet') is not None:
-                fleet=self.harbour_session.stage((state.get('mission',{}).get('environment_identity') or {})['seed'],state['harbour_fleet'])
+                mission=state['mission']
+                harbour=self.harbour_for(mission.get('environment_key') or mission.get('environment'))
+                fleet=harbour.stage(mission['environment_identity']['seed'],state['harbour_fleet'],harbour.environment)
             if state['schema']=='phantom-1':
                 raise ValueError('Legacy Phantom checkpoint lacks actuator and controller state required for verified continuation; retained for inspection')
             if state['schema']=='phantom-2':
@@ -786,7 +810,8 @@ class Laboratory:
             candidate.governor.telemetry=plant['governor_telemetry']
             session=state['session']
             self.sensor_rng.bit_generator.state=session['sensor_rng_state']
-            self.harbour_session.restore_flight(state,fleet)
+            self.harbour_for(restored_world.environment_key).restore_flight(state,fleet)
+            if 'course_timing' in state:restored_world.timing.restore(state['course_timing'])
             self.world=restored_world
             self.aircraft=candidate
             self.server_frontend_identity=frontend
@@ -890,7 +915,8 @@ class Laboratory:
         if step_columns is not None and step_columns!=list(candidate.step_row()):
             raise ValueError('Original Phantom telemetry columns differ from this runtime')
         session=state['session'];self.sensor_rng.bit_generator.state=session['sensor_rng_state']
-        self.harbour_session.restore_flight(state,fleet)
+        self.harbour_for(restored_world.environment_key).restore_flight(state,fleet)
+        if 'course_timing' in state:restored_world.timing.restore(state['course_timing'])
         self.world=restored_world;self.aircraft=candidate;self.flight_world=flight_world;self.run_id=run_id;self.log_path=evidence
         self.audit_file=(evidence/'events.jsonl').open('a',encoding='utf-8')
         candidate.step_log=_gz.open(evidence/'phantom_steps.csv.gz','at');candidate.STEP_COLS=step_columns
@@ -1191,6 +1217,12 @@ class Laboratory:
         if not self.active:
             return
         p=self.aircraft
+        if timing:=getattr(self.world,'timing',None):
+            if getattr(timing,'air',None):
+                timing.sample(p.data.time,p.data.qpos[:3],air_allowed=self.flight_world is self.world,
+                              contact=bool(p.data.ncon) or p.crashed)
+            else:
+                timing.sample(p.data.time,p.data.qpos[:3])
         if getattr(p,'is_phantom',False):
             phantom_live.integrate(self);self.compact_actions()
             if p.crashed:self.reset_after_failure('Physical crash detected')
@@ -1368,6 +1400,22 @@ class Laboratory:
                     objective=self.objective, airframe_variant=observation['configuration']['airframe_variant'],
                     warning_lamps=observation['warning_lamps'], outcome=(self.end_summary or {}).get('outcome'))
 
+    def scenery_snapshot(self):
+        plant=self.aircraft
+        if not getattr(plant,'scenery',None):return {}
+        t=float(plant.data.time)
+        if self.active or self.run_id:
+            self.inspection_clock=None
+        else:
+            now=time.monotonic()
+            if self.inspection_clock is None or self.inspection_clock[0] is not plant:
+                self.inspection_clock=(plant,now)
+            t=now-self.inspection_clock[1]
+            plant.scenery.apply(plant.data,scene_time=t)
+            import mujoco as mj
+            mj.mj_kinematics(plant.model,plant.data)
+        return dict(iris=plant.scenery.doors(plant.data),course_timing=self.world.timing.runs,scenery_time_s=t)
+
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
                     start_configuration=getattr(self.aircraft,'start_configuration',None),
@@ -1382,6 +1430,7 @@ class Laboratory:
                                      default_departure=list(getattr(self.world,'default_departure',[-700.,0.])),
                                      default_destination=list(getattr(self.world,'default_destination',[-50.,20.]))),
                     active=self.active,paused=self.paused,time_scale=self.time_scale,error=self.error,recovery_notice=self.recovery_notice,landing_assessment=self.last_landing,inspection_selection_known=self.inspection_selection_known,
+                    **self.scenery_snapshot(),
                     clock_lag_s=self.clock_lag_s,observation=self.sensor_observation(),
                     rendering_truth=self.aircraft.physical_snapshot(),mission=self.mission,objective=self.objective,
                     pilot_owner=self.pilot_owner,pending_pilot=self.pending_pilot,pilot_epoch=self.pilot_epoch,fallback=self.fallback_status,
@@ -1438,7 +1487,8 @@ async def lifespan(app):
         if lab.audit_file:
             lab.audit_file.close();lab.audit_file=None
     task.cancel()
-    await asyncio.to_thread(lab.harbour_session.close)
+    for harbour in lab._harbours.values():
+        await asyncio.to_thread(harbour.close)
     await asyncio.to_thread(close_recorders)
 
 app=FastAPI(title='VTX live engineering laboratory',lifespan=lifespan)
@@ -1482,6 +1532,26 @@ async def login(request:Request):
     return response
 @app.get('/api/world')
 async def world():return lab.world_snapshot()
+
+@app.post('/api/scenery/iris')
+async def set_iris(request:dict):
+    import mujoco as mj
+    plant=lab.aircraft
+    if request.get('environment')!=lab.world.environment_key or not getattr(plant,'scenery',None):
+        raise HTTPException(409,'The selected environment has no matching iris doors')
+    door=request.get('door');opened=request.get('open')
+    if door not in ('west','east') or type(opened) is not bool:raise HTTPException(422,'Choose a portal and its open state')
+    if not opened and lab.active:
+        cfg=next(d for d in lab.world.vaderland['operations']['annex']['doors'] if d['id']==door)
+        x,y,z=plant.data.qpos[:3]-cfg['center']
+        if abs(x)<16. and math.hypot(y,z)<21.:raise HTTPException(409,'Aircraft occupies the iris clearance zone')
+    instant=not lab.active or lab.paused
+    lab.harbour_session.set_iris(door,opened,instant)
+    plant.scenery.command(plant.data,door,opened,instant)
+    mj.mj_forward(plant.model,plant.data)
+    if lab.active:
+        lab.log('environment_iris',dict(portal=door,open=opened));lab.checkpoint(force=True)
+    return dict(iris=plant.scenery.doors(plant.data),door=door,open=opened)
 
 @app.get('/api/harbour/world')
 async def harbour_world():

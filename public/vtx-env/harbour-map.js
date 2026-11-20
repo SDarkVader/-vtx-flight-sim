@@ -23,6 +23,20 @@ export function drawHarbourMap(context, projection, harbour) {
       g.fillStyle = g.strokeStyle; g.beginPath(); g.arc(px(x), py(y), Math.max(2, scaleM(4)), 0, Math.PI * 2); g.fill();
     }
   }
+  if(harbour.timeTrial){
+    const trial=harbour.timeTrial;
+    g.strokeStyle='#81e6ee';g.lineWidth=2;g.setLineDash([4,4]);g.beginPath();
+    trial.points.forEach(([x,y],i)=>g[i?'lineTo':'moveTo'](px(x),py(y)));
+    g.stroke();g.setLineDash([]);
+    for(const [i,gate] of trial.gates.entries()){
+      const [x,y]=gate.center, [nx,ny]=gate.normal, d=gate.width_m*.5;
+      g.strokeStyle=i?'#a8d6ed':'#ffb967';
+      g.beginPath();g.moveTo(px(x-ny*d),py(y+nx*d));g.lineTo(px(x+ny*d),py(y-nx*d));g.stroke();
+    }
+    const [x,y]=trial.position;
+    g.textAlign='center';g.fillStyle='#e9ffff';
+    g.fillText(trial.name,px(x),py(y)-12);
+  }
   for (const pier of harbour.docks?.piers || []) {
     const [x, y] = harbourWorldPoint(harbour, pier.center);
     g.save(); g.translate(px(x), py(y)); g.rotate(pier.heading);

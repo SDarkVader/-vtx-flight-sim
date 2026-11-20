@@ -304,6 +304,11 @@ class HarbourFleet:
                     for item in source:
                         destination.append(deepcopy(item))
         for obstacle in self.world.obstacles:
+            if obstacle['kind']=='mesh':
+                from .scenery_mesh import add_static_mesh
+                add_static_mesh(base.find('asset'),base.find('worldbody'),obstacle,
+                                name='airport_'+obstacle['id'],contype='1',conaffinity=str(all_bits))
+                continue
             attrs = (
                 dict(type="box", size=" ".join(map(str, obstacle["half"])))
                 if obstacle["kind"] == "box"
@@ -320,10 +325,15 @@ class HarbourFleet:
                 conaffinity=str(all_bits),
                 **attrs,
             )
+        if getattr(self.world.source,'moving_scenery',False):
+            from .scenery_mesh import finish_scenery
+            finish_scenery(base,base.find('worldbody'))
         self.xml = ET.tostring(base, encoding="unicode")
         self.model_xml_sha256 = hashlib.sha256(self.xml.encode()).hexdigest()
         self.model = mj.MjModel.from_xml_string(self.xml)
         self.data = mj.MjData(self.model)
+        from .scenery_mesh import native_scenery
+        self.scenery=native_scenery(self.model,self.data,self.world)
         self.model.hfield_data[:] = craft_list[0].model.hfield_data
         for i, (boat_id, craft) in enumerate(self.crafts.items()):
             prefix = "" if i == 0 else f"fleet{i}_"
@@ -577,6 +587,7 @@ class HarbourFleet:
                     self.data.qfrc_applied[sv : sv + nv] += d.qfrc_applied[ov : ov + nv]
                 for old, new in mapping["actuators"].items():
                     self.data.ctrl[new] = d.ctrl[old]
+            if self.scenery:self.scenery.apply(self.data)
             mj.mj_step(self.model, self.data)
             self.water.step(DT)
             mj.mj_forward(self.model, self.data)

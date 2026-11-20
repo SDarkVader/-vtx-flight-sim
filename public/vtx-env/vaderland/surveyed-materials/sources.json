@@ -1,0 +1,153 @@
+{
+  "license": "CC0-1.0",
+  "provider": "Poly Haven",
+  "materials": {
+    "asphalt": {
+      "id": "asphalt_04",
+      "source": "https://polyhaven.com/a/asphalt_04",
+      "resolution": 2048,
+      "physical_m": 4.039999961853027,
+      "authors": {
+        "Jenelle van Heerden": "Processing",
+        "Sergej Majboroda": "Photography"
+      },
+      "maps": {
+        "base": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_04/asphalt_04_diff_2k.jpg",
+          "md5": "a9c6f84cfd568368607898351fce9b51",
+          "sha256": "e02ac16d23ea97008c2507cf58bfad7c18a3b5933b5bdea14f7f90f33a784976"
+        },
+        "normal": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_04/asphalt_04_nor_gl_2k.jpg",
+          "md5": "7c908104ea09ed7749d287a85bdae485",
+          "sha256": "16ab393a8e9135ff1f30545bc0bc46b7b7f79da8db881bcb0da22cd12d528257"
+        },
+        "rough": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_04/asphalt_04_rough_2k.jpg",
+          "md5": "804e7744df23ce11b2936d1c657dd1a6",
+          "sha256": "4a5090564b400e481af564f97e2f8ba0db820a61f6b2d50d0cfe92160a7161ab"
+        }
+      }
+    },
+    "slate": {
+      "id": "slate_floor_02",
+      "source": "https://polyhaven.com/a/slate_floor_02",
+      "resolution": 2048,
+      "physical_m": 2.0,
+      "authors": {
+        "Dimitrios Savva": "All"
+      },
+      "maps": {
+        "base": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/slate_floor_02/slate_floor_02_diff_2k.jpg",
+          "md5": "c2a00cf51275bae05d1b30a58661ab2a",
+          "sha256": "8442da3364bf1884a19830d6689e8b5fd1cde00aab33f03d999d762a3c4930f0"
+        },
+        "normal": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/slate_floor_02/slate_floor_02_nor_gl_2k.jpg",
+          "md5": "89c3ffb515135649dacff0621018c26b",
+          "sha256": "3dc0ab6c01f0cfb5a174306140240fdd4b11fdce0e9a33e722fdf827e973ed22"
+        },
+        "rough": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/slate_floor_02/slate_floor_02_rough_2k.jpg",
+          "md5": "1b86129055c54c21603417a237e227da",
+          "sha256": "f9da62eeffb7841951444245d67674953778d1ea8efdab0a3904c2f094f56d06"
+        }
+      }
+    },
+    "alloy": {
+      "id": "metal_plate_02",
+      "source": "https://polyhaven.com/a/metal_plate_02",
+      "resolution": 2048,
+      "physical_m": 2.0,
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "maps": {
+        "base": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_diff_2k.jpg",
+          "md5": "519b43cf88b4b6ea74bd259e976f2170",
+          "sha256": "2bf77bbcf18c862bf1e1501d1953ce9d511e80df6305b46e2f38b788bd37b581"
+        },
+        "normal": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_nor_gl_2k.jpg",
+          "md5": "59a2c571e7dd601276f0efbd9c75bb3a",
+          "sha256": "1da6ddb0f455d53636754b3b629942e6aec2f77fafaf6a53cee102ec107854c1"
+        },
+        "rough": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_rough_2k.jpg",
+          "md5": "4d719f94800aaf6a77cf8b22ce503116",
+          "sha256": "7abccc92dfebe4c6fd21b57b4de659a3b8be7747434af39306fcff2059927734"
+        }
+      }
+    },
+    "facade": {
+      "id": "rectangular_facade_tiles_02",
+      "source": "https://polyhaven.com/a/rectangular_facade_tiles_02",
+      "resolution": 2048,
+      "physical_m": 2.1050000190734863,
+      "authors": {
+        "Charlotte Baglioni": "All"
+      },
+      "maps": {
+        "base": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rectangular_facade_tiles_02/rectangular_facade_tiles_02_diff_2k.jpg",
+          "md5": "c5423a610642d98ec91ab7b61b7ffcbe",
+          "sha256": "74aed3c4f535a47d6d68d91d9682b2fead263275bf8b96b52fab0d6f435413d3"
+        },
+        "normal": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rectangular_facade_tiles_02/rectangular_facade_tiles_02_nor_gl_2k.jpg",
+          "md5": "c589640e7b9d8064162c144652493bcb",
+          "sha256": "da13d83f54cbe54684ac365af4b6b2046bfb38acb21e6da8c6aa09180c54f608"
+        },
+        "rough": {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rectangular_facade_tiles_02/rectangular_facade_tiles_02_rough_2k.jpg",
+          "md5": "6853b8044ae6bb03845afe0cb8e1fe2d",
+          "sha256": "0cbbece654cee4fa53a1d29d044baca36d8888c87795c910dce24e215c12c950"
+        }
+      }
+    },
+    "qwantani_night_puresky": {
+      "id": "qwantani_night_puresky",
+      "source": "https://polyhaven.com/a/qwantani_night_puresky",
+      "authors": {
+        "Greg Zaal": "Photography",
+        "Jarod Guest": "Processing"
+      },
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/qwantani_night_puresky_4k.hdr",
+      "md5": "acd645e92308841aa0c82eada9830f2d"
+    },
+    "tree_small_02": {
+      "id": "tree_small_02",
+      "source": "https://polyhaven.com/a/tree_small_02",
+      "authors": {
+        "Rico Cilliers": "All"
+      }
+    },
+    "flower_heliophila": {
+      "id": "flower_heliophila",
+      "source": "https://polyhaven.com/a/flower_heliophila",
+      "authors": {
+        "Jenelle van Heerden": "All"
+      }
+    },
+    "shrub_01": {
+      "id": "shrub_01",
+      "source": "https://polyhaven.com/a/shrub_01",
+      "authors": {
+        "Rico Cilliers": "All"
+      }
+    },
+    "belfast_sunset_puresky": {
+      "id": "belfast_sunset_puresky",
+      "source": "https://polyhaven.com/a/belfast_sunset_puresky",
+      "authors": {
+        "Greg Zaal": "Processing",
+        "Dimitrios Savva": "Photography",
+        "Jarod Guest": "Sky edits"
+      },
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/belfast_sunset_puresky_4k.hdr",
+      "md5": "52d2339c16069a2aaa7fd37a320d8495"
+    }
+  }
+}

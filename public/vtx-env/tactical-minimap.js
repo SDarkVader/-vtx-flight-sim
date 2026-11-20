@@ -265,6 +265,33 @@ export class TacticalMinimap {
       g.beginPath(); g.moveTo(0, py(y)); g.lineTo(w, py(y)); g.stroke();
     }
 
+    if(world?.vaderland){
+      const line=(points,width,color)=>{
+        if(!points.length)return;
+        g.strokeStyle=color;g.lineWidth=Math.max(.65,scaleM(width));g.beginPath();
+        points.forEach(([x,y],i)=>g[i?'lineTo':'moveTo'](px(x),py(y)));g.stroke();
+      };
+      for(const route of world.vaderland.air_trials??[]){
+        g.setLineDash([4,3]);
+        line(route.gates.map(gate=>gate.center),2,route.name==='Parallax Thread'?'#ffb771':'#8debfa');
+        g.setLineDash([]);
+      }
+      for(const stream of world.vaderland.streams||[])line(stream.points,stream.width_m,'#68b7cf');
+      for(const road of world.vaderland.routes)line(road.points,road.width_m,
+        road.edge_color??(road.kind==='viaduct'?'#edb770':road.kind==='express'?'#b99acb':'#868988'));
+      for(const o of world.obstacles){
+        if(o.role!=='architecture')continue;
+        const [x,y]=o.center,[a,b]=o.half;g.fillStyle='#a6a4a1';
+        g.fillRect(px(x-a),py(y+b),Math.max(.65,scaleM(a*2)),Math.max(.65,scaleM(b*2)));
+      }
+      const r=world.runway;line([[r.x0,r.yc],[r.x1,r.yc]],r.width+8,'#f4e2b7');
+      g.font='11px system-ui';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#17252a';
+      for(const place of world.vaderland.places){
+        const x=px(place.point[0]),y=py(place.point[1])-7;g.strokeText(place.name,x,y);
+        g.fillStyle='#e8e3ca';g.fillText(place.name,x,y);
+      }
+      return layer;
+    }
     const isSandbox = world && (world.environment === 'sandbox' || world.id === 'stage1-valley');
     if (isSandbox) {
       // Stage 1 Valley Test Sandbox east-west runway (Runway 09/27: 1,900m x 42m) & cross apron

@@ -180,13 +180,217 @@ def _historical_r6_valley(seed=41031):
     return R6HistoricalValley(seed=seed)
 
 
+def _vaderland(seed=41031):
+    from .vaderland import Vaderland
+    return Vaderland(seed)
+
+
+def _vaderland_city(seed=41031):
+    from .vaderland import VaderlandCity
+    return VaderlandCity(seed)
+
+
+def _vaderland_network(seed=41031):
+    from .vaderland import VaderlandNetwork
+    return VaderlandNetwork(seed)
+
+
+def _vaderland_review(seed=41031):
+    from .vaderland import VaderlandReview
+    return VaderlandReview(seed)
+
+
+def _meridian(seed=41031):
+    from .vaderland import Meridian
+    return Meridian(seed)
+
+
+def _twin_falls(seed=41031):
+    from .vaderland import TwinFalls
+    return TwinFalls(seed)
+
+
+def _lantern_gallery(seed=41031):
+    from .vaderland import LanternGallery
+    return LanternGallery(seed)
+
+
+def _lantern_sound(seed=41031):
+    from .vaderland import LanternSound
+    return LanternSound(seed)
+
+
+def _meridian_airfield(seed=41031):
+    from .vaderland import MeridianAirfield
+    return MeridianAirfield(seed)
+
+def _airport_landing(seed=41031):
+    from .vaderland import AirportLanding
+    return AirportLanding(seed)
+
+def _meridian_arrivals(seed=41031):
+    from .vaderland import MeridianArrivals
+    return MeridianArrivals(seed)
+
+
+def _meridian_operations(seed=41031):
+    from .vaderland import MeridianOperations
+    return MeridianOperations(seed)
+
+
+def _aviator_plaza(seed=41031):
+    from .vaderland import AviatorPlaza
+    return AviatorPlaza(seed)
+
+def _crest_plaza(seed=41031):
+    from .vaderland import CrestPlaza
+    return CrestPlaza(seed)
+
+def _night_velocity(seed=41031):
+    from .vaderland import NightVelocity
+    return NightVelocity(seed)
+
+def _market_quarter(seed=41031):
+    from .vaderland import MarketQuarter
+    return MarketQuarter(seed)
+
+def _meridian_lights(seed=41031):
+    from .vaderland import MeridianCityLights
+    return MeridianCityLights(seed)
+
+
+def _meridian_parallax(seed=41031):
+    from .meridian_parallax import MeridianParallax
+    return MeridianParallax(seed)
+
+
+def _parallax_court(seed=41031):
+    from .meridian_parallax import ParallaxCourt
+    return ParallaxCourt(seed)
+
+
+def _parallax_instrument_room(seed=41031):
+    from .meridian_parallax import ParallaxInstrumentRoom
+    return ParallaxInstrumentRoom(seed)
+
+
+def _cathedral(seed=41031):
+    from .cathedral import CathedralOfVelocity
+    return CathedralOfVelocity(seed)
+
+
+def _cathedral_approach(seed=41031):
+    from .cathedral import CathedralRaceApproach
+    return CathedralRaceApproach(seed)
+
+
+def _meridian_yard(seed=41031):
+    from .meridian_yard import MeridianHandlingYard
+    return MeridianHandlingYard(seed)
+
+
+def _cathedral_vertical_loops(seed=41031):
+    from .vertical_loops import CathedralVerticalLoops
+    return CathedralVerticalLoops(seed)
+
+
+def _cathedral_east(seed=41031):
+    from .cathedral_east import CathedralEastDistrict
+    return CathedralEastDistrict(seed)
+
+
+def _lantern_islet(seed=41031):
+    from .lantern_islet import LanternIsletDistrict
+    return LanternIsletDistrict(seed)
+
+
+def _meridian_air_trials(seed=41031):
+    from .meridian_air_trials import MeridianAirTrials
+    return MeridianAirTrials(seed)
+
+
+def _cathedral_grand_loop(seed=41031):
+    from .cathedral_grand_loop import CathedralGrandLoop
+    return CathedralGrandLoop(seed)
+
+
+def _crest_gardens(seed=41031):
+    from .crest_gardens import CrestGardensDistrict
+    return CrestGardensDistrict(seed)
+
+
+def _lantern_marina(seed=41031):
+    from .lantern_marina import LanternMarinaDistrict
+    return LanternMarinaDistrict(seed)
+
+
 ENVIRONMENTS = {
+    'vaderland-32': _lantern_marina,
+    'vaderland-31': _crest_gardens,
+    'vaderland-30': _cathedral_grand_loop,
+    'vaderland-29': _meridian_air_trials,
+    'vaderland-28': _lantern_islet,
+    'vaderland-27': _cathedral_east,
+    'vaderland-26': _cathedral_vertical_loops,
+    'vaderland-25': _meridian_yard,
+    'vaderland-24': _cathedral_approach,
+    'vaderland-22': _cathedral,
+    'vaderland-21': _parallax_instrument_room,
+    'vaderland-20': _parallax_court,
+    'vaderland-19': _meridian_parallax,
+    'vaderland-17': _meridian_lights,
+    'vaderland-16': _market_quarter,
+    'vaderland-15': _night_velocity,
+    'vaderland-14': _crest_plaza,
+    'vaderland-13': _aviator_plaza,
+    'vaderland-12': _meridian_operations,
+    'vaderland-11': _meridian_arrivals,
+    'vaderland-10': _airport_landing,
+    'vaderland-09': _meridian_airfield,
+    'vaderland-08': _lantern_sound,
+    'vaderland-07': _lantern_gallery,
+    'vaderland-06': _twin_falls,
+    'vaderland-05': _meridian,
+    'vaderland-04': _vaderland_review,
+    'vaderland-03': _vaderland_network,
+    'vaderland-02': _vaderland_city,
+    'vaderland-01': _vaderland,
     'airport': TestWorld,
     'sandbox': SandboxWorld,
     'r6-valley-20261103': _historical_r6_valley,
 }
 
 ENVIRONMENT_ALIASES = {
+    'vaderland-32': 'vaderland-32',
+    'vaderland-31': 'vaderland-31',
+    'vaderland-30': 'vaderland-30',
+    'vaderland-29': 'vaderland-29',
+    'vaderland-28': 'vaderland-28',
+    'vaderland-27': 'vaderland-27',
+    'vaderland-26': 'vaderland-26',
+    'vaderland-25': 'vaderland-25',
+    'vaderland-24': 'vaderland-24',
+    'vaderland-22': 'vaderland-22',
+    'vaderland-21': 'vaderland-21',
+    'vaderland-20': 'vaderland-20',
+    'vaderland-19': 'vaderland-19',
+    'vaderland-17': 'vaderland-17',
+    'vaderland-16': 'vaderland-16',
+    'vaderland-15': 'vaderland-15',
+    'vaderland-14': 'vaderland-14',
+    'vaderland-13': 'vaderland-13',
+    'vaderland-12': 'vaderland-12',
+    'vaderland-11': 'vaderland-11',
+    'vaderland-10': 'vaderland-10',
+    'vaderland-09': 'vaderland-09',
+    'vaderland-08': 'vaderland-08',
+    'vaderland-07': 'vaderland-07',
+    'vaderland-06': 'vaderland-06',
+    'vaderland-05': 'vaderland-05',
+    'vaderland-04': 'vaderland-04',
+    'vaderland-03': 'vaderland-03',
+    'vaderland-02': 'vaderland-02',
+    'vaderland-01': 'vaderland-01',
     'airport': 'airport',
     'main-airport': 'airport',
     'main_airport': 'airport',
