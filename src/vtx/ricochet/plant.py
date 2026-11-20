@@ -291,8 +291,14 @@ def build_ricochet_mujoco_model(
     mass_reg: MassPropertiesRegister,
     hull_bundle: HullVariantBundle,
     ignore_scenery_collisions: bool = False,
+    profile: dict[str, Any] | None = None,
 ) -> tuple[mj.MjModel, str]:
-    """Build MuJoCo XML + binary hfield data sharing exact world geometry and datum."""
+    """Build MuJoCo XML + binary hfield data sharing exact world geometry and datum.
+
+    ``profile`` (opt-in, from ``vtx.ricochet.real_components``) replaces surface servo
+    gains/force limits with the selected actuators and adds hinged skis under the sponsons.
+    With ``profile=None`` the XML is identical to the legacy plant.
+    """
     xml = ET.Element('mujoco', model='vtx_ricochet_rc01')
     ET.SubElement(xml, 'compiler', angle='degree', coordinate='local', inertiafromgeom='false')
     ET.SubElement(xml, 'option', timestep=str(DT), gravity=f'0 0 -{G_SI}', integrator='implicitfast')
@@ -562,13 +568,17 @@ def build_ricochet_mujoco_model(
         else:
             r0_deg, r1_deg = spec['range_deg']
             r0_rad, r1_rad = math.radians(r0_deg), math.radians(r1_deg)
+            kp_s, kv_s = spec['kp'], spec['kv']
+            if profile is not None and spec['actuator_name'] in profile.get('_servo', {}):
+                kp_s, kv_s, peak_s = profile['_servo'][spec['actuator_name']]
+                fmin, fmax = -peak_s, peak_s
             ET.SubElement(
                 actuator_el,
                 'position',
                 name=spec['actuator_name'],
                 joint=spec['joint'],
-                kp=f"{spec['kp']:.2f}",
-                kv=f"{spec['kv']:.2f}",
+                kp=f"{kp_s:.2f}",
+                kv=f"{kv_s:.2f}",
                 ctrllimited='true',
                 ctrlrange=f'{r0_rad:.6f} {r1_rad:.6f}',
                 forcelimited='true',
@@ -595,7 +605,8 @@ def build_ricochet_mujoco_model(
         ]
     for sname, spos in sponson_specs:
         sb = ET.SubElement(af, 'body', name=sname, pos=f'{spos[0]:.4f} {spos[1]:.4f} {spos[2]:.4f}')
-        ET.SubElement(sb, 'inertial', pos='0 0 0', mass='12.0', diaginertia='0.8 1.6 1.6')
+        sp_mass = '12.0' if profile is None or '_sponson_body_mass' not in profile else f"{profile['_sponson_body_mass']:.4f}"
+        ET.SubElement(sb, 'inertial', pos='0 0 0', mass=sp_mass, diaginertia='0.8 1.6 1.6')
         ET.SubElement(
             sb,
             'joint',
@@ -617,6 +628,38 @@ def build_ricochet_mujoco_model(
             contype='2',
             conaffinity='1',
         )
+        if profile is not None and profile.get('skis'):
+            ski = profile['skis']
+            side = sname.split('_')[-1]
+            pv = ski['pivot_in_sponson_m']
+            L, bm, th = float(ski['length_m']), float(ski['beam_m']), float(ski['thickness_m'])
+            a, zb = float(ski['hinge_from_trailing_edge_m']), float(ski['bottom_below_pivot_m'])
+            m_ski = float(ski['mass_kg'])
+            cx, cz = 0.5 * L - a, -zb + 0.5 * th
+            kb = ET.SubElement(sb, 'body', name=f'ski_{side}', pos=f'{pv[0]:.4f} {pv[1]:.4f} {pv[2]:.4f}')
+            ET.SubElement(
+                kb, 'inertial', pos=f'{cx:.4f} 0 {cz:.4f}', mass=f'{m_ski:.4f}',
+                diaginertia=f'{m_ski * (bm * bm + th * th) / 12.0:.5f} {m_ski * (L * L + th * th) / 12.0:.5f} {m_ski * (L * L + bm * bm) / 12.0:.5f}',
+            )
+            j0, j1 = ski['joint_range_deg']
+            act = ski['actuator']
+            ET.SubElement(
+                kb, 'joint', name=f'ski_{side}_incidence', type='hinge', pos='0 0 0', axis='0 -1 0',
+                limited='true', range=f'{float(j0):.3f} {float(j1):.3f}', damping='5.0',
+                armature=f"{float(act['reflected_armature_kg_m2']):.4f}",
+            )
+            ET.SubElement(
+                kb, 'geom', name=f'ski_{side}_geom', type='box',
+                pos=f'{cx:.4f} 0 {cz:.4f}', size=f'{0.5 * L:.4f} {0.5 * bm:.4f} {0.5 * th:.4f}',
+                contype='2', conaffinity='1', friction='0.25 0.01 0.01', mass='0',
+            )
+            kp_k, kv_k, peak_k = profile['_ski_servo']
+            ET.SubElement(
+                actuator_el, 'position', name=f'ski_{side}_actuator', joint=f'ski_{side}_incidence',
+                kp=f'{kp_k:.2f}', kv=f'{kv_k:.2f}', ctrllimited='true',
+                ctrlrange=f'{math.radians(float(j0)):.6f} {math.radians(float(j1)):.6f}',
+                forcelimited='true', forcerange=f'{-peak_k:.3f} {peak_k:.3f}',
+            )
 
     xml.append(actuator_el)
     sensor = ET.SubElement(xml, 'sensor')
@@ -662,9 +705,20 @@ class RicochetCraft:
         fuel_mass_kg: float | None = None,
         propulsion_installation: PropulsionInstallation | None = None,
         propulsion_off: bool | None = None,
+        profile: str | None = None,
+        profile_overrides: dict[str, Any] | None = None,
     ):
         self.world = world
         self.variant = variant
+        # Opt-in real-component profile (None = legacy plant, unchanged)
+        self.profile_id = profile
+        self.profile: dict[str, Any] | None = None
+        self.surface_limits: dict[str, dict[str, Any]] = RICOCHET_SURFACE_LIMITS
+        if profile is not None:
+            if hull_variant != 'concept_a':
+                raise ValueError('Real-component profiles are defined for the Concept A hull only')
+            from vtx.ricochet.real_components import load_profile
+            self.profile = load_profile(profile, profile_overrides)
         self.airframe_variant = variant
         self.hull_variant = hull_variant
         self.hydro_stride = max(1, int(hydro_stride))
@@ -686,12 +740,16 @@ class RicochetCraft:
         )
         self.water_config = water_config or WaterEnvironmentConfig()
         self.water_field = HybridWaterField(world, self.water_config)
+        if self.profile is not None:
+            self._prepare_profile()
+            self._apply_profile_mass_items()
 
         self.model, self.xml = build_ricochet_mujoco_model(
             world,
             self.mass_register,
             self.hull_bundle,
             ignore_scenery_collisions=self.ignore_scenery_collisions,
+            profile=self.profile,
         )
         self.data = mj.MjData(self.model)
 
@@ -727,7 +785,19 @@ class RicochetCraft:
             'aileron_deg': 0.0,
             'reverse_bucket': 0.0,
         }
+        if self.profile is not None and self.profile.get('skis'):
+            self.command['ski_incidence_deg'] = 0.0
+            self.command['ski_differential_deg'] = 0.0
+            self.bids['ski_port'] = mj.mj_name2id(self.model, mj.mjtObj.mjOBJ_BODY, 'ski_port')
+            self.bids['ski_stbd'] = mj.mj_name2id(self.model, mj.mjtObj.mjOBJ_BODY, 'ski_stbd')
         self._targets = dict(self.command)
+        # Profile actuator state: per-actuator slewed target (rad), loads and duty
+        self._act_target_rad: dict[str, float] = {}
+        self._act_load_nm: dict[str, float] = {}
+        self._act_above_rated_s: dict[str, float] = {}
+        self.last_ski_telemetry: dict[str, Any] = {}
+        self._last_ski_wrench_w: dict[int, np.ndarray] = {}
+        self.capsized = False
         self.stability_assist = 0.0
         self.wind = self._wind_vector_from_config()
         self.fuel_initial = np.array([10.0], dtype=np.float64)
@@ -781,6 +851,200 @@ class RicochetCraft:
 
         self._apply_mass_to_mujoco()
 
+    # ------------------------------------------------------------------
+    # Opt-in real-component profile helpers (unused when self.profile is None)
+    # ------------------------------------------------------------------
+    def _prepare_profile(self) -> None:
+        from vtx.ricochet.real_components import (
+            linear_actuator_mass_kg, linear_on_lever_envelope, rotary_envelope, servo_gains,
+        )
+        prof = self.profile
+        comps = prof['_components']
+        child_by_act = {s.get('actuator_name'): s for s in ARTICULATED_CHILD_SPECS}
+        failed = set(prof.get('failed_channels', []))
+        prof['_env'] = {}
+        prof['_servo'] = {}
+        zeta = float(prof.get('servo_loop', {}).get('damping_ratio', 1.0))
+        for aname, a in prof['surface_actuators'].items():
+            env = rotary_envelope(comps[a['component']], degraded=aname in failed)
+            spec = child_by_act[aname]
+            ax = np.abs(np.asarray(spec['axis'], dtype=np.float64))
+            inertia = float(ax @ np.asarray(spec['diaginertia'], dtype=np.float64)) + float(spec['armature'])
+            kp, kv = servo_gains(env, inertia, zeta)
+            prof['_env'][aname] = env
+            prof['_servo'][aname] = (kp, kv, env['peak_nm'])
+        limits = copy.deepcopy(RICOCHET_SURFACE_LIMITS)
+        # Channel slew bounded by the fastest (no-load) actuator speed; load-dependent slew is per actuator
+        for aname, a in prof['surface_actuators'].items():
+            ch = a['channel']
+            env = prof['_env'][aname]
+            if ch == 'reverse_bucket':
+                limits[ch]['rate_per_s'] = env['no_load_deg_s'] / float(limits[ch]['max_deg'])
+            else:
+                limits[ch]['rate_deg_s'] = env['no_load_deg_s']
+        ski = prof.get('skis')
+        if ski:
+            act = ski['actuator']
+            env = linear_on_lever_envelope(comps[act['component']], float(act['lever_m']), act.get('stroke_mm'))
+            prof['_ski_env'] = env
+            prof['_ski_actuator_mass_kg'] = linear_actuator_mass_kg(comps[act['component']], env['stroke_mm'])
+            L, a_te = float(ski['length_m']), float(ski['hinge_from_trailing_edge_m'])
+            m = float(ski['mass_kg'])
+            i_pivot = m * L * L / 12.0 + m * (0.5 * L - a_te) ** 2 + float(act['reflected_armature_kg_m2'])
+            # Loop tuned for the ski running at the surface: add the surface-level added inertia
+            b_s = float(ski['beam_m'])
+            x0, x1 = -a_te, L - a_te
+            i_pivot += 0.5 * float(self.water_config.rho_water_kg_m3) * math.pi * 0.25 * b_s * b_s * (x1 ** 3 - x0 ** 3) / 3.0
+            kp = float(act['servo_stiffness_nm_per_rad'])
+            kv = 2.0 * float(act['servo_damping_ratio']) * math.sqrt(kp * i_pivot)
+            prof['_ski_servo'] = (kp, kv, env['peak_nm'])
+            c0, c1 = ski['incidence_command_deg']
+            d0, d1 = ski['differential_command_deg']
+            limits['ski_incidence_deg'] = {'min': float(c0), 'max': float(c1), 'unit': 'deg', 'rate_deg_s': env['no_load_deg_s']}
+            limits['ski_differential_deg'] = {'min': float(d0), 'max': float(d1), 'unit': 'deg', 'rate_deg_s': env['no_load_deg_s']}
+            prof['_sponson_body_mass'] = 12.0 + prof['_ski_actuator_mass_kg'] + float(act['linkage_mass_kg'])
+        self.surface_limits = limits
+
+    def _apply_profile_mass_items(self) -> None:
+        """Add the profile's hardware to the mass register (idempotent; re-run after any register rebuild)."""
+        if self.profile is None:
+            return
+        reg = self.mass_register
+        comps = self.profile['_components']
+        have = {c.component_id for c in reg.components}
+        mounts = self.profile.get('actuator_mounts_vtx_m', {})
+        from vtx.ricochet.mass_register import MassComponent
+        for aname, a in self.profile['surface_actuators'].items():
+            cid = f'actuator_{aname}'
+            if cid in have:
+                continue
+            p = mounts[aname]
+            reg.components.append(MassComponent(
+                cid, f"{comps[a['component']]['name']} on {a['joint']}", float(comps[a['component']]['mass_kg']),
+                (float(p[0]), -float(p[1]), float(p[2])), (0.004, 0.004, 0.004),
+                status='provisional_unverified', notes='rc01-real-components profile; case fixed to structure at hinge',
+            ))
+        ski = self.profile.get('skis')
+        if ski and not any(c.component_id == 'sponson_port' and 'ski' in c.notes for c in reg.components):
+            from vtx.ricochet.hull_geometry import SPONSON_CONCEPT_A_MOUNT_VTX_M
+            act = ski['actuator']
+            m_act = float(self.profile['_ski_actuator_mass_kg']) + float(act['linkage_mass_kg'])
+            m_ski = float(ski['mass_kg'])
+            pv = ski['pivot_in_sponson_m']
+            L, a_te, zb, th = (float(ski[k]) for k in ('length_m', 'hinge_from_trailing_edge_m', 'bottom_below_pivot_m', 'thickness_m'))
+            for i, c in enumerate(reg.components):
+                if c.component_id not in ('sponson_port', 'sponson_stbd'):
+                    continue
+                mount = np.array([SPONSON_CONCEPT_A_MOUNT_VTX_M[0], 0.0, c.cg_f03_m[2]], dtype=np.float64)
+                ski_cg = mount + np.array([pv[0] + 0.5 * L - a_te, 0.0, pv[2] - zb + 0.5 * th])
+                m_pod = c.mass_kg + m_act
+                m_tot = m_pod + m_ski
+                cg_x = (m_pod * mount[0] + m_ski * ski_cg[0]) / m_tot
+                cg_z = (m_pod * mount[2] + m_ski * ski_cg[2]) / m_tot
+                reg.components[i] = MassComponent(
+                    c.component_id, c.label + ' + incidence actuator + planing ski', m_tot,
+                    (float(cg_x), float(c.cg_f03_m[1]), float(cg_z)),
+                    (c.local_inertia_diag_kg_m2[0] + 0.3, c.local_inertia_diag_kg_m2[1] + 3.5, c.local_inertia_diag_kg_m2[2] + 3.7),
+                    status='provisional_unverified', movable=c.movable,
+                    notes=(c.notes + '; ' if c.notes else '') + 'rc01-real-components profile: pod + ski actuator + ski',
+                )
+        pack = self.profile.get('pack_cg_f03_m')
+        if pack is not None:
+            for i, c in enumerate(reg.components):
+                if c.component_id == 'energy_propulsion_pack' and tuple(c.cg_f03_m) != tuple(float(v) for v in pack):
+                    reg.components[i] = MassComponent(
+                        c.component_id, c.label, c.mass_kg, tuple(float(v) for v in pack), c.local_inertia_diag_kg_m2,
+                        status=c.status, movable=True, notes=(c.notes + '; ' if c.notes else '') + 'profile pack position',
+                    )
+
+    def _profile_actuator_targets(self, servo_targets_rad: dict[str, float], has_power: bool) -> dict[str, float]:
+        """Per-actuator position targets limited by each actuator's load-dependent speed (and ski stroke)."""
+        from vtx.ricochet.real_components import max_rate_deg_s
+        prof = self.profile
+        dt = float(self.model.opt.timestep)
+        desired = dict(servo_targets_rad)
+        envs: dict[str, dict[str, float]] = dict(prof['_env'])
+        joints = {s['actuator_name']: s['joint'] for s in ARTICULATED_CHILD_SPECS if s.get('actuator_name')}
+        ski = prof.get('skis')
+        if ski:
+            env_s = prof['_ski_env']
+            j0, j1 = (float(v) for v in ski['joint_range_deg'])
+            hi = min(j1, j0 + float(env_s['travel_deg']))  # rod stroke bounds the reachable incidence
+            coll = float(self._targets.get('ski_incidence_deg', 0.0))
+            dif = float(self._targets.get('ski_differential_deg', 0.0))
+            for side, sgn in (('port', 1.0), ('stbd', -1.0)):
+                aname = f'ski_{side}_actuator'
+                desired[aname] = math.radians(float(np.clip(coll + sgn * dif, j0, hi)))
+                envs[aname] = env_s
+                joints[aname] = f'ski_{side}_incidence'
+        out: dict[str, float] = {}
+        for aname, des in desired.items():
+            env = envs.get(aname)
+            cur = self._act_target_rad.get(aname)
+            if cur is None:
+                cur = float(self.joint(joints[aname])[0]) if aname in joints else float(des)
+            if env is None or not has_power:
+                self._act_target_rad[aname] = float(des) if env is None else cur
+                out[aname] = self._act_target_rad[aname]
+                continue
+            delta = float(des) - cur
+            load = float(self._act_load_nm.get(aname, 0.0))
+            opposing = max(0.0, -math.copysign(1.0, delta) * load) if abs(delta) > 1e-12 else 0.0
+            rate = math.radians(max_rate_deg_s(env, opposing))
+            nxt = cur + float(np.clip(delta, -rate * dt, rate * dt))
+            self._act_target_rad[aname] = nxt
+            out[aname] = nxt
+            if abs(load) > float(env['rated_nm']):
+                self._act_above_rated_s[aname] = self._act_above_rated_s.get(aname, 0.0) + dt
+        return out
+
+    def _ski_wrenches(self, t: float) -> list[tuple[int, np.ndarray, np.ndarray]]:
+        """Hydrodynamic wrench on each ski body: (body id, force_w, point-of-application list collapsed to torque about xipos)."""
+        from vtx.ricochet.real_components import ski_hydro
+        ski = self.profile.get('skis') if self.profile is not None else None
+        if not ski:
+            return []
+        d, m = self.data, self.model
+        rho = float(self.water_config.rho_water_kg_m3)
+        nu = 1.139e-6  # freshwater 15 C kinematic viscosity
+        rud = math.radians(float(self._targets.get('rudder_deg', 0.0))) * float(ski['fin'].get('steer_link_from_rudder', 0.0))
+
+        def sample(x: np.ndarray, y: np.ndarray, z: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+            s = self.water_field.evaluate(np.asarray(x, dtype=np.float64), np.asarray(y, dtype=np.float64),
+                                          z=np.asarray(z, dtype=np.float64), t=t)
+            return np.asarray(s.eta, dtype=np.float64).reshape(-1), np.asarray(s.velocity, dtype=np.float64).reshape(-1, 3)
+
+        out: list[tuple[int, np.ndarray, np.ndarray]] = []
+        tel_all: dict[str, Any] = {}
+        for side in ('port', 'stbd'):
+            bid = self.bids[f'ski_{side}']
+            vel6 = np.zeros(6, dtype=np.float64)
+            mj.mj_objectVelocity(m, d, mj.mjtObj.mjOBJ_XBODY, bid, vel6, 0)
+            origin = d.xpos[bid].copy()
+            rot = d.xmat[bid].reshape(3, 3).copy()
+            forces, tel = ski_hydro(ski, origin, rot, vel6[3:].copy(), vel6[:3].copy(), sample, rho, nu, G_SI,
+                                    fin_steer_rad=rud)
+            xi = d.xipos[bid]
+            f_tot = np.zeros(3, dtype=np.float64)
+            m_tot = np.zeros(3, dtype=np.float64)
+            for p, f in forces:
+                f_tot += f
+                m_tot += np.cross(p - xi, f)
+            # Hinge load seen by the actuator (hydro hinge moment)
+            q_j, _ = self.joint(f'ski_{side}_incidence')
+            self._act_load_nm[f'ski_{side}_actuator'] = float(tel['hinge_moment_nm'])
+            # Entrained-water inertia rides on the incidence DOF (structure + reflected rotor + added)
+            jid_s = self.jids.get(f'ski_{side}_incidence', mj.mj_name2id(m, mj.mjtObj.mjOBJ_JOINT, f'ski_{side}_incidence'))
+            dof_s = int(m.jnt_dofadr[jid_s])
+            m.dof_armature[dof_s] = float(ski['actuator']['reflected_armature_kg_m2']) + float(tel.get('added_inertia_kg_m2', 0.0))
+            tel['added_inertia_kg_m2'] = round(float(tel.get('added_inertia_kg_m2', 0.0)), 2)
+            tel['incidence_deg'] = round(math.degrees(q_j), 3)
+            tel['force_w_n'] = [round(float(v), 1) for v in f_tot]
+            tel_all[side] = tel
+            out.append((bid, f_tot, m_tot))
+        self.last_ski_telemetry = tel_all
+        return out
+
     def _map_sensors(self) -> dict[str, tuple[int, int]]:
         slices = {}
         for i in range(self.model.nsensor):
@@ -809,6 +1073,8 @@ class RicochetCraft:
                 fuel_mass_kg=fuel_mass_kg,
                 propulsion_installation=propulsion_installation,
             )
+        if self.profile is not None:
+            self._apply_profile_mass_items()
         agg = self.mass_register.aggregate(include_sponsons=False)
         bid = self.bids['airframe']
         m_af, cg_af, iner = _subtract_child_inertias(
@@ -1003,6 +1269,12 @@ class RicochetCraft:
         self._raw_hydro_cache = None
         self._last_ext_force_m = np.zeros(3, dtype=np.float64)
         self._last_ext_torque_m = np.zeros(3, dtype=np.float64)
+        if self.profile is not None:
+            self._act_target_rad.clear()
+            self._act_load_nm.clear()
+            self._act_above_rated_s.clear()
+            self.last_ski_telemetry = {}
+            self.capsized = False
         self.water_field.reset(water_level_m=wl)
         self._last_whirlpool_hazard = (
             self.world.whirlpool_hazard_at(float(x), float(y), config=self.water_config)
@@ -1015,14 +1287,14 @@ class RicochetCraft:
         self._hydro_snapshot_dirty = False
 
     def set_command(self, cmd: dict[str, Any]) -> None:
-        for key, lim in RICOCHET_SURFACE_LIMITS.items():
+        for key, lim in self.surface_limits.items():
             val = cmd.get(key)
             if val is not None:
                 self.command[key] = float(np.clip(float(val), float(lim['min']), float(lim['max'])))
 
     def _slew_targets(self, dt: float) -> None:
         """Rate-limit actuator targets toward self.command using physical servo/throttle slew limits."""
-        for key, lim in RICOCHET_SURFACE_LIMITS.items():
+        for key, lim in self.surface_limits.items():
             rate = float(lim.get('rate_deg_s', lim.get('rate_per_s', 100.0)))
             max_delta = rate * dt
             cur = float(self._targets[key])
@@ -1048,6 +1320,8 @@ class RicochetCraft:
             'reverse_bucket_stbd_servo': math.radians(rev_deg),
         }
         has_power = float(self.fuel[0]) > 1e-4
+        if self.profile is not None:
+            servo_targets_rad = self._profile_actuator_targets(servo_targets_rad, has_power)
         if has_power:
             for aname, tgt_rad in servo_targets_rad.items():
                 aid = self.aids.get(aname, -1)
@@ -1058,7 +1332,7 @@ class RicochetCraft:
             for aname in servo_targets_rad:
                 aid = self.aids.get(aname, -1)
                 if aid >= 0:
-                    jname = aname.replace('_servo', '_hinge')
+                    jname = aname.replace('_servo', '_hinge').replace('_actuator', '_incidence')
                     d.ctrl[aid] = float(self.joint(jname)[0])
 
         # Twin ducted fan motors driven by physical motor torque vs aerodynamic blade drag
@@ -1234,7 +1508,12 @@ class RicochetCraft:
             }
             jid = self.jids.get(j_name, -1)
             if jid >= 0:
-                d.qfrc_applied[int(self.model.jnt_dofadr[jid])] += float(np.clip(hm, -45.0, 45.0))
+                if self.profile is not None:
+                    # Real-component profile: full aero hinge moment reaches the actuator
+                    self._act_load_nm[f'aileron_{side}_servo'] = float(hm)
+                    d.qfrc_applied[int(self.model.jnt_dofadr[jid])] += float(hm)
+                else:
+                    d.qfrc_applied[int(self.model.jnt_dofadr[jid])] += float(np.clip(hm, -45.0, 45.0))
 
         # T-tail Elevator (x=-3.14 m; +q moves TE UP => -Fz tail down => -My nose up)
         arm_el, v_loc_el, q_el, a_el, _ = _local_flow(ELEVATOR_HINGE_VTX, has_slipstream=True)
@@ -1256,7 +1535,11 @@ class RicochetCraft:
         }
         jid_el = self.jids.get('elevator_hinge', -1)
         if jid_el >= 0:
-            d.qfrc_applied[int(self.model.jnt_dofadr[jid_el])] += float(np.clip(hm_el, -55.0, 55.0))
+            if self.profile is not None:
+                self._act_load_nm['elevator_servo'] = float(hm_el)
+                d.qfrc_applied[int(self.model.jnt_dofadr[jid_el])] += float(hm_el)
+            else:
+                d.qfrc_applied[int(self.model.jnt_dofadr[jid_el])] += float(np.clip(hm_el, -55.0, 55.0))
 
         # Rudder on swept tail pylon (x=-2.59 m; +q moves TE PORT +Y => -Fy stbd force => +Mz left yaw)
         arm_rd, v_loc_rd, q_rd, _, b_rd = _local_flow(RUDDER_HINGE_VTX, has_slipstream=True)
@@ -1283,7 +1566,26 @@ class RicochetCraft:
         }
         jid_rd = self.jids.get('rudder_hinge', -1)
         if jid_rd >= 0:
-            d.qfrc_applied[int(self.model.jnt_dofadr[jid_rd])] += float(np.clip(hm_rd, -55.0, 55.0))
+            if self.profile is not None:
+                self._act_load_nm['rudder_servo'] = float(hm_rd)
+                d.qfrc_applied[int(self.model.jnt_dofadr[jid_rd])] += float(hm_rd)
+            else:
+                d.qfrc_applied[int(self.model.jnt_dofadr[jid_rd])] += float(np.clip(hm_rd, -55.0, 55.0))
+        if self.profile is not None:
+            # Reverse-bucket jet load about the hinge (opposes deployment); an over-centre lock carries it
+            # once the bucket is fully deployed and commanded full, so the actuator only moves the bucket.
+            rb = self.profile['reverse_bucket']
+            k_jet = float(rb['jet_load_factor']) * float(rb['hinge_offset_from_load_line_m'])
+            for side, t_g, rf, q_b in (('port', t_gross_p, rev_frac_p, q_rev_p), ('stbd', t_gross_s, rev_frac_s, q_rev_s)):
+                aname = f'reverse_bucket_{side}_servo'
+                locked = (q_b >= float(rb['lock_engage_fraction']) * math.radians(85.0)
+                          and float(self.command['reverse_bucket']) >= 0.999)
+                hm_b = 0.0 if locked else -k_jet * max(float(t_g), 0.0) * rf
+                self._act_load_nm[aname] = float(hm_b)
+                hinge_moments[f'reverse_bucket_{side}'] = round(float(hm_b), 3)
+                jid_b = self.jids.get(f'reverse_bucket_{side}_hinge', -1)
+                if jid_b >= 0 and hm_b != 0.0:
+                    d.qfrc_applied[int(self.model.jnt_dofadr[jid_b])] += float(hm_b)
 
         # Directional weathercock yaw stiffness + rotational aero damping
         yaw_weathercock = q_rd * s_wing * b_wing * (cn_beta * math.sin(beta)) * 0.18
@@ -1335,6 +1637,8 @@ class RicochetCraft:
                 qd_j = float(d.qvel[int(self.model.jnt_dofadr[jid])])
                 p_servo_w += abs(af * qd_j) + 0.06 * abs(af)
                 fmax = abs(float(spec['forcerange'][1]))
+                if self.profile is not None and spec['actuator_name'] in self.profile['_servo']:
+                    fmax = float(self.profile['_servo'][spec['actuator_name']][2])
                 self._last_servo_saturated[spec['body']] = abs(af) >= 0.98 * fmax
 
         self.power = {
@@ -1719,15 +2023,25 @@ class RicochetCraft:
         # Compute aerodynamic (per-surface local airflow) + ducted-fan propulsion forces
         # from achieved MuJoCo joint positions & rotor angular speeds before virtual-mass hydro solve
         f_ap, m_ap = self._compute_aero_and_propulsion()
-        self._last_ext_force_m = np.asarray(f_ap, dtype=np.float64).copy()
-        self._last_ext_torque_m = np.asarray(m_ap, dtype=np.float64).copy()
+        ski_w = self._ski_wrenches(t_pre) if self.profile is not None else []
+        f_ext, m_ext = f_ap, m_ap
+        if ski_w:
+            # Ski loads join the external wrench used for the hull's added-mass coupling (about airframe xipos)
+            xi_af = d.xipos[bid_af]
+            f_ext = np.asarray(f_ap, dtype=np.float64).copy()
+            m_ext = np.asarray(m_ap, dtype=np.float64).copy()
+            for bid_s, f_s, m_s in ski_w:
+                f_ext += f_s
+                m_ext += m_s + np.cross(d.xipos[bid_s] - xi_af, f_s)
+        self._last_ext_force_m = np.asarray(f_ext, dtype=np.float64).copy()
+        self._last_ext_torque_m = np.asarray(m_ext, dtype=np.float64).copy()
 
         # Evaluate hydrodynamic forces at current d.time (respecting hydro_stride = 4 -> 100 Hz)
         self._evaluate_and_cache_hydro(
             t=t_pre,
             force_eval=(self.step_count == 0),
-            ext_force_m=f_ap,
-            ext_torque_m=m_ap,
+            ext_force_m=f_ext,
+            ext_torque_m=m_ext,
             update_stride_state=True,
         )
         if self.last_hydro is not None:
@@ -1745,6 +2059,9 @@ class RicochetCraft:
 
         d.xfrc_applied[bid_af, :3] += f_ap
         d.xfrc_applied[bid_af, 3:] += m_ap
+        for bid_s, f_s, m_s in ski_w:
+            d.xfrc_applied[bid_s, :3] += f_s
+            d.xfrc_applied[bid_s, 3:] += m_s
 
         # Advance MuJoCo rigid-body integrator and HybridWaterField together
         mj.mj_step(self.model, d)
@@ -1784,6 +2101,12 @@ class RicochetCraft:
         mj.mj_forward(self.model, d)
         alt = float(d.xpos[bid_af, 2])
         self.max_alt = max(self.max_alt, alt)
+        if self.profile is not None and self.profile.get('capsize_classification'):
+            # Body z-axis pointing below the horizon = inverted / capsized (latched)
+            if float(d.xmat[bid_af].reshape(3, 3)[2, 2]) < 0.0:
+                self.capsized = True
+            if self.capsized:
+                self.flags.add('CAPSIZED')
 
         # Couple simulated vessel motion -> SWE momentum & Kelvin wake + whirlpool/bilge status
         bid_m = bid_af

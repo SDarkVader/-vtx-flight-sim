@@ -1,0 +1,759 @@
+--- page 1 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH           www.volz-servos.com 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+ 
+ 
+DA 30-HT-D 
+Technical Specification 
+ 
+ 
+
+
+--- page 2 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH           www.volz-servos.com 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Content 
+ 
+1. General Description ............................................................................................................................................. 1 
+1.1. Description of Redundancy Concept ........................................................................................................... 1 
+2. Operating Data ..................................................................................................................................................... 2 
+3. Performance ........................................................................................................................................................ 3 
+3.1. Degraded Mode .......................................................................................................................................... 3 
+4. Command Signal .................................................................................................................................................. 4 
+4.1. RS 485 Command Signal .............................................................................................................................. 4 
+5. Materials and Protective Features ....................................................................................................................... 6 
+6. Environmental Specifications .............................................................................................................................. 6 
+7. Dimensions........................................................................................................................................................... 7 
+7.1. Installation Dimensions .S9.U...................................................................................................................... 8 
+7.2. Installation Dimensions .MIL13.U ............................................................................................................... 9 
+7.3. Output Shaft Spline ................................................................................................................................... 10 
+8. Routing Options ................................................................................................................................................. 11 
+8.1. Routing Option A (.RA) .............................................................................................................................. 11 
+8.2. Routing Option B (.RB) .............................................................................................................................. 11 
+8.3. Routing Option C (.RC) .............................................................................................................................. 12 
+9. Electrical Connection ......................................................................................................................................... 13 
+9.1. RS-485 Interface (.3) .................................................................................................................................. 13 
+10. Accessories .................................................................................................................................................... 15 
+10.1. Aluminium servo arm, single sided ........................................................................................................... 15 
+10.2. Aluminium servo arm, double sided ......................................................................................................... 16 
+10.3. Aluminium servo disc ................................................................................................................................ 16 
+11. Item Number System ..................................................................................................................................... 17 
+
+--- page 3 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 1 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+1. General Description 
+The fully redundant DA 30-HT-D high torque series has been developed for applications that require a very 
+reliable actuator operation. The redundant, two channel, design of the actuator allows continuing to operate 
+even if one of the actuator control electronics (ACE) has failed. All major components such as the electric motors, 
+control and communication electronics as well as power supply are available twice. The position sensor is even 
+featuring a three-channel design for 2 out of 3 voting. 
+1.1. Description of Redundancy Concept 
+The actuator redundancy concept is based on a so-called “Active-Passive Architecture”. This means that the 
+primary channel of the actuator is in command of the actuator. Example: The setpoint command is being received 
+by the primary communication interface and will be processed by the primary ACE using the data of the primary 
+position sensor. The result of this processing is used to drive the primary and secondary motor. Therefore, both 
+ACEs are communicating via an internal communication network over which they exchange all required data. Also 
+connected to this network is a voting position sensor. The primary ACE will “hand over” the command to the 
+standby ACE, if a failure is detected. The following failure modes will cause such a failover event: 
+• Position sensor data mismatch (2 out of 3 voting logic) 
+• Host communication Time-Out  
+• Cyclic-Redundancy-Check-Error of parameter or program memory 
+• Random-Access memory failure 
+• ACE Watch-Dog failure 
+The standby ACE is in command of the actuator after such a failover. A failover from the primary ACE to the 
+standby ACE can also be forced by the host. 
+In addition to all automated diagnostic testing, there are tests that can be triggered from the host via specific 
+commands. The brushless motors and the related driver circuits can be fully diagnosed. This is possible as part of 
+a pre and post flight test routine executed by the host. It is also possible to run the BLDC motor diagnostics during 
+mission time. 
+In case of hardware failure of a BLDC motor or driver circuitry, the actuator will continue to function at degraded 
+performance as only one of the two electric motors will be delivering torque (degraded mode). The remaining 
+performance is reaching approximately 40% of the nominal rated torque as the gear train of the failed channel is 
+back drivable and will only consume a fraction of the torque that is being produced by the remaining functioning 
+channel. 
+The actuator additionally features a redundant power supply concept. The two power supply inputs are being 
+monitored by both control electronics. The control electronic boards do also have additional diagnostic sensors 
+such as current, motor and electronics temperature. All this diagnostic data can be read via the communication 
+interface to derive load and health information. In addition, the actuator is counting the time of operation and 
+the time at different load levels. 
+
+--- page 4 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 2 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+2. Operating Data 
+ Standard Mode Degraded Mode 
+Supply Voltage (rated) 28 V DC 
+Supply Voltage Range 12 … 32 V DC 
+Standby Current1 2 at rated voltage 0.1 A 0.1 A 
+Rated Current1 2 at rated voltage 4.5 A 2 A 
+Peak Current1 2 at rated voltage 7.8 A --- 
+Rated Torque1 at rated speed 36 Nm [318.6 lbf-in] 14 Nm [123.9 lbf-in] 
+Peak Torque1 at rated voltage 64 Nm [566.4 lbf-in] 26 Nm [230.1 lbf-in] 
+No Load Speed1 at rated voltage 165 °/s <100 °/s 
+Rated Speed1 at rated torque 115 °/s <75 °/s 
+Default Travel Angle ±170° = 340° total travel 
+Backlash (mechanical) ≤ 0.6° 
+No-load Position Error under Temperature3 ≤ ±1° 
+Operating Temperature Range4 -30 °C … +70 °C [-22 °F … +158 °F] 
+Storage Temperature Range -35 °C … +80 °C [-31 °F … +176 °F] 
+Values applicable at 20°C 
+ 
+ 
+1 Tolerance ±10% 
+2 Summarized Current Consumption in Standard Mode 
+3 -20 °C … +50 °C, Δt = 70 °C [-4 °F … +122 °F , Δt = 126 °F] 
+4 Low Temperature Modification [-70 °C / -94 °F] on request 
+
+--- page 5 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 3 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+3. Performance 
+ 
+Operation Mode: 
+ Continuous    Short Time    Overload 
+      < 10 s, 60 s cool down   < 1 s, 60 s cool down 
+ 
+Degraded Mode: see Operating Data 
+ 
+3.1. Degraded Mode 
+In case one motor and/or the related electronics fail, the output shaft is driven by the remaining motor. 
+This operation mode is called “Degraded Mode”, as the remaining performance is degraded. The actuator needs 
+to be replaced whenever the actuator switched to Degraded Mode. 
+ 
+ 
+ 
+
+
+--- page 6 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 4 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+4. Command Signal 
+4.1. RS 485 Command Signal 
+Baud-Rate 115200 ±1.5% baud/s 
+Protocol  (Documentation available) 6 Byte (incl. 2 byte CRC) 
+Number of Data Bits  8 
+Number of Stop Bits  1 
+Parity  None 
+ 
+Command / Response Frame 
+Byte # Description 
+1 Command / Response-Code 
+2 Actuator ID 
+3 Argument 1 
+4 Argument 2 
+5 CRC High Byte 
+6 CRC Low Byte 
+ 
+RS-485 position feedback 
+Integrated in the RS-485 protocol a Position Feedback Value is available, representing the output shaft’s 
+angular position. Value readout by sending a request command. Detailed information is provided in the 
+RS-485 documentation. 
+ 
+Detailed information is provided in the RS-485 ICD. 
+ 
+Communication Interface Termination 
+Per default, the RS485 communication interface is terminated with a 232Ω resistor. Optionally it is possible to 
+order the actuator without termination (high impedance option). This option eliminates the termination and fail-
+safe resistors as shown in the schematic below. If more than two devices shall be connected on the same BUS, 
+only the first and last device on the BUS should feature termination resistors. 
+ 
+ 
+ 
+
+
+--- page 7 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 5 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Firmware Adaptation / Non-Recurring Engineering 
+There are certain integration aspects that should be jointly reviewed with the customer to ensure optimal 
+integration into the overall system architecture. This includes, for example, the definition of switching rules in 
+case the monitoring motion controller needs to take over from the active motion controller due to invalid or 
+implausible data. 
+ 
+The specific implementation of such switching logic depends on how the customer interfaces the servo from the 
+flight control computer or autopilot, for example whether a single autopilot or a primary and backup autopilot 
+architecture is used. 
+ 
+In principle, the standard firmware already supports typical architectures. However, if project specific 
+requirements arise, adaptations to the firmware can be evaluated and implemented if necessary. 
+ 
+Volz recommends discussing these topics in a dedicated workshop in order to jointly define the switching logic 
+and interface behavior. Ideally, representatives from the customer’s flight control computer or autopilot team 
+should participate. 
+ 
+
+--- page 8 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 6 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+5. Materials and Protective Features 
+Case Material Saltwater resistant aluminum alloy 
+Splash Water Resistance IP 67, waterproof up to 1m depth for 30 minutes 
+Case Surface Treatment HART®-Coat 
+Salt Water Resistance > 100 h. Saltwater Spray 
+EMI / RFI Shielding Case Shielding 
+Motor Type Brushless DC Motors 
+Gear Set Material Hardened Steel 
+Position Sensor Triple Contactless Hall sensor 
+Position Feedback Standard 
+RS 485 Communication Interface Standard 
+Temperature Sensor  Motor and PCBA 
+ 
+6. Environmental Specifications 
+Operating Temperature 
+-55°C [-67°F]5 MIL 810G Method 502.5 
++70°C [158°F] MIL 810G Method 501.5 
+Altitude 40.000 ft [12.192 m] MIL 810G Method 500.5 
+Humidity 95% at 30°C -60°C for 240 h MIL 810G Method 507.5 
+Vibration Vibration Profile: Cat. 13, Figure 514.6D-2 MIL 810G Method 514.6 
+Mechanical Shock Procedure 1 – Functional shock 15 g, 11 ms, half sine MIL 810G Method 516.6 
+Dust and water IP 67 - Dust tight and Immersion, up to 1 m depth for 30 minutes DIN EN 60529 
+Test reports on request 
+ 
+5 Low Temperature Modification on request.  
+ 
+
+--- page 9 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 7 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+7. Dimensions 
+Envelope dimensions for servo with D-Sub 
+connector (.S9) 
+195,5mm x 138,0 mm x 45.0 mm  
+7.697 in x 5.433 in x 1.772 in 
+Envelope dimensions for servo MIL Grade D38999 
+connectors (.MIL13) 
+222,29mm x 138,0 mm x 45.0 mm  
+8.752 in x 5.433 in x 1.772 in 
+Standard Tolerances Unless otherwise specified according to DIN ISO 2768 - m 
+Weight with D-Sub connectors (.S9) 1850 g [65.3 oz] ±10% 
+Weight with MIL Grade D38999 connectors 
+(.MIL13) 1950 g [68.8 oz] ±10% 
+ 
+ 
+
+--- page 10 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 8 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+7.1. Installation Dimensions .S9.U 
+D-Sub connector (.S9), bottom sided (.U) 
+ 
+ 
+ 
+     
+  
+     
+  
+     
+   
+     
+   
+    
+    
+     
+    
+     
+    
+     
+          
+    
+     
+    
+     
+      
+     
+     
+              
+ 
+     
+     
+     
+    
+     
+      
+     
+   
+     
+  
+     
+   
+     
+        
+    
+Not to scale Tolerances: Unless otherwise specified according to DIN ISO 2768- m Dimensions: [in], mm 
+
+--- page 11 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 9 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+7.2.  Installation Dimensions .MIL13.U 
+MIL graded D38999 connector (.MIL13), bottom sided (.U)  
+ 
+     
+  
+     
+  
+     
+   
+     
+   
+    
+    
+     
+          
+    
+     
+    
+     
+      
+     
+    
+     
+      
+     
+    
+     
+     
+              
+ 
+     
+     
+     
+    
+     
+       
+     
+  
+     
+   
+     
+   
+     
+   
+     
+   
+     
+    
+Not to scale Tolerances: Unless otherwise specified according to DIN ISO 2768- m Dimensions: [in], mm 
+
+--- page 12 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 10 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+7.3. Output Shaft Spline 
+Valid for all Versions with standard spline shaft 
+ 
+ 
+ 
+Not to scale Tolerances: Unless otherwise specified according to DIN ISO 2768- m Dimensions: [in], mm 
+
+--- page 13 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 11 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+8. Routing Options 
+Two Actuator Control Electronics (ACE) units are installed in each duplex servo. Both connectors, X1 and X2, 
+provide redundant power inputs. Each power input is internally connected in accordance with the applicable 
+routing option shown below. 
+On each ACE PCBA, the two power inputs, PWR1 and PWR2, are connected through a wired-OR configuration. For 
+all routing options, the corresponding ground returns are interconnected within each ACE PCBA. 
+8.1. Routing Option A (.RA) 
+ 
+ 
+8.2. Routing Option B (.RB) 
+ 
+ 
+
+
+--- page 14 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 12 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+8.3. Routing Option C (.RC) 
+ 
+
+
+--- page 15 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 13 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+9. Electrical Connection 
+9.1. RS-485 Interface (.3) 
+RS-485 two-wire interface (.3) with two integrated D-Sub connectors (.S9) 
+X1 X2 
+Manufacturer ITT Cannon Manufacturer ITT Cannon 
+Type DEMM-9PE Type DEMM-9PE 
+Mating DE-9f Mating DE-9f 
+X1 
+ 
+X2 
+1 RS-485 A (X1.1) Non-Inverted Input/Output (Rx/Tx) 1 RS-485 A (X2.1) Non-Inverted Input/Output (Rx/Tx) 
+2 RS-485 B (X1.1) Inverted Input/Output (Rx/Tx) 2 RS-485 B (X2.1) Inverted Input/Output (Rx/Tx) 
+3 NC Do not connect /  Non-Inverted internal interface 3 NC Do not connect /  Non-Inverted internal interface 
+4 +V DC (X1.2) Supply Voltage (Secondary) 4 +V DC (X2.2) Supply Voltage (Secondary) 
+5 Case Case (Not connected to GND) 5 Case Case (Not connected to GND) 
+6 +V DC (X1.1) Supply Voltage (Primary) 6 +V DC (X2.1) Supply Voltage (Primary) 
+7 GND (X1.1) Supply and Signal Ground (Primary) 7 GND (X2.1) Supply and Signal Ground (Primary) 
+8 GND (X1.2) Supply and Signal Ground (Secondary) 8 GND (X2.2) Supply and Signal Ground (Secondary) 
+9 NC Do not connect /  Inverted internal interface 9 NC Do not connect /  Inverted internal interface 
+ 
+ 
+ 
+
+
+--- page 16 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 14 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+RS 485 two-wire interface (.3) with two MIL specified connectors (.MIL13) 
+X1 X2 
+Manufacturer Amphenol Manufacturer Amphenol 
+Type D38999-20WB35PN Type D38999-20WB35PA 
+Mating e.g. D38999-26WB35SN Mating e.g. D38999-26WB35SA 
+X1 
+ 
+X2 
+1 NC Not connected 1 NC Not connected 
+2 +V DC (X1.1) Supply Voltage (Primary) 2 +V DC (X2.1) Supply Voltage (Primary) 
+3 NC Not connected 3 NC Not connected 
+4 RS-485 A (X1.1) Non-Inverted Input/Output (Rx/Tx) 4 RS-485 A (X2.1) Non-Inverted Input/Output (Rx/Tx) 
+5 RS-485 B (X1.1) Inverted Input/Output (Rx/Tx) 5 RS-485 B (X2.1) Inverted Input/Output (Rx/Tx) 
+6 Case Case (Not connected to GND) 6 Case Case (Not connected to GND) 
+7 NC Do not connect /  Non-Inverted internal interface 7 NC Do not connect /  Non-Inverted internal interface 
+8 NC Do not connect /  Inverted internal interface 8 NC Do not connect /  Inverted internal interface 
+9 NC Not connected 9 NC Not connected 
+10 +V DC (X1.2) Supply Voltage (Secondary) 10 +V DC (X2.2) Supply Voltage (Secondary) 
+11 NC Not connected 11 NC Not connected 
+12 GND (X1.1) Supply and Signal Ground (Primary) 12 GND (X2.1) Supply and Signal Ground (Primary) 
+13 GND (X1.2) Supply and Signal Ground (Secondary) 13 GND (X2.2) Supply and Signal Ground (Secondary) 
+ 
+Alternative connectors on request! 
+
+
+--- page 17 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 15 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+10. Accessories 
+Item Item-No. 
+Aluminium servo arm, single sided 1951.21 
+Aluminium servo arm, double sided 1951.20 
+Aluminium servo disc 1951.23 
+Programming Tool Duplex Servos - RS 485 #985.9 
+All accessories to be purchased separately. 
+ 
+10.1. Aluminium servo arm, single sided 
+1951.21 
+ 
+ 
+ 
+     
+   
+     
+   
+    
+   
+     
+   
+     
+     
+     
+   
+     
+   
+     
+  
+Not to scale Tolerances: Unless otherwise specified according to DIN ISO 2768- m Dimensions: [in], mm 
+
+--- page 18 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 16 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+10.2. Aluminium servo arm, double sided 
+1951.20 
+ 
+ 
+10.3. Aluminium servo disc 
+1951.23 
+ 
+    
+   
+     
+   
+    
+   
+     
+    
+     
+   
+     
+   
+     
+  
+     
+   
+     
+  
+     
+   
+    
+Not to scale Tolerances: Unless otherwise specified according to DIN ISO 2768- m Dimensions: [in], mm 
+Not to scale Tolerances: Unless otherwise specified according to DIN ISO 2768- m Dimensions: [in], mm 
+
+--- page 19 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 17 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+11. Item Number System 
+DA 30-HT-D 
+ 
+ 
+1 Type of Actuator   
+ DA 30-HT-D 30 mm Class high torque duplex Actuator with brushless motors  
+ 
+2 Internal Servo Saver (ISS)   
+ Empty field Without Internal Servo Saver  
+ 
+3 Supply Voltage   
+ 30 30 V Supply Voltage  
+ 
+4 Gear Set   
+ Empty field Standard Gear Train  
+ 
+5 Interface   
+ 3 RS 485 two-wire (Digital interface)  
+ 
+6 Routing Option  Only for Duplex 
+ RA Routing Option A  
+ RB Routing Option B  
+ RC Routing Option C  
+ 
+7 Case   
+ Empty field Standard Case  
+ 
+8 Analog Feedback   Only for PWM 
+ Empty field Without Analog Feedback  
+ 
+9 Extended Travel Angle   
+ Empty Field Standard Travel Angle  
+ 
+10 Electrical Connection   
+ S9 Integrated connector D-SUB DE 9f, 9 pin  
+ MIL13 MIL spec D38999, 13 pin  
+ 
+11 Orientation Electrical Connection  
+ U Bottom sided  
+ 
+12 Output Shaft   
+ Empty field Standard Spline  
+ 
+13 High Impedance Option  Only for RS 485 
+ Empty field With BUS termination resistor  
+ HI Without BUS termination resistor  
+ 
+14 Temperature Range   
+ Empty field Standard Range (-30 °C …. 70 °C)  
+ LT Low temperature modification  
+ 
+15 Baud Rate  Only for RS 485 
+ 115 Baud rate of 115.200 bauds/s (Standard RS 485)  
+ 038 Baud rate of 38.400 baud/s  
+ 057 Baud rate of 57.600 baud/s  
+ 250 Baud rate of 250.000 baud/s  
+ 
+Part Number Example: 
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+DA 30-HT-D  .30  .3     .S9     115 
+DA 30-HT-D with 30 V supply voltage, RS-485 two-fire interface, a Baud rate of 115.200 baud/s and integrated D-SUB 
+connector 
+ 
+
+--- page 20 ---
+ 
+ 
+Content is subject to change without notice Date: 11/2026 Revision: G 
+© Volz Servos GmbH            Page: 18 
+DA 30-HT-D 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Volz Servos GmbH & Co. KG 
+Heinrich-Krumm-Straße 5 
+63073 Offenbach 
+Germany 
+Tel. +49-69-985580-0 
+Fax +49-69-985580-40 
+ 
+e-Mail      mail@volz-servos.com  
+Website   www.volz-servos.com 

@@ -1,0 +1,673 @@
+--- page 1 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+1/21 
+ 
+ 
+DA 30 
+Technical Specification 
+ 
+ 
+ 
+ 
+DA 30‐30‐5224 
+
+
+--- page 2 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+2/21 
+Content 
+ 
+	
+1.  General Description ......................................................................................................................................... 3 
+2.  Operating Data ................................................................................................................................................ 4 
+3.  Performance .................................................................................................................................................... 5 
+4.  Command Signal .............................................................................................................................................. 6 
+4.1.  PWM Command Interface ........................................................................................................................... 6 
+4.2.  RS 485 Command Signal .............................................................................................................................. 6 
+4.3.  RS 485 Protocol Specifications .................................................................................................................... 7 
+4.4.  Position Feedback Signal (PWM Versions) .................................................................................................. 8 
+4.5.  Position Feedback Value (RS 485 Versions) ................................................................................................. 9 
+5.  Materials and Protective Features ................................................................................................................ 10 
+6.  Dimensions .................................................................................................................................................... 10 
+6.1.  Installation Dimensions ............................................................................................................................. 11 
+6.2.  Output Shaft Spline ................................................................................................................................... 12 
+7.  Electrical Connection Options ....................................................................................................................... 13 
+8.  Accessories .................................................................................................................................................... 19 
+8.1.  Aluminum Servo Arm ................................................................................................................................ 20 
+9.  Item Number System ..................................................................................................................................... 21 
+ 
+ 
+
+--- page 3 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+3/21 
+1. General Description 
+ 
+To guarantee maximum safety and reliability, our DA 30 features a brushless motor and a contactless wear 
+free position sensor. This means maximum service life with the greatest‐possible power delivery and its design 
+prevents electromagnetic emissions (EMI) caused by brush sparking. The housing made of saltwater‐resistant 
+aluminum is HART‐coat treated, meets the IP‐67 standard for water and dust sealing and provides an 
+integrated Sub‐D connector (MIL spec. circular connector or cable gland on request). Brackets integrated in the 
+housing for horizontal and vertical assembly. 8‐fold, ball‐bearing supported, steel gear train, drive shaft with 
+ANSI multi‐tooth. 
+ 
+The DA 30 series can be equipped with a standard PWM input (Pulse Width Modulation) that has two different 
+interfaces: a differential, galvanic isolated interface (Opto‐Coupler) and a single‐ended interface with CMOS 
+levels that is also used to program the servo parameters. It includes analog position feedback to detect the 
+drive shaft position. A differential RS‐422 PWM interface can be chosen instead of the opto‐coupled interface. 
+ 
+The DA 30 with digital serial command interface (RS‐485) receives its commands via a CRC secured protocol. It 
+can return not only the shaft position in digital format, but also several diagnostic data such as the level of the 
+supply voltage, current consumption and the temperature of the motor and electronics in digital form 
+(optionally also the humidity within the actuator case). These kind of diagnostic capabilities help to determine 
+the health state of the actuators before, during and after deployment. 
+ 
+Interface Options:  
+ 
+PWM‐OPTO 
+PWM‐Level Compatible, OPTO‐coupler PWM Interface 
+ 
+PWM‐TTL 
+PWM‐Level Compatible, TTL PWM Interface 
+ 
+RS 422/TTL 
+RS 422‐Level Compatible, Differential PWM Interface 
+ 
+RS 485 (2‐wire) 
+RS‐485 Compatible, Asynchronous Serial Command Interface 
+ 
+RS 485 Redundant 
+RS 485 Redundant Communication Interface and Redundant Power Supply 
+ 
+RS 485 (4‐wire) 
+RS 485 Separated Receiver and Transmitter Lines for Interface A and B  
+ 
+ 
+For RS 485‐Versions Only: 
+Customized commands can be implemented on request. Humidity sensor available. 
+ 
+
+--- page 4 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+4/21 
+2. Operating Data 
+ 
+  DA 30‐30‐5224… 
+Supply Voltage (rated)  28 V DC 
+Supply Voltage Range  24 … 32 V DC 
+Standby Current 1                                at rated voltage  < 0.04 A 
+Rated Current 1                                    at rated voltage  1.3 A 
+Peak Current 1                                      at rated voltage  2.6 A 
+Rated Torque 1                                      at rated speed  8.0 Nm (70.8 lbf‐in) 
+Peak Torque 1                                       at rated voltage 16.0 Nm (141.6 lbf‐in) 
+No Load Speed 1                                  at rated voltage  230 °/s 
+Rated Speed 1                                        at rated torque 150 °/s 
+Default Travel Angle  ±45° = 90° total travel  
+Max. Travel Angle 2  ±85° = 170° total travel 
+Backlash (mechanical) ≤ 0.5° 
+Position Error under Temperature 3 ≤ ±1.0°                     
+Operating Temperature Range 4 ‐30°C … +70°C (‐22°F … +158°F) 
+Storage Temperature Range ‐55°C … +85°C (‐67°F … +185°F) 
+ 
+1) Tolerance ±10% 
+2) Programming Tool # 985.4 for PWM‐Versions required  
+3) ‐20°C … +50°C , Δt = 70°C (‐4°F … +122°F , Δt = 126°F) 
+4) Low Temperature Modification (‐70°C /‐94°F) on request 
+ 
+
+--- page 5 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+5/21 
+3. Performance 
+ 
+ 
+Operation Mode: 
+  Continuous    Short Time       Overload 
+<10s , 60s cool down     <1s , 60s cool down 
+ 
+0,0
+0,5
+1,0
+1,5
+2,0
+2,5
+3,0
+3,5
+4,0
+4,5
+5,0
+0
+50
+100
+150
+200
+250
+0
+0
+2
+17.7
+4
+35.4
+6
+53.1
+8
+70.8
+10
+88.5
+12
+106.2
+14
+123.9
+16
+141.6
+18
+159.3
+20
+177.0
+Current  [A]
+Speed   [°/s]
+Load [Nm]
+[lbf‐in]
+DA 30‐30‐5224
+Speed [°/s]
+Current [A]
+
+--- page 6 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+6/21 
+4. Command Signal 
+ 
+4.1. PWM Command Interface 
+ 
+PWM‐OPTO/TTL , PWM‐RS 422/TTL  DA 30‐30‐5224.1…  DA 30‐30‐5224.2… 
+Signal Voltage  TTL‐Level  HIGH: min. 3.5V , max. 5.5V  TTL‐Level  LOW: min. 0.0V , max. 1.5V 
+Frame Rate  2.6 … 2000 ms 
+Valid Pulse Lengths  0.9 … 2.1 ms 
+Pulse Lengths for Position Left / Center / Right  1.0 / 1.5 / 2.0 ms 
+Resolution ≤ 1.0 µs 
+ 
+ 
+ 
+ 
+4.2. RS 485 Command Signal 
+ 
+RS 485 , RS 485 Redundant  DA 30‐30‐5224.3…  DA 30‐30‐5224.4…  DA 30‐30‐5224.5… 
+Baud‐Rate  115200 ±1.5% bits/s 
+Protocol                             (Documentation available)  6 Byte (incl. 2 byte CRC) 
+ 
+ 
+
+--- page 7 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+7/21 
+4.3. RS 485 Protocol Specifications 
+ 
+RS 485 , RS 485 Redundant  DA 30‐30‐5224.3…  DA 30‐30‐5224.4…  DA 30‐30‐5224.5… 
+Number of Data Bits  8 
+Number of Stop Bits  1 or 2 
+Parity  None 
+ 
+Command / Response Frame 
+Byte #  Description 
+1  Command / Response‐Code 
+2  Actuator ID 
+3  Argument 1 
+4  Argument 2 
+5  CRC High Byte 
+6  CRC Low Byte 
+ 
+ 
+ 
+
+--- page 8 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+8/21 
+4.4. Position Feedback Signal (PWM Versions) 
+ 
+The Position Feedback signal (Pos FB) is an analog output signal with a voltage value which is directly 
+related to the output shaft’s angular position. Reference is Supply Ground / Signal Ground (GND). 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+* Tolerance ±5% 
+0
+5
+10
+15
+‐45 ‐30 ‐15 0 153045
+Voltage [V] DC *
+Angular Position Output Shaft [°]
+Position Feedback (Pos FB)
+Single Ended Output
+Differential Output A
+Differential Output B
+
+--- page 9 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+9/21 
+4.5. Position Feedback Value (RS 485 Versions) 
+ 
+Integrated in the RS 485 protocol a Position Feedback Value is available, representing the output shaft’s 
+angular position. Value readout by sending a request command. Detailed information is provided in the 
+RS 485 documentation. 
+ 
+ 
+ 
+ 
+
+--- page 10 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+10/21 
+5. Materials and Protective Features 
+ 
+Case Material  Saltwater resistant Aluminum Alloy 
+Splash Water Resistance  IP 67 , waterproof to 1m depth 
+Case Surface Treatment  HART®‐Coat 
+Salt Water Resistance  > 100 hrs. Salt Water Spray 
+Salt Water Resistance  Standard, Case Material 
+EMI / RFI Shielding  Case Shielding 
+Motor Type  Brushless DC Motor 
+Gear Set Material  Hardened Steel 
+Position Sensor  Contactless 
+Position Feedback  Standard 
+RS 485 Communication Interface  Optional 
+Humidity Sensor  Optional 
+Temperature Sensor 5  Standard , Motor and PCB 
+ 
+5) RS 485‐Versions only 
+ 
+6. Dimensions 
+ 
+  DA 30‐30‐5224… 
+Case Dimensions  114.6 mm x 67.5 mm x 30.0 mm   ±0.2 mm 
+  (4.512 in x 2.658 in x 1.181 in   ±0.008 in) 
+Weight  640g (22.6oz) ±10% 
+ 
+ 
+
+--- page 11 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+11/21 
+6.1. Installation Dimensions 
+ 
+ 
+Not to scale     Dimensions [in] , mm
+
+--- page 12 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+12/21 
+6.2. Output Shaft Spline 
+ 
+Valid for all Interface Versions 
+DA 30‐30‐5224._._ 
+ 
+ 
+Not to scale     Dimensions [in] , mm
+
+--- page 13 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+13/21 
+7. Electrical Connection Options 
+ 
+PWM‐OPTO Interface 
+ 
+Integrated Connector       Item # DA 30.30.5224.1._ 
+ 
+ 
+NOTE: 
+Access to the actuator parameters is possible via the TTL‐PWM‐Interface only. 
+Programming Tool # 985.4 required. 
+ 
+  Standard Connector 
+1  2  3  4  5  Manufacturer  ITT Cannon 
+ 
+Type  DEMM‐9PE 
+Mating  D‐SUB DE‐9f 6  7  8  9 
+ 
+PWM‐OPTO Pin Assignment 
+1  PWM (AO)  Command Signal, Anode Optocoupler 
+2  PWM (CO)  Command Signal, Cathode Optocoupler 
+3  Diff FB A  Differential Position Feedback Signal, Output A 
+4  to Pin 7  Connect to Pin 7 (Supply Ground) 
+5  Case GND  Case Ground 
+6  +V DC  Supply Voltage 
+7  GND  Supply Ground, Signal Ground 
+8  Pos FB  Single Ended Position Feedback Signal 
+9  Diff FB B  Differential Position Feedback Signal, Output B 
+
+
+--- page 14 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+14/21 
+ 
+ 
+PWM‐TTL Interface 
+ 
+Integrated Connector       Item # DA 30.30.5224.1._ 
+ 
+ 
+NOTE: 
+Access to the actuator parameters is possible via the TTL‐PWM‐Interface only. 
+Programming Tool # 985.4 required. 
+ 
+  Standard Connector 
+1  2  3  4  5  Manufacturer  ITT Cannon 
+ 
+Type  DEMM‐9PE 
+Mating  D‐SUB DE‐9f 6  7  8  9 
+ 
+PWM‐TTL Pin Assignment 
+1  NC  Do not connect 
+2  NC  Do not connect 
+3  Diff FB A  Differential Position Feedback Signal, Output A 
+4  PWM  Command Signal 
+5  Case GND  Case Ground 
+6  +V DC  Supply Voltage 
+7  GND  Supply Ground, Signal Ground 
+8  Pos FB  Single Ended Position Feedback Signal 
+9  Diff FB B  Differential Position Feedback Signal, Output B 
+
+
+--- page 15 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+15/21 
+ 
+ 
+PWM‐RS 422/TTL Interface 
+ 
+Integrated Connector       Item # DA 30.30.5224.2._ 
+ 
+  Standard Connector 
+1  2  3  4  5  Manufacturer  ITT Cannon 
+ 
+Type  DEMM‐9PE 
+Mating  D‐SUB DE‐9f 6  7  8  9 
+ 
+PWM‐RS 422/TTL Pin Assignment 
+1  RS 422 / PWM  Non‐Inverted RS 422‐Input 
+2  RS 422 / PWM  Inverted RS 422‐Input 
+3  Diff FB A  Position Feedback Signal, Output A 
+4  TTL / PWM  Command and Parameter Input 
+5  Case GND  Case Ground 
+6  +V DC  Supply Voltage 
+7  GND  Supply Ground, Signal Ground 
+8  Pos FB  Single Ended Position Feedback Signal 
+9  Diff FB B  Differential Position Feedback Signal, Output B
+ 
+NOTE: 
+Access to the actuator parameters is possible via the TTL‐PWM‐Interface only. 
+Programming Tool # 985.4 required. 
+ 
+
+
+--- page 16 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+16/21 
+ 
+ 
+RS 485 Interface (2‐wire) 
+ 
+Integrated Connector       Item # DA 30.30.5224.3._ 
+ 
+  Standard Connector 
+1  2  3  4  5  Manufacturer  ITT Cannon 
+ 
+Type  DEMM‐9PE 
+Mating  D‐SUB DE‐9f 6  7  8  9 
+ 
+RS 485 (2‐wire) Pin Assignment 
+1  RS 485 A  Non‐Inverted Input/Output 
+2  RS 485 B  Inverted Input/Output 
+3 ‐ Do not connect 
+4  +V DC (2)  Supply Voltage, Secondary 
+5  Case GND  Case Ground 
+6  +V DC (1)  Supply Voltage, Primary 
+7  GND (1)  Supply Ground, Signal Ground, Primary 
+8  GND (2)  Supply Ground, Signal Ground, Secondary 
+9 ‐ Do not connect 
+ 
+
+
+--- page 17 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+17/21 
+ 
+ 
+RS 485 Redundant Interface 
+ 
+Integrated Connector       Item # DA 30.30.5224.4._ 
+ 
+  Standard Connector 
+1  2  3  4  5  Manufacturer  ITT Cannon 
+ 
+Type  DEMM‐9PE 
+Mating  D‐SUB DE‐9f 6  7  8  9 
+ 
+RS 485 Redundant Pin Assignment 
+1  RS 485 A (1)  Interface 1, Non‐Inverted Input/Output 
+2  RS 485 B (1)  Interface 1, Inverted Input/Output 
+3  RS 485 A (2)  Interface 2, Non‐Inverted Input/Output 
+4  +V DC (2)  Supply Voltage, Secondary 
+5  Case GND  Case Ground 
+6  +V DC (1)  Supply Voltage, Primary 
+7  GND (1)  Supply Ground, Signal Ground, Primary 
+8  GND (2)  Supply Ground, Signal Ground, Secondary 
+9  RS 485 B (2)  Interface 2, Inverted Input/Output 
+ 
+
+
+--- page 18 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+18/21 
+ 
+ 
+RS 485 Interface (4‐wire) 
+ 
+Integrated Connector       Item # DA 30.30.5224.5._ 
+ 
+  Standard Connector 
+1  2  3  4  5  Manufacturer  ITT Cannon 
+ 
+Type  DEMM‐9PE 
+Mating  D‐SUB DE‐9f 6  7  8  9 
+ 
+RS 485 (4‐wire) Pin Assignment 
+1  RS 485 A  (Rx)  Receiver, Non‐Inverted, Input 
+2  RS 485 B  (Rx)  Receiver, Inverted, Input 
+3  RS 485 A  (Tx)  Transmitter, Non‐Inverted, Output 
+4  +V DC (2)  Supply Voltage, Secondary 
+5  Case GND  Case Ground 
+6  +V DC (1)  Supply Voltage, Primary 
+7  GND (1)  Supply Ground, Signal Ground,Primary 
+8  GND (2)  Supply Ground, Signal Ground, Secondary 
+9  RS 485 B  (Tx)  Transmitter, Inverted, Output 
+ 
+ 
+ 
+
+
+--- page 19 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+19/21 
+8. Accessories 
+ 
+Item  Item‐No. 
+Aluminum Servo Arm  1941.21 
+Programming Tool PWM  985.4 
+Programming Tool RS‐485  985.5 
+ 
+
+--- page 20 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+20/21 
+8.1. Aluminum Servo Arm 
+ 
+ 
+Not to scale     Dimensions [in] , mm
+
+--- page 21 ---
+ 
+  Content is subject to change without notice  
+  Revision: B 
+© Volz Servos GmbH & Co. KG   www.volz‐servos.com 
+DA 30 
+Technical Specification 
+Page
+21/21 
+9. Item Number System 
+ 
+DA  30  .  30 . 52 24 . 1 . H
+             
+Servo Class           Sensor 
+30mm Class          H  Humidity 
+          X  without  Supply Voltage       
+30V DC  30    Interface 
+    1 PWM‐OPTO / TTL 
+ Servo Type 2 PWM‐RS 422 / TTL  5224 3 RS 485 (2‐wire) 
+ 4 RS 485 Redundant  5 RS 485 (4‐wire) 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Volz Servos GmbH & Co. KG 
+Kaiserstrasse 15 
+63065 Offenbach 
+Germany 
+Tel. +49‐69‐985580‐0 
+Fax +49‐69‐985580‐40 
+ 
+e‐Mail      mail@volz‐servos.com  
+Website   www.volz‐servos.com 
+ 

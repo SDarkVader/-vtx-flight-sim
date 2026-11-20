@@ -1,0 +1,1772 @@
+{
+ "dt": 0.01,
+ "rows": [
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 0.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {},
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": -0.0
+   },
+   "achieved_deg": {
+    "rudder": 30.0,
+    "elevator": -0.0,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 0.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {},
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 0.0
+   },
+   "achieved_deg": {
+    "rudder": -30.0,
+    "elevator": -0.0,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 0.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {},
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": 0.0,
+    "elevator": -0.0,
+    "rudder": 0.0
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": 20.0,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 0.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {},
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 0.0
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": -20.0,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 0.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {},
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 0.0,
+    "rudder": 0.0
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": -0.0,
+    "aileron": 25.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 0.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {},
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 0.0
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": -0.0,
+    "aileron": -25.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 1.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "elevator": 0.053,
+    "rudder": -6.799,
+    "aileron_stbd": 0.003,
+    "aileron_port": 0.001
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.001,
+    "aileron_stbd": 0.001,
+    "elevator": 0.0,
+    "rudder": -6.799
+   },
+   "achieved_deg": {
+    "rudder": 29.028,
+    "elevator": 0.001,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    5115.6,
+    5115.7
+   ],
+   "thrust_n": [
+    1402.2,
+    1402.2
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 1.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "elevator": 0.053,
+    "rudder": 6.8,
+    "aileron_port": 0.003,
+    "aileron_stbd": 0.001
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.001,
+    "aileron_stbd": 0.001,
+    "elevator": 0.0,
+    "rudder": 6.8
+   },
+   "achieved_deg": {
+    "rudder": -29.028,
+    "elevator": 0.001,
+    "aileron": 0.0
+   },
+   "fan_rpm": [
+    5115.7,
+    5115.6
+   ],
+   "thrust_n": [
+    1402.2,
+    1402.2
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 1.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "elevator": -3.577,
+    "aileron_port": -0.002,
+    "aileron_stbd": -0.002,
+    "rudder": 0.001
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.002,
+    "aileron_stbd": -0.002,
+    "elevator": -3.577,
+    "rudder": 0.001
+   },
+   "achieved_deg": {
+    "rudder": 0.0,
+    "elevator": 19.49,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    5112.7,
+    5112.7
+   ],
+   "thrust_n": [
+    1400.6,
+    1400.6
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 1.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "elevator": 3.596,
+    "aileron_port": 0.003,
+    "aileron_stbd": 0.003
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.002,
+    "aileron_stbd": 0.002,
+    "elevator": 3.596,
+    "rudder": 0.0
+   },
+   "achieved_deg": {
+    "rudder": 0.0,
+    "elevator": -19.485,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    5110.7,
+    5110.7
+   ],
+   "thrust_n": [
+    1399.5,
+    1399.5
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 1.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "elevator": 0.053,
+    "aileron_port": 0.081,
+    "aileron_stbd": -0.081,
+    "rudder": 0.004
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.081,
+    "aileron_stbd": -0.081,
+    "elevator": -0.023,
+    "rudder": 0.004
+   },
+   "achieved_deg": {
+    "rudder": 0.001,
+    "elevator": -0.002,
+    "aileron": 24.987
+   },
+   "fan_rpm": [
+    5111.5,
+    5111.5
+   ],
+   "thrust_n": [
+    1399.9,
+    1399.9
+   ]
+  },
+  {
+   "airspeed_mps": 0.0,
+   "throttle": 1.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "elevator": 0.053,
+    "aileron_stbd": 0.081,
+    "aileron_port": -0.081,
+    "rudder": -0.003
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.081,
+    "aileron_stbd": 0.081,
+    "elevator": -0.023,
+    "rudder": -0.003
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": -0.002,
+    "aileron": -24.987
+   },
+   "fan_rpm": [
+    5111.5,
+    5111.5
+   ],
+   "thrust_n": [
+    1399.9,
+    1399.9
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 0.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -0.024,
+    "aileron_stbd": -0.025,
+    "elevator": -0.048,
+    "rudder": -5.687
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.016,
+    "aileron_stbd": -0.019,
+    "elevator": -0.036,
+    "rudder": -5.687
+   },
+   "achieved_deg": {
+    "rudder": 29.193,
+    "elevator": -0.005,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 0.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -0.025,
+    "aileron_stbd": -0.024,
+    "elevator": -0.048,
+    "rudder": 5.687
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.019,
+    "aileron_stbd": -0.016,
+    "elevator": -0.035,
+    "rudder": 5.687
+   },
+   "achieved_deg": {
+    "rudder": -29.194,
+    "elevator": -0.005,
+    "aileron": 0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 0.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -0.05,
+    "aileron_stbd": -0.05,
+    "elevator": -1.848
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.028,
+    "aileron_stbd": -0.028,
+    "elevator": -1.651,
+    "rudder": -0.0
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": 19.763,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 0.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 0.004,
+    "aileron_stbd": 0.004,
+    "elevator": 1.778
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 1.604,
+    "rudder": -0.0
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": -19.77,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 0.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 1.283,
+    "aileron_stbd": -1.313,
+    "elevator": -0.05,
+    "rudder": -0.092
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 1.144,
+    "aileron_stbd": -1.186,
+    "elevator": -0.027,
+    "rudder": -0.092
+   },
+   "achieved_deg": {
+    "rudder": -0.012,
+    "elevator": -0.004,
+    "aileron": 24.814
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 0.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -1.313,
+    "aileron_stbd": 1.283,
+    "elevator": -0.05,
+    "rudder": 0.092
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -1.186,
+    "aileron_stbd": 1.144,
+    "elevator": -0.027,
+    "rudder": 0.092
+   },
+   "achieved_deg": {
+    "rudder": 0.012,
+    "elevator": -0.004,
+    "aileron": -24.814
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 1.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 0.126,
+    "aileron_stbd": 0.105,
+    "elevator": 0.218,
+    "rudder": -20.508
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.1,
+    "aileron_stbd": 0.105,
+    "elevator": 0.068,
+    "rudder": -16.856
+   },
+   "achieved_deg": {
+    "rudder": 27.564,
+    "elevator": 0.011,
+    "aileron": -0.001
+   },
+   "fan_rpm": [
+    5117.2,
+    5117.1
+   ],
+   "thrust_n": [
+    1403.1,
+    1403.0
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 1.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 0.105,
+    "aileron_stbd": 0.126,
+    "elevator": 0.218,
+    "rudder": 20.509
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.105,
+    "aileron_stbd": 0.1,
+    "elevator": 0.068,
+    "rudder": 16.85
+   },
+   "achieved_deg": {
+    "rudder": -27.564,
+    "elevator": 0.011,
+    "aileron": 0.001
+   },
+   "fan_rpm": [
+    5117.3,
+    5117.3
+   ],
+   "thrust_n": [
+    1403.1,
+    1403.2
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 1.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -0.092,
+    "aileron_stbd": -0.092,
+    "elevator": -9.271,
+    "rudder": 0.002
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.091,
+    "aileron_stbd": -0.091,
+    "elevator": -9.271,
+    "rudder": 0.002
+   },
+   "achieved_deg": {
+    "rudder": 0.0,
+    "elevator": 18.673,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    4917.1,
+    4917.1
+   ],
+   "thrust_n": [
+    1295.5,
+    1295.5
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 1.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 0.172,
+    "aileron_stbd": 0.172,
+    "elevator": 9.487,
+    "rudder": -0.001
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.145,
+    "aileron_stbd": 0.145,
+    "elevator": 9.487,
+    "rudder": -0.001
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": -18.645,
+    "aileron": 0.0
+   },
+   "fan_rpm": [
+    4917.4,
+    4917.4
+   ],
+   "thrust_n": [
+    1295.6,
+    1295.6
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 1.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 1.857,
+    "aileron_stbd": -1.755,
+    "elevator": 0.211,
+    "rudder": 0.427
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 1.857,
+    "aileron_stbd": -1.755,
+    "elevator": 0.123,
+    "rudder": 0.427
+   },
+   "achieved_deg": {
+    "rudder": 0.06,
+    "elevator": 0.018,
+    "aileron": 24.713
+   },
+   "fan_rpm": [
+    4914.9,
+    4914.8
+   ],
+   "thrust_n": [
+    1294.3,
+    1294.3
+   ]
+  },
+  {
+   "airspeed_mps": 20.0,
+   "throttle": 1.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -1.755,
+    "aileron_stbd": 1.857,
+    "elevator": 0.211,
+    "rudder": -0.423
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -1.755,
+    "aileron_stbd": 1.857,
+    "elevator": 0.123,
+    "rudder": -0.423
+   },
+   "achieved_deg": {
+    "rudder": -0.059,
+    "elevator": 0.018,
+    "aileron": -24.713
+   },
+   "fan_rpm": [
+    4914.8,
+    4914.9
+   ],
+   "thrust_n": [
+    1294.3,
+    1294.3
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 0.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "elevator": -0.968,
+    "rudder": -24.605,
+    "aileron_port": -0.634,
+    "aileron_stbd": -0.364
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.634,
+    "aileron_stbd": -0.364,
+    "elevator": -0.968,
+    "rudder": -24.605
+   },
+   "achieved_deg": {
+    "rudder": 26.494,
+    "elevator": -0.129,
+    "aileron": 0.017
+   },
+   "fan_rpm": [
+    0.1,
+    0.1
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 0.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "elevator": -0.953,
+    "rudder": 24.594,
+    "aileron_port": -0.361,
+    "aileron_stbd": -0.624
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -0.361,
+    "aileron_stbd": -0.624,
+    "elevator": -0.953,
+    "rudder": 24.594
+   },
+   "achieved_deg": {
+    "rudder": -26.495,
+    "elevator": -0.127,
+    "aileron": -0.016
+   },
+   "fan_rpm": [
+    0.1,
+    0.1
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 0.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "elevator": -11.864,
+    "aileron_port": -2.704,
+    "aileron_stbd": -2.703,
+    "rudder": 0.011
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 1.171,
+    "aileron_stbd": 1.165,
+    "elevator": -0.484,
+    "rudder": 0.002
+   },
+   "achieved_deg": {
+    "rudder": 0.0,
+    "elevator": 20.061,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.1,
+    0.1
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 0.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "elevator": 5.499,
+    "aileron_port": 0.175,
+    "aileron_stbd": 0.175,
+    "rudder": -0.003
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.148,
+    "aileron_stbd": 0.148,
+    "elevator": 4.682,
+    "rudder": -0.003
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": -19.324,
+    "aileron": 0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 0.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 3.833,
+    "aileron_stbd": -3.921,
+    "elevator": -0.279,
+    "rudder": -3.373
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 3.082,
+    "aileron_stbd": -3.439,
+    "elevator": -0.046,
+    "rudder": -3.373
+   },
+   "achieved_deg": {
+    "rudder": -0.469,
+    "elevator": -0.004,
+    "aileron": 24.481
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 0.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -3.921,
+    "aileron_stbd": 3.833,
+    "elevator": -0.279,
+    "rudder": 3.365
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -3.438,
+    "aileron_stbd": 3.083,
+    "elevator": -0.045,
+    "rudder": 3.365
+   },
+   "achieved_deg": {
+    "rudder": 0.468,
+    "elevator": -0.004,
+    "aileron": -24.481
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 1.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "elevator": 0.442,
+    "rudder": -36.678,
+    "aileron_port": 1.1,
+    "aileron_stbd": 0.808
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.037,
+    "aileron_stbd": 0.203,
+    "elevator": 0.072,
+    "rudder": -25.978
+   },
+   "achieved_deg": {
+    "rudder": 26.26,
+    "elevator": 0.014,
+    "aileron": 0.012
+   },
+   "fan_rpm": [
+    5159.0,
+    5158.8
+   ],
+   "thrust_n": [
+    1426.1,
+    1426.0
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 1.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "elevator": 0.441,
+    "rudder": 36.679,
+    "aileron_port": 0.806,
+    "aileron_stbd": 1.112
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.201,
+    "aileron_stbd": 0.036,
+    "elevator": 0.072,
+    "rudder": 25.973
+   },
+   "achieved_deg": {
+    "rudder": -26.261,
+    "elevator": 0.014,
+    "aileron": -0.012
+   },
+   "fan_rpm": [
+    5158.8,
+    5159.0
+   ],
+   "thrust_n": [
+    1426.0,
+    1426.1
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 1.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "elevator": -19.682,
+    "aileron_port": -3.313,
+    "aileron_stbd": -3.313,
+    "rudder": 0.007
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 1.128,
+    "aileron_stbd": 1.117,
+    "elevator": -0.941,
+    "rudder": 0.007
+   },
+   "achieved_deg": {
+    "rudder": -0.001,
+    "elevator": 20.04,
+    "aileron": -0.001
+   },
+   "fan_rpm": [
+    5159.1,
+    5159.2
+   ],
+   "thrust_n": [
+    1426.1,
+    1426.2
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 1.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "elevator": 15.716,
+    "aileron_port": 0.756,
+    "aileron_stbd": 0.756
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.522,
+    "aileron_stbd": 0.522,
+    "elevator": 15.348,
+    "rudder": 0.0
+   },
+   "achieved_deg": {
+    "rudder": 0.0,
+    "elevator": -17.818,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    4782.1,
+    4782.1
+   ],
+   "thrust_n": [
+    1225.3,
+    1225.3
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 1.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 4.345,
+    "aileron_stbd": -4.113,
+    "elevator": 0.536,
+    "rudder": 0.18
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 4.345,
+    "aileron_stbd": -4.055,
+    "elevator": 0.426,
+    "rudder": 0.18
+   },
+   "achieved_deg": {
+    "rudder": 0.025,
+    "elevator": 0.056,
+    "aileron": 24.332
+   },
+   "fan_rpm": [
+    4777.7,
+    4777.5
+   ],
+   "thrust_n": [
+    1223.1,
+    1223.0
+   ]
+  },
+  {
+   "airspeed_mps": 35.0,
+   "throttle": 1.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -4.113,
+    "aileron_stbd": 4.345,
+    "elevator": 0.536,
+    "rudder": -0.18
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -4.055,
+    "aileron_stbd": 4.345,
+    "elevator": 0.426,
+    "rudder": -0.18
+   },
+   "achieved_deg": {
+    "rudder": -0.025,
+    "elevator": 0.056,
+    "aileron": -24.332
+   },
+   "fan_rpm": [
+    4777.5,
+    4777.7
+   ],
+   "thrust_n": [
+    1223.0,
+    1223.1
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 0.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 11.57,
+    "aileron_stbd": -8.285,
+    "elevator": 11.428,
+    "rudder": -50.105
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.597,
+    "aileron_stbd": 1.599,
+    "elevator": 1.895,
+    "rudder": -27.503
+   },
+   "achieved_deg": {
+    "rudder": 26.088,
+    "elevator": 0.288,
+    "aileron": 0.075
+   },
+   "fan_rpm": [
+    3.1,
+    3.1
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 0.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -8.278,
+    "aileron_stbd": 11.576,
+    "elevator": 11.344,
+    "rudder": 50.107
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 1.596,
+    "aileron_stbd": 0.591,
+    "elevator": 1.886,
+    "rudder": 27.557
+   },
+   "achieved_deg": {
+    "rudder": -26.081,
+    "elevator": 0.287,
+    "aileron": -0.075
+   },
+   "fan_rpm": [
+    3.1,
+    3.1
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 0.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -5.82,
+    "aileron_stbd": -5.819,
+    "elevator": -26.061,
+    "rudder": 0.043
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.185,
+    "aileron_stbd": 0.185,
+    "elevator": -4.011,
+    "rudder": 0.001
+   },
+   "achieved_deg": {
+    "rudder": 0.0,
+    "elevator": 19.223,
+    "aileron": 0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 0.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 1.02,
+    "aileron_stbd": 1.02,
+    "elevator": 12.026,
+    "rudder": 0.013
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.618,
+    "aileron_stbd": 0.62,
+    "elevator": 8.977,
+    "rudder": 0.013
+   },
+   "achieved_deg": {
+    "rudder": 0.002,
+    "elevator": -18.667,
+    "aileron": 0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 0.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 8.924,
+    "aileron_stbd": -7.863,
+    "elevator": 1.15,
+    "rudder": 5.086
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 7.393,
+    "aileron_stbd": -6.134,
+    "elevator": 0.62,
+    "rudder": 5.086
+   },
+   "achieved_deg": {
+    "rudder": 0.664,
+    "elevator": 0.062,
+    "aileron": 23.934
+   },
+   "fan_rpm": [
+    0.4,
+    0.4
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 0.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -7.918,
+    "aileron_stbd": 12.012,
+    "elevator": 4.373,
+    "rudder": 2.666
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -5.544,
+    "aileron_stbd": 12.012,
+    "elevator": 4.373,
+    "rudder": -0.488
+   },
+   "achieved_deg": {
+    "rudder": 0.084,
+    "elevator": 0.562,
+    "aileron": -23.624
+   },
+   "fan_rpm": [
+    5.1,
+    5.1
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 1.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -35.822,
+    "aileron_stbd": 32.989,
+    "elevator": -33.396,
+    "rudder": -56.736
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -5.947,
+    "aileron_stbd": 9.571,
+    "elevator": -2.413,
+    "rudder": 0.799
+   },
+   "achieved_deg": {
+    "rudder": 30.032,
+    "elevator": -1.064,
+    "aileron": 1.218
+   },
+   "fan_rpm": [
+    5140.8,
+    5144.8
+   ],
+   "thrust_n": [
+    1415.3,
+    1417.5
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 1.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 33.073,
+    "aileron_stbd": -35.905,
+    "elevator": -33.471,
+    "rudder": 56.743
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 10.157,
+    "aileron_stbd": -5.601,
+    "elevator": -1.631,
+    "rudder": -0.698
+   },
+   "achieved_deg": {
+    "rudder": -30.036,
+    "elevator": -1.001,
+    "aileron": -1.232
+   },
+   "fan_rpm": [
+    5145.1,
+    5141.0
+   ],
+   "thrust_n": [
+    1417.6,
+    1415.4
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 1.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -6.509,
+    "aileron_stbd": -6.508,
+    "elevator": -31.978,
+    "rudder": 0.08
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -1.376,
+    "aileron_stbd": -1.381,
+    "elevator": -8.117,
+    "rudder": -0.017
+   },
+   "achieved_deg": {
+    "rudder": -0.002,
+    "elevator": 18.676,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    5140.9,
+    5140.9
+   ],
+   "thrust_n": [
+    1416.0,
+    1416.0
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 1.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 1.958,
+    "aileron_stbd": 1.958,
+    "elevator": 24.531,
+    "rudder": -0.021
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 1.13,
+    "aileron_stbd": 1.13,
+    "elevator": 21.22,
+    "rudder": -0.012
+   },
+   "achieved_deg": {
+    "rudder": -0.002,
+    "elevator": -16.957,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    4656.4,
+    4656.4
+   ],
+   "thrust_n": [
+    1161.8,
+    1161.8
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 1.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 9.119,
+    "aileron_stbd": -7.789,
+    "elevator": 5.876,
+    "rudder": -12.262
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 7.186,
+    "aileron_stbd": -5.697,
+    "elevator": 1.883,
+    "rudder": -12.262
+   },
+   "achieved_deg": {
+    "rudder": -1.741,
+    "elevator": 0.351,
+    "aileron": 23.98
+   },
+   "fan_rpm": [
+    4714.1,
+    4715.4
+   ],
+   "thrust_n": [
+    1190.7,
+    1191.4
+   ]
+  },
+  {
+   "airspeed_mps": 50.0,
+   "throttle": 1.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -7.789,
+    "aileron_stbd": 9.124,
+    "elevator": 5.887,
+    "rudder": 12.28
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -5.697,
+    "aileron_stbd": 7.18,
+    "elevator": 1.875,
+    "rudder": 12.28
+   },
+   "achieved_deg": {
+    "rudder": 1.744,
+    "elevator": 0.351,
+    "aileron": -23.981
+   },
+   "fan_rpm": [
+    4715.6,
+    4714.3
+   ],
+   "thrust_n": [
+    1191.5,
+    1190.8
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 0.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -38.639,
+    "aileron_stbd": 31.468,
+    "elevator": -56.054,
+    "rudder": -92.556
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -9.536,
+    "aileron_stbd": 31.468,
+    "elevator": 9.37,
+    "rudder": 2.743
+   },
+   "achieved_deg": {
+    "rudder": 30.144,
+    "elevator": -2.851,
+    "aileron": 3.33
+   },
+   "fan_rpm": [
+    69.5,
+    69.5
+   ],
+   "thrust_n": [
+    0.3,
+    -0.3
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 0.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 17.249,
+    "aileron_stbd": 19.763,
+    "elevator": 38.165,
+    "rudder": 92.558
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -11.449,
+    "aileron_stbd": -4.87,
+    "elevator": -22.695,
+    "rudder": 28.555
+   },
+   "achieved_deg": {
+    "rudder": -26.742,
+    "elevator": -3.064,
+    "aileron": 0.475
+   },
+   "fan_rpm": [
+    12.9,
+    12.9
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 0.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -9.702,
+    "aileron_stbd": -9.702,
+    "elevator": -43.024,
+    "rudder": 0.609
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -2.991,
+    "aileron_stbd": -2.97,
+    "elevator": -21.493,
+    "rudder": 0.057
+   },
+   "achieved_deg": {
+    "rudder": 0.021,
+    "elevator": 17.01,
+    "aileron": 0.001
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 0.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 2.643,
+    "aileron_stbd": 2.644,
+    "elevator": 21.567,
+    "rudder": -0.055
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 1.316,
+    "aileron_stbd": 1.316,
+    "elevator": 15.261,
+    "rudder": -0.046
+   },
+   "achieved_deg": {
+    "rudder": -0.007,
+    "elevator": -17.785,
+    "aileron": -0.0
+   },
+   "fan_rpm": [
+    0.0,
+    0.0
+   ],
+   "thrust_n": [
+    -0.0,
+    0.0
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 0.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 190.964,
+    "aileron_stbd": -246.249,
+    "elevator": 68.22,
+    "rudder": -56.809
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 190.964,
+    "aileron_stbd": -155.367,
+    "elevator": 68.22,
+    "rudder": -41.302
+   },
+   "achieved_deg": {
+    "rudder": -4.3,
+    "elevator": -3.619,
+    "aileron": 18.627
+   },
+   "fan_rpm": [
+    60.7,
+    60.7
+   ],
+   "thrust_n": [
+    -0.2,
+    0.2
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 0.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -812.015,
+    "aileron_stbd": 520.055,
+    "elevator": -179.646,
+    "rudder": 149.172
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -617.343,
+    "aileron_stbd": 500.53,
+    "elevator": 111.365,
+    "rudder": 58.24
+   },
+   "achieved_deg": {
+    "rudder": 5.301,
+    "elevator": -9.224,
+    "aileron": -20.117
+   },
+   "fan_rpm": [
+    129.1,
+    129.1
+   ],
+   "thrust_n": [
+    0.8,
+    -0.8
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 1.0,
+   "case": "rudder+30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -482.871,
+    "aileron_stbd": 431.485,
+    "elevator": 480.376,
+    "rudder": -360.201
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -62.096,
+    "aileron_stbd": 314.354,
+    "elevator": 480.376,
+    "rudder": -60.848
+   },
+   "achieved_deg": {
+    "rudder": 30.904,
+    "elevator": -4.953,
+    "aileron": 7.867
+   },
+   "fan_rpm": [
+    4889.9,
+    5031.7
+   ],
+   "thrust_n": [
+    1141.2,
+    1208.3
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 1.0,
+   "case": "rudder-30",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 399.471,
+    "aileron_stbd": -499.565,
+    "elevator": -296.448,
+    "rudder": 303.945
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 277.331,
+    "aileron_stbd": -147.842,
+    "elevator": 267.314,
+    "rudder": -10.098
+   },
+   "achieved_deg": {
+    "rudder": -33.052,
+    "elevator": -7.954,
+    "aileron": -7.058
+   },
+   "fan_rpm": [
+    4941.5,
+    5000.9
+   ],
+   "thrust_n": [
+    1208.6,
+    1237.9
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 1.0,
+   "case": "elevator+20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -10.459,
+    "aileron_stbd": -10.459,
+    "elevator": -46.505,
+    "rudder": -0.016
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 0.081,
+    "aileron_stbd": 0.083,
+    "elevator": -6.511,
+    "rudder": -0.002
+   },
+   "achieved_deg": {
+    "rudder": -0.0,
+    "elevator": 19.226,
+    "aileron": 0.0
+   },
+   "fan_rpm": [
+    5033.2,
+    5033.2
+   ],
+   "thrust_n": [
+    1357.2,
+    1357.2
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 1.0,
+   "case": "elevator-20",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 3.823,
+    "aileron_stbd": 3.819,
+    "elevator": 34.876,
+    "rudder": -0.315
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 1.456,
+    "aileron_stbd": 1.346,
+    "elevator": 26.614,
+    "rudder": -0.265
+   },
+   "achieved_deg": {
+    "rudder": -0.05,
+    "elevator": -16.193,
+    "aileron": -0.005
+   },
+   "fan_rpm": [
+    4526.0,
+    4527.1
+   ],
+   "thrust_n": [
+    1097.5,
+    1098.1
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 1.0,
+   "case": "aileron+25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": -96.919,
+    "aileron_stbd": 51.972,
+    "elevator": -134.077,
+    "rudder": 130.889
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": -81.035,
+    "aileron_stbd": 51.972,
+    "elevator": -17.858,
+    "rudder": 60.347
+   },
+   "achieved_deg": {
+    "rudder": 6.442,
+    "elevator": -10.086,
+    "aileron": 25.648
+   },
+   "fan_rpm": [
+    4877.3,
+    4818.1
+   ],
+   "thrust_n": [
+    1230.0,
+    1200.3
+   ]
+  },
+  {
+   "airspeed_mps": 65.0,
+   "throttle": 1.0,
+   "case": "aileron-25",
+   "peak_hinge_moment_nm": {
+    "aileron_port": 35.393,
+    "aileron_stbd": -58.668,
+    "elevator": 50.932,
+    "rudder": -39.58
+   },
+   "final_hinge_moment_nm": {
+    "aileron_port": 17.009,
+    "aileron_stbd": -13.076,
+    "elevator": -26.465,
+    "rudder": -11.656
+   },
+   "achieved_deg": {
+    "rudder": -1.26,
+    "elevator": -4.479,
+    "aileron": -25.206
+   },
+   "fan_rpm": [
+    5091.2,
+    5024.9
+   ],
+   "thrust_n": [
+    1388.9,
+    1352.9
+   ]
+  }
+ ],
+ "wall_s": 105.8
+}

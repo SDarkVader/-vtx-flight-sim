@@ -1,0 +1,224 @@
+--- page 1 ---
+ 
+The Model 220 is a high performance rotary 
+servo electromechanical actuator that utilizes 
+rare earth brushless DC motors, magnetic 
+encoder and position loop control electronics 
+all integrated into one compact package. It is 
+well suited for aerospace and unmanned 
+airborne platforms due to  its high  performance 
+and small envelope. It can also be used in a 
+variety of applications as it is a self-contained 
+servo motion solution. Although it is specified with a 7,500 hour life, Moog has tested 
+the Model 220 actuator, meeting 16,000 hours, and the unit was still operating within 
+specifications.
+The 220 actuator is one of our most versatile designs, and it is offered in multiple 
+variants including RS-485 digital and RC / PWM analog communications. Moog also has 
+a design that develops twice the peak torque.
+TYPICAL APPLICATIONS
+• Unmanned air vehicles — tactical, medium long endurance  
+ and MALE / HALE vehicles
+ – Control surfaces requiring servo actuation
+• Target drones — control surfaces, speed brakes
+• Utility actuation — throttle control, doors, spoilers
+• Electric aircraft, eVTOL, eSTOL, air taxis and urban air mobility  
+ vehicles — tilting mechanism, flight control, landing gear
+MODEL 220  
+ROTARY SERVO ACTUATOR
+AEROSPACE AND DEFENSE  |  UTILITY ACTUATORS
+
+--- page 2 ---
+2
+MODEL 220 ROTARY SERVO ACTUATOR 
+FEATURES
+• Stainless steel spur gear train
+• 8 ball bearings
+• Machined aluminum structure and housing
+• Stainless steel output shaft, 0.25 inch SAE spline   
+ (Models 22000000-01 and -02)
+• Consult factory for custom shafts and output arms
+• Brushless permanent magnet motor design
+• High temperature capability
+• Contactless shaft position sensor
+• Differential analog position feedback
+• Offered either with full RS-485 digital control  
+ or RC/PWM analog control
+• Modifiable parameters  
+ (default parameters installed at factory)
+ – Total electrical stroke angle
+ – Null position
+ – Direction orientation
+ – Torque limit
+ – Loss of signal - hold last position,  
+  return to zero or coast
+ – PID constants
+ – Dead band
+ – Telemetry scaling
+ – Feedforward gains
+• GUI interface for programming and parameter  
+ modification
+BENEFITS
+• Robust structural design
+• Mechanical stops
+• Low weight to power performance
+• Customizable
+DESIGN AND CONSTRUCTION
+• IPC-6012, Class 3
+• J-STD-001B, Class 3
+• IPC-A-610, Class 3
+ENVIRONMENTAL SPECIFICATIONS
+RTCA DO-160G Test
+Description Details
+Robust Random Vibration
+Section 8, Category R 
+Performance, figure 8-1 curve E (7.94 Gs) 
+Endurance, figure 8.4 curve E (11.33 Gs)
+Shock
+Section 7, Category B 
+Operational 6 G, 11 mS 
+Crash safety 20 G, 11 mS
+Temperature
+Section 4, Category C4 and Section 5, Category A 
+Combined Test: 
+Temperature variation: 10° C / minute 
+Operating temperature: -40° to +70° C 
+Ground survival temperature: -55° to +85° C
+Altitude Section 4, Category C4 35,000 feet
+Humidity
+Section 6, Category B 
+Severe humidity environment 
+Ten cycles (240 hours)
+Waterproofness Section 10, Category W Drip proof
+Sand and Dust Section 12, Category D Dust
+Power Input Section 16, Category AX (Section 18, included) Nominal 18 to 30.3 VDC
+Radio Frequency Susceptibility
+Section 20, Category RR 
+Conducted 10 kHz to 400 MHz 
+Radiated 100 MHz to 1 GHz
+Electrostatic Discharge (ESD) Section 25, Category A 15 kV
+Induced Signal Susceptibility Section 19, Category ZW Magnetic and electric fields
+
+--- page 3 ---
+3
+MODEL 220 ROTARY SERVO ACTUATOR
+PERFORMANCE DATA SPECIFICATIONS
+Features Model 22000000-01 Model 22000000-02 Model 22000000-21
+Operating Voltage 18 to 32 VDC 18 to 32 VDC 18 to 32 VDC
+Operating Temperature Range -40° to +71° C -40° to +71° C -40° to +71° C
+Operating Altitude Range Up to 50,000 ft Up to 50,000 ft Up to 50,000 ft
+Weight 9 oz 9 oz 16 oz
+Life 7,5 0 0 hrs 7,5 0 0 hrs 7,5 0 0 hrs
+Mechanical Stroke 100° non jamming stops 100° non jamming stops Continuous rotation (no stops)
+Electrical Stroke ±45.0° - electronically limited ±45.0° - electronically limited Standard unit ±45.0° Mod A unit ±115°
+No Load Speed @ 28 VDC 350° / sec nom1 350° / sec nom1 220° / sec1
+Static Current @ 28 VDC 60 mA max 60 mA max 60 mA max
+Stall Torque 50 lb-in nom - electronically limited1 50 lb-in nom - electronically limited1 80 lb-in nom - electronically limited1
+Continuous Torque @ 71° C 40 lb-in max 40 lb-in max 40 lb-in max
+Line Current At Stall Torque 1 amp max 1 amp max 1.5 amp max each supply
+Unpowered Backdrive Torque < 20 oz-in < 20 oz-in < 35 oz-in
+Power Point 24 VDC @ 25° C 250° / sec @ 25 lb-in nom1 250° / sec @ 25 lb-in nom1 130° / sec @ 50 lb-in1
+Electromechanical Stiffness 50 lb-in / degree nom1 50 lb-in / degree nom1 50 lb-in / degree nom1
+Backlash < 60 arc min @ ±7 lb-in reversing load < 60 arc min @ ±7 lb-in reversing load < 60 arc min @ ±7 lb-in reversing load
+Small Signal Frequency Response 3 dB Atten @ > 15 Hz no load1 3 dB atten @ > 15 Hz no load1 > 12 Hz no load1
+Electrical Command Interface Redundant half duplex RS-4852 Opto-isolated RC / PWM - 10 bit3 Redundant half duplex RS-4852
+Command And Position Resolution 12 bits2 ± 10 VDC differential for ± 45° 12 bits2
+Tuning Interface Half duplex RS-485 via channel A2 Half duplex RS-4852 Half duplex RS-485 via channel A2
+Notes:
+1Reference performance characteristics based on default tuning parameters. Characteristics may vary as turning parameters are modified.
+2Contact Moog sales to receive detailed protocol information.
+3See Figure 1 for RC / PWM command information (applies to Model 22000000-02).
+FIGURE 1
+
+--- page 4 ---
+4
+MODEL 220 ROTARY SERVO ACTUATOR 
+CALCULATED PERFORMANCE CURVES @ 24 VDC AND @ 25°C 
+(-01, -02 CONFIGURATIONS)
+OUTPUT PWR (WATTS); EFFICIENCY (%); CURRENT (AMPS)
+OUTPUT TORQUE (LB-IN)
+OUTPUT SPEED (RPM)
+Actuator Speed-Torque
+Stall Point - Internally Limited
+Rated Operating Point
+Actuator Output Power
+Motor Current
+Actuator Efﬁciency
+Continuous Operating Limit @ 25°C Ambient
+CONNECTOR PIN ASSIGNMENT
+Pin
+Number
+Model 22000000-01
+RS-485 Half Duplex Redundant
+Model 22000000-02
+RC / PWM
+Model 22000000-21
+2 Wire RS-485 Dual Redundant
+Pin
+Diagram
+1 RxTx A - primary PWM input command RxTx A - primary
+2 RxTx B - primary PWM command return RxTx B - primary
+3 RxTx A - secondary Position feedback + RxTx A - secondary
+4 +28 VDC - secondary RS-485 COM A +28 VDC - secondary
+5 Chassis Chassis Chassis
+6 +28 VDC - primary +28 VDC +28 VDC - primary
+7 Primary return 28 VDC return Primary return
+8 Secondary return RS-485 COM B Secondary return
+9 RxTx B - secondary Position feedback - RxTx B - secondary
+
+
+--- page 5 ---
+5
+MECHANICAL DIMENSIONS (INCHES)
+MODEL 220 ROTARY SERVO ACTUATOR 
+*Model 22000000-01 Shown Below
+*Model 22000000-02 is similar to Model 22000000-01 in dimensions.
+INVOLUTE SPLINE DATA
+External Involute - Class 5 Fit
+Fillet Root, Side Fit Per ANSI B92.1
+Features Model 22000000-01 and -02
+Number of Teeth 11
+Pitch 48 / 96
+Pitch Diameter 0.2292
+Pressure Angle 45
+Base Diameter 0.1620
+Major Diameter .249 +0 -.001
+Minor Diameter 0.2010
+True Involute Form Diameter 0.2120
+Effective Circular Tooth Thickness Maximum 0.0369
+Actual Circular Tooth Thickness Minimum 0.0345
+Fillet Radius 0
+Measurement Over 0.0400 Diameter Pins 0.2911 min ref
+
+--- page 6 ---
+6
+MECHANICAL DIMENSIONS (INCHES)
+MODEL 220 ROTARY SERVO ACTUATOR 
+Model 22000000-21 Shown Below
+INVOLUTE SPLINE DATA
+External Involute - Class 5 Fit
+Fillet Root, Side Fit IAW ANSI B92.1
+Features Model 22000000-21
+Number of Teeth 20
+Diametral Pitch 48 / 96
+Pressure Angle (Degrees) 30
+Pitch Diameter 0.4167
+Base Diameter 0.3608
+Major Diameter 0.4375
+Minor Diameter 0.364
+True Involute Form Diameter 0.391
+Effective Circular Tooth Thickness Maximum 0.0327
+Actual Circular Tooth Thickness Minimum 0.0301
+Fillet Radius 0.005
+Measurement Over Wires (Ref) 0.4744
+
+--- page 7 ---
+© 2026 a Moog company.  All rights reserved.
+Specifications and information are subject to change without prior notice.
+Product and company names listed are trademarks or trade names of their respective companies. Form 500-1293 050726
+Equipment described herein falls under the jurisdiction of the ITAR and requires US Government. 
+Authorization for export purposes. Diversion contrary to US law is prohibited.
+poweranddata@moog.com
+www.moog.com
+Shaping the way our world moves
+TM
+Moog Space and Defense Moog Inc. @Moog_Inc @Moog.Inc
