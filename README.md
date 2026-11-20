@@ -2,6 +2,8 @@
 
 Vaderland is the world of **VTX · Vader’s Taxis**, a simulation game for experimental aircraft, cars and watercraft. Fly between the runway and the city, drive through the hills to the marina, or put a machine through a timed trial.
 
+Vaderland grew from a flying-car discussion into the Argon R6, developed from selected 2D concept art through engineering calculations and physics simulation. The Phantom and Ricochet also began as 2D concept designs before becoming simulated vehicles.
+
 ![The Phantom A10-D above the lit towers of Meridian at dusk](docs/readme-images/vaderland/meridian-v32.jpg)
 
 *Phantom A10-D on the northwest approach to Meridian. Captured in Vaderland 32 using a retained manual flight.*
