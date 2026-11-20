@@ -8,13 +8,13 @@ It began with a conversation about a flying car. Selected 2D concept art became 
 
 **AI piloting is part of the experiment, not a scripted demonstration.** AI models have already flown VTX vehicles using limited pilot-facing observations, conversational instructions and live control decisions. Dedicated AI-only time trials are planned.
 
-![The Phantom A10-D above the lit towers of Meridian at dusk](docs/readme-images/vaderland/meridian-v32.jpg)
+[![The Phantom A10-D above the lit towers of Meridian at dusk](docs/readme-images/vaderland/meridian-v32.jpg)](docs/VADERLAND_MEDIA.md#phantom-a10-d--manual-flight)
 
 *Phantom A10-D on the northwest approach to Meridian. Captured in Vaderland 32 using a retained manual flight.*
 
-[Watch the showcase](docs/VADERLAND_MEDIA.md) · [Vaderland 32 field report](docs/VADERLAND_32_VERIFICATION.md) · [Open the browser cockpit](https://vtx-flight-sim.vercel.app/)
+[Watch the A10-D flight](docs/VADERLAND_MEDIA.md#phantom-a10-d--manual-flight) · [World showcase](docs/VADERLAND_MEDIA.md#world-showcase) · [Vaderland 32 field report](docs/VADERLAND_32_VERIFICATION.md) · [Open the browser cockpit](https://vtx-flight-sim.vercel.app/)
 
-The showcase uses recorded physics-based simulation runs, including failed attempts. Camera angles and cuts are editorial; vehicle movement and outcomes come from the source runs.
+The latest flight reel follows a manual A10-D sortie from vertical departure to a failed hover and terrain impact. The world showcase also features the R6 Argon and Ricochet. Both use recorded simulation movement and outcomes, with edited camera angles and cuts.
 
 ## Build, pilot, experiment
 
