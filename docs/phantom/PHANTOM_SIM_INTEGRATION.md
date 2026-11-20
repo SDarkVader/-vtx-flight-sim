@@ -179,7 +179,7 @@ All other benches pass for both variants:
 Server: use port 8766 only.
 
 ```
-PY=C:/Users/steve/Documents/Github/-vtx-flight-sim/.venv/Scripts/python.exe
+PY=./.venv/Scripts/python.exe
 PYTHONPATH=src $PY -m vtx.phantom.ledger
 PYTHONPATH=src $PY tools/phantom/phantom_bench.py          # about 65 s
 PYTHONPATH=src $PY tools/phantom/phantom_feasibility.py

@@ -71,20 +71,20 @@ The 9 November document flags a possible unified-launcher identity bug that forc
 
 ### Primary folders independently opened on PC
 
-- **600 m original raw flight:** C:\Users\steve\Documents\Github\vtx-flight-repair-data\evidence\flights\20261106T101512-085037\
-- **300 m original raw flight:** C:\Users\steve\AppData\Local\VTX\unified-live\evidence\flights\20261106T080610-01457b\
-- **Current unified PC worktree:** C:\Users\steve\Documents\Github\vtx-three-panel-20261110\
-- **Live runtime flight archive root:** C:\Users\steve\AppData\Local\VTX\unified-live\evidence\flights\
+- **600 m original raw flight:** 20261106T101512-085037
+- **300 m original raw flight:** local run 20261106T080610-01457b
+- **Current unified PC worktree:** vtx-three-panel-20261110
+- **Live runtime flight archive root:** the local unified-live archive
 
 Both recovered original flight directories contain metadata.json, summary.json, events.jsonl, phantom_steps.csv.gz, phantom_parameters.json, phantom_ledger.json and model.xml. The 600 m original contains pilot-before.json as well. **Read-only examination:** No original flight data was edited.
 
 ### Additional source roots documented in the 8 November A10-A flight register
 
-- 4 November backup: C:\Users\steve\Documents\VTX-flight-logs-backup\
-- Fresh 5 November runtime: C:\Users\steve\AppData\Local\VTX\unified-fresh-20261105\evidence\flights\
-- Earlier Git checkout evidence: C:\Users\steve\Documents\Github\-vtx-flight-sim\evidence\flights\
-- 6 November runway runs: C:\Users\steve\AppData\Local\VTX\unified-a10-20261106\evidence\flights\
-- 7 November cockpit QA: C:\Users\steve\AppData\Local\VTX\dashboard-cockpit-qa-20261107\evidence\flights\
+- 4 November backup: VTX-flight-logs-backup
+- Fresh 5 November runtime: the local unified-fresh-20261105 archive
+- Earlier Git checkout evidence: evidence/flights
+- 6 November runway runs: the local unified-a10-20261106 archive
+- 7 November cockpit QA: the local dashboard-cockpit-qa-20261107 archive
 
 Those supplemental locations are **register references**; they were not all separately re-audited during this handover.
 

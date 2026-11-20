@@ -8,8 +8,8 @@ Use a **new, dedicated** data directory and an unused port. From this integratio
 
 ```powershell
 $env:PYTHONPATH = 'src'
-$env:VTX_DATA_ROOT = 'C:\Users\steve\Documents\VTX-integration-data'
-& 'C:\Users\steve\Documents\GitHub\-vtx-flight-sim\.venv\Scripts\python.exe' -m uvicorn vtx.dashboard_site:app --host 127.0.0.1 --port 18909
+$env:VTX_DATA_ROOT = (Resolve-Path '<runtime data directory>').Path
+& '.\.venv\Scripts\python.exe' -m uvicorn vtx.dashboard_site:app --host 127.0.0.1 --port 18909
 ```
 
 Open `http://127.0.0.1:18909/` for the live cockpit and `http://127.0.0.1:18909/experiments/` for isolated tests. Check the chosen data directory and port before launch; do not point the test instance at an existing live-flight data directory. The dashboard is at `/dashboard/` and its legacy assessment store still depends on a separate Site. For remote/mobile access, use a stateful Python service with persistent storage and authenticated HTTPS; no Vercel production target has been verified for this branch.
