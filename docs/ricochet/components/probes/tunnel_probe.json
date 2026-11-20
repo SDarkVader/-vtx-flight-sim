@@ -1,0 +1,2438 @@
+{
+ "method": "Wind-tunnel probe of the real Ricochet Concept A plant (offline, isolated world, nothing live).\n\nThe airframe free joint is re-pinned every 400 Hz step so the hull cannot move; airflow is a wind\nvector set from airspeed V, angle of attack alpha and sideslip beta (body frame == world frame,\nheading 0, level). Control surfaces and fan rotors stay free and are driven by the plant's own\nservos/motors. Reports the plant's unclipped hinge moments (last_aero_detail['hinge_moments']).\n",
+ "rows": [
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": -3.32
+   },
+   "achieved_deg": 29.524,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": 3.32
+   },
+   "achieved_deg": -29.524,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": -2.82
+   },
+   "achieved_deg": 29.596,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": 3.82
+   },
+   "achieved_deg": -29.453,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": -3.82
+   },
+   "achieved_deg": 29.453,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": 2.82
+   },
+   "achieved_deg": -29.596,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -1.82,
+    "rudder": 0.0
+   },
+   "achieved_deg": 19.742,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 1.81,
+    "rudder": 0.0
+   },
+   "achieved_deg": -19.742,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.28,
+    "aileron_stbd": -0.28,
+    "elevator": -2.33,
+    "rudder": 0.0
+   },
+   "achieved_deg": 19.67,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.28,
+    "aileron_stbd": -0.28,
+    "elevator": 1.3,
+    "rudder": 0.0
+   },
+   "achieved_deg": -19.814,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.14,
+    "aileron_stbd": 0.14,
+    "elevator": -1.56,
+    "rudder": 0.0
+   },
+   "achieved_deg": 19.778,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.14,
+    "aileron_stbd": 0.14,
+    "elevator": 2.07,
+    "rudder": 0.0
+   },
+   "achieved_deg": -19.707,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 1.32,
+    "aileron_stbd": -1.32,
+    "elevator": -0.0,
+    "rudder": 0.0
+   },
+   "achieved_deg": 24.788,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -1.32,
+    "aileron_stbd": 1.32,
+    "elevator": -0.0,
+    "rudder": 0.0
+   },
+   "achieved_deg": -24.788,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": 1.04,
+    "aileron_stbd": -1.61,
+    "elevator": -0.51,
+    "rudder": 0.0
+   },
+   "achieved_deg": 24.788,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -1.61,
+    "aileron_stbd": 1.04,
+    "elevator": -0.51,
+    "rudder": 0.0
+   },
+   "achieved_deg": -24.788,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": -14.27
+   },
+   "achieved_deg": 27.959,
+   "fan_rpm": [
+    4951,
+    4951
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": 14.27
+   },
+   "achieved_deg": -27.959,
+   "fan_rpm": [
+    4951,
+    4951
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": -13.21
+   },
+   "achieved_deg": 28.111,
+   "fan_rpm": [
+    4953,
+    4953
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": 15.21
+   },
+   "achieved_deg": -27.824,
+   "fan_rpm": [
+    4953,
+    4953
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": -15.21
+   },
+   "achieved_deg": 27.824,
+   "fan_rpm": [
+    4953,
+    4953
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": 13.21
+   },
+   "achieved_deg": -28.111,
+   "fan_rpm": [
+    4953,
+    4953
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -7.89,
+    "rudder": 0.0
+   },
+   "achieved_deg": 18.875,
+   "fan_rpm": [
+    4951,
+    4951
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 7.89,
+    "rudder": 0.0
+   },
+   "achieved_deg": -18.887,
+   "fan_rpm": [
+    4951,
+    4951
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.28,
+    "aileron_stbd": -0.28,
+    "elevator": -8.87,
+    "rudder": 0.0
+   },
+   "achieved_deg": 18.736,
+   "fan_rpm": [
+    4954,
+    4954
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.28,
+    "aileron_stbd": -0.28,
+    "elevator": 6.81,
+    "rudder": 0.0
+   },
+   "achieved_deg": -19.041,
+   "fan_rpm": [
+    4954,
+    4954
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.14,
+    "aileron_stbd": 0.14,
+    "elevator": -7.36,
+    "rudder": 0.0
+   },
+   "achieved_deg": 18.95,
+   "fan_rpm": [
+    4952,
+    4952
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.14,
+    "aileron_stbd": 0.14,
+    "elevator": 8.4,
+    "rudder": 0.0
+   },
+   "achieved_deg": -18.816,
+   "fan_rpm": [
+    4952,
+    4952
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 1.32,
+    "aileron_stbd": -1.32,
+    "elevator": -0.0,
+    "rudder": 0.0
+   },
+   "achieved_deg": 24.788,
+   "fan_rpm": [
+    4951,
+    4951
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -1.32,
+    "aileron_stbd": 1.32,
+    "elevator": -0.0,
+    "rudder": -0.0
+   },
+   "achieved_deg": -24.788,
+   "fan_rpm": [
+    4951,
+    4951
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": 1.04,
+    "aileron_stbd": -1.61,
+    "elevator": -1.03,
+    "rudder": 0.0
+   },
+   "achieved_deg": 24.788,
+   "fan_rpm": [
+    4954,
+    4955
+   ]
+  },
+  {
+   "V": 20.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -1.61,
+    "aileron_stbd": 1.04,
+    "elevator": -1.03,
+    "rudder": -0.0
+   },
+   "achieved_deg": -24.788,
+   "fan_rpm": [
+    4955,
+    4954
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": -9.85
+   },
+   "achieved_deg": 28.59,
+   "fan_rpm": [
+    1,
+    1
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": 9.85
+   },
+   "achieved_deg": -28.59,
+   "fan_rpm": [
+    1,
+    1
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": -8.37
+   },
+   "achieved_deg": 28.801,
+   "fan_rpm": [
+    1,
+    1
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": 11.33
+   },
+   "achieved_deg": -28.378,
+   "fan_rpm": [
+    1,
+    1
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": -11.33
+   },
+   "achieved_deg": 28.378,
+   "fan_rpm": [
+    1,
+    1
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": 8.37
+   },
+   "achieved_deg": -28.801,
+   "fan_rpm": [
+    1,
+    1
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -5.43,
+    "rudder": 0.0
+   },
+   "achieved_deg": 19.231,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 5.42,
+    "rudder": 0.0
+   },
+   "achieved_deg": -19.23,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.85,
+    "aileron_stbd": -0.85,
+    "elevator": -6.95,
+    "rudder": 0.0
+   },
+   "achieved_deg": 19.018,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.85,
+    "aileron_stbd": -0.85,
+    "elevator": 3.9,
+    "rudder": 0.0
+   },
+   "achieved_deg": -19.444,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.42,
+    "aileron_stbd": 0.42,
+    "elevator": -4.67,
+    "rudder": 0.0
+   },
+   "achieved_deg": 19.338,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.42,
+    "aileron_stbd": 0.42,
+    "elevator": 6.18,
+    "rudder": 0.0
+   },
+   "achieved_deg": -19.124,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 3.98,
+    "aileron_stbd": -3.98,
+    "elevator": -0.01,
+    "rudder": 0.01
+   },
+   "achieved_deg": 24.362,
+   "fan_rpm": [
+    5,
+    5
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -3.98,
+    "aileron_stbd": 3.98,
+    "elevator": -0.01,
+    "rudder": -0.01
+   },
+   "achieved_deg": -24.362,
+   "fan_rpm": [
+    5,
+    5
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": 3.13,
+    "aileron_stbd": -4.83,
+    "elevator": -1.53,
+    "rudder": 0.01
+   },
+   "achieved_deg": 24.362,
+   "fan_rpm": [
+    5,
+    5
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -4.83,
+    "aileron_stbd": 3.13,
+    "elevator": -1.53,
+    "rudder": -0.01
+   },
+   "achieved_deg": -24.362,
+   "fan_rpm": [
+    5,
+    5
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 0.0,
+    "rudder": -24.14
+   },
+   "achieved_deg": 26.547,
+   "fan_rpm": [
+    4786,
+    4787
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 24.14
+   },
+   "achieved_deg": -26.547,
+   "fan_rpm": [
+    4787,
+    4786
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 0.0,
+    "rudder": -21.83
+   },
+   "achieved_deg": 26.878,
+   "fan_rpm": [
+    4790,
+    4791
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 26.27
+   },
+   "achieved_deg": -26.241,
+   "fan_rpm": [
+    4791,
+    4790
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 0.0,
+    "rudder": -26.27
+   },
+   "achieved_deg": 26.241,
+   "fan_rpm": [
+    4790,
+    4791
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 21.83
+   },
+   "achieved_deg": -26.878,
+   "fan_rpm": [
+    4791,
+    4790
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.01,
+    "aileron_stbd": -0.01,
+    "elevator": -13.46,
+    "rudder": 0.0
+   },
+   "achieved_deg": 18.086,
+   "fan_rpm": [
+    4787,
+    4787
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 13.47,
+    "rudder": 0.0
+   },
+   "achieved_deg": -18.095,
+   "fan_rpm": [
+    4787,
+    4787
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.85,
+    "aileron_stbd": -0.85,
+    "elevator": -15.69,
+    "rudder": 0.0
+   },
+   "achieved_deg": 17.77,
+   "fan_rpm": [
+    4793,
+    4793
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.84,
+    "aileron_stbd": -0.84,
+    "elevator": 11.08,
+    "rudder": 0.0
+   },
+   "achieved_deg": -18.433,
+   "fan_rpm": [
+    4793,
+    4793
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.42,
+    "aileron_stbd": 0.42,
+    "elevator": -12.28,
+    "rudder": 0.0
+   },
+   "achieved_deg": 18.253,
+   "fan_rpm": [
+    4788,
+    4788
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.43,
+    "aileron_stbd": 0.43,
+    "elevator": 14.61,
+    "rudder": 0.0
+   },
+   "achieved_deg": -17.933,
+   "fan_rpm": [
+    4788,
+    4788
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 3.98,
+    "aileron_stbd": -3.98,
+    "elevator": 0.0,
+    "rudder": 0.01
+   },
+   "achieved_deg": 24.361,
+   "fan_rpm": [
+    4786,
+    4788
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -3.98,
+    "aileron_stbd": 3.98,
+    "elevator": 0.0,
+    "rudder": -0.01
+   },
+   "achieved_deg": -24.361,
+   "fan_rpm": [
+    4788,
+    4786
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": 3.13,
+    "aileron_stbd": -4.83,
+    "elevator": -2.31,
+    "rudder": 0.01
+   },
+   "achieved_deg": 24.361,
+   "fan_rpm": [
+    4792,
+    4794
+   ]
+  },
+  {
+   "V": 35.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -4.83,
+    "aileron_stbd": 3.13,
+    "elevator": -2.31,
+    "rudder": -0.01
+   },
+   "achieved_deg": -24.361,
+   "fan_rpm": [
+    4794,
+    4792
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": -19.17
+   },
+   "achieved_deg": 27.256,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": -0.01,
+    "rudder": 19.17
+   },
+   "achieved_deg": -27.256,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": -16.29
+   },
+   "achieved_deg": 27.667,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": 22.05
+   },
+   "achieved_deg": -26.845,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.01,
+    "rudder": -22.05
+   },
+   "achieved_deg": 26.845,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": -0.01,
+    "rudder": 16.29
+   },
+   "achieved_deg": -27.667,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.01,
+    "aileron_stbd": -0.01,
+    "elevator": -10.64,
+    "rudder": 0.0
+   },
+   "achieved_deg": 18.492,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 10.64,
+    "rudder": 0.0
+   },
+   "achieved_deg": -18.489,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -1.69,
+    "aileron_stbd": -1.69,
+    "elevator": -13.62,
+    "rudder": 0.0
+   },
+   "achieved_deg": 18.074,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -1.68,
+    "aileron_stbd": -1.68,
+    "elevator": 7.65,
+    "rudder": 0.0
+   },
+   "achieved_deg": -18.908,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.83,
+    "aileron_stbd": 0.83,
+    "elevator": -9.15,
+    "rudder": 0.0
+   },
+   "achieved_deg": 18.701,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.84,
+    "aileron_stbd": 0.84,
+    "elevator": 12.14,
+    "rudder": 0.0
+   },
+   "achieved_deg": -18.279,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 7.91,
+    "aileron_stbd": -7.92,
+    "elevator": -0.0,
+    "rudder": 0.02
+   },
+   "achieved_deg": 23.731,
+   "fan_rpm": [
+    10,
+    10
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -7.92,
+    "aileron_stbd": 7.91,
+    "elevator": -0.0,
+    "rudder": -0.02
+   },
+   "achieved_deg": -23.731,
+   "fan_rpm": [
+    10,
+    10
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": 6.23,
+    "aileron_stbd": -9.6,
+    "elevator": -2.99,
+    "rudder": 0.02
+   },
+   "achieved_deg": 23.731,
+   "fan_rpm": [
+    10,
+    10
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -9.6,
+    "aileron_stbd": 6.23,
+    "elevator": -2.99,
+    "rudder": -0.02
+   },
+   "achieved_deg": -23.731,
+   "fan_rpm": [
+    10,
+    10
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 0.0,
+    "rudder": -35.43
+   },
+   "achieved_deg": 24.93,
+   "fan_rpm": [
+    4616,
+    4617
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 35.43
+   },
+   "achieved_deg": -24.93,
+   "fan_rpm": [
+    4617,
+    4616
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 0.0,
+    "rudder": -31.61
+   },
+   "achieved_deg": 25.478,
+   "fan_rpm": [
+    4622,
+    4623
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 39.06
+   },
+   "achieved_deg": -24.409,
+   "fan_rpm": [
+    4623,
+    4622
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": 0.0,
+    "rudder": -39.06
+   },
+   "achieved_deg": 24.409,
+   "fan_rpm": [
+    4622,
+    4623
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": 0.0,
+    "rudder": 31.61
+   },
+   "achieved_deg": -25.478,
+   "fan_rpm": [
+    4623,
+    4622
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.01,
+    "aileron_stbd": -0.01,
+    "elevator": -19.96,
+    "rudder": 0.0
+   },
+   "achieved_deg": 17.165,
+   "fan_rpm": [
+    4617,
+    4617
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.01,
+    "aileron_stbd": 0.01,
+    "elevator": 19.99,
+    "rudder": 0.0
+   },
+   "achieved_deg": -17.169,
+   "fan_rpm": [
+    4617,
+    4617
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -1.69,
+    "aileron_stbd": -1.69,
+    "elevator": -23.79,
+    "rudder": 0.0
+   },
+   "achieved_deg": 16.625,
+   "fan_rpm": [
+    4626,
+    4626
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -1.67,
+    "aileron_stbd": -1.67,
+    "elevator": 15.97,
+    "rudder": 0.0
+   },
+   "achieved_deg": -17.736,
+   "fan_rpm": [
+    4626,
+    4626
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.83,
+    "aileron_stbd": 0.83,
+    "elevator": -17.97,
+    "rudder": 0.0
+   },
+   "achieved_deg": 17.445,
+   "fan_rpm": [
+    4619,
+    4619
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.85,
+    "aileron_stbd": 0.85,
+    "elevator": 21.93,
+    "rudder": 0.0
+   },
+   "achieved_deg": -16.895,
+   "fan_rpm": [
+    4619,
+    4619
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 7.92,
+    "aileron_stbd": -7.92,
+    "elevator": 0.0,
+    "rudder": 0.04
+   },
+   "achieved_deg": 23.73,
+   "fan_rpm": [
+    4615,
+    4619
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -7.92,
+    "aileron_stbd": 7.92,
+    "elevator": 0.0,
+    "rudder": -0.04
+   },
+   "achieved_deg": -23.73,
+   "fan_rpm": [
+    4619,
+    4615
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": 6.23,
+    "aileron_stbd": -9.6,
+    "elevator": -3.91,
+    "rudder": 0.04
+   },
+   "achieved_deg": 23.731,
+   "fan_rpm": [
+    4623,
+    4628
+   ]
+  },
+  {
+   "V": 50.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -9.6,
+    "aileron_stbd": 6.23,
+    "elevator": -3.91,
+    "rudder": -0.04
+   },
+   "achieved_deg": -23.731,
+   "fan_rpm": [
+    4628,
+    4623
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": -30.47
+   },
+   "achieved_deg": 25.637,
+   "fan_rpm": [
+    3,
+    3
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": -0.0,
+    "rudder": 30.47
+   },
+   "achieved_deg": -25.637,
+   "fan_rpm": [
+    3,
+    3
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.01,
+    "elevator": -0.0,
+    "rudder": -25.9
+   },
+   "achieved_deg": 26.291,
+   "fan_rpm": [
+    3,
+    3
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.0,
+    "elevator": -0.0,
+    "rudder": 35.05
+   },
+   "achieved_deg": -24.984,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.0,
+    "aileron_stbd": -0.0,
+    "elevator": -0.0,
+    "rudder": -35.05
+   },
+   "achieved_deg": 24.984,
+   "fan_rpm": [
+    2,
+    2
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.01,
+    "aileron_stbd": 0.0,
+    "elevator": -0.0,
+    "rudder": 25.9
+   },
+   "achieved_deg": -26.291,
+   "fan_rpm": [
+    3,
+    3
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.02,
+    "aileron_stbd": -0.02,
+    "elevator": -17.09,
+    "rudder": 0.0
+   },
+   "achieved_deg": 17.578,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.01,
+    "aileron_stbd": 0.01,
+    "elevator": 17.11,
+    "rudder": 0.0
+   },
+   "achieved_deg": -17.571,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -2.76,
+    "aileron_stbd": -2.76,
+    "elevator": -21.87,
+    "rudder": 0.0
+   },
+   "achieved_deg": 16.908,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -2.73,
+    "aileron_stbd": -2.73,
+    "elevator": 12.3,
+    "rudder": 0.0
+   },
+   "achieved_deg": -18.244,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 1.36,
+    "aileron_stbd": 1.36,
+    "elevator": -14.7,
+    "rudder": 0.0
+   },
+   "achieved_deg": 17.913,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 1.39,
+    "aileron_stbd": 1.39,
+    "elevator": 19.5,
+    "rudder": 0.0
+   },
+   "achieved_deg": -17.235,
+   "fan_rpm": [
+    0,
+    0
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 12.93,
+    "aileron_stbd": -12.93,
+    "elevator": -0.0,
+    "rudder": 0.06
+   },
+   "achieved_deg": 22.927,
+   "fan_rpm": [
+    17,
+    17
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -12.93,
+    "aileron_stbd": 12.93,
+    "elevator": -0.0,
+    "rudder": -0.06
+   },
+   "achieved_deg": -22.927,
+   "fan_rpm": [
+    17,
+    17
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": 10.17,
+    "aileron_stbd": -15.67,
+    "elevator": -4.79,
+    "rudder": 0.06
+   },
+   "achieved_deg": 22.928,
+   "fan_rpm": [
+    17,
+    17
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 0.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -15.67,
+    "aileron_stbd": 10.17,
+    "elevator": -4.79,
+    "rudder": -0.06
+   },
+   "achieved_deg": -22.928,
+   "fan_rpm": [
+    17,
+    17
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.01,
+    "aileron_stbd": -0.0,
+    "elevator": 0.01,
+    "rudder": -47.47
+   },
+   "achieved_deg": 23.205,
+   "fan_rpm": [
+    4439,
+    4441
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.01,
+    "elevator": 0.01,
+    "rudder": 47.47
+   },
+   "achieved_deg": -23.205,
+   "fan_rpm": [
+    4441,
+    4439
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.01,
+    "aileron_stbd": -0.0,
+    "elevator": 0.01,
+    "rudder": -41.96
+   },
+   "achieved_deg": 23.995,
+   "fan_rpm": [
+    4447,
+    4449
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": 8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.01,
+    "elevator": 0.01,
+    "rudder": 52.79
+   },
+   "achieved_deg": -22.444,
+   "fan_rpm": [
+    4449,
+    4447
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": 30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.01,
+    "aileron_stbd": -0.0,
+    "elevator": 0.01,
+    "rudder": -52.79
+   },
+   "achieved_deg": 22.444,
+   "fan_rpm": [
+    4447,
+    4449
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "rudder",
+   "command": -30.0,
+   "angle_kind": "beta",
+   "angle_deg": -8.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.0,
+    "aileron_stbd": 0.01,
+    "elevator": 0.01,
+    "rudder": 41.96
+   },
+   "achieved_deg": -23.995,
+   "fan_rpm": [
+    4449,
+    4447
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -0.02,
+    "aileron_stbd": -0.02,
+    "elevator": -27.05,
+    "rudder": 0.0
+   },
+   "achieved_deg": 16.161,
+   "fan_rpm": [
+    4440,
+    4440
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 0.03,
+    "aileron_stbd": 0.03,
+    "elevator": 27.09,
+    "rudder": 0.0
+   },
+   "achieved_deg": -16.16,
+   "fan_rpm": [
+    4440,
+    4440
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -2.77,
+    "aileron_stbd": -2.77,
+    "elevator": -32.7,
+    "rudder": 0.0
+   },
+   "achieved_deg": 15.365,
+   "fan_rpm": [
+    4452,
+    4452
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -2.72,
+    "aileron_stbd": -2.72,
+    "elevator": 21.23,
+    "rudder": 0.0
+   },
+   "achieved_deg": -16.986,
+   "fan_rpm": [
+    4452,
+    4452
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": 20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 1.35,
+    "aileron_stbd": 1.35,
+    "elevator": -24.14,
+    "rudder": 0.0
+   },
+   "achieved_deg": 16.571,
+   "fan_rpm": [
+    4443,
+    4443
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "elevator",
+   "command": -20.0,
+   "angle_kind": "alpha",
+   "angle_deg": -5.0,
+   "steady_hm_nm": {
+    "aileron_port": 1.4,
+    "aileron_stbd": 1.4,
+    "elevator": 29.96,
+    "rudder": 0.0
+   },
+   "achieved_deg": -15.757,
+   "fan_rpm": [
+    4443,
+    4443
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": 12.93,
+    "aileron_stbd": -12.93,
+    "elevator": 0.01,
+    "rudder": 0.09
+   },
+   "achieved_deg": 22.927,
+   "fan_rpm": [
+    4437,
+    4444
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 0.0,
+   "steady_hm_nm": {
+    "aileron_port": -12.93,
+    "aileron_stbd": 12.93,
+    "elevator": 0.01,
+    "rudder": -0.09
+   },
+   "achieved_deg": -22.927,
+   "fan_rpm": [
+    4444,
+    4437
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": 25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": 10.18,
+    "aileron_stbd": -15.67,
+    "elevator": -5.75,
+    "rudder": 0.09
+   },
+   "achieved_deg": 22.928,
+   "fan_rpm": [
+    4449,
+    4455
+   ]
+  },
+  {
+   "V": 65.0,
+   "throttle": 1.0,
+   "surface": "aileron",
+   "command": -25.0,
+   "angle_kind": "alpha",
+   "angle_deg": 10.0,
+   "steady_hm_nm": {
+    "aileron_port": -15.67,
+    "aileron_stbd": 10.18,
+    "elevator": -5.75,
+    "rudder": -0.09
+   },
+   "achieved_deg": -22.928,
+   "fan_rpm": [
+    4455,
+    4449
+   ]
+  }
+ ],
+ "wall_s": 212.0
+}

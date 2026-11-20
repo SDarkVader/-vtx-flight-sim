@@ -1,0 +1,641 @@
+{
+ "meta": {
+  "method": "RC-01 cockpit enclosure study (concept stage: nothing here is adopted into the craft).\n\nFor each enclosure variant x pilot posture it writes an isolated study GLB = the unchanged Concept A airframe\n+ that enclosure + a seat/console placed for that posture + a pilot manikin node, and measures:\n  * pilot fit: each variant fixes only its silhouette and section SHAPE; its size is the smallest that clears\n    the pilot's helmet, shoulders, torso and legs by CLEAR_M (checked in 3-D, signed, after building);\n  * drag: mesh component build-up (vtx.ricochet.aero_buildup) of the whole airframe with this enclosure;\n  * glazing / opaque-fairing area and mass for candidate glazing materials;\n  * view over the nose from the pilot's eye and the angle at which the forward sightline meets the glazing;\n  * pilot CG and the craft CG shift relative to the load-case pilot item (85 kg at (1.30, 0, 0.80)).\nHuman representation: one average adult pilot, 50th-percentile male body dimensions, 85 kg (the existing load-case\npilot mass). Body dimensions are PROVISIONAL (ANSUR-order values recalled, not yet checked against the ANSUR II\nreport NATICK/TR-15/007); helmet allowance and clearance are stated study assumptions.\nPilot seat placement is posture-driven, not chosen: the seat stays at the current back line (x = 1.03) unless the\npilot's shoulders/head would sit where the existing cockpit opening is too narrow, in which case it moves forward\nthe minimum needed. The hull, opening (sill) and everything outside the enclosure are unchanged.\nUsage: python cockpit_study.py <worktree> <out_dir>\n",
+  "pilot": {
+   "sitting_height": 0.915,
+   "eye_height_sitting": 0.795,
+   "acromial_height_sitting": 0.6,
+   "buttock_knee": 0.616,
+   "knee_height_sitting": 0.559,
+   "bideltoid": 0.505,
+   "head_length": 0.197,
+   "head_breadth": 0.155,
+   "mass_kg": 85.0,
+   "status": "provisional 50th-percentile adult male (ANSUR-order, unverified)"
+  },
+  "helmet_allowance_m": 0.03,
+  "clearance_m": 0.05,
+  "eta_max_fit": 0.85,
+  "glazing_thickness_m": 0.0055,
+  "glazing_density": {
+   "stretched_acrylic": 1190.0,
+   "polycarbonate": 1200.0
+  },
+  "fairing_kg_m2": 2.5,
+  "load_case_pilot_ref_xz": [
+   1.3,
+   0.8
+  ],
+  "craft_mass_kg": 958.29,
+  "base": {
+   "underwater_fullness": -0.4199249267578124,
+   "rebuild_identical_to_public_glb": true
+  },
+  "wall_s": 29.2
+ },
+ "results": [
+  {
+   "case": "REF_current_bubble__upright_18",
+   "variant": "REF_current_bubble",
+   "label": "Current bubble canopy (reference)",
+   "posture": "upright_18",
+   "seat_back_x": 1.03,
+   "seat_moved_fwd_m": 0.0,
+   "head_top_z": 1.747,
+   "head_x": 0.94,
+   "enclosure_peak_z": 1.606,
+   "enclosure_peak_x": 1.568,
+   "height_above_sill_at_peak": 0.667,
+   "max_height_above_sill": 0.67,
+   "clearance_m": {
+    "head": -0.2645,
+    "torso": 0.0425,
+    "shoulder": -0.0607,
+    "thigh": 0.2265,
+    "shin": 0.2396,
+    "foot": 0.21
+   },
+   "glazing_m2": 3.755,
+   "opaque_fairing_m2": 0.0,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 24.6,
+    "polycarbonate": 24.8
+   },
+   "fairing_mass_kg": 0.0,
+   "canopy_frontal_excess_m2": 0.3301,
+   "canopy_fineness": 4.78,
+   "canopy_rake_deg": 40.0,
+   "canopy_cd_frontal": 0.1606,
+   "canopy_CdA_m2": 0.05303,
+   "craft_CdA_parasite_m2": 0.5183,
+   "craft_Cd0": 0.03344,
+   "drag_30mps_n": 285.7,
+   "vision": {
+    "eye_xz": [
+     1.02,
+     1.627
+    ],
+    "over_nose_down_view_deg": 21.4,
+    "sightline_meets_glass_at_x": null,
+    "sightline_to_glass_angle_deg": null,
+    "eye_above_enclosure": true
+   },
+   "pilot_cg_xz": [
+    1.173,
+    1.155
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0112,
+    0.0315
+   ],
+   "glb": "scratch/cockpit_study/REF_current_bubble__upright_18.glb",
+   "enclosure_mass_kg_acrylic": 24.6
+  },
+  {
+   "case": "A_continuous__upright_18",
+   "variant": "A_continuous",
+   "label": "Continuous: one smooth line from the nose deck over the pilot into the aft deck; rounded section; glazed forward, opaque aft fairing",
+   "posture": "upright_18",
+   "seat_back_x": 1.03,
+   "seat_moved_fwd_m": 0.0,
+   "head_top_z": 1.747,
+   "head_x": 0.94,
+   "enclosure_peak_z": 1.832,
+   "enclosure_peak_x": 0.877,
+   "height_above_sill_at_peak": 0.843,
+   "max_height_above_sill": 0.846,
+   "clearance_m": {
+    "head": 0.0489,
+    "torso": 0.1882,
+    "shoulder": 0.0672,
+    "thigh": 0.2271,
+    "shin": 0.2396,
+    "foot": 0.165
+   },
+   "glazing_m2": 3.025,
+   "opaque_fairing_m2": 1.181,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 19.8,
+    "polycarbonate": 20.0
+   },
+   "fairing_mass_kg": 3.0,
+   "canopy_frontal_excess_m2": 0.4803,
+   "canopy_fineness": 3.96,
+   "canopy_rake_deg": 34.3,
+   "canopy_cd_frontal": 0.1392,
+   "canopy_CdA_m2": 0.06685,
+   "craft_CdA_parasite_m2": 0.5328,
+   "craft_Cd0": 0.03437,
+   "drag_30mps_n": 293.7,
+   "vision": {
+    "eye_xz": [
+     1.02,
+     1.627
+    ],
+    "over_nose_down_view_deg": 21.4,
+    "sightline_meets_glass_at_x": 1.5,
+    "sightline_to_glass_angle_deg": 30.4
+   },
+   "pilot_cg_xz": [
+    1.173,
+    1.155
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0112,
+    0.0315
+   ],
+   "glb": "scratch/cockpit_study/A_continuous__upright_18.glb",
+   "enclosure_mass_kg_acrylic": 22.8,
+   "amplitude_m": 0.8459,
+   "sizing_params": {
+    "x_pk": 0.94
+   }
+  },
+  {
+   "case": "B_faceted__upright_18",
+   "variant": "B_faceted",
+   "label": "Faceted: straight raked windscreen, flat roof, straight aft slope; chamfered polygon section with crisp creases; glazed forward of the roof end, opaque aft",
+   "posture": "upright_18",
+   "seat_back_x": 1.03,
+   "seat_moved_fwd_m": 0.0,
+   "head_top_z": 1.747,
+   "head_x": 0.94,
+   "enclosure_peak_z": 1.994,
+   "enclosure_peak_x": 0.744,
+   "height_above_sill_at_peak": 0.994,
+   "max_height_above_sill": 0.994,
+   "clearance_m": {
+    "head": 0.1571,
+    "torso": 0.1662,
+    "shoulder": 0.0502,
+    "thigh": 0.2218,
+    "shin": 0.2318,
+    "foot": 0.1943
+   },
+   "glazing_m2": 3.46,
+   "opaque_fairing_m2": 1.385,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 22.6,
+    "polycarbonate": 22.8
+   },
+   "fairing_mass_kg": 3.5,
+   "canopy_frontal_excess_m2": 0.5595,
+   "canopy_fineness": 3.67,
+   "canopy_rake_deg": 33.5,
+   "canopy_cd_frontal": 0.1392,
+   "canopy_CdA_m2": 0.07789,
+   "craft_CdA_parasite_m2": 0.5444,
+   "craft_Cd0": 0.03512,
+   "drag_30mps_n": 300.1,
+   "vision": {
+    "eye_xz": [
+     1.02,
+     1.627
+    ],
+    "over_nose_down_view_deg": 21.4,
+    "sightline_meets_glass_at_x": 1.72,
+    "sightline_to_glass_angle_deg": 34.0
+   },
+   "pilot_cg_xz": [
+    1.173,
+    1.155
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0112,
+    0.0315
+   ],
+   "glb": "scratch/cockpit_study/B_faceted__upright_18.glb",
+   "enclosure_mass_kg_acrylic": 26.1,
+   "amplitude_m": 0.9937,
+   "sizing_params": {
+    "rf": 0.3,
+    "ra": 0.2
+   }
+  },
+  {
+   "case": "C_hardtop__upright_18",
+   "variant": "C_hardtop",
+   "label": "Hardtop: curved wrap windscreen, opaque roof panel with side glazing, fastback to the aft deck; squarer rounded section",
+   "posture": "upright_18",
+   "seat_back_x": 1.03,
+   "seat_moved_fwd_m": 0.0,
+   "head_top_z": 1.747,
+   "head_x": 0.94,
+   "enclosure_peak_z": 1.855,
+   "enclosure_peak_x": 0.612,
+   "height_above_sill_at_peak": 0.843,
+   "max_height_above_sill": 0.871,
+   "clearance_m": {
+    "head": 0.0698,
+    "torso": 0.1952,
+    "shoulder": 0.0929,
+    "thigh": 0.2272,
+    "shin": 0.2402,
+    "foot": 0.2115
+   },
+   "glazing_m2": 3.946,
+   "opaque_fairing_m2": 1.125,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 25.8,
+    "polycarbonate": 26.0
+   },
+   "fairing_mass_kg": 2.8,
+   "canopy_frontal_excess_m2": 0.5752,
+   "canopy_fineness": 3.62,
+   "canopy_rake_deg": 36.1,
+   "canopy_cd_frontal": 0.1515,
+   "canopy_CdA_m2": 0.08714,
+   "craft_CdA_parasite_m2": 0.5541,
+   "craft_Cd0": 0.03575,
+   "drag_30mps_n": 305.4,
+   "vision": {
+    "eye_xz": [
+     1.02,
+     1.627
+    ],
+    "over_nose_down_view_deg": 21.4,
+    "sightline_meets_glass_at_x": 1.88,
+    "sightline_to_glass_angle_deg": 27.4
+   },
+   "pilot_cg_xz": [
+    1.173,
+    1.155
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0112,
+    0.0315
+   ],
+   "glb": "scratch/cockpit_study/C_hardtop__upright_18.glb",
+   "enclosure_mass_kg_acrylic": 28.6,
+   "amplitude_m": 0.8714,
+   "sizing_params": {
+    "rf": 0.3,
+    "ra": 0.4
+   }
+  },
+  {
+   "case": "A_continuous__semi_35",
+   "variant": "A_continuous",
+   "label": "Continuous: one smooth line from the nose deck over the pilot into the aft deck; rounded section; glazed forward, opaque aft fairing",
+   "posture": "semi_35",
+   "seat_back_x": 1.19,
+   "seat_moved_fwd_m": 0.16,
+   "head_top_z": 1.689,
+   "head_x": 0.893,
+   "enclosure_peak_z": 1.776,
+   "enclosure_peak_x": 0.822,
+   "height_above_sill_at_peak": 0.783,
+   "max_height_above_sill": 0.786,
+   "clearance_m": {
+    "head": 0.0477,
+    "torso": 0.195,
+    "shoulder": 0.0695,
+    "thigh": 0.2357,
+    "shin": 0.2146,
+    "foot": 0.0557
+   },
+   "glazing_m2": 2.924,
+   "opaque_fairing_m2": 1.032,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 19.1,
+    "polycarbonate": 19.3
+   },
+   "fairing_mass_kg": 2.6,
+   "canopy_frontal_excess_m2": 0.4377,
+   "canopy_fineness": 4.15,
+   "canopy_rake_deg": 32.2,
+   "canopy_cd_frontal": 0.1289,
+   "canopy_CdA_m2": 0.0564,
+   "craft_CdA_parasite_m2": 0.5218,
+   "craft_Cd0": 0.03367,
+   "drag_30mps_n": 287.7,
+   "vision": {
+    "eye_xz": [
+     0.973,
+     1.585
+    ],
+    "over_nose_down_view_deg": 17.7,
+    "sightline_meets_glass_at_x": 1.45,
+    "sightline_to_glass_angle_deg": 29.3
+   },
+   "pilot_cg_xz": [
+    1.242,
+    1.143
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0052,
+    0.0305
+   ],
+   "glb": "scratch/cockpit_study/A_continuous__semi_35.glb",
+   "enclosure_mass_kg_acrylic": 21.7,
+   "amplitude_m": 0.786,
+   "sizing_params": {
+    "x_pk": 0.893
+   }
+  },
+  {
+   "case": "B_faceted__semi_35",
+   "variant": "B_faceted",
+   "label": "Faceted: straight raked windscreen, flat roof, straight aft slope; chamfered polygon section with crisp creases; glazed forward of the roof end, opaque aft",
+   "posture": "semi_35",
+   "seat_back_x": 1.19,
+   "seat_moved_fwd_m": 0.16,
+   "head_top_z": 1.689,
+   "head_x": 0.893,
+   "enclosure_peak_z": 1.92,
+   "enclosure_peak_x": 0.698,
+   "height_above_sill_at_peak": 0.916,
+   "max_height_above_sill": 0.916,
+   "clearance_m": {
+    "head": 0.1501,
+    "torso": 0.1719,
+    "shoulder": 0.0514,
+    "thigh": 0.2222,
+    "shin": 0.2113,
+    "foot": 0.1548
+   },
+   "glazing_m2": 3.342,
+   "opaque_fairing_m2": 1.206,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 21.9,
+    "polycarbonate": 22.1
+   },
+   "fairing_mass_kg": 3.0,
+   "canopy_frontal_excess_m2": 0.5066,
+   "canopy_fineness": 3.86,
+   "canopy_rake_deg": 30.9,
+   "canopy_cd_frontal": 0.1264,
+   "canopy_CdA_m2": 0.06403,
+   "craft_CdA_parasite_m2": 0.5298,
+   "craft_Cd0": 0.03418,
+   "drag_30mps_n": 292.1,
+   "vision": {
+    "eye_xz": [
+     0.973,
+     1.585
+    ],
+    "over_nose_down_view_deg": 17.7,
+    "sightline_meets_glass_at_x": 1.67,
+    "sightline_to_glass_angle_deg": 31.4
+   },
+   "pilot_cg_xz": [
+    1.242,
+    1.143
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0052,
+    0.0305
+   ],
+   "glb": "scratch/cockpit_study/B_faceted__semi_35.glb",
+   "enclosure_mass_kg_acrylic": 24.9,
+   "amplitude_m": 0.9157,
+   "sizing_params": {
+    "rf": 0.3,
+    "ra": 0.2
+   }
+  },
+  {
+   "case": "C_hardtop__semi_35",
+   "variant": "C_hardtop",
+   "label": "Hardtop: curved wrap windscreen, opaque roof panel with side glazing, fastback to the aft deck; squarer rounded section",
+   "posture": "semi_35",
+   "seat_back_x": 1.19,
+   "seat_moved_fwd_m": 0.16,
+   "head_top_z": 1.689,
+   "head_x": 0.893,
+   "enclosure_peak_z": 1.802,
+   "enclosure_peak_x": 0.504,
+   "height_above_sill_at_peak": 0.78,
+   "max_height_above_sill": 0.812,
+   "clearance_m": {
+    "head": 0.0681,
+    "torso": 0.2023,
+    "shoulder": 0.092,
+    "thigh": 0.2401,
+    "shin": 0.221,
+    "foot": 0.1836
+   },
+   "glazing_m2": 3.829,
+   "opaque_fairing_m2": 1.003,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 25.1,
+    "polycarbonate": 25.3
+   },
+   "fairing_mass_kg": 2.5,
+   "canopy_frontal_excess_m2": 0.5304,
+   "canopy_fineness": 3.77,
+   "canopy_rake_deg": 33.9,
+   "canopy_cd_frontal": 0.1397,
+   "canopy_CdA_m2": 0.0741,
+   "craft_CdA_parasite_m2": 0.5404,
+   "craft_Cd0": 0.03486,
+   "drag_30mps_n": 297.9,
+   "vision": {
+    "eye_xz": [
+     0.973,
+     1.585
+    ],
+    "over_nose_down_view_deg": 17.7,
+    "sightline_meets_glass_at_x": 1.85,
+    "sightline_to_glass_angle_deg": 25.2
+   },
+   "pilot_cg_xz": [
+    1.242,
+    1.143
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0052,
+    0.0305
+   ],
+   "glb": "scratch/cockpit_study/C_hardtop__semi_35.glb",
+   "enclosure_mass_kg_acrylic": 27.6,
+   "amplitude_m": 0.8119,
+   "sizing_params": {
+    "rf": 0.3,
+    "ra": 0.4
+   }
+  },
+  {
+   "case": "A_continuous__reclined_50",
+   "variant": "A_continuous",
+   "label": "Continuous: one smooth line from the nose deck over the pilot into the aft deck; rounded section; glazed forward, opaque aft fairing",
+   "posture": "reclined_50",
+   "seat_back_x": 1.32,
+   "seat_moved_fwd_m": 0.29,
+   "head_top_z": 1.578,
+   "head_x": 0.84,
+   "enclosure_peak_z": 1.676,
+   "enclosure_peak_x": 0.954,
+   "height_above_sill_at_peak": 0.694,
+   "max_height_above_sill": 0.697,
+   "clearance_m": {
+    "head": 0.0471,
+    "torso": 0.2022,
+    "shoulder": 0.0762,
+    "thigh": 0.2373,
+    "shin": 0.2024,
+    "foot": 0.0491
+   },
+   "glazing_m2": 2.98,
+   "opaque_fairing_m2": 0.776,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 19.5,
+    "polycarbonate": 19.7
+   },
+   "fairing_mass_kg": 1.9,
+   "canopy_frontal_excess_m2": 0.3831,
+   "canopy_fineness": 4.44,
+   "canopy_rake_deg": 30.2,
+   "canopy_cd_frontal": 0.1188,
+   "canopy_CdA_m2": 0.04553,
+   "craft_CdA_parasite_m2": 0.5104,
+   "craft_Cd0": 0.03293,
+   "drag_30mps_n": 281.4,
+   "vision": {
+    "eye_xz": [
+     0.915,
+     1.503
+    ],
+    "over_nose_down_view_deg": 11.1,
+    "sightline_meets_glass_at_x": 1.62,
+    "sightline_to_glass_angle_deg": 25.8
+   },
+   "pilot_cg_xz": [
+    1.295,
+    1.112
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0004,
+    0.0276
+   ],
+   "glb": "scratch/cockpit_study/A_continuous__reclined_50.glb",
+   "enclosure_mass_kg_acrylic": 21.4,
+   "amplitude_m": 0.6973,
+   "sizing_params": {
+    "x_pk": 1.04
+   }
+  },
+  {
+   "case": "B_faceted__reclined_50",
+   "variant": "B_faceted",
+   "label": "Faceted: straight raked windscreen, flat roof, straight aft slope; chamfered polygon section with crisp creases; glazed forward of the roof end, opaque aft",
+   "posture": "reclined_50",
+   "seat_back_x": 1.32,
+   "seat_moved_fwd_m": 0.29,
+   "head_top_z": 1.578,
+   "head_x": 0.84,
+   "enclosure_peak_z": 1.752,
+   "enclosure_peak_x": 0.643,
+   "height_above_sill_at_peak": 0.743,
+   "max_height_above_sill": 0.743,
+   "clearance_m": {
+    "head": 0.1175,
+    "torso": 0.1758,
+    "shoulder": 0.0513,
+    "thigh": 0.2087,
+    "shin": 0.1839,
+    "foot": 0.0846
+   },
+   "glazing_m2": 2.96,
+   "opaque_fairing_m2": 0.945,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 19.4,
+    "polycarbonate": 19.5
+   },
+   "fairing_mass_kg": 2.4,
+   "canopy_frontal_excess_m2": 0.3946,
+   "canopy_fineness": 4.37,
+   "canopy_rake_deg": 25.7,
+   "canopy_cd_frontal": 0.1046,
+   "canopy_CdA_m2": 0.04128,
+   "craft_CdA_parasite_m2": 0.5059,
+   "craft_Cd0": 0.03264,
+   "drag_30mps_n": 278.9,
+   "vision": {
+    "eye_xz": [
+     0.915,
+     1.503
+    ],
+    "over_nose_down_view_deg": 11.1,
+    "sightline_meets_glass_at_x": 1.56,
+    "sightline_to_glass_angle_deg": 26.4
+   },
+   "pilot_cg_xz": [
+    1.295,
+    1.112
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0004,
+    0.0276
+   ],
+   "glb": "scratch/cockpit_study/B_faceted__reclined_50.glb",
+   "enclosure_mass_kg_acrylic": 21.8,
+   "amplitude_m": 0.7428,
+   "sizing_params": {
+    "rf": 0.3,
+    "ra": 0.2
+   }
+  },
+  {
+   "case": "C_hardtop__reclined_50",
+   "variant": "C_hardtop",
+   "label": "Hardtop: curved wrap windscreen, opaque roof panel with side glazing, fastback to the aft deck; squarer rounded section",
+   "posture": "reclined_50",
+   "seat_back_x": 1.32,
+   "seat_moved_fwd_m": 0.29,
+   "head_top_z": 1.578,
+   "head_x": 0.84,
+   "enclosure_peak_z": 1.695,
+   "enclosure_peak_x": 0.441,
+   "height_above_sill_at_peak": 0.668,
+   "max_height_above_sill": 0.696,
+   "clearance_m": {
+    "head": 0.0647,
+    "torso": 0.2078,
+    "shoulder": 0.0931,
+    "thigh": 0.2396,
+    "shin": 0.203,
+    "foot": 0.156
+   },
+   "glazing_m2": 3.5,
+   "opaque_fairing_m2": 0.851,
+   "glazing_mass_kg": {
+    "stretched_acrylic": 22.9,
+    "polycarbonate": 23.1
+   },
+   "fairing_mass_kg": 2.1,
+   "canopy_frontal_excess_m2": 0.4441,
+   "canopy_fineness": 4.12,
+   "canopy_rake_deg": 28.7,
+   "canopy_cd_frontal": 0.1159,
+   "canopy_CdA_m2": 0.0515,
+   "craft_CdA_parasite_m2": 0.5167,
+   "craft_Cd0": 0.03333,
+   "drag_30mps_n": 284.8,
+   "vision": {
+    "eye_xz": [
+     0.915,
+     1.503
+    ],
+    "over_nose_down_view_deg": 11.1,
+    "sightline_meets_glass_at_x": 1.79,
+    "sightline_to_glass_angle_deg": 21.3
+   },
+   "pilot_cg_xz": [
+    1.295,
+    1.112
+   ],
+   "craft_cg_shift_vs_load_case_m": [
+    -0.0004,
+    0.0276
+   ],
+   "glb": "scratch/cockpit_study/C_hardtop__reclined_50.glb",
+   "enclosure_mass_kg_acrylic": 25.0,
+   "amplitude_m": 0.6959,
+   "sizing_params": {
+    "rf": 0.3,
+    "ra": 0.4
+   }
+  }
+ ]
+}

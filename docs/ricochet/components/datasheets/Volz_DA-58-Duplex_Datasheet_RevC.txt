@@ -1,0 +1,506 @@
+--- page 1 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+1/17 
+DA 58-Duplex 
+Technical Specification 
+ 
+DA 58-D-30-8848 
+
+
+--- page 2 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+2/17 
+Content 
+ 
+1. General Description ......................................................................................................................................... 3 
+1.1 Description of Redundancy Concept ....................................................................................................... 3 
+2. Operating Data ................................................................................................................................................ 4 
+3. Performance .................................................................................................................................................... 5 
+3.1 Degraded Mode ........................................................................................................................................... 5 
+4. Redundant Command Interface ...................................................................................................................... 6 
+5. Materials, Protective Features and Sensors .................................................................................................... 8 
+6. Environmental Compliance ............................................................................................................................. 8 
+7. Dimensions ...................................................................................................................................................... 9 
+7.1 Installation Dimensions ............................................................................................................................. 10 
+7.2 Output Shaft Spline ................................................................................................................................... 11 
+8. Electrical Connection ..................................................................................................................................... 12 
+9. Accessories .................................................................................................................................................... 14 
+9.1 Aluminum Servo Arm ................................................................................................................................ 15 
+10. Item Number System ................................................................................................................................. 17 
+ 
+
+--- page 3 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+3/17 
+1. General Description 
+ 
+The fully redundant DA 58-D has been developed for applications that require a very reliable actuator 
+operation. The redundant – two channel – design of the actuator allows continuing to operate even if one 
+channel of the two channels has failed. All major components such as the electric motors, control and 
+communication electronics and power supply are available twice. The position sensor is even featuring a 
+three-channel design (2 out of 3 voting). 
+ 
+ 
+1.1 Description of Redundancy Concept 
+ 
+The actuator redundancy concept is based on a so-called “Active-Passive Architecture”. This means that the 
+primary channel of the actuator (communication interface, actuator control electronics, position sensor) is in 
+command of the actuator. Example: The setpoint command is being received by the primary communication 
+interface and will be processed by the primary actuator control electronics (ACE) using the data of the primary 
+position sensor. The result of this processing is used to drive the primary and secondary motor. Therefore, 
+both ACEs are communicating via an internal communication network over which they exchange all required 
+data. Also connected to this network is a voting position sensor. The primary ACE will “hand over” the 
+command to the standby ACE, if a failure is detected. The following failure modes will cause such a failover 
+event: 
+• Position Sensor Data Mismatch (2 out of 3 voting logic) 
+• Host Communication Time-Out  
+• Cyclic-Redundancy-Check-Error of Parameter or Program Memory 
+• Random-Access Memory failure 
+• ACE Watch-Dog failure 
+The standby ACE is in command of the actuator after such a failover. A failover from the primary ACE to the 
+standby ACE can also be forced by the host. 
+In addition to all automated diagnostic testing, there are tests that can be triggered from the host via specific 
+commands. The brushless motors and the related driver circuits can be fully diagnosed. This is possible as part 
+of a pre and post flight test routine executed by the host. It is also possible to run the BLDC motor diagnostics 
+during mission time. 
+In case of hardware failure of a BLDC motor or driver circuitry, the actuator will continue to function at 
+degraded performance as only one of the two electric motors will be delivering torque (degraded mode). The 
+remaining performance (torque) is reaching approximately 50% of the nominal rated torque as the gear train 
+of the failed channel is back drivable and will only consume a fraction of the torque that is being produced by 
+the remaining functioning channel. 
+The actuator additionally features a redundant power supply concept. The two power supply inputs are being 
+monitored by both control electronics. The control electronic boards do also have additional diagnostic 
+sensors such as current, motor temperature, electronics temperature and humidity. All this diagnostic data 
+can be read via the communication interface to derive load and health information. In addition, the actuator is 
+counting the time of operation and the time at different load levels. 
+
+--- page 4 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+4/17 
+2. Operating Data 
+ 
+ Standard Mode Degraded Mode 
+Supply Voltage (rated) 28 V DC 
+Supply Voltage Range 12 … 32 V DC 
+Standby Current 1,2                              at rated voltage 0.1 A 0.1 A 
+Rated Current 1,2                                  at rated voltage 8.0 A  4.0 A 
+Peak Current 1,2                                    at rated voltage 19.0 A N.A. 
+Rated Torque 1                                     at rated speed 80 Nm (708.1 lbf-in) 40 Nm (354.0 lbf-in) 
+Peak Torque 1                                       at rated voltage 200 Nm (1770.1 lbf-in) 100 Nm (885.1 lbf-in) 
+No Load Speed 1                                  at rated voltage 100 °/s <100 °/s 
+Rated Speed 1                                       at rated torque 80 °/s <80 °/s 
+Default Travel Angle ±45° = 90° total travel 
+Max. Travel Angle ±160° = 320° total travel 
+Backlash (mechanical) 3 ≤ 0.6° 
+No-load Position Error under Temperature 4 ≤ ±1° 
+Operating Temperature Range 5 -30°C … +70°C (-22°F … +158°F) 
+Storage Temperature Range -35°C … +80°C (-31°F … +176°F) 
+ 
+1) Tolerance ±10% 
+2) Summarized Current Consumption in Standard Mode 
+3) Zero Backlash Feature available 
+4) -20°C … +50°C , Δt = 70°C (-4°F … +122°F , Δt = 126°F) 
+5) Low Temperature Modification (-70°C / -94°F) on request 
+
+--- page 5 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+5/17 
+3. Performance 
+ 
+ 
+ 
+ 
+Operation Mode: 
+ Continuous    Short Time    Overload 
+      < 10s, 60s cool down   < 1s, 60s cool down 
+ 
+Degraded Mode: Rated Torque 40 Nm (354.0 lbf-in), <100°/s 
+Peak Torque 100 Nm (885.1 lbf-in), <80°/s 
+ 
+3.1 Degraded Mode 
+ 
+In case one motor and/or the related electronics fail, the output shaft is driven by the remaining motor. 
+This operation mode is called Degraded Mode, as the remaining performance is degraded. The actuator needs 
+to be replaced whenever the actuator switched to Degraded Mode. 
+ 
+ 
+ 
+
+
+--- page 6 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+6/17 
+4. Redundant Command Interface 
+ 
+Baud-Rate 115200 bit/s ±1.5% 
+Protocol 6 6 Byte Command Frame with 16-bit CRC 
+Resolution 0.1° 
+Communication Interface Termination Default or High Impedance (HI) 
+ 
+6) Documentation available 
+ 
+Communication Interface Termination 
+Per default, the RS485 communication interface is terminated with a 120Ω resistor. Optionally it is possible to 
+order the actuator without termination (high impedance option). This option eliminates the termination and 
+fail-safe resistors as shown in the schematic below. If more than 2 devices shall be connected on the same 
+network, only the first and last device on the bus should feature termination resistors. 
+ 
+ 
+ 
+RS 485 Redundant Command Interface 
+The RS 485 compatible communication interface is intended to operate the actuator using a six byte protocol 
+with a baud rate of 115,200 bit/s. All command and reply messages are secured by a 16 bit Cyclic Redundancy 
+Checksum (CRC). Parameters like the actual output shaft position and other diagnostic information can be read 
+from the actuator via this interface. 
+Detailed information is provided in the RS 485 documentation. 
+ 
+  
+
+
+--- page 7 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+7/17 
+Firmware Adaptation / Non-Recurring Engineering 
+There are certain rules to be implemented together with the customer to allow best possible integration into 
+the customer’s system architecture. This includes the rule for the monitoring motion controller taking over the 
+command from the motion controller currently in command if there is false data coming from the controller in 
+command. This is strongly influenced by the way the customer wants to talk to the servo from the flight 
+control computer or autopilot (e.g. is there one AP or a primary AP and a backup AP, etc.). Volz recommends 
+to discuss all these topics in a workshop to create the specification of the “switching rules” etc. Ideally, there 
+would be staff present from customer’s flight control computer/AP team.  
+
+--- page 8 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+8/17 
+5. Materials, Protective Features and Sensors 
+ 
+Case Material Saltwater resistant Aluminum Alloy 
+Splash Water Resistance IP 67  
+Case Surface Treatment HART®-Coat 
+Salt Water Resistance >100 hrs. 
+EMI / RFI Shielding Case Shielding 
+Motor Type Two Brushless DC Motors 
+Gear Set Material Hardened Steel 
+Position Sensor Triple Sensor, contactless 
+Position Feedback Standard 
+RS 485 Redundant Communication Interface Standard 
+Temperature Sensor  Standard on each Motor and PCB 
+ 
+6. Environmental Compliance 
+ 
+Designed and tested to MIL-STD-810G: 
+ 
+High Temperature Up to 70 °C 
+Low Temperature Down to -55 °C 
+ 
+  
+
+--- page 9 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+9/17 
+7. Dimensions 
+ 
+Case Dimensions 240 mm x 307 mm x 58 mm    
+ 9.45 in x 12.09 in x 2.28 in   
+Standard Tolerances Unless otherwise specified according to DIN ISO 2768 - m 
+Weight 5600 g (197.5 oz) ±10% 
+ 
+ 
+
+--- page 10 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+10/17 
+7.1 Installation Dimensions 
+ 
+Valid for all Versions 
+DA 58-D-30-8848... 
+ 
+ 
+Not to scale Dimensions: [in], mm 
+
+--- page 11 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+11/17 
+7.2 Output Shaft Spline 
+ 
+Valid for all Versions 
+DA 58-D-30-8848... 
+ 
+
+
+--- page 12 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+12/17 
+8. Electrical Connection 
+ 
+Two Integrated Amphenol D38999 Connectors    Item # DA 58-D-30-8848 
+ 
+Standard Connectors 
+X1 X2 
+Manufacturer Amphenol Manufacturer Amphenol 
+Type D38999-20WB35PN Type D38999-20WB35PA 
+Mating e.g. D38999-26WB35SN Mating e.g. D38999-26WB35SA 
+ 
+Pin Assignment 
+X1 X2 
+RS 485 Interface 1 RS 485 Interface 2 
+1 - Do not connect 1 - Do not connect 
+2 +V DC (1.1) Power + (Primary) 2 +V DC (2.1) Power + (Primary) 
+3 - Do not connect 3 - Do not connect 
+4 RS 485 A1 Non-inverting Input / Output 4 RS 485 A2 Non-inverting Input / Output 
+5 RS 485 B1 Inverting Input / Output 5 RS 485 B2 Inverting Input / Output 
+6 Case GND Case Ground 6 Case GND Case Ground 
+7 - Do not connect 7 - Do not connect 
+8 - Do not connect 8 - Do not connect 
+9 - Do not connect 9 - Do not connect 
+10 +V DC (1.2) Power + (Backup) 10 +V DC (2.2) Power + (Backup) 
+11 - Do not connect 11 - Do not connect 
+12 GND (1.1) Power Return (Primary) 12 GND (2.1) Power Return (Primary) 
+13 GND (1.2) Power Return (Backup) 13 GND (2.2) Power Return (Backup) 
+Not to scale Dimensions: [in], mm 
+
+--- page 13 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+13/17 
+ 
+Alternative connectors on request. 
+
+--- page 14 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+14/17 
+9. Accessories 
+ 
+Item Item-No. 
+Aluminum Servo Arm 577-4200-00 
+Programming Tool RS-485 985.9 
+ 
+All accessories to be purchased separately. 
+ 
+Not to scale Dimensions: [in], mm 
+
+--- page 15 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+15/17 
+9.1 Aluminum Servo Arm 
+ 
+Item # 577-4200-01 
+Not to scale Dimensions: [in], mm 
+
+--- page 16 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+16/17 
+ 
+
+
+--- page 17 ---
+ 
+ Content is subject to change without notice  
+ Revision: C 
+© Volz Servos GmbH & Co. KG  www.volz-servos.com 
+DA 58-Duplex 
+Technical Specification 
+DA 20-T-30-BLDC 
+ 
+[Dokument Titel] 
+ 
+Page 
+17/17 
+10. Item Number System 
+ 
+ 
+ 
+DA 58-D-30-8848- 
+ 
+ 
+1 Interfaces 
+ 3 RS 485 (2-wire) 
+2 High Impedance Option 
+ HI yes 
+ X no 
+   
+ 
+Order example:  DA 58-D-30-8848.3.HI 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Volz Servos GmbH & Co. KG 
+Heinrich-Krumm-Straße 5 
+63073 Offenbach 
+Germany 
+Tel. +49-69-985580-0 
+Fax +49-69-985580-40 
+ 
+e-Mail      mail@volz-servos.com  
+Website   www.volz-servos.com 
+1  2 
+3 . HI 

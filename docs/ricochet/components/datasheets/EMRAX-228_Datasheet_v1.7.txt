@@ -1,0 +1,220 @@
+--- page 1 ---
+EMRAX 228        
+ 
+EMRAX 228 | V1.7 
+EMRAX d.o.o., Molkova pot 5, 1241 Kamnik, Slovenia | +386 (0)8 205 38 50 | support@emrax.com 
+is a compact axial flux permanent magnet synchronous electric motor with high power/torque density. It offers the middle of the range performance 
+and is a great fit for where high-power output if a small package is needed. Contact us to find out about its typical applications! ***IMPORTANT 
+NOTICE: EMRAX is transitioning to NEXT-GENERATION electric motors, and the current EMRAX 188, 208, 228, 268 and 348 models will 
+gradually be out of production. Envelope dimensions remain the same, while the outer diameter is only slightly larger — 4% for the 
+smallest motor and 2% for the largest. 
+  
+ 
+ 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+*Subject to motor configuration, drive cycle, thermal conditions, and controller capability.                                          
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+DIAMETER | LENGTH 228 mm | 86 mm 
+WEIGHT 12,9-13,5 kg 
+COOLING air / liquid / combined 
+PEAK | CONTINUOUS POWER 124 kW | 75 kW* 
+PEAK | CONTINUOUS TORQUE 220 Nm | 130 Nm* 
+MAXIMUM SPEED 6500 RPM 
+OPERATING VOLTAGE 50 - 830 V 
+EFFICIENCY up to 96%* 
+POSITION SENSOR resolver / encoder 
+
+
+--- page 2 ---
+EMRAX 228        
+ 
+EMRAX 228 | V1.7 
+EMRAX d.o.o., Molkova pot 5, 1241 Kamnik, Slovenia | +386 (0)8 205 38 50 | support@emrax.com 
+ 
+ 
+ 
+Actual performance depends on installation details and operating conditions. Contact EMRAX for application-specific guidance. 
+ 
+1 CC motors require both liquid cooling and sufficient airflow to achieve the specified performance and cannot be operated as air-cooled motors only. All EMRAX motors 
+require adequate airflow (approximately 0.4 m³/min per 1 kW of power) and must not be completely enclosed. For cooling and installation requirements, refer to the 
+EMRAX Motor Manual. 
+2 All values given are for a standard 3 phase UVW version, please consult EMRAX on 2x UVW values. 2*R1UVW=R2UVW 
+3 All motors are tested up to 833 VDC maximum voltage. 
+4 HV versions operate below the limiting speed due to the 830 VDC voltage limitation. 
+5 Phase-to-phase resistance measured at 25 °C and divided by 2. 
+ EMRAX 228 High Voltage (HV) EMRAX 228 Medium Voltage (MV) EMRAX 228 Low Voltage (LV) 
+AC = Air Cooled 
+LC = Liquid Cooled 
+CC = Combined Cooled (Air + Liquid)1 
+AC LC CC AC LC CC AC LC CC 
+Ingress protection IP21 IP66 IP21 IP21 IP66 IP21 IP21 IP66 IP21 
+Cooling specifications 
+ambient 
+air 20⁰C 
+20 m/s 
+min. 6 
+l/min, 
+max. 
+50°C 
+Tamb≤ 
+30°C 
+AC+LC 
+ambient 
+air 20⁰C 
+20 m/s 
+min. 6 
+l/min, 
+max. 
+50°C 
+Tamb≤ 
+30°C 
+AC+LC 
+ambient 
+air 20⁰C 
+20 m/s 
+min. 6 
+l/min, 
+max. 
+50°C 
+Tamb≤ 
+30°C 
+AC+LC 
+Maximum motor temperature [°C] integrated temperature sensor / rotor surface / integrated parts absolute limit 100/80/120 
+Motor connection type UVW or 2x UVW2 
+Voltage required for peak power [VDC]3 830 630 250 
+Motor peak efficiency [%] 96% 
+Peak power S2 30s [kW] 104 kW at 4500 RPM4 124 kW at 5500 RPM 124 kW at 5500 RPM 
+Continuous power S1 [kW] 48 68 75 48 68 75 48 68 75 
+Peak torque [Nm] 220 
+Continuous torque [Nm] 83 118 130 83 118 130 83 118 130 
+Limiting speed [RPM] 6500 
+KV constant at no load [RPM/VDC] 10,14 15,53 40,30 
+KV constant at nominal load [RPM/VDC] 7,85 12,05 30,94 
+KV constant at peak load [RPM/VDC] 5,65 8,68 21,91 
+KT constant [Nm/ ARMS] 0,98 0,64 0,24 
+Peak motor current [ARMS] 235 360 920 
+Continuous motor current (LC) [ARMS] 120 180 470 
+Internal phase resistance at 25 °C 
+[mΩ]5 16,09 6,95 1,36 
+LD/LQ inductance of 1 phase [µH] 175/180 75,1/77,3 10,2/10,5 
+Ke constant [VRMS/RPM] 0,06881 0,04474 0,01767 
+PM Flux Linkage [Vs] 0,06411 0,04200 0,01547 
+Temperature sensor on the stator 
+windings KTY 81/210 
+Number of pole pairs 10 
+Winding configuration star 
+Rotor Inertia LC/AC and CC [kg*m²] 0,0398/0,0393 
+Bearing configuration 6206 | 3206 
+Weight [kg] 12,9 13,5 13,2 12,9 13,5 13,2 12,9 13,5 13,2 
+
+--- page 3 ---
+EMRAX 228        
+ 
+EMRAX 228 | V1.7 
+EMRAX d.o.o., Molkova pot 5, 1241 Kamnik, Slovenia | +386 (0)8 205 38 50 | support@emrax.com 
+ 
+ 
+ 
+Actual performance depends on installation details and operating conditions. Contact EMRAX for application-specific guidance.  
+ 
+6 HV+42% versions operate below the limiting speed due to the 830 VDC voltage limitation. 
+ EMRAX 228 Low Voltage (LV) + 43% EMRAX 228 Low Voltage (LV) + 100% EMRAX 228 High Voltage (HV) + 42% 
+AC = Air Cooled 
+LC = Liquid Cooled 
+CC = Combined Cooled (Air + Liquid)1 
+AC LC CC AC LC CC AC LC CC 
+Ingress protection IP21 IP66 IP21 IP21 IP66 IP21 IP21 IP66 IP21 
+Cooling specifications 
+ambient 
+air 20⁰C 
+20 m/s 
+min. 6 
+l/min, 
+max. 
+50°C 
+Tamb≤ 
+30°C 
+AC+LC 
+ambient 
+air 20⁰C 
+20 m/s 
+min. 6 
+l/min, 
+max. 
+50°C 
+Tamb≤ 
+30°C 
+AC+LC 
+ambient 
+air 20⁰C 
+20 m/s 
+min. 6 
+l/min, 
+max. 
+50°C 
+Tamb≤ 
+30°C 
+AC+LC 
+Maximum motor temperature [°C] integrated temperature sensor / rotor surface / integrated parts absolute limit 100/80/120 
+Motor connection type UVW or 2x UVW2 
+Voltage required for peak power [VDC]3  360 500 830 
+Motor peak efficiency [%] 96% 
+Peak power S2 30 s [kW] 124 kW at 5500 RPM 124 kW at 5500 RPM 73 kW at 3200 RPM6 
+Continuous power S1 [kW] 48 68 75 48 68 75 38 54 59 
+Peak torque [Nm] 220 
+Continuous torque [Nm] 83 118 130 83 118 130 81 115 127 
+Limiting speed [RPM] 6500 
+KV constant at no load [RPM/VDC] 28,19 20,15 7,13 
+KV constant at nominal load [RPM/VDC] 21,64 15,47 5,51 
+KV constant at peak load [RPM/VDC] 15,32 10,96 3,96 
+KT constant [Nm/ARMS] 0,34 0,47 1,33 
+Peak motor current [ARMS] 650 460 165 
+Continuous motor current (LC) [ARMS] 330 240 85 
+Internal phase resistance at 25 °C 
+[mΩ]5  2,55 5,31 33,17 
+LD/LQ inductance of 1 phase [µH] 20,8/21,4 40,8/42 350/360 
+Ke constant [VRMS/RPM] 0,02538 0,03660 0,09850 
+PM Flux Linkage [Vs] 0,02211 0,03095 0,08933 
+Temperature sensor on the stator 
+windings KTY 81/210 
+Number of pole pairs 10 
+Winding configuration star 
+Rotor Inertia [kg*m²] 0,0398/0,0393 
+Bearing configuration 6206 | 3206 
+Weight [kg] 12,9 13,5 13,2 12,9 13,5 13,2 12,9 13,5 13,2 

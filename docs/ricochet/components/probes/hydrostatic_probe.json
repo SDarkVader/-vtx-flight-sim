@@ -1,0 +1,617 @@
+{
+ "method": "RC-01 Concept A hydrostatics from the plant's own meshes and MuJoCo mass model (offline, isolated).\n\nFor each load case: whole-vehicle CG from the built MuJoCo model (all bodies incl. sponsons and surfaces),\nregister CG for comparison, then a free-trim static solve on the exact hull + sponson meshes the plant\nfloats on: equilibrium draft and trim, CB, displacement split, waterplane areas, GM_T / GM_L and a GZ\ncurve to 60 deg heel. Also the CG shift from adding the selected actuators at their hinge bodies.\nUsage: python hydrostatic_probe.py <worktree> <out.json>\n",
+ "cases": [
+  {
+   "load_case": "LC-03",
+   "register_description": "Empty-payload flotation without passenger, with declared fuel state in paired F02 FUEL_CELL_PORT/STARBOARD keepouts conserving lateral CG y=0 (815.0 kg dry + fuel, provisional_unverified)",
+   "mass_register_kg": 815.0,
+   "mass_mujoco_kg": 815.0,
+   "cg_register_vtx_m": [
+    0.4227,
+    0.0,
+    0.6941
+   ],
+   "cg_mujoco_body_m": [
+    0.4227,
+    -0.0,
+    0.6941
+   ],
+   "airframe_body_origin_note": "MuJoCo CG is in the airframe body frame; compare with register CG for frame offset",
+   "inertia_diag_register": [
+    1286.8,
+    1797.4,
+    2682.7
+   ],
+   "equilibrium_trim_deg_nose_down_positive": -0.858,
+   "keel_draft_m": 0.5531,
+   "waterline_above_cg_m": -0.149,
+   "displacement_m3": 0.8157,
+   "displacement_split_m3": {
+    "main_hull": 0.6615,
+    "sponson_port": 0.0771,
+    "sponson_stbd": 0.0771
+   },
+   "cb_rel_cg_earth_m": [
+    0.0,
+    -0.0001,
+    -0.2572
+   ],
+   "cb_body_m": [
+    0.4189,
+    -0.0001,
+    0.4369
+   ],
+   "waterplane_area_m2": {
+    "main_hull": 4.6767,
+    "sponson_port": 0.5068,
+    "sponson_stbd": 0.5068
+   },
+   "gm_t_m": 16.1256,
+   "gm_l_m": 9.704,
+   "gz_curve": [
+    {
+     "heel_deg": 0,
+     "gz_m": 0.0001,
+     "righting_nm": 1.0,
+     "vol_m3": {
+      "main_hull": 0.6615,
+      "sponson_port": 0.0771,
+      "sponson_stbd": 0.0771
+     }
+    },
+    {
+     "heel_deg": 2,
+     "gz_m": 0.4218,
+     "righting_nm": 3372.0,
+     "vol_m3": {
+      "main_hull": 0.6993,
+      "sponson_port": 0.0142,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 5,
+     "gz_m": 0.5055,
+     "righting_nm": 4042.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 10,
+     "gz_m": 0.5297,
+     "righting_nm": 4235.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 15,
+     "gz_m": 0.5464,
+     "righting_nm": 4369.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 20,
+     "gz_m": 0.5543,
+     "righting_nm": 4431.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 25,
+     "gz_m": 0.5544,
+     "righting_nm": 4432.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 30,
+     "gz_m": 0.5482,
+     "righting_nm": 4383.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 40,
+     "gz_m": 0.516,
+     "righting_nm": 4126.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 50,
+     "gz_m": 0.4596,
+     "righting_nm": 3675.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 60,
+     "gz_m": 0.3872,
+     "righting_nm": 3096.0,
+     "vol_m3": {
+      "main_hull": 0.7135,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    }
+   ],
+   "actuators_added_kg": 22.35,
+   "actuator_positions_body_m": {
+    "aileron_port": [
+     -0.586,
+     3.17,
+     1.039
+    ],
+    "aileron_stbd": [
+     -0.586,
+     -3.17,
+     1.039
+    ],
+    "elevator": [
+     -3.14,
+     0.0,
+     2.302
+    ],
+    "rudder": [
+     -2.59,
+     0.0,
+     1.58
+    ],
+    "reverse_bucket_port": [
+     -2.33,
+     0.78,
+     1.56
+    ],
+    "reverse_bucket_stbd": [
+     -2.33,
+     -0.78,
+     1.56
+    ]
+   },
+   "cg_with_actuators_body_m": [
+    0.3534,
+    -0.0,
+    0.7167
+   ],
+   "cg_shift_from_actuators_m": [
+    -0.0693,
+    0.0,
+    0.0226
+   ],
+   "keel_z_body_m": 0.0
+  },
+  {
+   "load_case": "LC-01",
+   "register_description": "Passenger aboard, underway (85 kg passenger on F02 seat track (1.30, 0.0, 0.80), nominal 900.0 kg F03 manned trial; reduced-order F03 target CG ~ [0.45, 0.0, 0.59])",
+   "mass_register_kg": 900.0,
+   "mass_mujoco_kg": 900.0,
+   "cg_register_vtx_m": [
+    0.5056,
+    0.0,
+    0.7041
+   ],
+   "cg_mujoco_body_m": [
+    0.5056,
+    -0.0,
+    0.7041
+   ],
+   "airframe_body_origin_note": "MuJoCo CG is in the airframe body frame; compare with register CG for frame offset",
+   "inertia_diag_register": [
+    1294.1,
+    1865.5,
+    2747.0
+   ],
+   "equilibrium_trim_deg_nose_down_positive": -0.314,
+   "keel_draft_m": 0.563,
+   "waterline_above_cg_m": -0.1445,
+   "displacement_m3": 0.9008,
+   "displacement_split_m3": {
+    "main_hull": 0.7398,
+    "sponson_port": 0.0805,
+    "sponson_stbd": 0.0805
+   },
+   "cb_rel_cg_earth_m": [
+    -0.0,
+    -0.0001,
+    -0.2571
+   ],
+   "cb_body_m": [
+    0.5042,
+    -0.0001,
+    0.447
+   ],
+   "waterplane_area_m2": {
+    "main_hull": 5.0437,
+    "sponson_port": 0.4989,
+    "sponson_stbd": 0.4989
+   },
+   "gm_t_m": 13.8101,
+   "gm_l_m": 9.801,
+   "gz_curve": [
+    {
+     "heel_deg": 0,
+     "gz_m": 0.0001,
+     "righting_nm": 1.0,
+     "vol_m3": {
+      "main_hull": 0.7398,
+      "sponson_port": 0.0805,
+      "sponson_stbd": 0.0805
+     }
+    },
+    {
+     "heel_deg": 2,
+     "gz_m": 0.3749,
+     "righting_nm": 3310.0,
+     "vol_m3": {
+      "main_hull": 0.782,
+      "sponson_port": 0.0165,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 5,
+     "gz_m": 0.4651,
+     "righting_nm": 4106.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 10,
+     "gz_m": 0.4909,
+     "righting_nm": 4335.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 15,
+     "gz_m": 0.5073,
+     "righting_nm": 4479.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 20,
+     "gz_m": 0.5145,
+     "righting_nm": 4543.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 25,
+     "gz_m": 0.5138,
+     "righting_nm": 4537.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 30,
+     "gz_m": 0.5067,
+     "righting_nm": 4474.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 40,
+     "gz_m": 0.4719,
+     "righting_nm": 4167.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 50,
+     "gz_m": 0.4143,
+     "righting_nm": 3658.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 60,
+     "gz_m": 0.342,
+     "righting_nm": 3020.0,
+     "vol_m3": {
+      "main_hull": 0.7986,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    }
+   ],
+   "actuators_added_kg": 22.35,
+   "actuator_positions_body_m": {
+    "aileron_port": [
+     -0.586,
+     3.17,
+     1.039
+    ],
+    "aileron_stbd": [
+     -0.586,
+     -3.17,
+     1.039
+    ],
+    "elevator": [
+     -3.14,
+     0.0,
+     2.302
+    ],
+    "rudder": [
+     -2.59,
+     0.0,
+     1.58
+    ],
+    "reverse_bucket_port": [
+     -2.33,
+     0.78,
+     1.56
+    ],
+    "reverse_bucket_stbd": [
+     -2.33,
+     -0.78,
+     1.56
+    ]
+   },
+   "cg_with_actuators_body_m": [
+    0.4407,
+    -0.0,
+    0.7243
+   ],
+   "cg_shift_from_actuators_m": [
+    -0.0649,
+    0.0,
+    0.0203
+   ],
+   "keel_z_body_m": 0.0
+  },
+  {
+   "load_case": "LC-05",
+   "register_description": "Maximum-payload RC-01 experiment (85 kg passenger + 150 kg payload = 1050.0 kg; upper bound of RC01_F03_mass_cg_sensitivity.csv, alias LC-05_MAX_PAYLOAD)",
+   "mass_register_kg": 1050.0,
+   "mass_mujoco_kg": 1050.0,
+   "cg_register_vtx_m": [
+    0.4834,
+    0.0,
+    0.6821
+   ],
+   "cg_mujoco_body_m": [
+    0.4834,
+    -0.0,
+    0.6821
+   ],
+   "airframe_body_origin_note": "MuJoCo CG is in the airframe body frame; compare with register CG for frame offset",
+   "inertia_diag_register": [
+    1302.2,
+    1878.7,
+    2756.1
+   ],
+   "equilibrium_trim_deg_nose_down_positive": -0.388,
+   "keel_draft_m": 0.5878,
+   "waterline_above_cg_m": -0.0983,
+   "displacement_m3": 1.0509,
+   "displacement_split_m3": {
+    "main_hull": 0.8666,
+    "sponson_port": 0.0922,
+    "sponson_stbd": 0.0922
+   },
+   "cb_rel_cg_earth_m": [
+    0.0,
+    -0.0001,
+    -0.2171
+   ],
+   "cb_body_m": [
+    0.4819,
+    -0.0001,
+    0.465
+   ],
+   "waterplane_area_m2": {
+    "main_hull": 5.5835,
+    "sponson_port": 0.4157,
+    "sponson_stbd": 0.4157
+   },
+   "gm_t_m": 9.0048,
+   "gm_l_m": 9.394,
+   "gz_curve": [
+    {
+     "heel_deg": 0,
+     "gz_m": 0.0001,
+     "righting_nm": 1.0,
+     "vol_m3": {
+      "main_hull": 0.8666,
+      "sponson_port": 0.0922,
+      "sponson_stbd": 0.0922
+     }
+    },
+    {
+     "heel_deg": 2,
+     "gz_m": 0.2846,
+     "righting_nm": 2932.0,
+     "vol_m3": {
+      "main_hull": 0.9204,
+      "sponson_port": 0.0283,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 5,
+     "gz_m": 0.4126,
+     "righting_nm": 4250.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 10,
+     "gz_m": 0.4435,
+     "righting_nm": 4568.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 15,
+     "gz_m": 0.4623,
+     "righting_nm": 4762.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 20,
+     "gz_m": 0.4718,
+     "righting_nm": 4860.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 25,
+     "gz_m": 0.4734,
+     "righting_nm": 4877.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 30,
+     "gz_m": 0.4676,
+     "righting_nm": 4817.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 40,
+     "gz_m": 0.435,
+     "righting_nm": 4481.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 50,
+     "gz_m": 0.3811,
+     "righting_nm": 3925.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    },
+    {
+     "heel_deg": 60,
+     "gz_m": 0.3122,
+     "righting_nm": 3216.0,
+     "vol_m3": {
+      "main_hull": 0.9487,
+      "sponson_port": 0.0,
+      "sponson_stbd": 0.1023
+     }
+    }
+   ],
+   "actuators_added_kg": 22.35,
+   "actuator_positions_body_m": {
+    "aileron_port": [
+     -0.586,
+     3.17,
+     1.039
+    ],
+    "aileron_stbd": [
+     -0.586,
+     -3.17,
+     1.039
+    ],
+    "elevator": [
+     -3.14,
+     0.0,
+     2.302
+    ],
+    "rudder": [
+     -2.59,
+     0.0,
+     1.58
+    ],
+    "reverse_bucket_port": [
+     -2.33,
+     0.78,
+     1.56
+    ],
+    "reverse_bucket_stbd": [
+     -2.33,
+     -0.78,
+     1.56
+    ]
+   },
+   "cg_with_actuators_body_m": [
+    0.428,
+    -0.0,
+    0.7
+   ],
+   "cg_shift_from_actuators_m": [
+    -0.0554,
+    0.0,
+    0.0179
+   ],
+   "keel_z_body_m": 0.0
+  }
+ ]
+}
