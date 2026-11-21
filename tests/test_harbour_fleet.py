@@ -43,7 +43,7 @@ def test_harbour_checkpoint_retry_preserves_atomic_replacement(tmp_path, monkeyp
 
 @pytest.mark.parametrize("pin", [
     "PREVIOUS_FLEET_DEPENDENCIES", "SINGLE_PASS_FLEET_DEPENDENCIES",
-    "ARRAY_CAPTURE_FLEET_DEPENDENCIES",
+    "ARRAY_CAPTURE_FLEET_DEPENDENCIES", "SAMPLE_REUSE_FLEET_DEPENDENCIES",
 ])
 def test_worker_restores_only_the_known_equivalent_checkpoint(monkeypatch, pin):
     from vtx import harbour_session

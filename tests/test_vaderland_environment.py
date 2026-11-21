@@ -224,3 +224,50 @@ def test_timing_rejects_overflight_and_requires_the_ordered_return():
         clock.sample(t,position)
     assert clock.runs['circuit']['laps']==1
     assert clock.runs['circuit']['last']==pytest.approx(.95)
+
+
+def test_sparse_changed_cells_match_the_stock_stencil_on_shores_and_walls():
+    """The changed-cells path is bitwise the stock kernel, including wet/dry fronts and walls."""
+    from copy import deepcopy
+    from dataclasses import replace
+    from types import SimpleNamespace
+
+    from vtx.water.repeated_faces import RepeatedFaces
+    from vtx.water.shallow_water import ShallowWaterSolver
+
+    rng = np.random.default_rng(7)
+    # A sloping bed crosses the waterline: mostly dry land, a wavy shore and a strip of open
+    # water. Wind and current then change only the wet cells, so the sparse path runs with them.
+    world = SimpleNamespace(half=500, terrain_z_array=lambda x, y: x / 40 + 9 + 0.4 * np.sin(y / 37))
+    baseline = ShallowWaterSolver(world, nx=131, ny=117)
+    baseline.config = replace(baseline.config, wind_speed_mps=3., current_speed_mps=.2)
+    local = deepcopy(baseline)
+    advance = RepeatedFaces(local)
+    used = []
+    original = RepeatedFaces._advance_cells
+
+    def spy(self, dt, current, dirty):
+        used.append(int(np.count_nonzero(dirty)))
+        return original(self, dt, current, dirty)
+
+    RepeatedFaces._advance_cells = spy
+    try:
+        for step in range(24):
+            ny, nx = baseline.h.shape
+            rows = np.r_[0, ny - 1, rng.integers(0, ny, 5)]
+            cols = np.r_[nx - 1, 0, rng.integers(0, nx, 5)]
+            kick = rng.normal(0, .3, rows.size)
+            for field in (baseline, local):
+                field.hu[rows, cols] += kick
+                field.hv[rows[::-1], cols] -= kick
+                if step == 11:
+                    field.h[40:44, 60:66] += .05  # a mound across the shore
+            dt = .04 if step != 17 else .043  # one changed timestep falls back to the full stencil
+            baseline._advance_substep(dt)
+            advance(dt)
+            for name in ('h', 'hu', 'hv'):
+                np.testing.assert_array_equal(getattr(local, name).view(np.uint64),
+                                              getattr(baseline, name).view(np.uint64))
+    finally:
+        RepeatedFaces._advance_cells = original
+    assert len(used) >= 19 and max(used) < baseline.h.size * RepeatedFaces.cells_limit
