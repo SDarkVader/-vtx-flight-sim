@@ -9,6 +9,7 @@ No pose, velocity or force is ever written to the vehicle except through these p
 """
 from __future__ import annotations
 import base64, gzip, hashlib, io, json, math, sys, zlib
+from functools import cached_property
 import xml.etree.ElementTree as ET
 import mujoco as mj
 import numpy as np
@@ -21,6 +22,7 @@ from .propulsion import DuctedFan
 from .energy_bus import EnergyBus
 from .surface_aero import SurfaceAero
 from .controls import FlightControl, default_command
+from .terrain_ray import GROUND_GROUP, TerrainRay
 
 AIRBORNE_DEBOUNCE_S = 0.25   # continuous no-support time before the plant counts itself airborne
 VEH = dict(contype='2', conaffinity='1', group='3')
@@ -425,9 +427,18 @@ class PhantomAircraft:
     def pod_axis(self, k):
         return self.data.xmat[self.bids[f'pod_{k}']].reshape(3, 3) @ np.array([0, SIDE[k], 0])
 
+    @cached_property
+    def _terrain_ray(self):
+        return TerrainRay.build(self.model, self.data, self.gid['terrain'])
+
     def ray_height(self, p, direction):
-        gid = np.zeros(1, np.int32)
-        dist = mj.mj_ray(self.model, self.data, p, direction, np.array([1, 0, 0, 0, 0, 0], np.uint8), 1, -1, gid)
+        if getattr(self.world, 'environment_key', None) == 'vaderland-33' and TerrainRay.suitable(p, direction):
+            query = self._terrain_ray
+            if query is not None:
+                hit = query.hit(p, direction)
+                if hit is not None:
+                    return hit[0]
+        dist = mj.mj_ray(self.model, self.data, p, direction, GROUND_GROUP, True, -1, None)
         return None if dist < 0 else float(dist)
 
     # ------------------------------------------------------------ commands
