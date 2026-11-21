@@ -28,6 +28,7 @@ WING_STATES = ('stowed', 'hatch_opening', 'sliding_out', 'pinning', 'locked', 'u
 CHECKPOINT_DERIVED_FIELDS = ('xpos', 'xquat', 'xmat', 'xipos', 'ximat', 'xanchor', 'xaxis', 'cdof', 'cdof_dot',
                              'geom_xpos', 'geom_xmat', 'site_xpos', 'site_xmat', 'subtree_com', 'cvel', 'actuator_force',
                              'actuator_velocity')
+PACKED_CHECKPOINT_FIELDS = ('geom_xpos', 'geom_xmat')
 
 
 def checkpoint_json(value):
@@ -990,6 +991,14 @@ class PhantomAircraft:
         spec = mj.mjtState.mjSTATE_INTEGRATION
         integration = np.empty(mj.mj_stateSize(m, spec))
         mj.mj_getState(m, d, integration, spec)
+        # Preserve each float exactly without converting the entire scenery to decimal JSON.
+        derived = {name: getattr(d, name) for name in CHECKPOINT_DERIVED_FIELDS}
+        for name in PACKED_CHECKPOINT_FIELDS:
+            values = derived[name]
+            if not np.isfinite(values).all():
+                raise ValueError('Non-finite checkpoint derived state: ' + name)
+            raw = values.astype('<f8', copy=False).tobytes()
+            derived[name] = {'float64le': base64.b64encode(raw).decode('ascii')}
         evolving = dict(wing_timer=self.wing_timer, nose_lift=self.nose_lift,
                         rng_state=self.rng.bit_generator.state, rudder=self.rudder, tvc=self.tvc,
                         fan_omega_cmd=self.fan_omega_cmd, fan_state=self.fan_state,
@@ -1012,7 +1021,7 @@ class PhantomAircraft:
                     model_state=dict(body_mass=m.body_mass, body_inertia=m.body_inertia,
                                      qpos_spring=m.qpos_spring, jnt_range=m.jnt_range,
                                      dof_frictionloss=m.dof_frictionloss), evolving=evolving,
-                    derived_state={name:getattr(d,name) for name in CHECKPOINT_DERIVED_FIELDS},
+                    derived_state=derived,
                     contact_samples=(self.contact_samples() if getattr(self, '_restored_contact_samples', None) is None
                                      else self._restored_contact_samples),
                     qpos=d.qpos.tolist(), qvel=d.qvel.tolist(), act=d.act.tolist(), ctrl=d.ctrl.tolist(), qacc_warmstart=d.qacc_warmstart.tolist(), time=float(d.time),
@@ -1058,8 +1067,18 @@ class PhantomAircraft:
         mj.mj_forward(m, d)
         d.qacc_warmstart[:] = warmstart
         for name in CHECKPOINT_DERIVED_FIELDS:
-            arr = np.asarray(s['derived_state'][name], dtype=float)
             target = getattr(d, name)
+            stored = s['derived_state'][name]
+            if name in PACKED_CHECKPOINT_FIELDS and isinstance(stored, dict):
+                encoded = stored.get('float64le')
+                if not isinstance(encoded, str) or len(encoded) != 4 * ((target.nbytes + 2) // 3):
+                    raise ValueError('Invalid packed checkpoint derived state: ' + name)
+                raw = base64.b64decode(encoded, validate=True)
+                if len(raw) != target.nbytes:
+                    raise ValueError('Invalid packed checkpoint derived state: ' + name)
+                arr = np.frombuffer(raw, dtype='<f8').reshape(target.shape)
+            else:
+                arr = np.asarray(stored, dtype=float)
             if arr.shape != target.shape or not np.all(np.isfinite(arr)):
                 raise ValueError('Checkpoint derived state cannot be reconstructed: ' + name)
             target[:] = arr

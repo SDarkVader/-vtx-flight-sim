@@ -45,6 +45,23 @@ def test_checkpoint_continues_the_same_physics(start, command, steps):
     assert restored.bus.soc == pytest.approx(original.bus.soc, abs=1e-10)
 
 
+def test_checkpoint_restores_packed_and_legacy_geometry():
+    world = TestWorld()
+    aircraft = PhantomAircraft(world, 'phantom-a10c', start_configuration='road')
+    aircraft.spawn(0, 0, world.surface_z(0, 0))
+    aircraft.step()
+    snapshot = json.loads(json.dumps(aircraft.checkpoint_state(), allow_nan=False))
+    geometry = {name: getattr(aircraft.data, name) for name in ('geom_xpos', 'geom_xmat')}
+    assert all('float64le' in snapshot['derived_state'][name] for name in geometry)
+    restored = PhantomAircraft(world, 'phantom-a10c', start_configuration='road')
+    for derived in (snapshot['derived_state'], {**snapshot['derived_state'],
+                                               **{name: array.tolist() for name, array in geometry.items()}}):
+        snapshot['derived_state'] = derived
+        restored.restore_state(snapshot)
+        for name, expected in geometry.items():
+            assert getattr(restored.data, name).tobytes() == expected.tobytes()
+
+
 def test_pending_controls_and_telemetry_continue_without_a_second_header(tmp_path):
     lab = live_server.Laboratory(data_root=tmp_path)
     lab.start(live_server.Mission(airframe_variant='phantom-a10c-runway-20261112',
