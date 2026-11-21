@@ -32,7 +32,7 @@ import {boatCameraView} from './vtx-env/harbour-camera.js?v=3';
 import {createVehicleWorkspace} from './vehicle-workspace.js';
 import {loadPinnedGltf,verifiedVisualAssets} from './visual-identity.js';
 import {addSliderScale} from './slider-scale.js?v=1';
-import {createPrimaryFlightDisplay,primaryFlightReadings,createViewCompass,viewBearing} from './phantom-primary-flight.js?v=2';
+import {createPrimaryFlightDisplay,primaryFlightReadings,createViewAttitude,createViewCompass,viewBearing} from './phantom-primary-flight.js?v=3';
 import {updateBoatAvionics} from './boat-avionics.js?v=4';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=20261117-cutaway';
@@ -307,7 +307,8 @@ const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.
 const worldGroup=new THREE.Group();worldGroup.name='vtx-world';scene.add(worldGroup);
 const phantomCockpitDeck=$('phantom-cockpit'), cockpitTake=$('phantom-cockpit-take'), cockpitMode=$('phantom-cockpit-mode');
 const cockpitAlerts=$('phantom-cockpit-alerts'), primaryFlight=createPrimaryFlightDisplay(phantomCockpitDeck);
-const compass=$('phantom-view-compass'), updateViewCompass=createViewCompass(compass,$('phantom-viewfinder'));
+const navigation=$('phantom-navigation'), updateViewCompass=createViewCompass($('phantom-view-compass'));
+const viewAttitude=createViewAttitude($('phantom-view-attitude'));
 const pilotViewDirection=new THREE.Vector3();
 const hudOpacity=$('phantom-hud-opacity'), hudOpacityOutput=hudOpacity.parentElement.querySelector('output');
 function setHudOpacity(value){
@@ -315,8 +316,9 @@ function setHudOpacity(value){
   hudOpacity.value=percent;
   hudOpacityOutput.textContent=percent+'%';
   phantomCockpitDeck.style.setProperty('--hud-opacity',percent/100);
-  compass.style.setProperty('--hud-opacity',percent/100);
+  navigation.style.setProperty('--hud-opacity',percent/100);
   primaryFlight.opacity(percent/100);
+  viewAttitude.opacity(percent/100);
 }
 try{
   const saved=localStorage.getItem('vtx-phantom-hud-opacity');
@@ -349,6 +351,7 @@ for(const {button} of cockpitSwitches)button.onclick=()=>{
 function updatePhantomCockpit(visible, stale, recording){
   const hidden=!visible;
   if(phantomCockpitDeck.hidden!==hidden)phantomCockpitDeck.hidden=hidden;
+  if(navigation.hidden!==hidden)navigation.hidden=hidden;
   if(hidden)return;
   const view=recording??last;
   const status=recording?null:phantomPanel?.cockpitStatus();
@@ -365,6 +368,7 @@ function updatePhantomCockpit(visible, stale, recording){
     const systems=stale?{}:phantomCockpitStates(observation,raw);
     const flight=primaryFlightReadings(observation,stale);
     primaryFlight.update(flight);
+    viewAttitude.update(flight);
     const warnings=flight.warnings.filter(value=>typeof value==='string');
     cockpitAlerts.hidden=warnings.length===0;
     cockpitAlerts.dataset.tone=warnings.some(value=>['IMPACT','FUEL_EXHAUSTED'].includes(value))?'fault':'warning';
@@ -1653,9 +1657,8 @@ function animate(){
  const cockpitStale=!replayFrames&&now-latestTruthReceivedMs>2000;
  const cockpitRecording=replayFrames?measuredTruth:null;
  updatePhantomCockpit(phantomCockpit,cockpitStale,cockpitRecording);
- const lookingAround=phantomCockpit&&Math.hypot(cockpitYaw,cockpitPitch)>.07;
- if(lookingAround)camera.getWorldDirection(pilotViewDirection);
- updateViewCompass(lookingAround?viewBearing(pilotViewDirection.x,pilotViewDirection.y):null,lookingAround);
+ if(phantomCockpit)camera.getWorldDirection(pilotViewDirection);
+ updateViewCompass(phantomCockpit?viewBearing(pilotViewDirection.x,pilotViewDirection.y):null,phantomCockpit);
  const doorState=boatViewId?harbourControls.state?.iris??last?.iris:last?.iris;
  const portalControls=document.getElementById('iris-controls');portalControls.hidden=!world?.vaderland?.operations||!!replayFrames||worldUnavailable;
  if(!portalControls.hidden){document.querySelector('#district-view option[value="plaza"]').hidden=!world.vaderland.civic_district;const side=document.getElementById('iris-side').value,travel=doorState?.[side]??1;

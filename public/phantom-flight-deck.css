@@ -246,32 +246,46 @@ body:has(#phantom-cockpit:not([hidden])) #toast { top: 154px; bottom: auto; poin
   #phantom-cockpit-panel { max-height: 146px; overflow-y: auto; }
   .phantom-axis-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-#phantom-view-compass:not([hidden]) {
+#phantom-navigation:not([hidden]) {
   --hud-opacity: .76;
   position: absolute;
+  inset: 0;
   z-index: 5;
+  pointer-events: none;
+}
+#phantom-view-compass:not([hidden]) {
+  position: absolute;
   top: 91px;
   width: min(300px,64%);
   left: 50%;
   transform: translateX(-50%);
   border-radius: 4px;
   pointer-events: none;
-  background: rgb(10 24 34 / calc(var(--hud-opacity) * .68));
+  background: rgb(10 24 34 / calc(var(--hud-opacity) * .26));
   color: #c3d6e3;
   text-align: center;
+  text-shadow: 0 1px 2px #070e16;
   font: 11px/1.1 ui-monospace, Consolas, monospace;
 }
-#phantom-viewfinder:not([hidden]) {
+#phantom-view-attitude:not([hidden]), #phantom-viewfinder {
   position: absolute;
   left: 50%;
   top: 50%;
-  z-index: 5;
-  width: 20px;
-  height: 14px;
   transform: translate(-50%, -50%);
-  background: linear-gradient(#c5dae5b0,#c5dae5b0) center / 1px 14px no-repeat,
-              linear-gradient(#c5dae5b0,#c5dae5b0) center / 20px 1px no-repeat;
-  pointer-events: none;
+}
+#phantom-view-attitude:not([hidden]) {
+  width: 168px;
+  height: 76px;
+}
+#phantom-viewfinder {
+  --reticle-ink: rgb(213 236 245 / calc(.36 + var(--hud-opacity) * .36));
+  width: 21px;
+  height: 17px;
+  background:
+    linear-gradient(var(--reticle-ink),var(--reticle-ink)) top center / 1px 5px no-repeat,
+    linear-gradient(var(--reticle-ink),var(--reticle-ink)) bottom center / 1px 5px no-repeat,
+    linear-gradient(var(--reticle-ink),var(--reticle-ink)) center left / 6px 1px no-repeat,
+    linear-gradient(var(--reticle-ink),var(--reticle-ink)) center right / 6px 1px no-repeat;
 }
 #phantom-compass-scale { position: relative; height: 15px; overflow: hidden; }
 #phantom-compass-scale span { position: absolute; top: 1px; transform: translateX(-50%); }

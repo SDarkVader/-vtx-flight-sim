@@ -43,22 +43,77 @@ function updateMarks(scale, marks, direction) {
   }
 }
 
-export function createViewCompass(root, viewfinder) {
+export function createViewCompass(root) {
   const scale=root.querySelector('#phantom-compass-scale');
   const label=root.querySelector('#phantom-view-bearing');
   let lastBearing;
   return (bearing, visible) => {
     const hidden = !visible || bearing === null;
-    if (root.hidden!==hidden) {
-      root.hidden=hidden;
-      viewfinder.hidden=hidden;
-    }
+    if (root.hidden!==hidden) root.hidden=hidden;
     if (hidden) return;
     const quantizedBearing=Math.round(bearing*2)/2;
     if (lastBearing===quantizedBearing) return;
     lastBearing=quantizedBearing;
     updateMarks(scale,compassTicks(quantizedBearing),'left');
-    label.textContent=`${String(Math.round(bearing)%360).padStart(3,'0')}°`;
+    label.textContent=`${String(Math.round(quantizedBearing)%360).padStart(3,'0')}°`;
+  };
+}
+
+function paintInstrument(canvas, context, draw) {
+  if (!context || canvas.hidden) return;
+  const {width,height} = canvas.getBoundingClientRect();
+  if (!width || !height) return;
+  const scale = window.devicePixelRatio || 1;
+  const pixelWidth = Math.round(width * scale), pixelHeight = Math.round(height * scale);
+  if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
+  if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
+  context.setTransform(pixelWidth / width,0,0,pixelHeight / height,0,0);
+  draw(context,width,height,scale);
+}
+
+export function createViewAttitude(canvas) {
+  const context = canvas.getContext('2d');
+  let flight, opacity = .76;
+
+  function draw(c,width,height) {
+    c.clearRect(0,0,width,height);
+    c.save();
+    c.translate(width / 2,height / 2);
+    c.rotate(-flight.bank * Math.PI / 180);
+    c.strokeStyle = `rgb(213 236 245 / ${.38 + opacity * .4})`;
+    c.shadowColor = '#0a1320';
+    c.shadowBlur = 2;
+    c.lineWidth = 1;
+    const centreMark = Math.round(flight.pitch / 10) * 10;
+    for (const angle of [centreMark - 10,centreMark,centreMark + 10]) {
+      if (Math.abs(angle) > 90) continue;
+      const y = (flight.pitch - angle) * 1.7;
+      const outer = angle === 0 ? 43 : 31;
+      c.setLineDash(angle < 0 ? [3,2] : []);
+      c.beginPath();
+      c.moveTo(-outer,y);
+      c.lineTo(-15,y);
+      c.moveTo(15,y);
+      c.lineTo(outer,y);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  const paint = () => paintInstrument(canvas,context,draw);
+  new ResizeObserver(paint).observe(canvas);
+  return {
+    opacity(value) {
+      opacity = value;
+      paint();
+    },
+    update(readings) {
+      flight = readings;
+      canvas.hidden = !Number.isFinite(flight.pitch) || !Number.isFinite(flight.bank);
+      if (canvas.hidden) return;
+      canvas.setAttribute('aria-label',`Aircraft attitude. Pitch ${flight.pitchDegrees}. Bank ${flight.bankDegrees}.`);
+      paint();
+    },
   };
 }
 
@@ -130,16 +185,8 @@ export function createPrimaryFlightDisplay(deck) {
   const altitude = deck.querySelector('#phantom-altitude-tape');
   let flight, opacity = .76;
 
-  function paint() {
-    const {width,height} = canvas.getBoundingClientRect();
-    if (!width || !height || !context) return;
-    const scale = window.devicePixelRatio || 1;
-    const pixelWidth = Math.round(width * scale), pixelHeight = Math.round(height * scale);
-    if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
-    if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
-    context.setTransform(pixelWidth / width,0,0,pixelHeight / height,0,0);
-    drawHorizon(context,width,height,flight,opacity,scale);
-  }
+  const paint = () => paintInstrument(canvas,context,
+    (c,width,height,scale) => drawHorizon(c,width,height,flight,opacity,scale));
 
   function showTape(tape, value, step) {
     updateMarks(tape,flightTapeMarks(value,step).map(({label,top})=>({label,position:top})),'top');
