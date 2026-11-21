@@ -12,7 +12,7 @@ from .vaderland import PACK
 class RooftopQuarter(LanternMarinaDistrict):
     id = environment_key = 'vaderland-33'
     version = '33'
-    label = 'Vaderland · Meridian Rooftop Quarter'
+    label = 'Vaderland · Lantern Race and Meridian Rooftop Quarter'
 
     def __init__(self, seed=41031):
         super().__init__(seed)

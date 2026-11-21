@@ -103,6 +103,14 @@ A slipway at Needle Island's north tip takes amphibious vehicles between the isl
 
 `tests/test_lantern_race.py`: jet, eddies and compact support of the rapid; stationary standing waves with λ = 2πu²/g and a consistent slope; rock pillow, parting flow and wake; sprint timing; line commitment, finish and checkpoint round trip; race staging; the rapid current in the fleet's water field and switched off by configuration; the ramp friction and priority in the fleet's MuJoCo model; the v32 harbour unchanged; race solids limited to rocks, ramps, marks, trees, the shelf and poles; rocks seated on the bed; every line in open, deep water between its gates; trail on land and clear of trees; the slipway reaching from land into the pool; the shelf validating as a landing surface.
 
+## 5. Falls, main environment and free camera
+
+**Waterfalls (render-only).** Every steep run of a Vaderland 33 stream (slope above 0.6, drop above 6 m) now gets a falling curtain: a ribbon from the lip to the pool that stands off the rock as the water leaves it (stand-off 0.25 m at the lip, up to 3.65 m mid-drop), widens about 14 % as it falls, and carries streaks that accelerate down the drop, frayed edges, aeration and night dimming. A draped foam disc churns in the plunge pool, and the mist is now faint, large, grey-blue spray that goes dark at night rather than a glowing blob. Photograph views: `falls`, `fallsClose`, `fallsNight`.
+
+**Main environment.** Vaderland 33 is first and selected in the environment list; earlier worlds are grouped under "Earlier and test environments". A server can also start straight into a world with `VTX_DEFAULT_ENVIRONMENT=vaderland-33` (unset, it starts in the test world as before). The world label is now "Vaderland · Lantern Race and Meridian Rooftop Quarter", so the v33 fingerprint changes.
+
+**Free camera.** Speed follows height above the ground (1.1 × height per second, 18 m/s to 4 km/s), so it is precise near the ground and crosses the map in seconds from altitude. Each wheel notch flies a fifth of the height above ground along the view. Right- or middle-drag pans across the ground, scaled with height. Shift is ×4 and holding Z is ÷4 (not Ctrl, because Ctrl+W closes the tab). The camera stays 1.5 m above the terrain everywhere, not just above sea level. In Vaderland a "Go to…" list flies to any named place (Lantern Race, Rooftop Quarter, Twin Falls and the rest); the airport landmarks remain for the airport world.
+
 ## Next
 
 - A high-speed mountain circuit through valleys, cuttings and tunnels with tight street sections and real elevation change, widths and radii set for agile cars, bikes and booster vehicles (the A10-D is about the length of an open-wheel race car).

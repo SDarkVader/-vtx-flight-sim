@@ -414,11 +414,16 @@ export function buildLanternRace(group,w,uniforms,common,ground){
         // Each ripple train is kept only while a pixel covers less than a sixth of its wavelength
         // (the screen footprint at grazing angles is long), so it never aliases into moire.
         float foot=max(length(dFdx(p.xy)),length(dFdy(p.xy)));
-        for(int i=0;i<6;i++){
-          float fi=float(i),ang=(fi-2.5)*.42+.35*sin(fi*2.3),lam=.75+.42*fi;
-          vec2 d=normalize(dA*cos(ang)+dC*sin(ang));
+        // Chop as a mottled random slope field (value noise in flow-aligned coordinates, three octaves,
+        // patchy), not sums of straight-crested sinusoids, which read as fingerprint stripes up close.
+        // Each octave is dropped once a pixel covers more than an eighth of its wavelength.
+        vec2 fq=vec2(dot(q,dA)*.62,dot(q,dC));
+        float rough2=smoothstep(.20,.80,noise2(q*.09+3.7));
+        for(int i=0;i<3;i++){
+          float fi=float(i),fr=1.35*pow(2.2,fi),lam=1./fr;
           float keep=1.-smoothstep(lam/8.,lam/4.,foot);
-          ripple2+=d*cos(6.2832/lam*dot(q,d)+fi*1.93+rt*(1.1+.37*fi))*(.050-.004*fi)*keep;
+          vec2 g=fq*fr+fi*17.3;
+          ripple2+=(vec2(noise2(g),noise2(g+41.7))-.5)*(.26/(1.+.7*fi))*keep*(.45+.55*rough2);
         }
         float slopeKeep=1.-smoothstep(4.,9.,foot);                // the 10 m standing waves need ~2 m pixels
         float carried=1.-smoothstep(.03,.10,length(normalize(n).xy)*physicalTide);
@@ -437,6 +442,10 @@ export function buildLanternRace(group,w,uniforms,common,ground){
         float f0=fbm(vec2(dot(q0,along)*.24,dot(q0,across)*1.35)),f1=fbm(vec2(dot(q1,along)*.24,dot(q1,across)*1.35)+17.);
         float tex=mix(f0,f1,blend)+.30*(noise2((p.xy-vel*rt*.6)*1.9)-.5);
         float foam=smoothstep(.70-.44*white,.84-.36*white,tex)*smoothstep(.05,.25,white);
+        // Up close foam is lace and bubbles, not a flat sheet: open holes in it where the pixel is fine.
+        float footC=max(length(dFdx(p.xy)),length(dFdy(p.xy)));
+        float lacing=smoothstep(.30,.62,noise2((p.xy-vel*rt*.5)*5.3))*.6+smoothstep(.40,.70,noise2((p.xy-vel*rt*.5)*13.7))*.4;
+        foam*=mix(1.,.30+.70*lacing,1.-smoothstep(.05,.35,footC));
         float lace=smoothstep(.60,.66,fbm((p.xy-vel*rt*.45)*2.4))*smoothstep(.2,.65,white)*.45;
         vec4 lc4=texture2D(raceLight,raceUV);vec3 glow=lc4.rgb/max(vec3(1e-3),1.-lc4.rgb)*raceEdge;
         float bedDepth=lc4.a*8.;
@@ -446,7 +455,7 @@ export function buildLanternRace(group,w,uniforms,common,ground){
         surfaceColor=mix(surfaceColor,sea*mix(1.,.34,night),rough*mix(.30,.70,night));
         surfaceColor=mix(surfaceColor,vec3(.10,.24,.23)*mix(1.,.20,night),smoothstep(.1,.7,white)*.28);
         float shoal=(1.-smoothstep(.25,1.8,bedDepth))*raceEdge;
-        float wash=smoothstep(.50,.72,fbm(p.xy*.85+vec2(rt*.21,-rt*.17))+.25*sin(rt*1.3+dot(p.xy,vec2(.31,.17))))
+        float wash=smoothstep(.50,.72,fbm(p.xy*.85+vec2(rt*.21,-rt*.17))+.25*sin(rt*1.3-bedDepth*11.))
                   *(1.-smoothstep(.05,.45,bedDepth))*raceEdge;
         surfaceColor+=glow*night*.05;
         vec3 foamCol=vec3(.84,.88,.87)*(.45+.55*max(dot(norm,sun),0.))*mix(1.,.09,night)+glow*night*.40;

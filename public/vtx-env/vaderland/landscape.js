@@ -1016,19 +1016,103 @@ function fallsMist(group,w,stream,uniforms){
         float a=seed.x*6.2831853,r=(4.+seed.y*28.)*(.35+.65*life)*origin.w;
         vec3 p=origin.xyz+vec3(cos(a)*r,sin(a)*r,2.+life*(14.+26.*seed.z)*origin.w);
         p.xy+=vec2(.9,.35)*life*18.;
-        alpha=sin(life*3.14159)*(.035+.045*seed.y)*smoothstep(.0,.25,life);
+        alpha=sin(life*3.14159)*(.008+.014*seed.y)*smoothstep(.0,.25,life);
         vec4 v=viewMatrix*vec4(p,1.);gl_Position=projectionMatrix*v;
-        gl_PointSize=clamp((14.+34.*life)*500./max(1.,-v.z),2.,240.);spin=vec2(cos(seed.z*6.),sin(seed.z*6.));
+        gl_PointSize=clamp((12.+30.*life)*500./max(1.,-v.z),2.,160.);spin=vec2(cos(seed.z*6.),sin(seed.z*6.));
       }`,
     fragmentShader:`uniform float night;varying float alpha;varying vec2 spin;
       void main(){vec2 q=gl_PointCoord-.5;float r=dot(q,q)*4.;if(r>1.)discard;
-        float soft=(1.-r)*(1.-r);gl_FragColor=vec4(mix(vec3(.80,.86,.90),vec3(.16,.19,.25),night),alpha*soft);}`});
+        float soft=(1.-r)*(1.-r);gl_FragColor=vec4(mix(vec3(.74,.79,.83),vec3(.035,.042,.06),night),alpha*soft);}`});
   const mist=new THREE.Points(g,m);mist.frustumCulled=false;mist.renderOrder=3;mist.name='Twin Falls mist';group.add(mist);
+}
+
+// v33: free water curtains over the steep drops of a stream and a churning plunge pool where each lands.
+// The curtain follows the fall line but stands off the rock (most at mid-height), so the draped sheet on the
+// face shows behind it; it accelerates with the fall, frays at the edges and whitens as it aerates.
+function fallsCurtain(group,w,stream,ground,uniforms){
+  const pts=stream.points,zs=pts.map(q=>heightfieldZ(w,q[0],q[1])),falls=[];
+  for(let i=0;i<pts.length-1;i++){
+    const run=j=>(zs[j]-zs[j+1])/Math.max(1,Math.hypot(pts[j+1][0]-pts[j][0],pts[j+1][1]-pts[j][1]));
+    if(run(i)<=.6)continue;
+    let j=i;while(j+1<pts.length-1&&run(j+1)>.6)j++;
+    if(zs[i]-zs[j+1]>6)falls.push([i,j+1]);
+    i=j;
+  }
+  if(!falls.length)return null;
+  const P=[],UV=[],T=[],I=[],foam=[];
+  const normalAt=(x,y)=>{const e=1.5,dx=(heightfieldZ(w,x+e,y)-heightfieldZ(w,x-e,y))/(2*e),dy=(heightfieldZ(w,x,y+e)-heightfieldZ(w,x,y-e))/(2*e),l=Math.hypot(dx,dy,1);return [-dx/l,-dy/l,1/l];};
+  for(const [a,b] of falls){
+    const path=[];let total=0;
+    for(let k=Math.max(0,a-1);k<=Math.min(pts.length-1,b+1);k++){if(path.length)total+=Math.hypot(pts[k][0]-path.at(-1)[0],pts[k][1]-path.at(-1)[1]);path.push([pts[k][0],pts[k][1],total]);}
+    const zLip=zs[a],zBase=zs[b],drop=zLip-zBase,base0=P.length/3;let rows=0;
+    for(let s=0;s<=total;s+=1.5){
+      let k=1;while(k<path.length-1&&path[k][2]<s)k++;
+      const A=path[k-1],B=path[k],f=(s-A[2])/Math.max(1e-6,B[2]-A[2]),x=A[0]+(B[0]-A[0])*f,y=A[1]+(B[1]-A[1])*f;
+      const tx=(B[0]-A[0])/Math.max(1e-6,B[2]-A[2]),ty=(B[1]-A[1])/Math.max(1e-6,B[2]-A[2]);
+      const z=heightfieldZ(w,x,y),t=Math.min(1,Math.max(0,(zLip-z)/drop));
+      if(z>zLip-.4)continue;                                   // begin at the lip: no flat strip upstream of it
+      const stand=.25+3.4*Math.pow(Math.sin(Math.PI*Math.min(1,t*1.08)),.8);
+      const half=stream.width_m/2*(.9+.14*t);
+      for(const side of [-1,1]){
+        const sx=x-side*ty*half,sy=y+side*tx*half,nz=normalAt(sx,sy);
+        P.push(sx+nz[0]*stand,sy+nz[1]*stand,heightfieldZ(w,sx,sy)+nz[2]*stand+.2);UV.push(side,zLip-z);T.push(t);
+      }
+      rows++;
+    }
+    for(let r=0;r<rows-1;r++){const q=base0+r*2;I.push(q,q+1,q+2,q+1,q+3,q+2);}
+    const bp=pts[b];foam.push([bp[0],bp[1],stream.width_m*.75]);
+  }
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));
+  g.setAttribute('fall',new THREE.Float32BufferAttribute(UV,2));g.setAttribute('aeration',new THREE.Float32BufferAttribute(T,1));
+  g.setIndex(I);g.computeVertexNormals();
+  const curtain=new THREE.Mesh(g,new THREE.ShaderMaterial({uniforms,transparent:true,depthWrite:false,side:THREE.DoubleSide,
+    vertexShader:'attribute vec2 fall;attribute float aeration;varying vec2 q;varying float tt;'+vertex.replace('p = positionWorld.xyz;','q=fall;tt=aeration;p = positionWorld.xyz;'),
+    fragmentShader:'uniform float clock;varying vec2 q;varying float tt;'+common+`
+    void main(){
+      float fallen=max(q.y,0.),speed=3.+sqrt(fallen*19.6);
+      float streak=fbm(vec2(q.x*17.,fallen*.10-clock*speed*.10));
+      float fine=noise2(vec2(q.x*61.,fallen*.45-clock*speed*.45));
+      float sheet=smoothstep(.34,.78,streak*.82+fine*.34);
+      float edge=1.-smoothstep(.68+.2*fbm(vec2(fallen*.06,clock*.35)),1.,abs(q.x));
+      vec3 col=mix(vec3(.50,.64,.69),vec3(.93,.96,.97),clamp(tt*.75+sheet*.35,0.,1.));
+      col*=.70+.40*max(dot(normalize(n),sun),0.);
+      col*=mix(1.,.11,night);
+      float alpha=edge*(.30+.60*sheet)*(.72+.28*tt)*smoothstep(-1.,2.5,q.y);
+      gl_FragColor=vec4(haze(col),alpha);
+      #include <colorspace_fragment>
+    }`}));
+  curtain.name='Falls curtains';curtain.renderOrder=4;group.add(curtain);
+  // Plunge pools: foam churned outward from where each curtain lands, draped on the river.
+  const tris=[];
+  for(const [x,y,R] of foam){
+    const ring=[];for(let k=0;k<28;k++){const an=k/28*Math.PI*2;ring.push({x:x+R*Math.cos(an),y:y+R*Math.sin(an),a:[Math.cos(an),Math.sin(an)]});}
+    for(let k=0;k<28;k++)tris.push([{x,y,a:[0,0]},ring[k],ring[(k+1)%28]]);
+  }
+  const draped=ground.drapeTriangles(tris,{offset:.07});
+  const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.Float32BufferAttribute(draped.pos,3));
+  pg.setAttribute('local',new THREE.Float32BufferAttribute(draped.att,2));
+  const pool=new THREE.Mesh(pg,new THREE.ShaderMaterial({uniforms,transparent:true,depthWrite:false,
+    vertexShader:'attribute vec2 local;varying vec2 l;'+vertex.replace('p = positionWorld.xyz;','l=local;p = positionWorld.xyz;'),
+    fragmentShader:'uniform float clock;varying vec2 l;'+common+`
+    void main(){
+      float r=length(l);
+      float churn=fbm(l*4.3-normalize(l+1e-4)*clock*.9)*.7+noise2(l*13.-normalize(l+1e-4)*clock*2.1)*.3;
+      float foamy=smoothstep(.36,.66,churn)*(1.-smoothstep(.55,1.,r));
+      vec3 col=vec3(.86,.91,.92)*(.72+.30*max(dot(normalize(n),sun),0.))*mix(1.,.10,night);
+      gl_FragColor=vec4(haze(col),foamy*.85);
+      #include <colorspace_fragment>
+    }`}));
+  pool.name='Falls plunge pools';pool.renderOrder=3;group.add(pool);
+  return {curtain,pool};
 }
 
 function streams(group,w,ground,uniforms){
   for(const stream of w.vaderland.streams||[]){
-    if(Number(w.version)>=6){wetChannel(group,w,stream,ground,uniforms);if(w.vaderland.neighbourhoods)fallsMist(group,w,stream,uniforms);continue;}
+    if(Number(w.version)>=6){
+      wetChannel(group,w,stream,ground,uniforms);
+      if(w.vaderland.neighbourhoods){fallsMist(group,w,stream,uniforms);fallsCurtain(group,w,stream,ground,uniforms);}
+      continue;
+    }
     const pos=[],colors=[],index=[];
     for(let i=0;i<stream.points.length;i++){
       const p=stream.points[i],a=stream.points[Math.max(0,i-1)],b=stream.points[Math.min(i+1,stream.points.length-1)];

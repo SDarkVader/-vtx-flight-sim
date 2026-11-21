@@ -156,6 +156,8 @@ if(world.vaderland.lantern_race){
   views.raceIsland={eye:at(-70,-390,125),target:at(40,-125,15),fov:55,mode:'dusk',time:27};
   views.raceRamps={eye:at(150,72,22),target:at(200,8,7),fov:58,mode:'day',time:27};
   views.raceClose={eye:at(52,-52,10.5),target:at(84,-30,6.6),fov:52,mode:'dusk',time:27};
+  views.fallsClose={eye:[-4752,4236,186],target:[-4796,4342,228],fov:58,mode:'dusk',time:27};
+  views.fallsNight={eye:[-4690,4065,194],target:[-4805,4334,230],fov:61,mode:'night',time:27};
   views.raceBoatEye={eye:at(38,-6,8.6),target:at(130,2,7.4),fov:62,mode:'day',time:27};
 }
 if(world.vaderland.parallax){
