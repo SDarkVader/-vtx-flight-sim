@@ -78,7 +78,7 @@ async function choose(value, {selecting=true, position, environment} = {}) {
   try {
     if (value.startsWith('boat:') || value.startsWith('scenery:')) {
       await board(value);
-      if (value.startsWith('boat:')) status.textContent = 'Ricochet helm at Main Airport.';
+      if (value.startsWith('boat:')) status.textContent = 'Ricochet helm selected.';
     } else {
       await preview(value, selecting, position, environment);
     }

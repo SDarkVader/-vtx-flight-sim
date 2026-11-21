@@ -600,7 +600,9 @@ function syncEnvironmentControls(envKey){
  }
  const caption=$('scene-caption');
  if(caption){
-  caption.innerHTML=currentEnvironment.startsWith('vaderland-')
+  caption.innerHTML=currentEnvironment==='vaderland-33'
+   ?'<span>VADERLAND 33</span><p>16 × 16 km · Runway 08/26 · Lantern Race and Rooftop Quarter</p>'
+   :currentEnvironment.startsWith('vaderland-')
    ?'<span>VADERLAND / ALPINE COAST</span><p>16 × 16 km · Runway 08/26 · western sound and northern divide</p>'
    :currentEnvironment==='r6-valley-20261103'
    ?'<span>HISTORICAL R6 / VALLEY</span><p>1,000 × 1,000 m · recovered terrain and obstacles · floor depends on aircraft</p>'

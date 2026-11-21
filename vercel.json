@@ -2,7 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "python scripts/package_vercel_frontend.py",
   "env": {
-    "VTX_DATA_ROOT": "/tmp/vtx"
+    "VTX_DATA_ROOT": "/tmp/vtx",
+    "VTX_DEFAULT_ENVIRONMENT": "vaderland-33"
   },
   "functions": {
     "src/vtx/live_server.py": {
