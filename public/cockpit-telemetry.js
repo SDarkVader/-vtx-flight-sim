@@ -19,13 +19,13 @@ const unavailable = '—';
 export function phantomCockpitAuthority(view, status, {stale, recording} = {}) {
   const mode = (label, tone = 'inactive', canTake = false, canCommand = false) => ({label,tone,canTake,canCommand});
   if (recording) return mode('Flight replay');
-  if (stale || !view) return mode('Telemetry stale · controls locked', 'warning');
+  if (stale || !view) return mode('Telemetry stale · controls locked', 'fault');
   if (!view.active) return mode('No active flight');
   if (view.paused) return mode('Flight paused · controls locked', 'warning');
   if (view.authority !== 'manual') return mode(view.authority === 'colin' ? 'Colin has control' : 'External pilot has control');
   if (!status?.available) return mode('Aircraft controls unavailable');
   if (!status.engaged) return mode('Manual available · take control', 'warning', true);
-  if (status.rejected) return mode('Manual engaged · command rejected', 'warning', true);
+  if (status.rejected) return mode('Manual engaged · command rejected', 'fault', true);
   if (view.observation?.warning_lamps?.includes('COMMAND_LEASE_EXPIRED'))
     return mode('Manual engaged · command lease expired', 'warning', true, !status.waiting);
   if (status.waiting) return mode('Manual engaged · command pending', 'warning', true);
@@ -35,8 +35,8 @@ export function phantomCockpitAuthority(view, status, {stale, recording} = {}) {
 export function phantomCockpitSwitches(truth = {}) {
   const command = truth.command ?? {};
   const four = value => Array.isArray(value) && value.length === 4 && value.every(Number.isFinite);
-  const group = (field, label, value) => ({label, patch:{[field]:Array(4).fill(value)}});
-  const single = (field, label, value) => ({label, patch:{[field]:value}});
+  const group = (field, label, value) => ({label, selected:value === 0, patch:{[field]:Array(4).fill(value)}});
+  const single = (field, label, value, selected) => ({label, selected, patch:{[field]:value}});
   const pods = command.pod_tilt_deg;
   const legs = command.leg_extension_m;
   const brake = command.brake;
@@ -48,12 +48,28 @@ export function phantomCockpitSwitches(truth = {}) {
       ? group('pod_tilt_deg', 'Set road', 0) : group('pod_tilt_deg', 'Set VTOL', 90) : null,
     legs: four(legs) ? legs.every(value => value > .26)
       ? group('leg_extension_m', 'Retract', 0) : group('leg_extension_m', 'Extend', .52) : null,
-    wings: command.wing === 'deploy' ? single('wing', 'Stow', 'stow')
-      : command.wing === 'stow' ? single('wing', 'Deploy', 'deploy') : null,
-    canards: command.canard_fold === 'deployed' ? single('canard_fold', 'Fold', 'folded')
-      : command.canard_fold === 'folded' ? single('canard_fold', 'Deploy', 'deployed') : null,
-    airbrake: airbrake === 'on' ? single('airbrake', 'Release', 'off')
-      : airbrake === 'off' ? single('airbrake', 'Engage', 'on') : null,
+    wings: command.wing === 'deploy' ? single('wing', 'Stow', 'stow', true)
+      : command.wing === 'stow' ? single('wing', 'Deploy', 'deploy', false) : null,
+    canards: command.canard_fold === 'deployed' ? single('canard_fold', 'Fold', 'folded', true)
+      : command.canard_fold === 'folded' ? single('canard_fold', 'Deploy', 'deployed', false) : null,
+    airbrake: airbrake === 'on' ? single('airbrake', 'Release', 'off', true)
+      : airbrake === 'off' ? single('airbrake', 'Engage', 'on', false) : null,
+  };
+}
+
+export function phantomSystemIndications(states) {
+  const signal = (value, on, off) => {
+    if (!value || value === unavailable || value.includes(unavailable)) return 'inactive';
+    if (on.includes(value)) return 'active';
+    return off.includes(value) ? 'inactive' : 'transit';
+  };
+  return {
+    brakes: states.brakes && ![unavailable, 'Released'].includes(states.brakes) ? 'active' : 'inactive',
+    gear: signal(states.gear, ['Road · 0°', 'VTOL · 90°'], []),
+    legs: signal(states.legs, ['Extended'], ['Retracted']),
+    wings: signal(states.wings, ['locked'], ['stowed']),
+    canards: signal(states.canards, ['Deployed'], ['Folded']),
+    airbrake: signal(states.airbrake, ['On'], ['Off']),
   };
 }
 

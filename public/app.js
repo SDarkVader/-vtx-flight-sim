@@ -18,7 +18,7 @@ import {createSuspensionSchematic,suspensionSchematicDescriptor} from './suspens
 import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
 import {missionDeparture} from './mission-departure.js?v=20261116-start';
 import {startupFrameReady} from './startup-visibility.js?v=20261116-start';
-import {cockpitTelemetry,phantomCockpitStates,phantomCockpitSwitches,phantomCockpitAuthority} from './cockpit-telemetry.js?v=3';
+import {cockpitTelemetry,phantomCockpitStates,phantomCockpitSwitches,phantomCockpitAuthority,phantomSystemIndications} from './cockpit-telemetry.js?v=4';
 import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=20261117-clear-sight-4';
 import {isArgonRotorHousing} from './argon-cutaway.js?v=3';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
@@ -32,7 +32,7 @@ import {boatCameraView} from './vtx-env/harbour-camera.js?v=3';
 import {createVehicleWorkspace} from './vehicle-workspace.js';
 import {loadPinnedGltf,verifiedVisualAssets} from './visual-identity.js';
 import {addSliderScale} from './slider-scale.js?v=1';
-import {flightDisplayReadings} from './flight-display.js?v=3';
+import {createPrimaryFlightDisplay,primaryFlightReadings,createViewCompass,viewBearing} from './phantom-primary-flight.js?v=2';
 import {updateBoatAvionics} from './boat-avionics.js?v=4';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=20261117-cutaway';
@@ -306,6 +306,26 @@ const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);post?.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 const worldGroup=new THREE.Group();worldGroup.name='vtx-world';scene.add(worldGroup);
 const phantomCockpitDeck=$('phantom-cockpit'), cockpitTake=$('phantom-cockpit-take'), cockpitMode=$('phantom-cockpit-mode');
+const cockpitAlerts=$('phantom-cockpit-alerts'), primaryFlight=createPrimaryFlightDisplay(phantomCockpitDeck);
+const compass=$('phantom-view-compass'), updateViewCompass=createViewCompass(compass,$('phantom-viewfinder'));
+const pilotViewDirection=new THREE.Vector3();
+const hudOpacity=$('phantom-hud-opacity'), hudOpacityOutput=hudOpacity.parentElement.querySelector('output');
+function setHudOpacity(value){
+  const percent=Math.round(Math.min(100,Math.max(30,value)));
+  hudOpacity.value=percent;
+  hudOpacityOutput.textContent=percent+'%';
+  phantomCockpitDeck.style.setProperty('--hud-opacity',percent/100);
+  compass.style.setProperty('--hud-opacity',percent/100);
+  primaryFlight.opacity(percent/100);
+}
+try{
+  const saved=localStorage.getItem('vtx-phantom-hud-opacity');
+  if(saved!==null&&Number.isFinite(Number(saved)))setHudOpacity(Number(saved));
+}catch{}
+hudOpacity.oninput=()=>{
+  setHudOpacity(Number(hudOpacity.value));
+  try{localStorage.setItem('vtx-phantom-hud-opacity',hudOpacity.value);}catch{}
+};
 const cockpitReadouts=[...phantomCockpitDeck.querySelectorAll('[data-system],[data-flight]')];
 const cockpitSwitches=[...phantomCockpitDeck.querySelectorAll('[data-switch]')].map(button=>({button, action:button.querySelector('[data-action]')}));
 const cockpitFlightInputs=[...phantomCockpitDeck.querySelectorAll('[data-axis]')].map(input=>{
@@ -314,7 +334,8 @@ const cockpitFlightInputs=[...phantomCockpitDeck.querySelectorAll('[data-axis]')
   const format=value=>unit==='%'?Math.round(value*100)+'%':Math.round(value)+'°';
   addSliderScale(input,format);
   input.oninput=()=>phantomPanel?.axisFromCockpit(axis,Number(input.value),index);
-  return {input,axis,index,format,feedback:input.parentElement.querySelector('output')};
+  return {input,axis,index,format,feedback:input.parentElement.querySelector('output'),
+    actual:input.parentElement.querySelector('[data-axis-actual]')};
 });
 let lastCockpitView, lastCockpitStale, displayedSwitches={};
 function setCockpitText(field, value){
@@ -342,10 +363,32 @@ function updatePhantomCockpit(visible, stale, recording){
     const raw=recording??view?.rendering_truth;
     const observation=recording?.observation??(recording?undefined:view?.observation);
     const systems=stale?{}:phantomCockpitStates(observation,raw);
-    const flight=stale?{}:flightDisplayReadings(observation);
+    const flight=primaryFlightReadings(observation,stale);
+    primaryFlight.update(flight);
+    const warnings=flight.warnings.filter(value=>typeof value==='string');
+    cockpitAlerts.hidden=warnings.length===0;
+    cockpitAlerts.dataset.tone=warnings.some(value=>['IMPACT','FUEL_EXHAUSTED'].includes(value))?'fault':'warning';
+    setCockpitText(cockpitAlerts,warnings.map(value=>value.replaceAll('_',' ')).join(' · '));
+    const indications=phantomSystemIndications(systems);
     displayedSwitches=stale||recording?{}:phantomCockpitSwitches(view?.rendering_truth);
     for(const field of cockpitReadouts)setCockpitText(field,(field.dataset.system?systems[field.dataset.system]:flight[field.dataset.flight])??'—');
-    for(const {button,action} of cockpitSwitches)setCockpitText(action,displayedSwitches[button.dataset.switch]?.label??'');
+    for(const {button,action} of cockpitSwitches){
+      const name=button.dataset.switch, choice=displayedSwitches[name];
+      button.dataset.state=indications[name];
+      button.setAttribute('aria-pressed',String(choice?.selected??false));
+      const unavailable=name==='airbrake'&&!stale&&raw?.phantom&&!raw.phantom.transition_ecu;
+      setCockpitText(action,choice?.label??(unavailable?'Unavailable':''));
+    }
+    for(const {axis,index,actual} of cockpitFlightInputs){
+      if(!actual)continue;
+      const feedback={
+        pitch:flight.pitchDegrees,roll:flight.bankDegrees,yaw:systems.rudder,
+        booster_throttle:systems.boosters,
+        wheel_drive:systems.frontWheels&&systems.rearWheels?`${systems.frontWheels} · ${systems.rearWheels}`:null,
+        aileron_trim_deg:systems.ailerons?.split(' / ')[index],
+      };
+      setCockpitText(actual,feedback[axis]??'—');
+    }
   }
   for(const axis of cockpitFlightInputs){
     const {input,format,feedback}=axis;
@@ -1533,7 +1576,19 @@ function animate(){
  if(truth&&!rideEnabled&&!boatViewId){
   const physicalTarget=physicalCameraTarget(truth);if(physicalTarget)pos.set(...physicalTarget);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
-  else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position);if(truth.phantom)camera.position.add(new THREE.Vector3(.30,.15,.62).applyQuaternion(q));if(!truth.phantom)camera.position.add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);const sight=truth.phantom?new THREE.Vector3(Math.cos(cockpitYaw)*cp,Math.sin(cockpitYaw)*cp,Math.sin(cockpitPitch)):new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch));cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));camera.lookAt(cameraTarget);}
+  else if(cameraMode==='cockpit'){
+   const cabin=truth.body_poses.cabin,[qw,qx,qy,qz]=cabin.quaternion_wxyz;
+   q.set(qx,qy,qz,qw);
+   const side=Math.sin(cockpitYaw), forward=Math.cos(cockpitYaw), cp=Math.cos(cockpitPitch);
+   // Lean toward the selected Phantom window. A centred look keeps the forward eye.
+   const eye=truth.phantom?new THREE.Vector3(.30,.15+.24*side,.62+.26*side*side):new THREE.Vector3(-.30,.02,.25);
+   const sight=truth.phantom?new THREE.Vector3(forward*cp,side*cp,Math.sin(cockpitPitch))
+     :new THREE.Vector3(side*cp,-forward*cp,Math.sin(cockpitPitch));
+   camera.position.set(...cabin.position).add(eye.applyQuaternion(q));
+   camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));
+   cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));
+   camera.lookAt(cameraTarget);
+  }
   else if(cameraMode==='free'){freeCam.update(0.08);}
   else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);
@@ -1598,6 +1653,9 @@ function animate(){
  const cockpitStale=!replayFrames&&now-latestTruthReceivedMs>2000;
  const cockpitRecording=replayFrames?measuredTruth:null;
  updatePhantomCockpit(phantomCockpit,cockpitStale,cockpitRecording);
+ const lookingAround=phantomCockpit&&Math.hypot(cockpitYaw,cockpitPitch)>.07;
+ if(lookingAround)camera.getWorldDirection(pilotViewDirection);
+ updateViewCompass(lookingAround?viewBearing(pilotViewDirection.x,pilotViewDirection.y):null,lookingAround);
  const doorState=boatViewId?harbourControls.state?.iris??last?.iris:last?.iris;
  const portalControls=document.getElementById('iris-controls');portalControls.hidden=!world?.vaderland?.operations||!!replayFrames||worldUnavailable;
  if(!portalControls.hidden){document.querySelector('#district-view option[value="plaza"]').hidden=!world.vaderland.civic_district;const side=document.getElementById('iris-side').value,travel=doorState?.[side]??1;

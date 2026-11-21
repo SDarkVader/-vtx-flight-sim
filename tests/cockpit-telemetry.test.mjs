@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 const source=await readFile(new URL('../public/cockpit-telemetry.js',import.meta.url));
-const {cockpitTelemetry,phantomCockpitStates,phantomCockpitAuthority,phantomCockpitSwitches}=await import('data:text/javascript;base64,'+source.toString('base64'));
+const {cockpitTelemetry,phantomCockpitStates,phantomCockpitAuthority,phantomCockpitSwitches,phantomSystemIndications}=await import('data:text/javascript;base64,'+source.toString('base64'));
 
 test('Phantom instruments use live sensor readings and ground reference',()=>{
   assert.deepEqual(cockpitTelemetry({radar_altimeter_m:2.5,radar_altimeter_ground_reference_m:1.5,
@@ -54,10 +54,21 @@ test('a partial brake command offers release and controls use held commands',()=
   assert.equal(states.frontWheels,'60 / 0');
   assert.equal(states.rearWheels,'120 / 0');
   const controls=phantomCockpitSwitches(truth);
-  assert.deepEqual(controls.brakes,{label:'Release',patch:{brake:[0,0,0,0]}});
+  assert.deepEqual(controls.brakes,{label:'Release',selected:true,patch:{brake:[0,0,0,0]}});
   assert.deepEqual(controls.gear.patch,{pod_tilt_deg:[0,0,0,0]});
   assert.deepEqual(controls.wings.patch,{wing:'stow'});
   assert.equal(phantomCockpitSwitches({command:{airbrake:'off'}}).airbrake,null);
+});
+
+test('selected switch positions remain distinct from measured indications',()=>{
+  const controls=phantomCockpitSwitches({command:{pod_tilt_deg:[90,90,90,90],wing:'stow'}});
+  const lights=phantomSystemIndications({gear:'18°–23° → 90°',wings:'locked',brakes:'Released'});
+  assert.equal(controls.gear.selected,true);
+  assert.equal(lights.gear,'transit');
+  assert.equal(controls.wings.selected,false);
+  assert.equal(lights.wings,'active');
+  assert.equal(lights.brakes,'inactive');
+  assert.equal(lights.airbrake,'inactive');
 });
 test('cockpit distinguishes available authority from active, pending, and read-only states',()=>{
   const view={active:true,authority:'manual',observation:{warning_lamps:[]}};
