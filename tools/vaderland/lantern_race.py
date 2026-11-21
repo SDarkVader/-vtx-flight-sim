@@ -29,6 +29,7 @@ RACE_SPEED = [(-170, .7), (-140, 1.3), (-80, 2.2), (-20, 3.2), (30, 4.1), (90, 3
 LINE_COLOURS = {'Main Chute': '#ffb05f', 'Rock Garden': '#c792ff', 'Eddy Line': '#68e3ee'}
 START_COLOUR = '#f4e6c4'
 TRAIL_INSET_M = 13.
+RAMP_ENTRY_DEPTH_M = 1.05
 TRAIL_WIDTH_M = 7.
 FIR_COLOURS = ['#354b42', '#3c5240', '#445a46', '#2f4436', '#4a5a43']
 
@@ -206,7 +207,7 @@ def race_lantern_rocks(f, S, OFF, HW, rng):
         return o
 
     big = boulder('lr-rock-lantern', 122, 15, 8., 4.2, flat=.8)
-    boulder('lr-rock-throat', 18, -27, 4.5, 1.5)
+    boulder('lr-rock-throat', 14, -36, 4.5, 1.5)
     # Rocks flank the slalom: each sits outside a turn of the Rock Garden line, 3-6 m off the direct path,
     # and the two just awash (tops at -0.1 m and -0.15 m) show only as boils on the surface.
     garden = [(58, -22, 1.6, .6), (66, -36, 2.4, 1.2), (82, -21, 1.4, -.1), (86, -42, 2.2, .9), (96, -30, 1.8, .4),
@@ -245,25 +246,32 @@ def lantern_race(world):
     solids.append(dict(id='lr-beacon-mast', kind='cylinder', center=[bx, by, r2(rock_top + 4.4)], half=[.35, .35, 4.6],
                        color='#1c1d22', role='architecture', landable=False))
 
-    # Anchored floating ramps, wet and slick (friction 0.22), for planing hulls.
+    # Anchored floating ramps, wet and slick (friction 0.10, a waxed wet deck) and with some give (contact time constant
+    # 0.06 s): offline, a 900 kg Ricochet at 8.5 m/s met the rigid version with a 144 kN (16 g) spike and
+    # crashed; with the give the peak is 61 kN and it rides up and launches. The deck starts at a sharp edge 1.05 m down,
+    # 0.35 m below the deepest point of a Ricochet hull running at race speed (measured 0.61-0.71 m at
+    # 0-9 m/s), so a hull meets the slope and rides up it instead of striking a leading face.
     def water_ramp(ident, st, n, turn, length, lip, width, purpose):
         x, y = at(st, n)
         t = tangent(st)
         heading = math.atan2(t[1], t[0]) + turn
         ca, sa = math.cos(heading), math.sin(heading)
-        entry = level - .55
+        entry = level - RAMP_ENTRY_DEPTH_M
         pts = []
-        for u, z in ((-length / 2, entry), (length / 2, level + lip), (length / 2, entry - .4), (-length / 2, entry - .4)):
+        for u, z in ((-length / 2, entry), (length / 2, level + lip), (length / 2, entry - .6)):
             for v in (-width / 2, width / 2):
                 pts.append([x + u * ca - v * sa, y + u * sa + v * ca, z])
         o = convex_solid(ident, pts, role='ramp', color='#1d1e22', finish='shell', skin='waterRamp', landable=True,
-                         friction=.22, ramp=dict(kind=purpose, heading=r2(heading), length_m=length, height_m=lip,
+                         friction=.10, solref=[.06, 1.], ramp=dict(kind=purpose, heading=r2(heading), length_m=length, height_m=lip,
                                                  width_m=width, top_m=0., floating=True))
         solids.append(o)
 
-    water_ramp('lr-ramp-chute-kicker', 184, 3, 0., 14., 1.35, 7., 'planing-hull kicker')
-    water_ramp('lr-ramp-garden-hop', 170, -30, .12, 8., .8, 4.5, 'small-craft hop')
-    water_ramp('lr-ramp-deep-outlier', 204, 34, -.30, 20., 3.0, 7., 'deep-water outlier')
+    # Widths: the two ramps on the Ricochet's lines carry its whole outrigger span (sponsons and struts
+    # reach +/-4.24 m; a 7 m deck left one sponson hanging and rolled the craft over on the climb). The
+    # hop stays narrow on purpose: a small-craft ramp a Ricochet must steer around.
+    water_ramp('lr-ramp-chute-kicker', 184, 3, 0., 18., 1.35, 12., 'planing-hull kicker')
+    water_ramp('lr-ramp-garden-hop', 170, -30, .12, 12., .8, 4.5, 'small-craft hop')
+    water_ramp('lr-ramp-deep-outlier', 204, 34, -.30, 20., 2.2, 12., 'deep-water outlier')
 
     # Lantern piles and three lines through the race, sharing a start and a finish.
     marks = {}
@@ -285,10 +293,12 @@ def lantern_race(world):
 
     start = gate('start', -140, 0, 70., START_COLOUR)
     finish = gate('finish', 250, 0, 76., START_COLOUR)
+    # Lines keep their own water: no pile of one line stands within 6 m of another line's path, so a
+    # winged or wide hull on the Main Chute cannot clip an Eddy Line or Rock Garden pile.
     plan = {
-        'Main Chute': [(-40, 2, 26.), (32, 4, 22.), (96, -1, 22.), (164, 3, 18.)],
-        'Rock Garden': [(44, -24, 14.), (72, -31, 12.), (100, -24, 12.), (132, -35, 12.), (160, -27, 14.)],
-        'Eddy Line': [(-60, 34, 16.), (18, 26, 14.), (76, 12, 14.), (124, 33, 12.), (192, 30, 16.)],
+        'Main Chute': [(-40, 6, 24.), (32, 4, 22.), (96, -1, 22.), (164, 3, 18.)],
+        'Rock Garden': [(-40, -22, 14.), (44, -24, 14.), (72, -31, 12.), (100, -24, 12.), (132, -35, 12.), (160, -27, 14.)],
+        'Eddy Line': [(-60, 34, 16.), (18, 26, 14.), (76, 22, 12.), (124, 33, 12.), (192, 30, 16.)],
     }
     races = []
     flow = math.atan2(f.A[1], f.A[0])

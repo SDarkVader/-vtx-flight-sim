@@ -96,7 +96,7 @@ def isolated_race_world():
                                 vertices=[[x, y, z] for x in (-4., 4.) for y in (-2., 2.) for z in (-.5, .5)],
                                 faces=[[0, 1, 3], [0, 3, 2], [4, 6, 7], [4, 7, 5], [0, 4, 5], [0, 5, 1],
                                        [2, 3, 7], [2, 7, 6], [0, 2, 6], [0, 6, 4], [1, 5, 7], [1, 7, 3]],
-                                planes=[], friction=.22, role='ramp', landable=True))
+                                planes=[], friction=.22, solref=[.06, 1.], role='ramp', landable=True))
     return world
 
 
@@ -153,6 +153,7 @@ def test_race_staging_rapid_current_and_slick_ramp():
     assert abs(outside[0] - calm[0]) < 1e-9
     geom = fleet.model.geom('airport_slick-ramp')
     assert geom.friction[0] == pytest.approx(.22) and geom.priority[0] == 1
+    assert list(geom.solref) == pytest.approx([.06, 1.])
     mark = fleet.model.geom('airport_start-a')
     assert geom.id != mark.id and mark.priority[0] == 0
 
@@ -190,7 +191,17 @@ def test_race_solids_are_rocks_ramps_marks_trees_and_the_deck(worlds):
             x, y = o['center'][:2]
             assert not new.harbour_water_mask(np.array([x]), np.array([y]))[0] and new.terrain_z(x, y) > level + 1.5
     floating = [o for o in race if o.get('ramp', {}).get('floating')]
-    assert len(floating) == 3 and all(o['friction'] == .22 for o in floating)
+    assert len(floating) == 3 and all(o['friction'] == .10 and o['solref'] == [.06, 1.] for o in floating)
+    widths = {o['id']: o['ramp']['width_m'] for o in floating}
+    # The Ricochet rides on a centre hull and outrigger sponsons out to +/-4.24 m: its ramps must carry the
+    # whole span (a 7 m deck rolled it over offline); the small-craft hop stays narrow on purpose.
+    assert widths['lr-ramp-chute-kicker'] >= 10 and widths['lr-ramp-deep-outlier'] >= 10 and widths['lr-ramp-garden-hop'] < 6
+    for o in floating:                       # a sharp entry edge below a race-speed Ricochet hull (0.71 m)
+        low = sorted(o['center'][2] + v[2] for v in o['vertices'])
+        assert low[0] < level - 1.6 and o['ramp']['height_m'] / o['ramp']['length_m'] < .17
+        entry = [o['center'][2] + v[2] for v in o['vertices']
+                 if abs(level - 1.05 - (o['center'][2] + v[2])) < .01]
+        assert len(entry) == 2
 
 
 def test_every_line_is_open_deep_water_between_its_gates(worlds):
@@ -215,6 +226,21 @@ def test_every_line_is_open_deep_water_between_its_gates(worlds):
             for key in gate['marks']:
                 mark = next(o for o in new.obstacles if o['id'] == key)
                 assert mark['role'] == 'race-mark' and mark['center'][2] + mark['half'][2] > level + 3
+
+
+def test_no_line_crosses_another_lines_piles(worlds):
+    _, new = worlds
+    piles = {o['id']: o for o in new.obstacles if o.get('role') == 'race-mark' and o['id'].startswith('lr-')}
+    for race in new.harbour['races']:
+        own = {k for g in race['gates'] for k in g['marks']}
+        others = [o for k, o in piles.items() if k not in own]
+        path = [race['position']] + [g['center'][:2] for g in race['gates']]
+        for a, b in zip(path, path[1:]):
+            for f in np.linspace(0, 1, 80):
+                x, y = np.asarray(a) * (1 - f) + np.asarray(b) * f
+                for o in others:
+                    gap = math.hypot(o['center'][0] - x, o['center'][1] - y) - o['half'][0]
+                    assert gap > 6., (race['name'], o['id'], round(gap, 2))
 
 
 def test_trail_slipway_and_overlook(worlds):

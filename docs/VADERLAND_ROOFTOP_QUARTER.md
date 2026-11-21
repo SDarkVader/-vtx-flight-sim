@@ -69,13 +69,31 @@ It is zero beyond the bank margin and tapers over 40 m beyond each end of the re
 | Rock Garden | a slalom between boulders on the east side; two rocks just awash show only as boils | 12–14 m |
 | Eddy Line | along the Heron bank through the eddies, finishing past the deep-water outlier ramp | 12–16 m |
 
+Each line keeps its own water: no pile of one line stands within 6 m of another line's path. An offline run that steered a Ricochet down the Main Chute at full throttle found the first layout wrong — the hull's port wing clipped an Eddy Line pile 4 m off the chute line in the wave train — so the lines were separated and the check is now a test.
+
 Lines are timed point to point on the fleet clock (`sprint` courses in `CourseTiming`). Crossing the start runs all three; the first line gate taken commits the boat to that line. Marker contact or an impact voids the run. Results, splits and fouls are checkpointed with the fleet (`lantern_races`, written only when a harbour has races). The boat panel stages the selected boat above the start for a chosen line.
 
-**Ramps.** Three anchored floating ramps with a slick, wet deck (friction 0.22, which governs the contact against any hull): a 14 m chute kicker (1.35 m lip) for planing hulls, an 8 m small-craft hop, and one 20 m deep-water outlier (3 m lip) launching across into 6 m of water. A slipway at Needle Island's north tip takes amphibious vehicles between the island trail and the pool.
+**Ramps.** Three anchored floating ramps, sized from the Ricochet itself and tried offline with its full plant in the v33 fleet (900 kg; a 1.6 m centre hull that runs 0.61–0.71 m deep at 0–9 m/s; outrigger sponsons and struts to ±4.24 m; 9.8 m wing span):
+
+- each deck starts at a sharp edge 1.05 m under water, below the running hull, so a hull meets the slope instead of a leading face;
+- the decks are wet and waxed (friction 0.10, which governs the contact against any hull) and have some give (contact time constant 0.06 s). As a rigid wall the kicker struck the hull with 144 kN, about 16 g, and the fleet's impact rule called it a crash;
+- the two ramps on the Ricochet's lines are 12 m wide, so the hull and both sponsons ride the deck. On a 7 m deck one sponson hung over the edge and the craft rolled over on the climb.
+
+| Ramp | Size | Offline result with the Ricochet |
+|---|---|---|
+| Chute kicker (Main Chute) | 18 m, 1.35 m lip, 12 m wide | 42 kN peak; launches about 1.4 m above the water, lands about 10 m on, level again within 15 m |
+| Deep-water outlier (Eddy Line) | 20 m, 2.2 m lip, 12 m wide | 49 kN peak; about 2.3 m above the water into 6 m of water; needs near top speed; lands with up to 35° of roll and pitch and recovers |
+| Small-craft hop (Rock Garden) | 12 m, 0.8 m lip, 4.5 m wide | for narrower future hulls; a Ricochet steers round it |
+
+A slipway at Needle Island's north tip takes amphibious vehicles between the island trail and the pool.
 
 **Needle Island.** A 7 m gravel trail loop inset from the shore with a tabletop, for future wheeled vehicles; a basalt shelf above the throat that is also the landing zone of the **Low Line** air mission (five low hoops down the race past the Lantern Rock beacon, a held touchdown on the shelf, exit over the island).
 
-**Scenery.** About 560 conifers on both islands (physical trunks, like the existing forests), the Lantern Rock with a breathing beacon, lanterns along both banks and the trail with light pools, whitewater and spray drawn from the same rapid field the physics uses, and warm lantern light on the water at night.
+**Scenery.** About 560 conifers on both islands (physical trunks, like the existing forests), the Lantern Rock with a breathing beacon, small hexagonal lanterns along both banks and the trail with light pools, and wet shingle and weed at the waterline instead of grass to the edge.
+
+**Water surface.** Whitewater, spray and the surface relief come from the same rapid field the physics uses, sampled into a 1.25 m texture: foam carried by the current and stretched along it, foam collars and wakes at rocks, boils over the two rocks just awash, small cross-flow ripples (smooth directional wave trains, faded with distance so they never alias into contour lines), a lapping wash in the shallows, and warm lantern light on the water at night. Broken water scatters the reflected sky, so the wave train does not mirror the city-lit clouds at night. Near a boat the live harbour surface already displaces the mesh with the solver's own free surface, rapids included; elsewhere the standing waves are drawn by shading.
+
+**Rocks.** Each rock is drawn as a sphere shrink-wrapped onto its collision hull (never outside it), with fractured relief, cavities, cracks, lichen on dry tops, and a dark glossy wet line that rises and falls with the water.
 
 ### Checks
 

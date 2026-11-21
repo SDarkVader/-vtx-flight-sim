@@ -155,6 +155,8 @@ if(world.vaderland.lantern_race){
   views.raceGarden={eye:at(64,-96,30),target:at(112,-28,7),fov:55,mode:'day',time:27};
   views.raceIsland={eye:at(-70,-390,125),target:at(40,-125,15),fov:55,mode:'dusk',time:27};
   views.raceRamps={eye:at(150,72,22),target:at(200,8,7),fov:58,mode:'day',time:27};
+  views.raceClose={eye:at(52,-52,10.5),target:at(84,-30,6.6),fov:52,mode:'dusk',time:27};
+  views.raceBoatEye={eye:at(38,-6,8.6),target:at(130,2,7.4),fov:62,mode:'day',time:27};
 }
 if(world.vaderland.parallax){
   views.courtArrival={eye:[32.5,2356.6,32.7],target:[71,2380,42.2],fov:59,mode:'dusk',time:27};

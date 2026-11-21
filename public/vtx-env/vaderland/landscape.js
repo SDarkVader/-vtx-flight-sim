@@ -133,6 +133,10 @@ uniform sampler2D granite;
 uniform float hasCivic;
 uniform float fallsSurvey;
 uniform float marinaSurvey;
+uniform float raceOn;
+uniform sampler2D raceLight;
+uniform vec4 raceArea;
+uniform float raceLevel;
 void main(){
   vec3 normal=normalize(n);
   float slope=1.-normal.z;
@@ -244,6 +248,25 @@ void main(){
     vec3 bank=mix(grass,grit,max(exposed,.86*strand));
     bank*=mix(vec3(.36,.40,.50),vec3(.66,.69,.62),1.-night)*(.66+.74*lambert);
     floorLight=mix(floorLight,bank,parcel*.96);
+  }
+  if(raceOn>.5){
+    // v33 Lantern Race banks: wet shingle and weed at the waterline instead of grass to the edge,
+    // with the bank lanterns' light on it at night.
+    vec2 ruv=(p.xy-raceArea.xy)/raceArea.zw;
+    if(all(greaterThan(ruv,vec2(0.)))&&all(lessThan(ruv,vec2(1.)))){
+      float fade=smoothstep(0.,.06,min(min(ruv.x,1.-ruv.x),min(ruv.y,1.-ruv.y)));
+      float above=p.z-raceLevel;
+      float shore=(1.-smoothstep(.45,2.4,above+.9*(fbm(p.xy*.23)-.5)))*fade;
+      float wetBand=(1.-smoothstep(0.,.65,above))*fade;
+      float stones=fbm(p.xy*2.6),pebble=noise2(p.xy*7.3);
+      vec3 shingle=mix(vec3(.058,.056,.054),vec3(.205,.192,.172),smoothstep(.30,.72,stones))*(.72+.56*pebble);
+      shingle=mix(shingle,vec3(.036,.064,.044),smoothstep(.60,.78,fbm(p.xy*.47+4.))*.55);
+      shingle*=1.-.5*wetBand;
+      vec3 rl=texture2D(raceLight,ruv).rgb;rl/=max(vec3(1e-3),1.-rl);
+      vec3 shoreLit=shingle*(vec3(.30,.34,.44)+vec3(.95,.80,.62)*max(dot(normal,sun),0.)*1.15)*mix(1.,.32,night)
+                   +shingle*rl*night*1.4;
+      floorLight=mix(floorLight,shoreLit,shore*.92);
+    }
   }
   if(marketPass>.5){
     vec2 q=abs((p.xy-vec2(0.,2480.))/vec2(1050.,1050.));float district=1.-smoothstep(.93,1.05,max(q.x,q.y));
@@ -1048,6 +1071,8 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
   const neutralDensity=new THREE.DataTexture(new Uint8Array([255,255,255,255]),1,1);neutralDensity.needsUpdate=true;
   Object.assign(uniforms,{rooftopPass:{value:w.vaderland.neighbourhoods?1:0},cityDensity:{value:neutralDensity},
     cityDensityBounds:{value:new THREE.Vector4(DENSITY_BOUNDS.x0,DENSITY_BOUNDS.y0,DENSITY_BOUNDS.x1-DENSITY_BOUNDS.x0,DENSITY_BOUNDS.y1-DENSITY_BOUNDS.y0)}});
+  const neutralRace=new THREE.DataTexture(new Uint8Array([0,0,0,255]),1,1);neutralRace.needsUpdate=true;
+  Object.assign(uniforms,{raceOn:{value:0},raceLight:{value:neutralRace},raceArea:{value:new THREE.Vector4(0,0,1,1)},raceLevel:{value:0}});
   const density=w.vaderland.neighbourhoods?cityDensity(w):null;
   if(density){
     const bytes=new Uint8Array(density.nx*density.ny*4);

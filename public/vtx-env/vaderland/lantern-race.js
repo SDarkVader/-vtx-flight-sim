@@ -87,6 +87,7 @@ function raceFields(w,ground){
     {x:race.beacon[0],y:race.beacon[1],c:AMBER,I:1.6,R:18}];
   const bins=new Map();                                     // lights by 40 m cell, so each texel visits only its neighbours
   for(const L of lights){const key=Math.floor(L.x/40)+','+Math.floor(L.y/40);(bins.get(key)||bins.set(key,[]).get(key)).push(L);}
+  const byte=v=>Math.round(THREE.MathUtils.clamp(v,0,1)*255);
   const emitters=[];let seed=7707;const rnd=()=>((seed=Math.imul(seed,1664525)+1013904223>>>0)/4294967296);
   for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
     const x=x0+(i+.5)*cell,y=y0+(j+.5)*cell,o=(j*nx+i)*4,f=sample(x,y);
@@ -105,7 +106,6 @@ function raceFields(w,ground){
       }
       white=Math.min(1,white);
     }
-    const byte=v=>Math.round(THREE.MathUtils.clamp(v,0,1)*255);
     flow[o]=byte(white);flow[o+1]=byte(.5+vx/12);flow[o+2]=byte(.5+vy/12);flow[o+3]=byte(.5+eta/1.6);
     let r=0,g=0,b=0;
     const cx=Math.floor(x/40),cy=Math.floor(y/40);
@@ -113,7 +113,8 @@ function raceFields(w,ground){
       const d2=(x-L.x)**2+(y-L.y)**2;if(d2>12*L.R*L.R)continue;
       const k=L.I/(1+d2/(L.R*L.R));r+=L.c.r*k;g+=L.c.g*k;b+=L.c.b*k;
     }
-    light[o]=Math.min(1,r/(1+r))*255;light[o+1]=Math.min(1,g/(1+g))*255;light[o+2]=Math.min(1,b/(1+b))*255;light[o+3]=255;
+    light[o]=Math.min(1,r/(1+r))*255;light[o+1]=Math.min(1,g/(1+g))*255;light[o+2]=Math.min(1,b/(1+b))*255;
+    light[o+3]=byte((level-ground.terrainZ(x,y))/8);         // water depth, 0 on land
     if(white>.5&&emitters.length<420&&rnd()<white*.06&&ground.terrainZ(x,y)<level-.5)emitters.push([x,y,white,vx,vy]);
   }
   const texture=data=>{const t=new THREE.DataTexture(data,nx,ny,THREE.RGBAFormat);t.magFilter=t.minFilter=THREE.LinearFilter;
@@ -178,7 +179,8 @@ export function buildLanternRace(group,w,uniforms,common,ground){
   if(!race||!w.harbour?.rapids?.length||!ground)return null;
   const level=w.harbour.waterLevelM,root=new THREE.Group();root.name='Lantern Race';group.add(root);
   const fields=raceFields(w,ground);
-  const raceUniforms={raceMap:{value:fields.flow},raceLight:{value:fields.light},raceArea:{value:fields.area},
+  if(uniforms.raceOn){uniforms.raceOn.value=1;uniforms.raceLight.value=fields.light;uniforms.raceArea.value.copy(fields.area);uniforms.raceLevel.value=level;}
+  const raceUniforms={raceMap:{value:fields.flow},raceLight:uniforms.raceLight??{value:fields.light},raceArea:uniforms.raceArea??{value:fields.area},
     raceTexel:{value:fields.texel},raceCell:{value:fields.cell},raceLevel:{value:level},raceDeck:{value:race.overlook.center[2]}};
   const U={...uniforms,...raceUniforms};
   const solids=w.obstacles.filter(o=>lanternRaceSolid(o.id));
@@ -189,14 +191,22 @@ export function buildLanternRace(group,w,uniforms,common,ground){
   const rocks=solids.filter(o=>o.role==='rock');
   const rockMesh=new THREE.Mesh(rockGeometry(rocks),new THREE.ShaderMaterial({uniforms:U,
     vertexShader:`varying vec3 p;varying vec3 n;void main(){p=(modelMatrix*vec4(position,1.)).xyz;n=normal;gl_Position=projectionMatrix*viewMatrix*vec4(p,1.);}`,
-    fragmentShader:common+lightAt+`uniform float raceLevel;
+    fragmentShader:common+lightAt+`uniform float raceLevel;uniform float clock;
     void main(){
-      vec3 N=normalize(n),V=normalize(cameraPosition-p);
+      vec3 N0=normalize(n),V=normalize(cameraPosition-p);
+      vec3 w3=pow(abs(N0),vec3(3.));w3/=dot(w3,vec3(1.));
+      vec3 bump=vec3(fbm(p.yz*1.7+3.)-.5,fbm(p.xz*1.7+7.)-.5,fbm(p.xy*1.7+11.)-.5)*.75
+               +vec3(noise2(p.yz*6.1)-.5,noise2(p.xz*6.1+2.)-.5,noise2(p.xy*6.1+4.)-.5)*.35;
+      vec3 N=normalize(N0+bump-N0*dot(bump,N0));
+      float cavity=smoothstep(.38,.62,w3.x*fbm(p.yz*.9)+w3.y*fbm(p.xz*.9+5.)+w3.z*fbm(p.xy*.9+9.));
+      float crack=(1.-smoothstep(.0,.035,abs(w3.x*fbm(p.yz*.55+1.)+w3.y*fbm(p.xz*.55+3.)+w3.z*fbm(p.xy*.55+5.)-.5)))
+                 *smoothstep(.3,.6,fbm(p.xy*.21+p.z*.13));
       float grain=fbm(p.xy*1.9+p.z*.7),vein=fbm(vec2(p.x+p.y,p.z*2.3)*.8);
       vec3 base=mix(vec3(.085,.085,.095),vec3(.16,.155,.15),grain)*(.85+.3*vein);
       float lichen=smoothstep(.58,.76,fbm(p.xy*.55+p.z*.25+7.))*smoothstep(.35,.85,N.z)*smoothstep(raceLevel+.7,raceLevel+1.4,p.z);
       base=mix(base,mix(vec3(.30,.30,.15),vec3(.46,.30,.10),fbm(p.xy*2.1)),lichen*.55);
-      float wet=1.-smoothstep(raceLevel+.15,raceLevel+.9,p.z),under=1.-smoothstep(raceLevel-.6,raceLevel+.05,p.z);
+      base*=(.62+.38*cavity)*(1.-.55*crack);
+      float wet=1.-smoothstep(raceLevel+.15,raceLevel+.9+.25*sin(clock*1.1+p.x*.7+p.y*.4),p.z),under=1.-smoothstep(raceLevel-.6,raceLevel+.05,p.z);
       base=mix(base,base*.45,wet);base=mix(base,vec3(.035,.07,.06),under*.7);
       float diffuse=max(dot(N,sun),0.);
       vec3 c=base*(vec3(.30,.33,.40)+vec3(1.,.88,.72)*diffuse*1.15);
@@ -323,9 +333,17 @@ export function buildLanternRace(group,w,uniforms,common,ground){
 
   // Bank and trail lanterns: short dark posts, warm heads, and pools of light draped on the ground.
   const posts=new THREE.InstancedMesh(new THREE.CylinderGeometry(.06,.08,1,6).rotateX(Math.PI/2),new THREE.MeshStandardMaterial({color:'#16171a',roughness:.6,metalness:.5}),race.lanterns.length);
-  const heads=new THREE.InstancedMesh(new THREE.BoxGeometry(.26,.26,.34),new THREE.MeshBasicMaterial({color:AMBER.clone().multiplyScalar(1.6),toneMapped:false}),race.lanterns.length);
-  race.lanterns.forEach(([x,y,z],k)=>{posts.setMatrixAt(k,M.compose(T.set(x,y,z+.8),Q.identity(),S.set(1,1,1.6)));heads.setMatrixAt(k,M.makeTranslation(x,y,z+1.75));});
-  posts.name='Lantern posts';heads.name='Lantern heads';root.add(posts,heads);
+  const iron=new THREE.MeshStandardMaterial({color:'#17181b',roughness:.45,metalness:.7});
+  const glass=new THREE.InstancedMesh(new THREE.CylinderGeometry(.115,.135,.30,6).rotateX(Math.PI/2),
+    new THREE.MeshBasicMaterial({color:AMBER.clone().multiplyScalar(1.7),toneMapped:false}),race.lanterns.length);
+  const caps=new THREE.InstancedMesh(new THREE.ConeGeometry(.19,.16,6).rotateX(Math.PI/2),iron,race.lanterns.length);
+  const plates=new THREE.InstancedMesh(new THREE.CylinderGeometry(.15,.15,.035,6).rotateX(Math.PI/2),iron,race.lanterns.length);
+  race.lanterns.forEach(([x,y,z],k)=>{
+    posts.setMatrixAt(k,M.compose(T.set(x,y,z+.8),Q.identity(),S.set(1,1,1.6)));
+    plates.setMatrixAt(k,M.makeTranslation(x,y,z+1.62));glass.setMatrixAt(k,M.makeTranslation(x,y,z+1.79));
+    caps.setMatrixAt(k,M.makeTranslation(x,y,z+2.02));
+  });
+  posts.name='Lantern posts';glass.name='Lantern glass';caps.name='Lantern caps';plates.name='Lantern plates';root.add(posts,glass,caps,plates);
   const tris=[];
   for(const [x,y] of race.lanterns){
     const ring=[];for(let k=0;k<10;k++){const a=k/10*Math.PI*2;ring.push({x:x+7*Math.cos(a),y:y+7*Math.sin(a),a:[Math.cos(a),Math.sin(a)]});}
@@ -342,7 +360,7 @@ export function buildLanternRace(group,w,uniforms,common,ground){
   poolMesh.name='Lantern light pools';poolMesh.renderOrder=2;root.add(poolMesh);
 
   // Spray thrown up where the race breaks over rocks and wave crests.
-  const per=7,count=fields.emitters.length*per,SP=new Float32Array(count*3),SA=new Float32Array(count*4);
+  const per=12,count=fields.emitters.length*per,SP=new Float32Array(count*3),SA=new Float32Array(count*4);
   let seed=901;const rnd=()=>((seed=Math.imul(seed,1664525)+1013904223>>>0)/4294967296);
   fields.emitters.forEach(([x,y,white,vx,vy],e)=>{
     for(let k=0;k<per;k++){const i=e*per+k;
@@ -359,12 +377,12 @@ export function buildLanternRace(group,w,uniforms,common,ground){
         a=smoothstep(0.,.12,life)*(1.-smoothstep(.55,1.,life))*smoothstep(-.2,.1,q.z-position.z);
         glow=raceGlow(q.xy);
         vec4 mv=viewMatrix*vec4(q,1.);gl_Position=projectionMatrix*mv;
-        gl_PointSize=clamp((.35+.9*seed.z)*900./-mv.z,1.,40.);
+        gl_PointSize=clamp((.16+.42*seed.z)*900./-mv.z,1.,22.);
       }`,
     fragmentShader:`uniform float night;varying float a;varying vec3 glow;
       void main(){vec2 c=gl_PointCoord*2.-1.;float r=dot(c,c);if(r>1.)discard;
         vec3 col=vec3(.86,.90,.90)*mix(1.,.14,night)+glow*night*.8;
-        gl_FragColor=vec4(col,a*(1.-r)*.42);}`}));
+        gl_FragColor=vec4(col,a*exp(-r*3.2)*.30);}`}));
   sprayMesh.name='Lantern Race spray';sprayMesh.frustumCulled=false;root.add(sprayMesh);
 
   // Water: current-advected foam, aerated colour and the standing-wave relief, for the harbour shader.
@@ -372,7 +390,7 @@ export function buildLanternRace(group,w,uniforms,common,ground){
     uniforms:raceUniforms,
     declarations:'uniform sampler2D raceMap;uniform sampler2D raceLight;uniform vec4 raceArea;uniform vec2 raceTexel;uniform float raceCell;',
     normal:`
-      vec4 raceTex=vec4(0.,.5,.5,.5);float raceIn=0.,raceEdge=0.;
+      vec4 raceTex=vec4(0.,.5,.5,.5);float raceIn=0.,raceEdge=0.,raceChop=0.,raceTilt=0.;
       vec2 raceUV=(p.xy-raceArea.xy)/raceArea.zw;
       if(all(greaterThan(raceUV,vec2(0.)))&&all(lessThan(raceUV,vec2(1.)))){
         raceIn=1.;raceTex=texture2D(raceMap,raceUV);
@@ -380,11 +398,25 @@ export function buildLanternRace(group,w,uniforms,common,ground){
         float ey=texture2D(raceMap,raceUV+vec2(0.,raceTexel.y)).a-texture2D(raceMap,raceUV-vec2(0.,raceTexel.y)).a;
         raceEdge=smoothstep(0.,.05,min(min(raceUV.x,1.-raceUV.x),min(raceUV.y,1.-raceUV.y)));
         vec2 raceGrad=vec2(ex,ey)*1.6/(2.*raceCell);
-        vec2 raceVel=(raceTex.gb-.5)*12.;
-        float chop=smoothstep(.8,3.5,length(raceVel))*raceEdge;
+        vec2 raceVel=(raceTex.gb-.5)*12.;float raceSpd=length(raceVel);
+        raceChop=smoothstep(.8,3.5,raceSpd)*raceEdge;
         float rt=mix(clock,waterClock,physicalTide);
-        vec2 jitter=vec2(noise2(p.xy*2.7-raceVel*rt*.8)-.5,noise2(p.xy*2.7+31.-raceVel*rt*.8)-.5)*.16*chop;
-        norm=normalize(norm+vec3(-raceGrad*raceEdge+jitter,0.));
+        vec2 dA=raceSpd>.05?raceVel/raceSpd:vec2(1.,0.),dC=vec2(-dA.y,dA.x);
+        vec2 q=p.xy-raceVel*rt*.85,ripple2=vec2(0.);
+        // Each ripple train is kept only while a pixel covers less than a sixth of its wavelength
+        // (the screen footprint at grazing angles is long), so it never aliases into moire.
+        float foot=max(length(dFdx(p.xy)),length(dFdy(p.xy)));
+        for(int i=0;i<6;i++){
+          float fi=float(i),ang=(fi-2.5)*.42+.35*sin(fi*2.3),lam=.75+.42*fi;
+          vec2 d=normalize(dA*cos(ang)+dC*sin(ang));
+          float keep=1.-smoothstep(lam/8.,lam/4.,foot);
+          ripple2+=d*cos(6.2832/lam*dot(q,d)+fi*1.93+rt*(1.1+.37*fi))*(.050-.004*fi)*keep;
+        }
+        float slopeKeep=1.-smoothstep(4.,9.,foot);                // the 10 m standing waves need ~2 m pixels
+        float carried=1.-smoothstep(.03,.10,length(normalize(n).xy)*physicalTide);
+        vec2 tilt=raceGrad*raceEdge*carried*slopeKeep+ripple2*raceChop;
+        raceTilt=length(tilt);
+        norm=normalize(norm+vec3(-tilt,0.));
       }`,
     colour:`
       if(raceIn>.5){
@@ -394,15 +426,24 @@ export function buildLanternRace(group,w,uniforms,common,ground){
         // Foam is advected with the current in two phases and stretched along the flow.
         float ph0=fract(rt*.22),ph1=fract(rt*.22+.5),blend=abs(ph0-.5)*2.;
         vec2 q0=p.xy-vel*ph0*4.5,q1=p.xy-vel*ph1*4.5;
-        float f0=fbm(vec2(dot(q0,along)*.30,dot(q0,across)*1.15)),f1=fbm(vec2(dot(q1,along)*.30,dot(q1,across)*1.15)+17.);
+        float f0=fbm(vec2(dot(q0,along)*.24,dot(q0,across)*1.35)),f1=fbm(vec2(dot(q1,along)*.24,dot(q1,across)*1.35)+17.);
         float tex=mix(f0,f1,blend)+.30*(noise2((p.xy-vel*rt*.6)*1.9)-.5);
         float foam=smoothstep(.70-.44*white,.84-.36*white,tex)*smoothstep(.05,.25,white);
         float lace=smoothstep(.60,.66,fbm((p.xy-vel*rt*.45)*2.4))*smoothstep(.2,.65,white)*.45;
-        vec3 glow;{vec3 lc=texture2D(raceLight,raceUV).rgb;glow=lc/max(vec3(1e-3),1.-lc)*raceEdge;}
+        vec4 lc4=texture2D(raceLight,raceUV);vec3 glow=lc4.rgb/max(vec3(1e-3),1.-lc4.rgb)*raceEdge;
+        float bedDepth=lc4.a*8.;
+        float rough=clamp(white*1.3+raceChop*.45,0.,1.)*raceEdge;
+        // Tilted and broken water scatters the reflected sky; at night it must not mirror the lit clouds.
+        surfaceColor-=skyLight*fres*mix(1.,.34,night)*night*.75*smoothstep(.02,.16,raceTilt)*raceEdge;
+        surfaceColor=mix(surfaceColor,sea*mix(1.,.34,night),rough*mix(.30,.70,night));
         surfaceColor=mix(surfaceColor,vec3(.10,.24,.23)*mix(1.,.20,night),smoothstep(.1,.7,white)*.28);
+        float shoal=(1.-smoothstep(.25,1.8,bedDepth))*raceEdge;
+        float wash=smoothstep(.50,.72,fbm(p.xy*.85+vec2(rt*.21,-rt*.17))+.25*sin(rt*1.3+dot(p.xy,vec2(.31,.17))))
+                  *(1.-smoothstep(.05,.45,bedDepth))*raceEdge;
         surfaceColor+=glow*night*.05;
         vec3 foamCol=vec3(.84,.88,.87)*(.45+.55*max(dot(norm,sun),0.))*mix(1.,.09,night)+glow*night*.40;
-        surfaceColor=mix(surfaceColor,foamCol,clamp(foam+lace,0.,1.)*.90);
+        surfaceColor=mix(surfaceColor,surfaceColor*vec3(.78,.95,.90)+vec3(.012,.030,.024)*mix(1.,.3,night),shoal*.45);
+        surfaceColor=mix(surfaceColor,foamCol,clamp(foam+lace+wash*.55,0.,1.)*.90);
       }`,
   };
   return {water,stats:{rocks:rocks.length,ramps:ramps.length,lanterns:race.lanterns.length,spray:count},

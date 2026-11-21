@@ -13,6 +13,9 @@ def add_static_mesh(asset, worldbody, obstacle, **contact):
     if 'friction' in obstacle and 'friction' not in contact:
         # A wet ramp is slicker than a hull; MuJoCo otherwise takes the larger of the two frictions.
         contact=dict(contact,friction=f"{float(obstacle['friction'])} 0.005 0.0001",priority='1')
+    if 'solref' in obstacle and 'solref' not in contact:
+        # A floating, anchored ramp gives under a hull; a stiffer contact would be a 16 g wall strike.
+        contact=dict(contact,solref=' '.join(str(float(v)) for v in obstacle['solref']),priority='1')
     position=obstacle['center']
     parent=worldbody
     if motion:=obstacle.get('motion'):
