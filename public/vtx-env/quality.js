@@ -11,17 +11,17 @@ const TIERS = {
   low: {
     name: 'low', antialias: false, pixelRatio: 0.8, shadows: false, shadowSize: 0,
     forest: 350, facadePpm: 14, airfieldPpm: 7, detailMaps: false, localLights: 0,
-    heightFog: false, glow: false, clouds: 16, anisotropy: 4, drape: 'flat', sunDisc: true,
+    heightFog: false, glow: false, clouds: 16, anisotropy: 4, drape: 'flat', sunDisc: true, frameMs: 1000 / 30,
   },
   lite: {
     name: 'lite', antialias: true, pixelRatio: 1.2, shadows: false, shadowSize: 0,
     forest: 700, facadePpm: 14, airfieldPpm: 7, detailMaps: false, localLights: 2,
-    heightFog: true, glow: true, clouds: 26, anisotropy: 8, drape: 'full', sunDisc: true,
+    heightFog: true, glow: true, clouds: 26, anisotropy: 8, drape: 'full', sunDisc: true, frameMs: 1000 / 15,
   },
   medium: {
     name: 'medium', antialias: true, pixelRatio: 1.2, shadows: true, shadowSize: 2048,
     forest: 1700, facadePpm: 24, airfieldPpm: 11, detailMaps: false, localLights: 3,
-    heightFog: true, glow: true, clouds: 26, anisotropy: 8, drape: 'full', sunDisc: true,
+    heightFog: true, glow: true, clouds: 26, anisotropy: 8, drape: 'full', sunDisc: true, frameMs: 1000 / 60,
   },
   high: {
     name: 'high', antialias: true, pixelRatio: 1.5, shadows: true, shadowSize: 4096,
@@ -29,12 +29,12 @@ const TIERS = {
     heightFog: true, glow: true, clouds: 40, anisotropy: 16, drape: 'full', sunDisc: true,
   },
   // Desktop-app target for a decent PC with a discrete GPU: post-processing (ambient occlusion, bloom, grade),
-  // real apron floodlights at night and an uncapped 60 fps frame pacing. Select with ?quality=ultra.
+  // real apron floodlights at night and a 60 fps target. Select with ?quality=ultra.
   ultra: {
     name: 'ultra', antialias: true, pixelRatio: 2, shadows: true, shadowSize: 4096,
     forest: 2600, facadePpm: 24, airfieldPpm: 11, detailMaps: true, localLights: 4,
     heightFog: true, glow: true, clouds: 40, anisotropy: 16, drape: 'full', sunDisc: true,
-    post: true, aoSamples: 16, floodlights: 3, frameMs: 15,
+    post: true, aoSamples: 16, floodlights: 3, frameMs: 1000 / 60,
   },
 };
 

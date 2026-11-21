@@ -6,6 +6,7 @@ import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-6';
 import {zoomDistance} from './camera-zoom.js?v=1';
 import {rotorVisualOffset} from './rotor-visual.js?v=1';
 import {createPoseInterpolator} from './vtx-env/pose-interpolation.js?v=2';
+import {createFrameGate} from './vtx-env/frame-pacing.js?v=1';
 const poseInterpolator=createPoseInterpolator();
 import {physicalCameraTarget,physicalAircraftPosition} from './physical-camera-target.js?v=2';
 import {cockpitAxes} from './cockpit-axes.js?v=1';
@@ -131,17 +132,17 @@ function selectedFuel(){const value=Number($('initial-fuel').value);if(!Number.i
 function selectedWind(){return ['wind-east','wind-north','wind-up'].map(id=>{const value=Number($(id).value);if(!Number.isFinite(value))throw Error('Enter finite wind components.');return value;});}
 
 console.log('VTX: module ready');
-const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<800;
-const mobileView=mobile;
+const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(pointer:coarse)').matches;
 // Phones default to the lighter display path. The physics and model are unchanged.
 const lightweightView=mobile||new URLSearchParams(location.search).has('lite');
 // ?fps=N caps the browser's frame rate (for example on a shared or battery-powered machine); otherwise desktop High draws every display frame.
 const frameCapMs=(n=>Number.isFinite(n)&&n>0?1000/n:null)(Number(new URLSearchParams(location.search).get('fps')));
 // Rendering quality tier (visual only; physics unaffected): phone low, ?lite lite, desktop high, ?quality= overrides.
-import {resolveQuality} from './vtx-env/quality.js?v=gfx-20261111-ultra';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
+import {resolveQuality} from './vtx-env/quality.js?v=20261121-frame-pacing';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
 import {createPost} from './vtx-env/post.js?v=2';import {createTimeOfDay} from './vtx-env/time-of-day.js?v=2';import {buildAirfieldKit} from './vtx-env/airfield-kit.js?v=1';
 import {createGameAudio} from './vtx-env/game-audio.js';
 const quality=resolveQuality({mobile,search:location.search});scene.userData.quality=quality.name;
+const drawDue=createFrameGate(lightweightView?1000/15:frameCapMs??quality.frameMs??0);
 // On phones keep retained-flight actions and indicator bar directly below the flight view.
 if (innerWidth <= 800) {
  document.querySelector('header').after($('retry-bar'));
@@ -1465,7 +1466,6 @@ function connect(){
 }
 api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&&w.default_departure.length===2){departure=[...w.default_departure];$('dep').value=departure.join(', ');}buildWorld(w);connect();let helm;try{helm=sessionStorage.getItem('vtx-helm');}catch{}if(helm)void openBoat(helm,true).catch(error=>toast(error.message));}).catch(error=>{console.warn('Unable to load selected environment',error);return fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{visualOnlyOffline=true;buildWorld(w);$('view-sync').textContent= 'SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';});}).catch(e=>{$('loading').textContent='Unable to load airport: '+e.message;console.error('Airport world',e);});
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
-let lastFrameMs=0;
 function audibleTraffic(){
  const traffic=[];
  for(const actor of visualTraffic?.actors??[]){
@@ -1490,9 +1490,7 @@ function animate(){
  requestAnimationFrame(animate);
  if(document.hidden)return;
  const now=performance.now();
- const frameMs=lightweightView?67:frameCapMs??quality.frameMs??(quality.name==='high'?0:50);
- if(now-lastFrameMs<frameMs)return;
- lastFrameMs=now;
+ if(!drawDue(now))return;
  // Between 10 Hz telemetry samples the airframe is drawn between its two latest true poses (presentation only).
  const measuredTruth=replayFrames?replayFrames[replayFrame]:last?.rendering_truth;
  const truth=replayFrames?measuredTruth:(poseInterpolator.present(now,{frozen:!last?.active||!!last?.paused})??measuredTruth);
