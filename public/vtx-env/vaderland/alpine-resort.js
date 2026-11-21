@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {heightfieldZ} from '../landscape.js';
-import {ALPINE_ACCESS, ALPINE_LIFTS, ALPINE_ROUTES, ALPINE_ZONES} from './alpine-layout.js';
+import {ALPINE_ACCESS, ALPINE_LIFTS, ALPINE_ROUTES, ALPINE_ZONES, besideTrail} from './alpine-layout.js';
+import {placeAlpineSalvage} from './alpine-salvage.js';
 
 const RESORT_BOUNDS = [3720, 730, 3540, 4190];
 const WARM = new THREE.Color('#ffc17f');
@@ -95,6 +96,22 @@ function lampPosts(lamps,ground) {
     new THREE.LineBasicMaterial({color:'#737b80'}));
 }
 
+function lightSwitchbacks(route,place) {
+  const points=route.points;
+  let previous;
+  for(let i=1;i<points.length-1;i++){
+    const [ax,ay]=points[i-1], [x,y]=points[i], [bx,by]=points[i+1];
+    const dx=x-ax,dy=y-ay,ux=bx-x,uy=by-y;
+    const cosine=(dx*ux+dy*uy)/Math.max(1,Math.hypot(dx,dy)*Math.hypot(ux,uy));
+    if(cosine>.72 || (previous&&Math.hypot(x-previous[0],y-previous[1])<73))continue;
+    const side=dx*uy>dy*ux?-1:1;
+    const position=besideTrail(route,[x,y],bx-ax,by-ay,3,side);
+    if(!position)continue;
+    place(position,WARM,34,.33,6);
+    previous=[x,y];
+  }
+}
+
 function station(root, point, ground, size, night) {
   const [x,y]=point, z=ground(x,y), [width,depth,height]=size;
   const lodge=new THREE.Mesh(new THREE.BoxGeometry(width,depth,height),
@@ -160,19 +177,21 @@ function summitCrown(root,[x,y],ground,night) {
 export function buildAlpineResort(group, world, night) {
   const ground=(x,y)=>heightfieldZ(world,x,y);
   const root=new THREE.Group();root.name='East Ridge Ski Resort';group.add(root);
-  const lamps=[], tracks=[];
+  const lamps=[], tracks=[], salvage=[];
   const place=(point,color,radius,strength,height=6)=>lamps.push({point,color,radius,strength,height});
   for (const point of resample(ALPINE_ACCESS,32)) place(point,WARM,34,.22,4);
   for (const route of ALPINE_ROUTES.filter(route=>route.width)) {
     const high=route.id==='storm-face';
-    const path=resample(route.points,high?47:43);
+    const path=resample(route.points,high?49:43);
     for(const point of resample(route.points,route.width*.34)) tracks.push({point,radius:route.width*.56,strength:.92});
     path.forEach(([x,y],i)=>{
       const [px,py]=path[Math.min(i+1,path.length-1)];
-      const dx=px-x,dy=py-y,side=(i%2===0 ? -1 : 1)*route.width*.50;
-      const length=Math.hypot(dx,dy)||1;
-      place([x-dy/length*side,y+dx/length*side],COOL,high?75:47,high?.31:.28,high?11:7);
+      const [qx,qy]=path[Math.max(0,i-1)];
+      const position=besideTrail(route,[x,y],px-qx,py-qy,3,i%2===0?-1:1);
+      if(position)place(position,COOL,high?41:47,high?.25:.28,high?7:6);
     });
+    if(high)lightSwitchbacks(route,place);
+    salvage.push(...placeAlpineSalvage(root,route,path,ground,place));
   }
   const windows=[];
   const resortZones=ALPINE_ZONES.filter(zone=>zone.area==='East Ridge Ski Resort');
@@ -200,7 +219,7 @@ export function buildAlpineResort(group, world, night) {
   const texture=groundLightMap(lamps,tracks);
   const zones=ALPINE_ZONES.map(zone=>({...zone,elevation:ground(...zone.point)}));
   let lit;
-  return {zones,routes:measureAlpineRoutes(ground,world.harbour?.waterLevelM),texture,bounds:RESORT_BOUNDS,
+  return {zones,routes:measureAlpineRoutes(ground,world.harbour?.waterLevelM),texture,bounds:RESORT_BOUNDS,salvage,
     view(point,distance=110){
       const [x,y]=point, height=ground(x,y);
       return {eye:[x-distance*.6,y-distance,Math.max(height,ground(x-distance*.6,y-distance))+distance*.72],

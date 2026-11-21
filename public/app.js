@@ -24,7 +24,7 @@ import {isArgonRotorHousing} from './argon-cutaway.js?v=3';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
 import {buildSky} from './vtx-env/sky.js?v=1';
 import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
-import {buildVaderland} from './vtx-env/vaderland/landscape.js?v=20261121-high-summit';
+import {buildVaderland} from './vtx-env/vaderland/landscape.js?v=20261121-switchbacks';
 import {createAlpineExplorer} from './alpine-explorer.js';
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
 import {buildAirfield} from './vtx-env/airfield.js?v=20261116-runway-1';
@@ -39,7 +39,7 @@ import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=20261117-cutaway';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261121-high-summit';
+import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261121-switchbacks';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=20261116-runway-1';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
@@ -48,7 +48,7 @@ import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from './v
 import {attachVisualPhantom,animateVisualPhantom} from './vtx-env/visual-phantom-animation.js?v=2';
 import {createAirportOperations} from './vtx-env/airport-operations.js?v=20261117-traffic-10';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
-import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
+import {makeAirportModel} from './vtx-env/airport-models.js?v=2';
 import {airportViewSelection,sceneryPoseAt,sceneryPassengerSeat,sceneryPassengerSight} from './scenery-view.js?v=20261117-traffic-10';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
 import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261121-measured-wheels';import {createPhantomPanel} from './phantom-controls.js?v=20261121-flight-deck';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
