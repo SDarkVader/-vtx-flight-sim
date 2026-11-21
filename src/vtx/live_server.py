@@ -290,7 +290,10 @@ class Laboratory:
         return self.harbour_for(self.world.environment_key)
 
     def __init__(self, data_root=None):
-        self.world=TestWorld();self.flight_world=self.world;self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
+        # VTX_DEFAULT_ENVIRONMENT picks the world a fresh server opens on (unset: the Main Airport, as before).
+        # A restored checkpoint or saved selection still takes precedence.
+        default_env=os.environ.get('VTX_DEFAULT_ENVIRONMENT')
+        self.world=make_world(default_env) if default_env else TestWorld();self.flight_world=self.world;self.aircraft=Aircraft(self.world,gear_variant='critical-damping-proposal',rpm=1200.,fuel_kg=10.,airframe_variant='r6',engine_power_limit_kw=300.);self.aircraft.spawn(0,0,self.world.surface_z(0,0))
         self.active=False;self.paused=False;self.time_scale=1.;self.authority='manual';self.run_id=None
         self.mission=None;self.objective=None;self.pilot_owner=None;self.pending_pilot=None;self.pilot_epoch=0;self.fallback_controller=None;self.fallback_status=None;self.action_log=[];self.action_sequence=0;self.next_pending_action=0;self.last_command_time=0.;self.lease_expired=False
         self.obs_id=0;self.last_obs=None;self.observations={};self.last_sensor_t=-1.;self.sensor_rng=np.random.default_rng(41031)

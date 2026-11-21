@@ -5,6 +5,8 @@ import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
 import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-6';
 import {zoomDistance} from './camera-zoom.js?v=1';
 import {rotorVisualOffset} from './rotor-visual.js?v=1';
+import {createPoseInterpolator} from './vtx-env/pose-interpolation.js?v=1';
+const poseInterpolator=createPoseInterpolator();
 import {physicalCameraTarget,physicalAircraftPosition} from './physical-camera-target.js?v=2';
 import {cockpitAxes} from './cockpit-axes.js?v=1';
 import {renderAttitudeIndicator} from './attitude-display.js?v=1';
@@ -132,6 +134,8 @@ const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(p
 const mobileView=mobile;
 // Phones default to the lighter display path. The physics and model are unchanged.
 const lightweightView=mobile||new URLSearchParams(location.search).has('lite');
+// ?fps=N caps the browser's frame rate (for example on a shared or battery-powered machine); otherwise desktop High draws every display frame.
+const frameCapMs=(n=>Number.isFinite(n)&&n>0?1000/n:null)(Number(new URLSearchParams(location.search).get('fps')));
 // Rendering quality tier (visual only; physics unaffected): phone low, ?lite lite, desktop high, ?quality= overrides.
 import {resolveQuality} from './vtx-env/quality.js?v=gfx-20261111-ultra';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
 import {createPost} from './vtx-env/post.js?v=2';import {createTimeOfDay} from './vtx-env/time-of-day.js?v=2';import {buildAirfieldKit} from './vtx-env/airfield-kit.js?v=1';
@@ -1285,7 +1289,7 @@ function updateView(v){
  }
  const nextAsset=visualAsset(v.rendering_truth?.provenance?.render_asset);
  if(model?.visible && nextAsset && loadedAsset!==nextAsset){model.visible=false;renderer.clear();}
- last=v;showTimeTrial();syncCameraPreference(v);latestTruthReceivedMs=performance.now();cityClock.receive(v,latestTruthReceivedMs);panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
+ last=v;showTimeTrial();syncCameraPreference(v);latestTruthReceivedMs=performance.now();poseInterpolator.receive(v.rendering_truth,latestTruthReceivedMs);cityClock.receive(v,latestTruthReceivedMs);panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
  if(!replayFrames)showAttitude(v.rendering_truth,'LIVE');
  const envLocked=!!harbourEnvironment||document.documentElement.dataset.vtxPreviewPending==='1';
  $('restart-flight').hidden=!v.active;
@@ -1426,10 +1430,11 @@ function animate(){
  requestAnimationFrame(animate);
  if(document.hidden)return;
  const now=performance.now();
- const frameMs=lightweightView?67:(quality.frameMs??(harbourViewActive&&quality.name==='high'?15:50));
+ const frameMs=lightweightView?67:frameCapMs??quality.frameMs??(quality.name==='high'?0:50);
  if(now-lastFrameMs<frameMs)return;
  lastFrameMs=now;
- const truth=replayFrames?replayFrames[replayFrame]:last?.rendering_truth;
+ // Between 10 Hz telemetry samples the airframe is drawn between its two latest true poses (presentation only).
+ const truth=replayFrames?replayFrames[replayFrame]:(poseInterpolator.present(now,{frozen:!last?.active||!!last?.paused})??last?.rendering_truth);
  harbourControls.setEnabled(!!world?.harbour&&!replayFrames&&!worldUnavailable);
  if(!replayFrames)harbourLayer?.animate(now);
  if(replayFrames)showAttitude(truth,'REPLAY');

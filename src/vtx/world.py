@@ -319,12 +319,18 @@ def _crest_gardens(seed=41031):
     return CrestGardensDistrict(seed)
 
 
+def _rooftop_quarter(seed=41031):
+    from .rooftop_quarter import RooftopQuarter
+    return RooftopQuarter(seed)
+
+
 def _lantern_marina(seed=41031):
     from .lantern_marina import LanternMarinaDistrict
     return LanternMarinaDistrict(seed)
 
 
 ENVIRONMENTS = {
+    'vaderland-33': _rooftop_quarter,
     'vaderland-32': _lantern_marina,
     'vaderland-31': _crest_gardens,
     'vaderland-30': _cathedral_grand_loop,
@@ -361,6 +367,7 @@ ENVIRONMENTS = {
 }
 
 ENVIRONMENT_ALIASES = {
+    'vaderland-33': 'vaderland-33',
     'vaderland-32': 'vaderland-32',
     'vaderland-31': 'vaderland-31',
     'vaderland-30': 'vaderland-30',

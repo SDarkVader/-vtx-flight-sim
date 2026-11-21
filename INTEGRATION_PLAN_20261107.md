@@ -7,7 +7,7 @@
 - Recovery: `origin/recovery/a10-local-20261106` at `f22e4efa8003cde644a42f9fd317c157d1853ee2`. Incorporates airport work and A10 engineering/camera changes. It differs substantially from the A10 checkpoint.
 - PR #34: head `0228a66974eefe8b3df8b9fe2ccda7f236402b9e` on airport base; physical flight default and explicit scripted traffic. Open, not accepted or promoted. Two changed files; cannot assume end-to-end recovery from its checks.
 - Additional candidate `74f4c3a`: physical sortie selector and pilot work; reconcile feature-by-feature with recovery and checkpoint.
-- Dirty live working tree: preserved as `C:\Users\steve\Documents\GitHub\vtx-preserved-pre-integration-20261107.zip`; archive CRC verified; includes 418 changed/untracked file contents, SHA-256 manifest, index and merge metadata. The live checkout and process were not modified by the merge.
+- Dirty live working tree: preserved as `vtx-preserved-pre-integration-20261107.zip`; archive CRC verified; includes 418 changed/untracked file contents, SHA-256 manifest, index and merge metadata. The live checkout and process were not modified by the merge.
 
 ## Plan and acceptance
 

@@ -37,6 +37,18 @@ export function drawHarbourMap(context, projection, harbour) {
     g.textAlign='center';g.fillStyle='#e9ffff';
     g.fillText(trial.name,px(x),py(y)-12);
   }
+  for (const race of harbour.races || []) {
+    g.strokeStyle = race.colour || '#ffb05f'; g.lineWidth = 1.5; g.setLineDash([3, 4]); g.beginPath();
+    race.points.forEach(([x, y], i) => g[i ? 'lineTo' : 'moveTo'](px(x), py(y))); g.stroke(); g.setLineDash([]);
+    for (const gate of race.gates) {
+      const [x, y] = gate.center, [nx, ny] = gate.normal, d = gate.width_m * .5;
+      g.beginPath(); g.moveTo(px(x - ny * d), py(y + nx * d)); g.lineTo(px(x + ny * d), py(y - nx * d)); g.stroke();
+    }
+  }
+  if (harbour.races?.length) {
+    const [x, y] = harbour.races[0].position;
+    g.textAlign = 'center'; g.fillStyle = '#ffe9c4'; g.fillText('Lantern Race', px(x), py(y) - 12);
+  }
   for (const pier of harbour.docks?.piers || []) {
     const [x, y] = harbourWorldPoint(harbour, pier.center);
     g.save(); g.translate(px(x), py(y)); g.rotate(pier.heading);

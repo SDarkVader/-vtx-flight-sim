@@ -877,6 +877,24 @@ class HybridWaterField:
             # Bernoulli dynamic pressure drop in high-swirl core
             p_dyn = p_dyn - 0.5 * rho_w * (v_theta * v_theta + v_rad * v_rad)
 
+        # Rapids declared by the world (tidal races, river reaches): compactly supported current
+        # jets, standing waves, eddy lines and rock wakes. Absent rapids leave this a no-op.
+        rapids = getattr(self.world, 'rapids', ()) if getattr(self.config, 'rapids_enabled', True) else ()
+        if rapids and xa.size > 0:
+            from .rapids import rapids_overlay
+            r_int = max(0.0, float(getattr(self.config, 'rapids_intensity', 1.0)))
+            wet_w = np.clip((h_swe - 0.15) / 0.5, 0.0, 1.0)
+            for rapid in rapids:
+                r_eta, r_vel, r_acc, r_sx, r_sy = rapids_overlay(rapid, xa, ya, t_eval, eta_only=eta_only, intensity=r_int)
+                eta_delta = eta_delta + r_eta * wet_w
+                if eta_only:
+                    continue
+                vel = vel + r_vel * wet_w[..., None]
+                acc = acc + r_acc * wet_w[..., None]
+                dhdx_tot = dhdx_tot + r_sx * wet_w
+                dhdy_tot = dhdy_tot + r_sy * wet_w
+                has_slope = True
+
         eta_hybrid = np.where(
             h_swe > 1e-4,
             np.maximum(bed, eta_swe + eta_delta),

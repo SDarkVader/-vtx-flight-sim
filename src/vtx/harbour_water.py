@@ -59,6 +59,7 @@ class HarbourWorld:
         self.obstacles = deepcopy(world.obstacles)
         self.buoys = []
         self.whirlpools = []
+        self.rapids = deepcopy(self.harbour.get("rapids", []))
         self.structures = []
         docks = self.harbour["docks"]
         level = float(self.harbour["waterLevelM"])

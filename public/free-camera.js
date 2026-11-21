@@ -22,10 +22,21 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
   let lastPointerX = 0;
   let lastPointerY = 0;
 
-  // Speeds
-  const BASE_SPEED = 24;   // m/s normal flight
-  const FAST_SPEED = 72;   // m/s turbo flight (Shift held)
+  // Speeds scale with height above the ground: precise near it, kilometres per second high above it.
   const ROTATE_SPEED = 0.0035;
+  function groundAt(x, y) {
+    const w = getWorld(), h = w?.heights_m, n = h?.length, half = w?.half_m;
+    if (!n || !Number.isFinite(half)) return 0;
+    const u = THREE.MathUtils.clamp((x + half) / (2 * half) * (n - 1), 0, n - 1.000001);
+    const v = THREE.MathUtils.clamp((y + half) / (2 * half) * (n - 1), 0, n - 1.000001);
+    const i = Math.floor(u), j = Math.floor(v), a = u - i, b = v - j;
+    return a > b ? (1 - a) * h[j][i] + (a - b) * h[j][i + 1] + b * h[j + 1][i + 1]
+      : (1 - b) * h[j][i] + (b - a) * h[j + 1][i] + a * h[j + 1][i + 1];
+  }
+  const heightAbove = () => Math.max(1, pos.z - groundAt(pos.x, pos.y));
+  const modifier = () => (keys.has('ShiftLeft') || keys.has('ShiftRight') || touchNav.boost > 1 ? 4 : 1)
+    / (keys.has('KeyZ') ? 4 : 1);
+  const flySpeed = () => THREE.MathUtils.clamp(heightAbove() * 1.1, 18, 4000) * modifier();   // m/s
 
   // Touch state
   let touch1 = null;
@@ -77,7 +88,8 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
 
   const hints = document.createElement('span');
   hints.style.cssText = 'color: #94a3b8; font-size: 11px;';
-  hints.textContent = '1-finger: Look · Pinch: Zoom/Fly · 2-finger: Pan';
+  hints.textContent = isTouch() ? '1-finger: Look · Pinch: Fly · 2-finger: Pan'
+    : 'Drag: look · Right-drag: pan · Wheel: fly · WASD + Q/E · Shift ×4 · Z ÷4 · speed grows with height';
   topRow.appendChild(hints);
 
   const exitBtn = document.createElement('button');
@@ -100,6 +112,32 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
   topRow.appendChild(exitBtn);
 
   hud.appendChild(topRow);
+  function isTouch() { return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0); }
+
+  // Go to: every named place in the current world, seen from above and to the south-west.
+  const goRow = document.createElement('div');
+  goRow.style.cssText = 'display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; align-items: center;';
+  const goSelect = document.createElement('select');
+  goSelect.style.cssText = 'background:#0f172a;color:#e0f2fe;border:1px solid #334155;border-radius:4px;padding:3px 6px;font-size:11px;max-width:260px;';
+  goSelect.onchange = (e) => {
+    e.stopPropagation();
+    const place = (getWorld()?.vaderland?.places || [])[Number(goSelect.value)];
+    if (place) flyOver(place.point);
+    goSelect.value = '';
+  };
+  goSelect.addEventListener('keydown', (e) => e.stopPropagation());
+  goRow.appendChild(goSelect);
+  hud.appendChild(goRow);
+  function refreshPlaces() {
+    const places = getWorld()?.vaderland?.places || [];
+    goRow.style.display = places.length ? 'flex' : 'none';
+    goSelect.replaceChildren(new Option('Go to…', ''), ...places.map((p, k) => new Option(p.name, String(k))));
+    goSelect.value = '';
+  }
+  function flyOver(point, height = 110) {
+    const [x, y] = point, g = groundAt(x, y);
+    teleport([x - 150, y - 190, Math.max(g, groundAt(x - 150, y - 190)) + height], [x, y, g + 4]);
+  }
 
   // Landmark teleport row
   const lmContainer = document.createElement('div');
@@ -142,6 +180,7 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
     lmContainer.appendChild(btn);
   });
   hud.appendChild(lmContainer);
+  const showLandmarks = () => { lmContainer.style.display = getWorld()?.vaderland ? 'none' : 'flex'; };
 
   // Mobile Touch Navigation Flight D-Pad (visible on mobile / touch devices)
   const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -216,6 +255,7 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
 
   function activate(currentAimTarget) {
     active = true;
+    refreshPlaces(); showLandmarks();
     pos.copy(camera.position);
 
     if (currentAimTarget) {
@@ -264,9 +304,11 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
 
     if (e.buttons === 2 || e.buttons === 4) {
       // Pan
-      const panSpeed = 0.08;
+      // Pan across the ground, scaled with height so a drag covers what you can see.
+      const panSpeed = 0.0016 * heightAbove() + 0.03;
+      const flatFwd = new THREE.Vector3(forward.x, forward.y, 0).normalize();
       pos.addScaledVector(right, -dx * panSpeed);
-      pos.addScaledVector(up, dy * panSpeed);
+      pos.addScaledVector(flatFwd, dy * panSpeed);
     } else {
       // First person look around
       yaw -= dx * ROTATE_SPEED;
@@ -285,8 +327,9 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
   dom.addEventListener('wheel', (e) => {
     if (!active) return;
     e.preventDefault();
-    const zoomDelta = -Math.sign(e.deltaY) * (keys.has('ShiftLeft') || keys.has('ShiftRight') ? 14 : 5);
-    pos.addScaledVector(forward, zoomDelta);
+    // Each notch flies a fifth of the height above ground (at least 3 m), along the view.
+    const notches = THREE.MathUtils.clamp(-e.deltaY / (e.deltaMode === 1 ? 3 : 100), -5, 5);
+    pos.addScaledVector(forward, notches * Math.max(3, heightAbove() * 0.2) * modifier());
   }, { passive: false });
 
   // -------------------------------------------------------------------------
@@ -361,7 +404,7 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
     if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
     if (document.querySelector('dialog[open]')) return;
 
-    if (['KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyQ', 'KeyE', 'KeyC', 'Space', 'ShiftLeft', 'ShiftRight',
+    if (['KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyQ', 'KeyE', 'KeyC', 'Space', 'ShiftLeft', 'ShiftRight', 'KeyZ',
          'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown'].includes(e.code)) {
       keys.add(e.code);
       e.preventDefault();
@@ -380,8 +423,7 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
   function update(dt) {
     if (!active) return;
 
-    const isFast = keys.has('ShiftLeft') || keys.has('ShiftRight') || touchNav.boost > 1;
-    const speed = (isFast ? FAST_SPEED : BASE_SPEED) * dt;
+    const speed = flySpeed() * Math.min(dt, .1);
 
     // Keyboard inputs
     if (keys.has('KeyW') || keys.has('ArrowUp')) pos.addScaledVector(forward, speed);
@@ -399,8 +441,8 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
     if (touchNav.up) pos.addScaledVector(up, speed);
     if (touchNav.down) pos.addScaledVector(up, -speed);
 
-    // Keep camera slightly above terrain floor
-    if (pos.z < 0.8) pos.z = 0.8;
+    // Stay above the ground everywhere, not just above sea level.
+    pos.z = Math.max(pos.z, groundAt(pos.x, pos.y) + 1.5, 0.8);
 
     updateLookVectors();
     camera.position.copy(pos);
@@ -410,8 +452,7 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
 
   function zoom(factor) {
     if (!active) return;
-    const step = (factor < 1 ? 8 : -8);
-    pos.addScaledVector(forward, step);
+    pos.addScaledVector(forward, (factor < 1 ? 1 : -1) * Math.max(3, heightAbove() * 0.25));
   }
 
   return {
@@ -423,6 +464,7 @@ export function createFreeCamera(camera, renderer, viewport, setCameraMode, getW
     teleport,
     get position() { return pos; },
     get yaw() { return yaw; },
-    get pitch() { return pitch; }
+    get pitch() { return pitch; },
+    flyOver
   };
 }

@@ -78,6 +78,13 @@ def _restart_boat(world, fleet, body):
     trial = fleet.world.harbour.get('timeTrial') if stage else None
     if stage and trial is None:
         raise ValueError('This harbour has no time trial')
+    race_id = body.get('raceId')
+    if race_id is not None:
+        if type(race_id) is not str or stage:
+            raise ValueError('Invalid race staging request')
+        trial = next((race for race in fleet.world.harbour.get('races') or () if race['id'] == race_id), None)
+        if trial is None:
+            raise ValueError('This harbour has no such race')
     xy = trial['position'] if trial else body.get("position")
     if xy is None:
         if fleet.occupancy.get(berth_id, boat_id) != boat_id:

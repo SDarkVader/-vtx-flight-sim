@@ -175,7 +175,13 @@ export function avenueMaterial(uniforms, common) {
             interior=mix(interior,afterHours,venue);
           }
           float exposure=.61*bank+.25*room+.14*floorGroup;
-          float on=shop?smoothstep(.10,.38,bank):smoothstep(residence?.40:.39,residence?.66:.64,exposure);
+          // Fewer rooms are occupied away from the busy core (unchanged where occupancy is 1).
+          float occupancy=occupancyAt(p.xy);
+          // In the v33 night city some whole blocks are dark: closed offices, more of them after dusk.
+          float closedBlock=rooftopPass*step(.64-.10*dark,fract(seed*7.31+.17))*float(!shop);
+          occupancy*=mix(1.,.22,closedBlock);
+          float vacancy=(1.-occupancy)*.38;
+          float on=shop?smoothstep(.10+vacancy,.38+vacancy,bank):smoothstep((residence?.40:.39)+vacancy,(residence?.66:.64)+vacancy,exposure);
           // A small number of independent tenancies turn on/off over minutes on the shared simulation clock.
           if(!shop && room>.958){
             float minute=sceneryClock/(143.+77.*bank)+phase*.73;
@@ -184,6 +190,7 @@ export function avenueMaterial(uniforms, common) {
           }
           float level=shop?mix(.070,1.10,smoothstep(.18,.70,bank)):mix(.002,.11+1.08*room,on*on);
           level*=mix(.59,1.48,floorGroup);
+          level*=mix(.35,1.,occupancy);
           float bright=shop?max(.2,bank):smoothstep(.66,.84,exposure);
           level*=1.+dark*bright*(shop?.23:1.48);
 

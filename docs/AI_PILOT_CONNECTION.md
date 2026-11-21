@@ -20,7 +20,7 @@ conversation without writing scripts. It holds no aircraft state and starts no s
 Start the simulator, then register the connector with the assistant. The command is the same for each client:
 
 ```text
-command: C:\Users\steve\Documents\Github\-vtx-flight-sim\.venv\Scripts\python.exe
+command: .\.venv\Scripts\python.exe
 args:    <path-to-this-checkout>\tools\vtx_pilot_mcp.py
 env:     VTX_LAB_URL=http://127.0.0.1:18911      (the port the simulator is running on)
 ```

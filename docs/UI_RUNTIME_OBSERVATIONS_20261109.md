@@ -13,7 +13,7 @@ These observations concern the already-running simulator at http://127.0.0.1:876
 
 ## Owner-provided visual reference
 
-The owner supplied `C:\Users\steve\Documents\Github\WhatsApp Image 2026-11-05 at 08.48.06.jpeg` and `C:\Users\steve\Documents\Github\WhatsApp Image 2026-11-048.06.jpeg`. Both show a Phase 2 aircraft in a visual-development report, with four roughly horizontal ducted fans, a central cabin and exposed frame. The owner states the aircraft currently displayed is not the correct R6. These images are visual references and do not by themselves establish a physics revision or identify a matching GLB.
+The owner supplied `WhatsApp Image 2026-11-05 at 08.48.06.jpeg` and `WhatsApp Image 2026-11-048.06.jpeg`. Both show a Phase 2 aircraft in a visual-development report, with four roughly horizontal ducted fans, a central cabin and exposed frame. The owner states the aircraft currently displayed is not the correct R6. These images are visual references and do not by themselves establish a physics revision or identify a matching GLB.
 
 The existing live checkout's `public/assets/airframe-r6.glb` has SHA-256 `8bd22777c41e193a523037396ba28e31acecee597500d1967d74f948152c0c95`. This integration worktree's file at the same relative path has SHA-256 `d001ae20ba7665cbdbb8e910e4006df07bc855cbcf85c58211ff81e04ac82034`. They are different files: investigate their appearance, rigging, and provenance against the reference before asserting that either is canonical. Neither was changed for this investigation.
 

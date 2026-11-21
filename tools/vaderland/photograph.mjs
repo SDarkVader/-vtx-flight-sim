@@ -68,6 +68,14 @@ const views = {
   lanes: {eye:[3010,-4356.35,145.3],target:[3330,-4356.35,145.9],fov:65},
   galleryAir: {eye:[2680,-4590,325],target:[3265,-4350,144],fov:53},
   street: {eye:[-644,2463,37],target:[112,2515,115],fov:62},
+  // Rooftop Quarter review cameras (NW wards and the A10-D approach).
+  approachNW: {eye:[-1050,3150,560], target:[-150,2250,140], fov:58, mode:'dusk', time:27},
+  approachNight: {eye:[-1050,3150,560], target:[-150,2250,140], fov:58, mode:'night', time:27},
+  farOminous: {eye:[-5600,-2600,950], target:[-200,3000,160], fov:42, mode:'dusk', time:27},
+  approachDay: {eye:[-1050,3150,560], target:[-150,2250,140], fov:58, mode:'day', time:27},
+  wardsAir: {eye:[-2750,4900,430], target:[-1650,3500,60], fov:58, mode:'dusk', time:27},
+  wardsStreet: {eye:[-2200,3300,42.2], target:[-1500,3000,70], fov:62, mode:'dusk', time:27},
+  cityFromRunway: {eye:[-700,-1560,300], target:[-30,1400,183], fov:38, mode:'dusk', time:27},
   circuit: {eye:[3780,-4610,570],target:[5350,-3100,155],fov:52},
 };
 if(world.vaderland.speedway){
@@ -117,6 +125,40 @@ if(world.vaderland.city_lights){
   views.parallaxPass={eye:[x-102,y,150.],target:[x,y,150.],fov:53,mode:'dusk',time:27};
   views.parallaxFront={eye:[x-142,y+4,148],target:[x,y,143],fov:65,mode:'dusk',time:27};
   views.parallaxDetail={eye:[x-60,y+46,z+114],target:[x,y+25,z+105],fov:48,mode:'dusk',time:27};
+}
+if(world.vaderland.neighbourhoods){
+  // Vaderland 33 review cameras, placed from the design data.
+  const nb=world.vaderland.neighbourhoods;
+  const pad=[...nb.pads].filter(p=>p.size==='L').sort((a,b)=>a.height_m-b.height_m)[0];
+  const [px,py,pz]=pad.center;
+  views.zoneDusk={eye:[px-48,py-62,pz+38],target:[px,py,pz],fov:50,mode:'dusk',time:27};
+  const high=[...nb.pads].sort((a,b)=>b.height_m-a.height_m)[0];
+  views.zoneHigh={eye:[high.center[0]+140,high.center[1]-160,high.center[2]+60],target:high.center,fov:46,mode:'dusk',time:27};
+  const tr=world.vaderland.routes.find(r=>r.name===nb.tracks[0].name);
+  const xs=tr.points.map(p=>p[0]),ys=tr.points.map(p=>p[1]);
+  const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
+  const tz=world.obstacles.find(o=>o.id===nb.tracks[0].ramps[0]).center[2];
+  views.trackDay={eye:[cx-95,cy-85,tz+48],target:[cx,cy,tz],fov:52,mode:'day',time:27};
+  const bl=world.vaderland.missions.find(q=>q.name.startsWith('The Brake Line'));
+  if(bl){const g0=bl.steps[0],g4=bl.steps[4],[ux,uy]=g0.normal;
+    views.brakeLine={eye:[g0.center[0]-ux*260,g0.center[1]-uy*260,g0.center[2]+18],target:[g4.center[0],g4.center[1],g4.center[2]-25],fov:56,mode:'night',time:27};}
+  const m=world.vaderland.missions[0],h=m.steps[1],[nx,ny]=h.normal;
+  views.hoopRun={eye:[h.center[0]-nx*140,h.center[1]-ny*140,h.center[2]+6],target:[h.center[0]+nx*200,h.center[1]+ny*200,h.center[2]-20],fov:60,mode:'dusk',time:27};
+}
+if(world.vaderland.lantern_race){
+  // The Lantern Race in the Needle narrows: s downstream along the reach, n towards Heron Island.
+  const lr=world.vaderland.lantern_race,a=lr.axis_deg*Math.PI/180,A=[Math.cos(a),Math.sin(a)],N=[-A[1],A[0]];
+  const at=(s,n,z)=>[lr.centre[0]+A[0]*s+N[0]*n,lr.centre[1]+A[1]*s+N[1]*n,z];
+  views.raceAir={eye:at(-260,90,95),target:at(60,-10,7),fov:55,mode:'dusk',time:27};
+  views.raceLow={eye:at(-12,16,9.6),target:at(140,0,6),fov:60,mode:'day',time:27};
+  views.raceNight={eye:at(58,-72,30),target:at(125,8,8),fov:58,mode:'night',time:27};
+  views.raceGarden={eye:at(64,-96,30),target:at(112,-28,7),fov:55,mode:'day',time:27};
+  views.raceIsland={eye:at(-70,-390,125),target:at(40,-125,15),fov:55,mode:'dusk',time:27};
+  views.raceRamps={eye:at(150,72,22),target:at(200,8,7),fov:58,mode:'day',time:27};
+  views.raceClose={eye:at(52,-52,10.5),target:at(84,-30,6.6),fov:52,mode:'dusk',time:27};
+  views.fallsClose={eye:[-4752,4236,186],target:[-4796,4342,228],fov:58,mode:'dusk',time:27};
+  views.fallsNight={eye:[-4690,4065,194],target:[-4805,4334,230],fov:61,mode:'night',time:27};
+  views.raceBoatEye={eye:at(38,-6,8.6),target:at(130,2,7.4),fov:62,mode:'day',time:27};
 }
 if(world.vaderland.parallax){
   views.courtArrival={eye:[32.5,2356.6,32.7],target:[71,2380,42.2],fov:59,mode:'dusk',time:27};
