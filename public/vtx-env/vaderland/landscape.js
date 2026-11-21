@@ -1267,6 +1267,7 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
     airMarks?.(timing);
     cityLife?.update(seconds,mode);
     wards?.update(seconds,timing);
+    lanternRace?.update?.(seconds);
     atmosphere?.update(cam,seconds,mode);
     market?.update(cam,physicsTime);optics?.update(mode,cam,physicsTime);departments?.update(physicsTime,doors,timing,aircraftXY);
   }, dispose(){

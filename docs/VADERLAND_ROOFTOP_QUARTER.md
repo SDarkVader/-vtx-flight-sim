@@ -85,13 +85,17 @@ Lines are timed point to point on the fleet clock (`sprint` courses in `CourseTi
 | Deep-water outlier (Eddy Line) | 20 m, 2.2 m lip, 12 m wide | 49 kN peak; about 2.3 m above the water into 6 m of water; needs near top speed; lands with up to 35° of roll and pitch and recovers |
 | Small-craft hop (Rock Garden) | 12 m, 0.8 m lip, 4.5 m wide | for narrower future hulls; a Ricochet steers round it |
 
+With the lines separated and the ramps rebuilt, an offline Ricochet on a simple steering autopilot at full throttle completes the Main Chute in 47.7 s (splits 12.0, 19.7, 26.9, 35.6 s): through the throat at up to 10.7 m/s with the current, thrown up to 40° of roll in the wave train, up the kicker within ±5° of roll, about 8 m of flight off the lip and level again within a few metres, with no crash or foul.
+
 A slipway at Needle Island's north tip takes amphibious vehicles between the island trail and the pool.
 
 **Needle Island.** A 7 m gravel trail loop inset from the shore with a tabletop, for future wheeled vehicles; a basalt shelf above the throat that is also the landing zone of the **Low Line** air mission (five low hoops down the race past the Lantern Rock beacon, a held touchdown on the shelf, exit over the island).
 
 **Scenery.** About 560 conifers on both islands (physical trunks, like the existing forests), the Lantern Rock with a breathing beacon, small hexagonal lanterns along both banks and the trail with light pools, and wet shingle and weed at the waterline instead of grass to the edge.
 
-**Water surface.** Whitewater, spray and the surface relief come from the same rapid field the physics uses, sampled into a 1.25 m texture: foam carried by the current and stretched along it, foam collars and wakes at rocks, boils over the two rocks just awash, small cross-flow ripples (smooth directional wave trains, faded with distance so they never alias into contour lines), a lapping wash in the shallows, and warm lantern light on the water at night. Broken water scatters the reflected sky, so the wave train does not mirror the city-lit clouds at night. Near a boat the live harbour surface already displaces the mesh with the solver's own free surface, rapids included; elsewhere the standing waves are drawn by shading.
+**Water surface.** Whitewater, spray and the surface relief come from the same rapid field the physics uses, sampled into a 1.25 m half-float texture (an 8-bit height quantised the smooth surface into terraces whose edges reflected the sky as contour lines): foam carried by the current and stretched along it, foam collars and wakes at rocks, boils over the two rocks just awash, small cross-flow ripples (smooth directional wave trains, faded with distance so they never alias into contour lines), a lapping wash in the shallows, and warm lantern light on the water at night. Broken water scatters the reflected sky, so the wave train does not mirror the city-lit clouds at night. Near a boat the live harbour surface already displaces the mesh with the solver's own free surface, rapids included; elsewhere the standing waves are drawn by shading.
+
+**Floating lanterns.** About fifty small lanterns are released above the race and drift on the same current field the boats feel: quickly through the throat, bobbing over the standing waves, thinly spread where the water is fast and gathering where it is slow, and sent round again when they reach the foot of the race. At night they are small warm lights on dark water; by day they show the flow. Render only.
 
 **Rocks.** Each rock is drawn as a sphere shrink-wrapped onto its collision hull (never outside it), with fractured relief, cavities, cracks, lichen on dry tops, and a dark glossy wet line that rises and falls with the water.
 
