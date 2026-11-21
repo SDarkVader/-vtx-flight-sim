@@ -21,6 +21,7 @@ import {buildVerticalLoops} from './vertical-loops.js';
 import {buildCathedralEast} from './cathedral-east.js';
 import {buildAirTrialMarkers} from './air-trials.js';
 import {buildCityLife} from './city-life.js';
+import {buildNeighbourhoods,neighbourhoodSolid} from './neighbourhood.js';
 
 const vertex = `
 varying vec3 p;
@@ -419,7 +420,7 @@ function roadPaint(group,w,ground,uniforms){
         indices.push(positions.length/3);positions.push(coords[j],coords[j+1],coords[j+2]);colors.push(shade.r,shade.g,shade.b);
       }
     };
-    if(road?.kind==='experimental'||road?.kind==='marina-link'){
+    if(road?.kind==='experimental'||road?.kind==='marina-link'||road?.mitre){
       const normals=points.slice(1).map(([x,y],i)=>{
         const dx=x-points[i][0],dy=y-points[i][1],length=Math.hypot(dx,dy);
         return [-dy/length,dx/length];
@@ -458,9 +459,10 @@ function roadPaint(group,w,ground,uniforms){
   for(const r of w.vaderland.routes){
     if(r.kind==='taxi' || r.kind==='boardwalk' || r.kind==='arrivals' || r.kind==='speedway' || r.kind==='vertical-loop' || r.kind==='quarry')continue;
     const junction=junctions.includes(r)?r:undefined;
-    strip(r.points,r.width_m,0,r.kind==='track'?'#796957':'#323942',r.deck_z_m,junction);
+    const mitred=junction??(r.mitre?r:undefined);
+    strip(r.points,r.width_m,0,r.kind==='track'?'#796957':'#323942',r.deck_z_m,mitred);
     const edge=r.edge_color??(r.kind==='viaduct'?'#ffad55':r.kind==='express'?'#e6c58d':'#9da29d');
-    for(const side of [-1,1])strip(r.points,r.kind==='viaduct'?1.05:.48,(r.width_m/2-.65)*side,edge,r.deck_z_m,junction);
+    for(const side of [-1,1])strip(r.points,r.kind==='viaduct'?1.05:.48,(r.width_m/2-.65)*side,edge,r.deck_z_m,mitred);
     if(r.width_m>40&&r.kind!=='apron')strip(r.points,.55,0,'#dfc887',r.deck_z_m);
     if(r.kind==='marina-link'&&r.width_m>10){
       let station=0;
@@ -776,6 +778,7 @@ function structures(group,w,uniforms){
   const blocks=[],drums=[],pines=[],trunks=[],engineering=[],columns=[];
   const boxIds=[],columnIds=[],market=new Set(w.vaderland.quarter?.retained??[]);
   for(const o of w.obstacles){
+    if(neighbourhoodSolid(o.id))continue;
     if(market.has(o.id)||o.id.startsWith('crest-gardens-')||(w.vaderland.city_lights&&avenueParcel(o)))continue;
     const [x,y,z]=o.center,[a,b,c]=o.half;
     if(w.vaderland.airfield && (o.finish || airportTree(o)))continue;
@@ -962,6 +965,7 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
   const market=w.vaderland.quarter?buildMarket(group,w,ground,uniforms,common):null;
   const cityLife=w.vaderland.quarter&&!globalThis.__vtxNoCityLife?buildCityLife(group,w,uniforms):null;
   if(cityLife)console.log('city life',JSON.stringify(cityLife.stats));
+  const wards=w.vaderland.neighbourhoods?buildNeighbourhoods(group,w,uniforms,common,ground):null;
   const court=w.vaderland.parallax_court?buildParallaxCourt(group,w,ground,uniforms,common):null;
   const room=w.vaderland.instrument_room?buildInstrumentRoom(group,w,uniforms,common):null;
   if(ground){
@@ -1074,6 +1078,7 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
     cathedralEast?.update(timing);
     airMarks?.(timing);
     cityLife?.update(seconds,mode);
+    wards?.update(seconds,timing);
     market?.update(cam,physicsTime);optics?.update(mode,cam,physicsTime);departments?.update(physicsTime,doors,timing,aircraftXY);
   }, dispose(){
     disposed=true;scene.fog=previous.fog;camera.far=previous.far;camera.updateProjectionMatrix();

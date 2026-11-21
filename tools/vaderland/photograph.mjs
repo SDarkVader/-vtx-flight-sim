@@ -124,6 +124,25 @@ if(world.vaderland.city_lights){
   views.parallaxFront={eye:[x-142,y+4,148],target:[x,y,143],fov:65,mode:'dusk',time:27};
   views.parallaxDetail={eye:[x-60,y+46,z+114],target:[x,y+25,z+105],fov:48,mode:'dusk',time:27};
 }
+if(world.vaderland.neighbourhoods){
+  // Vaderland 33 review cameras, placed from the design data.
+  const nb=world.vaderland.neighbourhoods;
+  const pad=[...nb.pads].filter(p=>p.size==='L').sort((a,b)=>a.height_m-b.height_m)[0];
+  const [px,py,pz]=pad.center;
+  views.zoneDusk={eye:[px-48,py-62,pz+38],target:[px,py,pz],fov:50,mode:'dusk',time:27};
+  const high=[...nb.pads].sort((a,b)=>b.height_m-a.height_m)[0];
+  views.zoneHigh={eye:[high.center[0]+140,high.center[1]-160,high.center[2]+60],target:high.center,fov:46,mode:'dusk',time:27};
+  const tr=world.vaderland.routes.find(r=>r.name===nb.tracks[0].name);
+  const xs=tr.points.map(p=>p[0]),ys=tr.points.map(p=>p[1]);
+  const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
+  const tz=world.obstacles.find(o=>o.id===nb.tracks[0].ramps[0]).center[2];
+  views.trackDay={eye:[cx-95,cy-85,tz+48],target:[cx,cy,tz],fov:52,mode:'day',time:27};
+  const m=world.vaderland.missions[0],h=m.steps[1],[nx,ny]=h.normal;
+  views.hoopRun={eye:[h.center[0]-nx*140,h.center[1]-ny*140,h.center[2]+6],target:[h.center[0]+nx*200,h.center[1]+ny*200,h.center[2]-20],fov:60,mode:'dusk',time:27};
+  const lane=world.vaderland.routes.filter(r=>r.kind==='lane').sort((a,b)=>Math.hypot(a.points[0][0]+2100,a.points[0][1]-3900)-Math.hypot(b.points[0][0]+2100,b.points[0][1]-3900))[0];
+  const [lx,ly]=lane.points[0],[mx,my]=lane.points.at(-1),lz=world.obstacles.find(o=>o.id.startsWith('nb-'))?.center[2]??45;
+  views.laneLow={eye:[lx-(mx-lx)*.6+18,ly-(my-ly)*.6+14,lz+26],target:[(lx+mx)/2,(ly+my)/2,lz-6],fov:58,mode:'dusk',time:27};
+}
 if(world.vaderland.parallax){
   views.courtArrival={eye:[32.5,2356.6,32.7],target:[71,2380,42.2],fov:59,mode:'dusk',time:27};
   views.courtDrive={eye:[-4,2255,31.3],target:[4,2435,37],fov:58,mode:'dusk',time:27};

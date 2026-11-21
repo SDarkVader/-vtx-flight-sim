@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import {heightfieldZ} from '../landscape.js';
 
-const LIT_KINDS = new Set(['street','arterial','boulevard','local','arrivals','marina-link']);
+const LIT_KINDS = new Set(['street','arterial','boulevard','local','arrivals','marina-link','lane','track']);
 const MERIDIAN = {x0:-3300, x1:3100, y0:500, y1:5800};
 const inMeridian = (x,y) => x>MERIDIAN.x0 && x<MERIDIAN.x1 && y>MERIDIAN.y0 && y<MERIDIAN.y1;
 
@@ -40,7 +40,7 @@ export function buildCityLife(group, w, uniforms){
   const root=new THREE.Group();root.name='Meridian city life';group.add(root);
   const time={value:0}, lit={value:0}, day={value:1};
   const shared={time,lit,day,night:uniforms.night};
-  const routes=(w.vaderland.routes||[]).filter(r=>LIT_KINDS.has(r.kind));
+  const routes=(w.vaderland.routes||[]).filter(r=>LIT_KINDS.has(r.kind)&&(r.kind!=='track'||inMeridian(...r.points[0])));
 
   // ---- 1. Street lamps and their light pools -------------------------------------------
   const lamps=[], pools=[];
@@ -65,7 +65,7 @@ export function buildCityLife(group, w, uniforms){
   // ---- 2. Traffic light streams --------------------------------------------------------
   const cars=[];const random=rng(48611);
   for(const r of routes){
-    if(r.kind==='arrivals'||r.kind==='local')continue;
+    if(r.kind==='arrivals'||r.kind==='local'||r.kind==='track')continue;
     const density=r.width_m>=40?.034:.020;                              // vehicles per metre per direction
     const lanes=r.width_m>=40?2:1;
     for(let i=1;i<r.points.length;i++){
