@@ -26,6 +26,17 @@ const GRADE = {
       gl_FragColor = vec4(c, 1.0); }`,
 };
 
+// The stock bloom blur uses a Gaussian with sigma equal to its tap count, cut off at one sigma: nearly flat,
+// so the separable horizontal and vertical passes act as a box blur and every bright light gets a square halo.
+// A Gaussian is the only separable kernel that is round; cut off at 3 sigma (edge step about 2 %, not 66 %) the halo is round.
+function roundBloom(bloom) {
+  for (const material of bloom.separableBlurMaterials || []) {
+    const taps = material.defines?.KERNEL_RADIUS, sigma = taps / 3;
+    if (!taps || !material.uniforms?.gaussianCoefficients) continue;
+    material.uniforms.gaussianCoefficients.value = Array.from({length: taps}, (_, i) => 0.39894 * Math.exp(-0.5 * i * i / (sigma * sigma)) / sigma);
+  }
+}
+
 export function createPost(renderer, scene, camera, quality) {
   if (!quality.post && !quality.glow) return null;
   let pipeline, enabled = false;
@@ -41,6 +52,7 @@ export function createPost(renderer, scene, camera, quality) {
       composer.addPass(ao);
     }
     const bloom = new UnrealBloomPass(size.clone(), 0.22, 0.5, 0.9);
+    roundBloom(bloom);
     composer.addPass(bloom);
     composer.addPass(new OutputPass());
     const grade = new ShaderPass(GRADE);
