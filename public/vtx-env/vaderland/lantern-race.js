@@ -234,18 +234,16 @@ export function buildLanternRace(group,w,uniforms,common,ground){
     }`}));
   rampMesh.name='Lantern Race ramps';rampMesh.userData.sceneryIds=ramps.map(o=>o.id);root.add(rampMesh);
 
-  // Pontoon floats under the floating ramps and amber lip lamps along each launch edge.
-  const floats=[],lips=[];
+  // Anchor buoys off each floating ramp's entry corners and amber lip lamps along each launch edge.
+  const buoys=[],lips=[];
   for(const o of ramps.filter(o=>o.ramp?.floating)){
     const h=o.ramp.heading,ca=Math.cos(h),sa=Math.sin(h),L=o.ramp.length_m,W=o.ramp.width_m,[cx,cy]=o.center;
-    for(const s of [-1,1]){const v=s*(W/2-.45);floats.push([cx-v*sa,cy+v*ca,level-.12,h,L+1.2]);}
+    for(const s of [-1,1]){const v=s*(W/2+2.2),u=-L/2-3.5;buoys.push([cx+u*ca-v*sa,cy+u*sa+v*ca,level+.12]);}
     for(let k=0;k<=6;k++){const v=(k/6-.5)*W*.92;lips.push([cx+L/2*ca-v*sa,cy+L/2*sa+v*ca,level+o.ramp.height_m+.08]);}
   }
-  const floatMat=new THREE.MeshStandardMaterial({color:'#1b1d22',roughness:.55,metalness:.35});
-  const floatMesh=new THREE.InstancedMesh(new THREE.CylinderGeometry(.45,.45,1,14).rotateZ(Math.PI/2),floatMat,floats.length);
-  const M=new THREE.Matrix4(),Q=new THREE.Quaternion(),Z=new THREE.Vector3(0,0,1),S=new THREE.Vector3(),T=new THREE.Vector3();
-  floats.forEach(([x,y,z,h,L],k)=>floatMesh.setMatrixAt(k,M.compose(T.set(x,y,z),Q.setFromAxisAngle(Z,h),S.set(L,1,1))));
-  floatMesh.name='Lantern Race ramp floats';root.add(floatMesh);
+  const M=new THREE.Matrix4(),Q=new THREE.Quaternion(),S=new THREE.Vector3(),T=new THREE.Vector3();
+  const buoyMesh=new THREE.InstancedMesh(new THREE.SphereGeometry(.38,12,8),new THREE.MeshStandardMaterial({color:'#c8662a',roughness:.5,metalness:.1}),buoys.length);
+  buoys.forEach(([x,y,z],k)=>buoyMesh.setMatrixAt(k,M.makeTranslation(x,y,z)));buoyMesh.name='Lantern Race ramp anchor buoys';root.add(buoyMesh);
   const glowMat=new THREE.MeshBasicMaterial({color:AMBER.clone().multiplyScalar(2.2),toneMapped:false});
   const lipMesh=new THREE.InstancedMesh(new THREE.SphereGeometry(.09,8,6),glowMat,lips.length);
   lips.forEach(([x,y,z],k)=>lipMesh.setMatrixAt(k,M.makeTranslation(x,y,z)));lipMesh.name='Lantern Race lip lamps';root.add(lipMesh);
