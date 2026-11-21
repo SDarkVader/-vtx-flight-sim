@@ -550,7 +550,7 @@ class PhantomAircraft:
                           fan_vertical_n=float(sum(st.get('thrust_n', 0.0) * self.pod_axis(k)[2] for k, st in zip(PODS, self.fan_state))),
                           u_ground=float(cy * d.qvel[0] + sy * d.qvel[1]), v_ground_left=float(-sy * d.qvel[0] + cy * d.qvel[1]))
         joint_positions = {name: float(self.joint(name)[0]) for name in self.L.bodies if name in self.jid}
-        led = self.L.mass_properties(joint_positions, fuel_kg=list(self.fuel))
+        led = self.L.mass_properties(joint_positions, fuel_kg=list(self.fuel), include_inertia=False)
         fan_en = {k: abs(self.joint(f'pod_{k}')[0]) >= math.radians(P['pods.fan_enable_tilt_deg']) for k in PODS}
         avail = {k: self.fan.thrust_max * min(1.0, (self.bus.motor_power_limit(i) / P['pods.motor_power_peak_w']) ** (2 / 3)) for i, k in enumerate(PODS)}
         al = self.alloc = self.fcc.update(float(d.time), sensed, float(sum(self.model.body_mass)), led['cg_m'][0], g, fan_en, avail)

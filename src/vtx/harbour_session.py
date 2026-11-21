@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import base64
+from copy import copy
+from functools import partial
 import gzip
 import hashlib
 import json
@@ -13,6 +15,36 @@ from pathlib import Path
 import threading
 import time
 import uuid
+
+
+def _advance_water_in_strips(advance, field, dt):
+    """Keep the existing local SWE stencil in cache, including true wall faces."""
+    import numpy as np
+
+    strip_rows = 64
+    rows = field.h.shape[0]
+    if rows <= strip_rows:
+        advance(field, dt)
+        return
+
+    inputs = field.h, field.hu, field.hv, field.bed
+    outputs = tuple(np.empty_like(layer) for layer in inputs[:3])
+    patch = copy(field)
+    for start in range(0, rows, strip_rows):
+        stop = min(start + strip_rows, rows)
+        top, bottom = max(0, start - 1), min(rows, stop + 1)
+        patch.h, patch.hu, patch.hv, patch.bed = (layer[top:bottom] for layer in inputs)
+        advance(patch, dt)
+        core = slice(start - top, stop - top)
+        for out, result in zip(outputs, (patch.h, patch.hu, patch.hv)):
+            out[start:stop] = result[core]
+    field.h, field.hu, field.hv = outputs
+
+
+def _partition_harbour_water(fleet):
+    if fleet.water._repeated_basin:
+        stencil = fleet.water.shallow._advance_substep
+        stencil.stock = partial(_advance_water_in_strips, stencil.stock)
 
 
 def _encode(fleet):
@@ -57,7 +89,16 @@ def _publish(path, payload):
             stream.write(payload)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        # Windows can briefly deny replacement while another process has the
+        # old checkpoint open. Keep the durable file until the atomic swap works.
+        for delay in (0.01, 0.025, 0.05, 0.1, None):
+            try:
+                os.replace(temporary, path)
+                break
+            except OSError as exc:
+                if delay is None or getattr(exc, "winerror", None) not in (5, 32, 33):
+                    raise
+                time.sleep(delay)
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -154,6 +195,7 @@ def _run(connection, rate, seed, snapshot, environment):
             if snapshot is not None
             else fleet_class(world)
         )
+        _partition_harbour_water(fleet)
         connection.send((True, None))
     except Exception as exc:
         connection.send((False, str(exc)))
@@ -197,6 +239,7 @@ def _run(connection, rate, seed, snapshot, environment):
                             result["error"] = fault
                     elif action == "restart":
                         candidate = _restart_boat(world, fleet, body)
+                        _partition_harbour_water(candidate)
                         payload = _encode(candidate)
                         history = current.parent / "harbour-history" / (uuid.uuid4().hex + ".json.gz")
                         _publish(history, _encode(fleet))

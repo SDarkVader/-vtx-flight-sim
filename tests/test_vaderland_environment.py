@@ -181,6 +181,30 @@ def test_market_shallow_water_reuses_only_bitwise_identical_cell_neighbourhoods(
             np.testing.assert_array_equal(a.view(np.uint64), b.view(np.uint64))
 
 
+def test_harbour_worker_water_strips_preserve_the_stock_stencil():
+    from copy import deepcopy
+    from types import SimpleNamespace
+
+    from vtx.harbour_session import _advance_water_in_strips
+    from vtx.water.shallow_water import ShallowWaterSolver
+
+    rng = np.random.default_rng(33)
+    world = SimpleNamespace(half=500, terrain_z_array=lambda x, y: 2 * np.sin(x / 50))
+    stock = ShallowWaterSolver(world, nx=97, ny=151)
+    stock.h *= rng.uniform(0.5, 1.5, size=stock.h.shape)
+    stock.hu[:] = rng.normal(0, 0.1, size=stock.h.shape)
+    stock.hv[:] = rng.normal(0, 0.1, size=stock.h.shape)
+    strips = deepcopy(stock)
+
+    for _ in range(4):
+        stock._advance_substep(0.05)
+        _advance_water_in_strips(ShallowWaterSolver._advance_substep, strips, 0.05)
+        for name in ('h', 'hu', 'hv'):
+            expected = getattr(stock, name).view(np.uint64)
+            actual = getattr(strips, name).view(np.uint64)
+            np.testing.assert_array_equal(actual, expected)
+
+
 def test_timing_rejects_overflight_and_requires_the_ordered_return():
     from vtx.course_timing import CourseTiming
     gates=[dict(center=[x,0,0],normal=[1,0],width_m=12) for x in (0,20)]

@@ -8,6 +8,38 @@ import pytest
 from vtx.harbour_fleet import HarbourFleet, DT
 
 
+@pytest.mark.parametrize("persistent", [False, True])
+def test_harbour_checkpoint_retry_preserves_atomic_replacement(tmp_path, monkeypatch, persistent):
+    from vtx import harbour_session
+
+    checkpoint = tmp_path / "current.json.gz"
+    checkpoint.write_bytes(b"old checkpoint")
+    real_replace = harbour_session.os.replace
+    attempts = []
+
+    def contested_replace(source, target):
+        assert target.read_bytes() == b"old checkpoint"
+        attempts.append(source)
+        if persistent or len(attempts) <= 2:
+            error = PermissionError("file is open elsewhere")
+            error.winerror = 5
+            raise error
+        real_replace(source, target)
+
+    monkeypatch.setattr(harbour_session.os, "replace", contested_replace)
+    monkeypatch.setattr(harbour_session.time, "sleep", lambda _: None)
+    if persistent:
+        with pytest.raises(PermissionError):
+            harbour_session._publish(checkpoint, b"new checkpoint")
+        assert checkpoint.read_bytes() == b"old checkpoint"
+        assert len(attempts) == 5
+    else:
+        harbour_session._publish(checkpoint, b"new checkpoint")
+        assert checkpoint.read_bytes() == b"new checkpoint"
+        assert len(attempts) == 3
+    assert list(tmp_path.iterdir()) == [checkpoint]
+
+
 def harbour_world():
     variants = ["ricochet-concept-a", "ricochet-rc01-f03"]
     berths = []

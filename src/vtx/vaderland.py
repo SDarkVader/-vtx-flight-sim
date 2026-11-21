@@ -45,6 +45,7 @@ class Vaderland(TestWorld):
         self.vaderland = dict(height_scale_m=self.height_scale_m, routes=[], places=[])
         rings = [chart['layout']['outer'], *(i['ring'] for i in chart['layout']['islands'])]
         edges = [np.asarray(ring, dtype=float) for ring in rings]
+        self._island_bounds = tuple((ring, ring.min(axis=0), ring.max(axis=0)) for ring in edges[1:])
         self._shore = np.concatenate(edges)
         self._ends = np.concatenate([np.roll(p, -1, axis=0) for p in edges])
         self._delta = self._ends-self._shore
@@ -56,8 +57,10 @@ class Vaderland(TestWorld):
         p = np.column_stack((x.ravel()-ox, oy-y.ravel()))
         layout = self.harbour['layout']
         wet = contains(p, layout['outer'])
-        for island in layout['islands']:
-            wet &= ~contains(p, island['ring'])
+        for ring, lower, upper in self._island_bounds:
+            nearby = wet & np.all((p >= lower) & (p <= upper), axis=1)
+            if np.any(nearby):
+                wet[nearby] &= ~contains(p[nearby], ring)
         return wet.reshape(x.shape)
 
     def harbour_overlaps(self, x, y, radius):
