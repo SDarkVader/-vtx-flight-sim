@@ -11,6 +11,7 @@ Geometry comes from the handover JSON of the selected wing-cassette revision (A9
 from __future__ import annotations
 import math
 import numpy as np
+from .geometry import cross3
 
 
 def _sig(a, a0, M):
@@ -31,6 +32,7 @@ class Surface:
     def __init__(self, name, ac, chord_dir, normal, area, cla, alpha0, alpha_stall, cd0, k_ind, kind, side=None, ch=(0.0, 0.0), chord=0.3):
         self.name = name; self.ac = np.array(ac, float); self.c = np.array(chord_dir, float) / np.linalg.norm(chord_dir)
         self.n = np.array(normal, float) / np.linalg.norm(normal); self.area = area; self.cla = cla; self.alpha0 = alpha0
+        self.span = cross3(self.c, self.n)
         self.alpha_stall = alpha_stall; self.cd0 = cd0; self.k_ind = k_ind; self.kind = kind; self.side = side; self.ch = ch; self.chord = chord
 
 
@@ -94,7 +96,7 @@ class SurfaceAero:
         Returns dict(force, moment about body origin, per-surface list, hinge moments)."""
         F = np.zeros(3); Mo = np.zeros(3); out = []; hinge = {}
         def air(r):
-            return v_body + np.cross(w_body, r) - wind_body
+            return v_body + cross3(w_body, r) - wind_body
         for s in self.surfaces:
             frac = 1.0; extra_inc = 0.0
             if s.kind == 'wing':
@@ -108,7 +110,7 @@ class SurfaceAero:
             if frac <= 0:
                 out.append(dict(name=s.name, alpha_deg=0.0, q_pa=0.0, cl=0.0, cd=0.0, force_n=[0, 0, 0], active=False)); continue
             v = air(s.ac)
-            span = np.cross(s.c, s.n)
+            span = s.span
             vp = v - (v @ span) * span
             V = float(np.linalg.norm(vp))
             if V < 1e-6:
@@ -116,9 +118,9 @@ class SurfaceAero:
             alpha = math.atan2(-(vp @ s.n), vp @ s.c) + extra_inc
             cl, cd, stall = coefficients(alpha, s.cla, s.alpha0, s.alpha_stall, s.cd0, s.k_ind, self.cn_fp, self.M)
             q = 0.5 * self.rho * V * V
-            ddir = -vp / V; ldir = np.cross(ddir, span); ldir /= np.linalg.norm(ldir)
+            ddir = -vp / V; ldir = cross3(ddir, span); ldir /= np.linalg.norm(ldir)
             f = q * s.area * frac * (cl * ldir + cd * ddir)
-            F += f; Mo += np.cross(s.ac, f)
+            F += f; Mo += cross3(s.ac, f)
             if s.kind == 'canard':
                 hinge[s.name] = q * s.area * s.chord * s.ch[0] * alpha
             out.append(dict(name=s.name, alpha_deg=math.degrees(alpha), q_pa=q, cl=cl, cd=cd, stall_blend=stall, force_n=f.tolist(), active=True))
@@ -134,9 +136,9 @@ class SurfaceAero:
                     qa = 0.5 * self.rho * Va * Va
                     dcl = s.cla * st['tau'] * d * (1 - stall)
                     dcd = self.P['aero.flap_delta_cd_per_rad'] * abs(d)
-                    dd = -vpa / Va; ld = np.cross(dd, span); ld /= np.linalg.norm(ld)
+                    dd = -vpa / Va; ld = cross3(dd, span); ld /= np.linalg.norm(ld)
                     fs = qa * st['area'] * frac * (dcl * ld + dcd * dd)
-                    F += fs; Mo += np.cross(st['pos'], fs)
+                    F += fs; Mo += cross3(st['pos'], fs)
                     hinge[f'{cs}_{s.side}'] = qa * st['cs_area'] * st['cs_chord'] * (st['ch'][0] * alpha + st['ch'][1] * d)
                     out.append(dict(name=f'{cs}_{s.side}', locked=True, delta_deg=math.degrees(d), dcl=dcl, force_n=fs.tolist()))
         rud = state.get('rudder', 0.0)
@@ -149,11 +151,11 @@ class SurfaceAero:
                 va = air(s.ac); qf = 0.5 * self.rho * float(va @ va)
                 da = float(np.clip(self.rudder_tau * rud, -s.alpha_stall, s.alpha_stall))
                 fr = np.array([0.0, qf * s.area * s.cla * da, 0.0])
-                F += fr; Mo += np.cross(s.ac, fr)
+                F += fr; Mo += cross3(s.ac, fr)
                 out.append(dict(name=f'rudder_{s.side}', delta_deg=math.degrees(rud), force_n=fr.tolist()))
         vb = air(self.body_centre)
         fb = -0.5 * self.rho * np.abs(vb) * vb * self.body_cda
-        F += fb; Mo += np.cross(self.body_centre, fb)
+        F += fb; Mo += cross3(self.body_centre, fb)
         out.append(dict(name='body', force_n=fb.tolist(), cda_m2=self.body_cda.tolist(),
                         munk_moment='hull_lift overlay' if self.hull else 'not modelled'))
         if self.hull:
@@ -161,7 +163,7 @@ class SurfaceAero:
             vp = air(h['cp_pitch']); vy = air(h['cp_yaw'])
             fz = np.array([0.0, 0.0, hr * h['k_pitch'] * (-vp[2]) * max(vp[0], 0.0)])     # forebody lift (reverse flow: none)
             fy = np.array([0.0, hr * h['k_yaw'] * (-vy[1]) * max(vy[0], 0.0), 0.0])       # side profile, sideslip
-            m_o = np.cross(h['cp_pitch'], fz) + np.cross(h['cp_yaw'], fy)
+            m_o = cross3(h['cp_pitch'], fz) + cross3(h['cp_yaw'], fy)
             F += fz + fy; Mo += m_o
             out.append(dict(name='hull_lift', force_n=(fz + fy).tolist(), pitch_force_n=float(fz[2]), side_force_n=float(fy[1]),
                             moment_about_origin_nm=m_o.tolist()))

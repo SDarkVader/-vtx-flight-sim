@@ -16,7 +16,7 @@ from ..aircraft import DT
 from .params import Params, ROOT, load_a10b_characteristics
 from .flight_revisions import REGISTRY_PATH, flight_revision
 from .ledger import PhantomLedger
-from .geometry import PODS, SIDE, FRONT, WING_SIDES, WING_SIGN, PINS
+from .geometry import PODS, SIDE, FRONT, WING_SIDES, WING_SIGN, PINS, cross3
 from .propulsion import DuctedFan
 from .energy_bus import EnergyBus
 from .surface_aero import SurfaceAero
@@ -781,7 +781,7 @@ class PhantomAircraft:
     def point_velocity(self, b, p):
         v6 = np.zeros(6)
         mj.mj_objectVelocity(self.model, self.data, mj.mjtObj.mjOBJ_XBODY, b, v6, 0)
-        return v6[3:] + np.cross(v6[:3], p - self.data.xpos[b])
+        return v6[3:] + cross3(v6[:3], p - self.data.xpos[b])
 
     # ------------------------------------------------------------ contacts
     def contact_samples(self):
