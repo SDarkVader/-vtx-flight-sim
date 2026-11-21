@@ -6,7 +6,7 @@
     "VTX_DEFAULT_ENVIRONMENT": "vaderland-33"
   },
   "functions": {
-    "src/vtx/live_server.py": {
+    "vercel_app.py": {
       "includeFiles": "{inputs/vercel_frontend.zip,public/assets/ricochet-concept-a.glb}"
     }
   },

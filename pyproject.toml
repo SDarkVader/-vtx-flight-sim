@@ -24,7 +24,7 @@ dev = [
 package = false
 
 [tool.vercel]
-entrypoint = "src.vtx.live_server:app"
+entrypoint = "vercel_app:app"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
