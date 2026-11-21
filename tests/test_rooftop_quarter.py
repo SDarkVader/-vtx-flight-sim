@@ -24,8 +24,9 @@ def test_existing_world_is_unchanged_and_extended(worlds):
     assert np.array_equal(old.heights, new.heights)
     added = new.obstacles[len(old.obstacles):]
     assert len({o['id'] for o in new.obstacles}) == len(new.obstacles)
-    assert all(o['id'].startswith('nbr-') and o['role'] == 'ramp' for o in added)   # no new buildings
-    assert len(added) <= 60
+    wards = [o for o in added if not o['id'].startswith('lr-')]      # the Lantern Race has its own checks
+    assert all(o['id'].startswith('nbr-') and o['role'] == 'ramp' for o in wards)   # no new buildings
+    assert len(wards) <= 60
 
 
 def test_new_solids_do_not_intersect_existing_scenery(worlds):

@@ -301,6 +301,12 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
       <button type="button" data-harbour="stage-trial" title="Save the selected boat’s current state and move it to the trial staging water">Stage selected boat for trial</button>
       <p data-harbour="trial-status" class="muted small" aria-live="polite"></p>
     </section>
+    <section data-harbour="races" hidden aria-label="Lantern Race">
+      <div class="section-label">Lantern Race · Needle narrows</div>
+      <label class="control-label">Line<select data-harbour="race-line"></select></label>
+      <button type="button" data-harbour="stage-race" title="Save the selected boat’s current state and move it above the race start">Stage selected boat for the race</button>
+      <p data-harbour="race-status" class="muted small" aria-live="polite"></p>
+    </section>
     <div class="map-tools"><button type="button" data-harbour="focus">View selected boat</button><button type="button" data-harbour="cockpit">Cockpit camera</button></div>
     <label class="control-label">Berth<select data-harbour="berth"><option value="">Choose a berth</option></select></label>
     <div class="map-tools"><button type="button" data-harbour="dock">Dock at berth</button><button type="button" data-harbour="undock">Release mooring</button></div>
@@ -371,6 +377,24 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
       if(run?.best!=null)parts.push('Best '+run.best.toFixed(2)+' s');
       const text=parts.join(' · ');
       if(el('trial-status').textContent!==text) el('trial-status').textContent=text;
+    }
+    const races=world.harbour.races||[];
+    el('races').hidden=!races.length;
+    if(races.length){
+      const line=el('race-line');
+      if(line.options.length!==races.length)setOptions(line,races.map(r=>option(r.id,r.name.replace(/^Lantern Race · /,''))),line.value||races[0].id);
+      line.disabled=!live||!boat;el('stage-race').disabled=!live||!boat;
+      const runs=state?.lantern_races?.runs?.[boat?.id]||{},foul=state?.lantern_races?.fouls?.[boat?.id];
+      const running=races.find(r=>runs[r.name]?.start!=null),chosen=running||races.find(r=>r.id===line.value)||races[0],run=runs[chosen.name];
+      const parts=[];
+      if(foul)parts.push(foul);
+      if(!running)parts.push('Cross the start gate · the first line gate you take commits you to that line');
+      else parts.push(chosen.name.replace(/^Lantern Race · /,'')+' · '+(run.next===chosen.gates.length-1?'Finish gate':'Next gate '+run.next+' of '+(chosen.gates.length-2)));
+      if(run?.splits?.length)parts.push('Split '+run.splits.at(-1).toFixed(2)+' s');
+      if(run?.last!=null)parts.push('Last '+run.last.toFixed(2)+' s');
+      if(run?.best!=null)parts.push('Best '+run.best.toFixed(2)+' s');
+      const text=parts.join(' · ');
+      if(el('race-status').textContent!==text)el('race-status').textContent=text;
     }
     el('save').disabled = !live;
     el('restore').disabled = !enabled || !state?.available || !state.saved || busy;
@@ -456,6 +480,19 @@ export function createHarbourControls({host, api, toast = () => {}, onState = ()
     const epoch=worldEpoch;
     try{
       await send({action:'restart',boatId:boat.id,timeTrial:true},{throwOnError:true});
+      if(epoch!==worldEpoch)return;
+      const staged=selected();
+      if(staged?.id===boat.id)onFocus(staged.position,'boat',staged.id);
+    }catch{}
+  });
+  el('race-line').addEventListener('change', render);
+  el('stage-race').addEventListener('click', async () => {
+    const boat=selected(),raceId=el('race-line').value;
+    if(!boat || !ready() || !raceId)return;
+    discardHelm();
+    const epoch=worldEpoch;
+    try{
+      await send({action:'restart',boatId:boat.id,raceId},{throwOnError:true});
       if(epoch!==worldEpoch)return;
       const staged=selected();
       if(staged?.id===boat.id)onFocus(staged.position,'boat',staged.id);

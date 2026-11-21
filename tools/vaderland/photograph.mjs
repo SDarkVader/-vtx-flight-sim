@@ -145,6 +145,17 @@ if(world.vaderland.neighbourhoods){
   const m=world.vaderland.missions[0],h=m.steps[1],[nx,ny]=h.normal;
   views.hoopRun={eye:[h.center[0]-nx*140,h.center[1]-ny*140,h.center[2]+6],target:[h.center[0]+nx*200,h.center[1]+ny*200,h.center[2]-20],fov:60,mode:'dusk',time:27};
 }
+if(world.vaderland.lantern_race){
+  // The Lantern Race in the Needle narrows: s downstream along the reach, n towards Heron Island.
+  const lr=world.vaderland.lantern_race,a=lr.axis_deg*Math.PI/180,A=[Math.cos(a),Math.sin(a)],N=[-A[1],A[0]];
+  const at=(s,n,z)=>[lr.centre[0]+A[0]*s+N[0]*n,lr.centre[1]+A[1]*s+N[1]*n,z];
+  views.raceAir={eye:at(-260,90,95),target:at(60,-10,7),fov:55,mode:'dusk',time:27};
+  views.raceLow={eye:at(-12,16,9.6),target:at(140,0,6),fov:60,mode:'day',time:27};
+  views.raceNight={eye:at(58,-72,30),target:at(125,8,8),fov:58,mode:'night',time:27};
+  views.raceGarden={eye:at(64,-96,30),target:at(112,-28,7),fov:55,mode:'day',time:27};
+  views.raceIsland={eye:at(-70,-390,125),target:at(40,-125,15),fov:55,mode:'dusk',time:27};
+  views.raceRamps={eye:at(150,72,22),target:at(200,8,7),fov:58,mode:'day',time:27};
+}
 if(world.vaderland.parallax){
   views.courtArrival={eye:[32.5,2356.6,32.7],target:[71,2380,42.2],fov:59,mode:'dusk',time:27};
   views.courtDrive={eye:[-4,2255,31.3],target:[4,2435,37],fov:58,mode:'dusk',time:27};

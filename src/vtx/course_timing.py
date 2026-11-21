@@ -28,6 +28,11 @@ class CourseTiming:
                     lap=round(stamp-state['start'],3);state['last']=lap
                     state['best']=min(state['best'],lap) if state['best'] is not None else lap;state['laps']+=1
                 state['start']=stamp;state['splits']=[]
+            elif c.get('sprint') and idx==len(c['gates'])-1:
+                # A point-to-point course finishes at its last gate and waits for the start again.
+                result=round(stamp-state['start'],3);state['last']=result;state['laps']+=1
+                state['best']=min(state['best'],result) if state['best'] is not None else result
+                state['start']=None;state['next']=0;continue
             else:state['splits'].append(round(stamp-state['start'],3))
             state['next']=(idx+1)%len(c['gates'])
 

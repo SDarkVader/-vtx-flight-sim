@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import {cityDensity,DENSITY_BOUNDS as LB} from './city-density.js';
 
 const B={x0:-3300,x1:3100,y0:500,y1:5800};
-const DOME={c:new THREE.Vector3(-100,3050,20),r:new THREE.Vector3(3700,3050,270)};
+const DOME={c:new THREE.Vector3(-100,3050,20),r:new THREE.Vector3(3700,3050,430)};
 
 // ---- the city's light, from population density: sodium amber, a whiter core ---------------
 function cityLightMap(density){
@@ -56,14 +56,20 @@ function hazeDome(u){
       t0=max(t0,clearM);
       if(dir.z<0.)t1=min(t1,(domeC.z-cameraPosition.z)/dir.z);   // stop at the ground datum
       if(t1<=t0)discard;
-      vec3 mid=cameraPosition+dir*(t0+t1)*.5;
-      float h=max(0.,mid.z-domeC.z);
-      float edge=smoothstep(0.,.55,1.-length((mid-domeC)/domeR));     // no hard boundary to the haze
-      float dens=(.20+.80*fog2(mid.xy))*exp(-h/110.)*(.45+.75*weather)*edge;
-      float tau=dens*(t1-t0)*.00055*density;
-      float alpha=1.-exp(-tau);
-      vec3 lit=lightAt(mid.xy)*glowGain*exp(-h/170.)*(1.+.6*fog2(mid.xy*1.7));
-      vec3 col=hazeColour*(1.+flash*2.5)+lit;
+      // March the chord in 8 steps: a single midpoint jumps in height where rays stop meeting the
+      // ground inside the dome, which drew a hard-edged band across the city.
+      float seg=(t1-t0)/8.,tau=0.,wsum=1e-4;vec3 litSum=vec3(0.);
+      for(int k=0;k<8;k++){
+        vec3 q=cameraPosition+dir*(t0+(float(k)+.5)*seg);
+        float h=max(0.,q.z-domeC.z);
+        float edge=smoothstep(0.,.55,1.-length((q-domeC)/domeR));
+        float dens=(.20+.80*fog2(q.xy))*exp(-h/170.)*(.45+.75*weather)*edge;
+        tau+=dens*seg;
+        vec3 l=lightAt(q.xy)*glowGain*exp(-h/330.);
+        litSum+=l*dens;wsum+=dens;
+      }
+      float alpha=1.-exp(-tau*.00055*density);
+      vec3 col=hazeColour*(1.+flash*2.5)+litSum/wsum;
       gl_FragColor=vec4(col,alpha*.92);
     }`});
   const mesh=new THREE.Mesh(new THREE.SphereGeometry(1,64,32),m);

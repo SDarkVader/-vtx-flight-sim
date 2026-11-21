@@ -207,6 +207,8 @@ class WaterEnvironmentConfig:
     shallow_water_substeps: int = 2
     whirlpools_enabled: bool = True
     whirlpool_intensity: float = 1.0
+    rapids_enabled: bool = True
+    rapids_intensity: float = 1.0
     wake_enabled: bool = True
     rho_water_kg_m3: float = RHO_FRESHWATER_15C
     nu_water_m2_s: float = NU_FRESHWATER_15C

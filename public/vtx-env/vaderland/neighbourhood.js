@@ -91,12 +91,13 @@ function missionMarkers(missions,uniforms){
   const group=new THREE.Group();group.name='Mission hoops';
   const rows=[];
   for(const m of missions){
-    const idle=new THREE.MeshBasicMaterial({color:new THREE.Color(.30,.28,.24),toneMapped:false,transparent:true,opacity:.55});
+    const brakeLine=m.name.startsWith('The Brake Line');
+    const idle=new THREE.MeshBasicMaterial({color:brakeLine?new THREE.Color(.78,.70,.56):new THREE.Color(.30,.28,.24),toneMapped:false,transparent:true,opacity:brakeLine?.85:.55});
     const hot=new THREE.MeshBasicMaterial({color:new THREE.Color(1.,.78,.45),toneMapped:false});
     const markers=m.steps.map((s,i)=>{
       const node=new THREE.Group();node.name=m.name+' step '+(i+1);
       if(s.type==='hoop'){
-        const ring=new THREE.Mesh(new THREE.TorusGeometry(s.radius_m,Math.max(.25,s.radius_m*.022),8,72),idle);
+        const ring=new THREE.Mesh(new THREE.TorusGeometry(s.radius_m,Math.max(brakeLine?.45:.25,s.radius_m*.03),8,72),idle);
         ring.position.set(...s.center);
         ring.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),new THREE.Vector3(...s.normal));
         node.add(ring);
@@ -161,10 +162,10 @@ function brakeLineMarks(marks,uniforms){
   const ghost=new THREE.Mesh(ghostG,material(`
     attribute vec3 ghost;attribute float order;uniform float time;varying vec2 q;varying float glow;
     void main(){q=position.xy;glow=.55+.45*sin(time*.8-order*.21);
-      vec4 v=viewMatrix*vec4(ghost,1.);v.xy+=position.xy*max(.18,-v.z*.0012);gl_Position=projectionMatrix*v;}`,`
+      vec4 v=viewMatrix*vec4(ghost,1.);v.xy+=position.xy*max(.30,-v.z*.0019);gl_Position=projectionMatrix*v;}`,`
     uniform float night,blueHour;varying vec2 q;varying float glow;
     void main(){float r=dot(q,q);if(r>1.)discard;float lit=max(night,blueHour*.8);
-      gl_FragColor=vec4(vec3(.95,.90,.80)*exp(-r*3.5)*.32*glow*lit,1.);}`));
+      gl_FragColor=vec4(vec3(.95,.90,.80)*exp(-r*3.5)*.85*glow*(.35+.65*lit),1.);}`));
   ghost.frustumCulled=false;ghost.name='A10-B ghost track, 9 November 2026';
   group.add(approach,ghost);
   return {group,time};

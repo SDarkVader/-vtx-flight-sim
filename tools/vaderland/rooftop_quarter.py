@@ -24,6 +24,7 @@ from scipy.spatial import ConvexHull
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'src'))
 from vtx.world import make_world, MapPoint  # noqa: E402
+from lantern_race import lantern_race  # noqa: E402
 
 CELL = 4.0
 X0, X1, Y0, Y1 = -3300., 3100., 680., 5800.
@@ -405,13 +406,17 @@ def main():
     plan = missions(world, pads)
     brake, brake_marks = brake_line(world)
     plan.append(brake)
+    race_solids, race_roads, rapid, races, low_line, race_info = lantern_race(world)
+    builder.solids.extend(race_solids)
+    builder.roads.extend(race_roads)
+    plan.append(low_line)
     for s in builder.solids:
         if s['kind'] == 'mesh':
             s['planes'] = [[float(v) for v in p] for p in s['planes']]
     design = dict(version='33', solids=builder.solids, roads=builder.roads, circuits=builder.circuits,
                   neighbourhoods=dict(tracks=builder.tracks, pads=pads, bounds=[X0, X1, Y0, Y1],
                                       pad_classes=[dict(size=c, radius_m=r, colour=col, demands=u) for c, r, col, u in PAD_CLASSES]),
-                  missions=plan, brake_line=brake_marks)
+                  missions=plan, brake_line=brake_marks, lantern_race=race_info)
     raw = json.dumps(design, separators=(',', ':'), allow_nan=False).encode()
     args.out.write_bytes(gzip.compress(raw, compresslevel=9, mtime=0))
     print(json.dumps(dict(usable_tiles=usable, solids=len(builder.solids),

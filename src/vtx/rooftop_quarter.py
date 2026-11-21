@@ -1,4 +1,4 @@
-"""Meridian ward neighbourhoods, mini tracks, rooftop landing zones and missions."""
+"""Meridian ward tracks, rooftop landing zones and missions, and the Lantern Race in the Needle narrows."""
 import gzip
 import json
 
@@ -34,3 +34,9 @@ class RooftopQuarter(LanternMarinaDistrict):
                  gates=len(m['steps']), tier=m['tier'], size=m['size'], brief=m['brief'])
             for m in design['missions'])
         self.vaderland['places'].append({'name': 'Meridian Rooftop Quarter', 'point': [-2100., 3900.]})
+        race = design['lantern_race']
+        # The harbour water and fleet read the rapid and the race lines from the harbour chart.
+        self.harbour['rapids'] = [race['rapid']]
+        self.harbour['races'] = race['races']
+        self.vaderland['lantern_race'] = {k: v for k, v in race.items() if k not in ('rapid', 'races')}
+        self.vaderland['places'].append({'name': 'Lantern Race', 'point': race['centre']})

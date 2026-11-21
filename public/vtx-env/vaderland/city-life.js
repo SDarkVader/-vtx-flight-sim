@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import {heightfieldZ} from '../landscape.js';
 import {cityDensity,hash2} from './city-density.js';
 
-const LIT_KINDS = new Set(['street','arterial','boulevard','local','arrivals','marina-link','lane','track']);
+const LIT_KINDS = new Set(['street','arterial','boulevard','local','arrivals','marina-link','lane','track','viaduct']);
 const MERIDIAN = {x0:-3300, x1:3100, y0:500, y1:5800};
 const inMeridian = (x,y) => x>MERIDIAN.x0 && x<MERIDIAN.x1 && y>MERIDIAN.y0 && y<MERIDIAN.y1;
 const smooth=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
@@ -44,8 +44,19 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
   const routes=(w.vaderland.routes||[]).filter(r=>LIT_KINDS.has(r.kind)&&(r.kind!=='track'||inMeridian(...r.points[0])));
 
   // ---- 1. Street lamps: kept and brightened by density; open land stays unlit ------------
-  const lamps=[], levels=[], pools=[], poolLevels=[];
+  const lamps=[], levels=[], pools=[], poolLevels=[], bases=[];
   for(const r of routes){
+    if(r.kind==='viaduct'){                                             // bridge lighting is constant, at deck height
+      for(const s of walk(r.points,46,w)){
+        const reach=r.width_m/2+.6,deck=r.deck_z_m;
+        for(const side of [-1,1]){
+          const x=s.x-s.ty*reach*side,y=s.y+s.tx*reach*side;
+          lamps.push(x,y,deck+8.5,1);levels.push(.62);bases.push(deck);
+          pools.push(x+s.ty*2.*side,y-s.tx*2.*side,deck+.35,1);poolLevels.push(.42);
+        }
+      }
+      continue;
+    }
     const avenue=r.width_m>=40, spacing=avenue?34:28;
     const samples=walk(r.points,spacing,w);
     for(let k=0;k<samples.length;k++){
@@ -60,17 +71,17 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
         if(hash2(x,y)>keep)continue;
         const z=heightfieldZ(w,x,y),level=.30+.70*smooth(.05,.85,d);
         const white=avenue&&d>.55?1:0;
-        lamps.push(x,y,z+9.5,white?0:1);levels.push(level);
+        lamps.push(x,y,z+9.5,white?0:1);levels.push(level);bases.push(z);
         if(d>.22){pools.push(x+s.ty*2.2*side,y-s.tx*2.2*side,z+.45,white?0:1);poolLevels.push(level*smooth(.22,.8,d));}
       }
     }
   }
-  root.add(lampHeads(lamps,levels,shared), lampPools(pools,poolLevels,shared), lampPosts(lamps,w));
+  root.add(lampHeads(lamps,levels,shared), lampPools(pools,poolLevels,shared), lampPosts(lamps,bases));
 
   // ---- 2. Traffic: volume follows density; empty roads at night are empty -----------------
   const cars=[];const random=rng(48611);
   for(const r of routes){
-    if(r.kind==='arrivals'||r.kind==='local'||r.kind==='track'||r.kind==='lane')continue;
+    if(r.kind==='arrivals'||r.kind==='local'||r.kind==='track'||r.kind==='lane'||r.kind==='viaduct')continue;
     const base=r.width_m>=40?.030:.016;                                // vehicles per metre per direction at full density
     const lanes=r.width_m>=40?2:1;
     for(let i=1;i<r.points.length;i++){
@@ -148,13 +159,13 @@ function lampHeads(data,levels,u){
 }
 
 // Slim dark posts so lamp heads stand on something at street level (render-only, < 0.3 m wide).
-function lampPosts(data,w){
+function lampPosts(data,bases){
   const n=data.length/4;
   const geometry=new THREE.CylinderGeometry(.08,.13,1,6).rotateX(Math.PI/2);
   const mesh=new THREE.InstancedMesh(geometry,new THREE.MeshStandardMaterial({color:0x1d2128,roughness:.55,metalness:.6}),n);
   const m=new THREE.Matrix4(),q=new THREE.Quaternion(),s=new THREE.Vector3(),v=new THREE.Vector3();
   for(let i=0;i<n;i++){
-    const x=data[i*4],y=data[i*4+1],top=data[i*4+2]-.25,ground=heightfieldZ(w,x,y)-.3;
+    const x=data[i*4],y=data[i*4+1],top=data[i*4+2]-.25,ground=bases[i]-.3;
     v.set(x,y,(top+ground)/2);s.set(1,1,top-ground);m.compose(v,q,s);mesh.setMatrixAt(i,m);
   }
   mesh.name='Street lamp posts';return mesh;

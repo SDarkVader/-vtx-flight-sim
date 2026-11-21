@@ -22,6 +22,7 @@ import {buildCathedralEast} from './cathedral-east.js';
 import {buildAirTrialMarkers} from './air-trials.js';
 import {buildCityLife} from './city-life.js';
 import {buildNeighbourhoods,neighbourhoodSolid} from './neighbourhood.js';
+import {buildLanternRace,lanternRaceSolid} from './lantern-race.js';
 import {buildAtmosphere} from './atmosphere.js';
 import {cityDensity,DENSITY_BOUNDS} from './city-density.js';
 
@@ -186,6 +187,33 @@ void main(){
       uplandColor=mix(uplandColor,planted,lawn*.94);
     }
     vec3 mat=mix(uplandColor,slate,clamp(outcrop,0.,1.));
+    float relief=0.;
+    if(rooftopPass>.5){
+      // v33 rock: strata that dip and wander rather than level contour bands, dark fall-line
+      // gullies and pale ribs on cliffs, vegetation on ledges and scree fans at the slope foot.
+      float warp=fbm(p.xy*.0021+7.)*52.;
+      float layer=p.z+dot(p.xy,vec2(.10,-.064))+warp;
+      float strata=fbm(vec2(layer*.042,(p.x+p.y)*.0017));
+      float bed=noise2(vec2(layer*.36,(p.x-p.y)*.009));
+      vec2 down=normalize(normal.xy+vec2(1e-4));
+      float across=dot(p.xy,vec2(-down.y,down.x));
+      float gully=fbm(vec2(across*.052,p.z*.0055+across*.0009));
+      float steep=smoothstep(.22,.72,slope);
+      vec3 rock=mix(vec3(.078,.076,.084),vec3(.285,.245,.208),smoothstep(.30,.76,strata));
+      rock=mix(rock,vec3(.155,.152,.160),.30*bed);
+      rock*=mix(1.,.58+.62*gully,steep);
+      rock*=clamp(detail*4.1,vec3(.40),vec3(1.75));
+      float ledge=smoothstep(.60,.80,normal.z)*(1.-smoothstep(.88,.96,normal.z))*smoothstep(.42,.62,fbm(p.xy*.031+2.));
+      vec3 moss=mix(vec3(.028,.050,.027),vec3(.098,.106,.048),fbm(p.xy*.07));
+      rock=mix(rock,moss,ledge*.78);
+      float scree=smoothstep(.16,.30,slope)*(1.-smoothstep(.44,.58,slope))*smoothstep(.52,.68,fbm(p.xy*.018+3.));
+      rock=mix(rock,vec3(.235,.225,.215)*(.68+.62*hash(floor(p.xy*1.4))),scree*.55);
+      mat=mix(uplandColor,rock,clamp(outcrop,0.,1.));
+      relief=(gully-.5)*steep;
+      // snow scoured from ridges and gathered in hollows and on lee faces, not a level line
+      float scour=smoothstep(.55,.85,fbm(p.xy*.006+11.)+normal.x*.25);
+      snowLine*=mix(1.,.45,scour)*(1.-.5*steep*gully);
+    }
     if(fallsSurvey>.5){
       float gorge=1.-smoothstep(.64,1.,length((p.xy-vec2(-4950.,3580.))/vec2(820.,1130.)));
       float exposure=smoothstep(.065,.31,slope)*gorge;
@@ -195,7 +223,8 @@ void main(){
       mat=mix(mat,bedrock,exposure);
     }
     mat=mix(mat,vec3(.65,.80,.99)*(.77+.23*grain),snowLine);
-    vec3 rim=vec3(1.93,.99,.49)*lambert*occ.x;
+    float shade=rooftopPass>.5?clamp(lambert+relief*.55,0.,1.2):lambert;   // gullies catch and lose the light
+    vec3 rim=vec3(1.93,.99,.49)*shade*occ.x;
     lit=mat*(vec3(.21,.31,.56)*occ.y+rim)*(.88+.19*grain);
     if(arrivalsSurvey>.5){
       vec2 shade=forecourtShadow(p.xy);
@@ -476,7 +505,7 @@ function roadPaint(group,w,ground,uniforms){
     if(r.kind==='taxi' || r.kind==='boardwalk' || r.kind==='arrivals' || r.kind==='speedway' || r.kind==='vertical-loop' || r.kind==='quarry')continue;
     const junction=junctions.includes(r)?r:undefined;
     const mitred=junction??(r.mitre?r:undefined);
-    strip(r.points,r.width_m,0,r.kind==='track'?'#796957':'#323942',r.deck_z_m,mitred);
+    strip(r.points,r.width_m,0,r.surface_color??(r.kind==='track'?'#796957':'#323942'),r.deck_z_m,mitred);
     const edge=r.edge_color??(r.kind==='viaduct'?'#ffad55':r.kind==='express'?'#e6c58d':'#9da29d');
     for(const side of [-1,1])strip(r.points,r.kind==='viaduct'?1.05:.48,(r.width_m/2-.65)*side,edge,r.deck_z_m,mitred);
     if(r.width_m>40&&r.kind!=='apron')strip(r.points,.55,0,'#dfc887',r.deck_z_m);
@@ -765,6 +794,38 @@ function roofMark(group,o){
   mesh.position.set(o.center[0],o.center[1],o.center[2]+o.half[2]+.03);group.add(mesh);
 }
 
+// v33 conifer: drooping branch skirts with ragged tips and an irregular silhouette, darker
+// towards the trunk. Same unit bounds and triangle budget as pineCrown.
+function coniferCrown(){
+  const vertices=[],colours=[];
+  let seed=7;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+  const tri=(a,b,c,ka,kb,kc)=>{vertices.push(...a,...b,...c);
+    for(const k of [ka,kb,kc])colours.push(k*.86,k,k*.80);};
+  const tiers=8,n=14;
+  for(let t=0;t<tiers;t++){
+    const f=t/(tiers-1);
+    const top=-.30+f*.80, droop=.16*(1.-.45*f);
+    const outer=.56*Math.pow(1.-f*.92,.85), inner=outer*.16;
+    const hub=[0,0,Math.min(.5,top+.05)];
+    const ring=[];
+    for(let j=0;j<n;j++){
+      const a=(j+rnd()*.35)*Math.PI*2/n+t*.61, tip=j%2===0;
+      const r=outer*(tip?1.:.62)*(.85+.3*rnd());
+      ring.push([r*Math.cos(a),r*Math.sin(a),top-droop*(tip?1.:.55)-.03*rnd()]);
+    }
+    for(let j=0;j<n;j++){
+      const a=ring[j],b=ring[(j+1)%n];
+      const lightA=.55+.42*Math.hypot(a[0],a[1])/outer+.08*f, lightB=.55+.42*Math.hypot(b[0],b[1])/outer+.08*f;
+      tri(a,b,hub,lightA,lightB,.34+.10*f);                          // upper face of the skirt
+      tri(b,a,[0,0,top-droop*1.25],lightB*.62,lightA*.62,.22);     // shaded underside
+    }
+  }
+  const mesh=new THREE.BufferGeometry();
+  mesh.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+  mesh.setAttribute('color',new THREE.Float32BufferAttribute(colours,3));mesh.computeVertexNormals();
+  return mesh;
+}
+
 function pineCrown(){
   const vertices=[],colours=[];
   const triangle=(points,shade)=>{
@@ -794,7 +855,7 @@ function structures(group,w,uniforms){
   const blocks=[],drums=[],pines=[],trunks=[],engineering=[],columns=[];
   const boxIds=[],columnIds=[],market=new Set(w.vaderland.quarter?.retained??[]);
   for(const o of w.obstacles){
-    if(neighbourhoodSolid(o.id))continue;
+    if(neighbourhoodSolid(o.id)||lanternRaceSolid(o.id))continue;
     if(market.has(o.id)||o.id.startsWith('crest-gardens-')||(w.vaderland.city_lights&&avenueParcel(o)))continue;
     const [x,y,z]=o.center,[a,b,c]=o.half;
     if(w.vaderland.airfield && (o.finish || airportTree(o)))continue;
@@ -819,12 +880,31 @@ function structures(group,w,uniforms){
   instanced(group,new THREE.BoxGeometry(),facadeMaterial(uniforms),blocks);
   instanced(group,new THREE.CylinderGeometry(.5,.5,1,48).rotateX(Math.PI/2),facadeMaterial(uniforms),drums);
   const boxes=instanced(group,new THREE.BoxGeometry(),new THREE.MeshStandardMaterial({roughness:.72,metalness:.18}),engineering);
-  const piers=instanced(group,new THREE.CylinderGeometry(.5,.5,1,28).rotateX(Math.PI/2),new THREE.MeshStandardMaterial({roughness:.72,metalness:.18}),columns);
+  const pierMaterial=new THREE.MeshStandardMaterial({roughness:.72,metalness:.18});
+  if(w.vaderland.neighbourhoods){
+    // v33: cast concrete. Formwork lifts every 1.2 m, rain streaks down the faces, a darker wet base.
+    pierMaterial.roughness=.9;pierMaterial.metalness=.02;
+    pierMaterial.onBeforeCompile=shader=>{
+      shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWorld;')
+        .replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvWorld=(modelMatrix*instanceMatrix*vec4(transformed,1.)).xyz;');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>
+        varying vec3 vWorld;
+        float h1(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+        float n1(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h1(i),h1(i+vec2(1,0)),f.x),mix(h1(i+vec2(0,1)),h1(i+1.),f.x),f.y);}`)
+        .replace('#include <color_fragment>',`#include <color_fragment>
+        float lift=smoothstep(.0,.06,abs(fract(vWorld.z/1.2)-.5)-.44);
+        float streak=n1(vec2((vWorld.x+vWorld.y)*.9,vWorld.z*.05));
+        float grime=n1(vWorld.xy*.15+vWorld.z*.02);
+        vec3 concrete=vec3(.44,.43,.40)*(.80+.22*grime)*(1.-.18*streak)*(1.-.22*lift);
+        diffuseColor.rgb=concrete;`);
+    };
+  }
+  const piers=instanced(group,new THREE.CylinderGeometry(.5,.5,1,28).rotateX(Math.PI/2),pierMaterial,columns);
   if(boxes)boxes.userData.sceneryIds=boxIds;
   if(piers)piers.userData.sceneryIds=columnIds;
   instanced(group,new THREE.CylinderGeometry(.5,.5,1,5).rotateX(Math.PI/2),new THREE.MeshStandardMaterial(),trunks);
   const detailed=Number(w.version)>=5;
-  instanced(group,detailed?pineCrown():new THREE.ConeGeometry(.6,1,7).rotateX(Math.PI/2),
+  instanced(group,w.vaderland.neighbourhoods?coniferCrown():detailed?pineCrown():new THREE.ConeGeometry(.6,1,7).rotateX(Math.PI/2),
     new THREE.MeshStandardMaterial({roughness:1,vertexColors:detailed}),pines);
   if(w.vaderland.gallery)galleryFinish(group,w,uniforms);
 }
@@ -865,15 +945,67 @@ function wetChannel(group,w,stream,ground,uniforms){
       vec3 water=mix(vec3(.013,.071,.077),vec3(.039,.153,.157),breakers);
       water=mix(water,reflection,.12+.33*pow(1.-clamp(dot(norm,view),0.,1.),3.));
       vec3 whitewater=mix(vec3(.22,.39,.43),vec3(.77,.85,.82),strands);
-      gl_FragColor=vec4(haze(mix(water,whitewater,clamp(foam,0.,1.))*mix(1.,.36,night)),cover);
+      vec3 river=mix(water,whitewater,clamp(foam,0.,1.));
+      if(rooftopPass>.5){
+        // v33: deep centre, shallow edges, two moving ripple layers, sun glints, fast sheeting on the falls
+        float fall=smoothstep(.30,.75,1.-normalize(n).z);
+        vec2 r1=vec2(channel.x*3.1,(s-clock*(3.+11.*fall))*.21),r2=vec2(channel.x*7.3+1.7,(s-clock*(5.+17.*fall))*.47);
+        float w1=fbm(r1),w2=fbm(r2);
+        vec3 N2=normalize(vec3((w1-.5)*.22+(w2-.5)*.12,(w2-.5)*.16,1.));
+        vec3 sky2=skySample(clouds,reflect(-view,N2))*vec3(.50,.62,.72);
+        vec3 deep=mix(vec3(.006,.030,.036),vec3(.020,.090,.092),side*side);
+        float fres=pow(1.-clamp(dot(N2,view),0.,1.),4.);
+        vec3 surface=mix(deep,sky2,.10+.55*fres);
+        surface+=vec3(1.,.86,.62)*pow(max(dot(reflect(-view,N2),sun),0.),180.)*1.6*(1.-night);
+        float sheet=fall*smoothstep(.35,.70,fbm(vec2(channel.x*31.,(s-clock*24.)*.16)));
+        float bankFoam=smoothstep(.80,.97,side)*smoothstep(.45,.70,w2);
+        float churn=clamp(foam*.8+sheet+bankFoam*.7,0.,1.);
+        river=mix(surface,mix(vec3(.30,.44,.47),vec3(.86,.92,.90),w1),churn);
+      }
+      gl_FragColor=vec4(haze(river*mix(1.,.36,night)),cover);
       #include <colorspace_fragment>
     }`});
   const mesh=new THREE.Mesh(g,mat);mesh.name='Twin Falls wet bed';group.add(mesh);
 }
 
+// v33: mist rising from the foot of each steep chute, found from the stream geometry.
+function fallsMist(group,w,stream,uniforms){
+  const pts=stream.points,emitters=[];
+  for(let i=4;i<pts.length-4;i++){
+    const up=pts[i-4],here=pts[i],down=pts[i+4];
+    const za=heightfieldZ(w,...up),zb=heightfieldZ(w,...here),zc=heightfieldZ(w,...down);
+    const above=(za-zb)/Math.max(1,Math.hypot(up[0]-here[0],up[1]-here[1]));
+    const below=(zb-zc)/Math.max(1,Math.hypot(down[0]-here[0],down[1]-here[1]));
+    if(above>.45&&below<.18&&!emitters.some(e=>Math.hypot(e[0]-here[0],e[1]-here[1])<60))emitters.push([here[0],here[1],zb,above]);
+  }
+  if(!emitters.length)return;
+  const count=1400*emitters.length,seeds=new Float32Array(count*4),origin=new Float32Array(count*4);
+  let state=6151;const next=()=>((state=Math.imul(state,1664525)+1013904223>>>0)/4294967296);
+  for(let i=0;i<count;i++){const e=emitters[i%emitters.length];
+    origin.set([e[0],e[1],e[2],Math.min(1.5,e[3])],i*4);for(let k=0;k<4;k++)seeds[i*4+k]=next();}
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(count*3),3));
+  g.setAttribute('origin',new THREE.Float32BufferAttribute(origin,4));g.setAttribute('seed',new THREE.Float32BufferAttribute(seeds,4));
+  const m=new THREE.ShaderMaterial({uniforms:{clock:uniforms.clock,night:uniforms.night},transparent:true,depthWrite:false,fog:false,
+    vertexShader:`attribute vec4 origin,seed;uniform float clock;varying float alpha;varying vec2 spin;
+      void main(){
+        float life=fract(seed.w+clock*(.05+.04*seed.z));
+        float a=seed.x*6.2831853,r=(4.+seed.y*28.)*(.35+.65*life)*origin.w;
+        vec3 p=origin.xyz+vec3(cos(a)*r,sin(a)*r,2.+life*(14.+26.*seed.z)*origin.w);
+        p.xy+=vec2(.9,.35)*life*18.;
+        alpha=sin(life*3.14159)*(.035+.045*seed.y)*smoothstep(.0,.25,life);
+        vec4 v=viewMatrix*vec4(p,1.);gl_Position=projectionMatrix*v;
+        gl_PointSize=clamp((14.+34.*life)*500./max(1.,-v.z),2.,240.);spin=vec2(cos(seed.z*6.),sin(seed.z*6.));
+      }`,
+    fragmentShader:`uniform float night;varying float alpha;varying vec2 spin;
+      void main(){vec2 q=gl_PointCoord-.5;float r=dot(q,q)*4.;if(r>1.)discard;
+        float soft=(1.-r)*(1.-r);gl_FragColor=vec4(mix(vec3(.80,.86,.90),vec3(.16,.19,.25),night),alpha*soft);}`});
+  const mist=new THREE.Points(g,m);mist.frustumCulled=false;mist.renderOrder=3;mist.name='Twin Falls mist';group.add(mist);
+}
+
 function streams(group,w,ground,uniforms){
   for(const stream of w.vaderland.streams||[]){
-    if(Number(w.version)>=6){wetChannel(group,w,stream,ground,uniforms);continue;}
+    if(Number(w.version)>=6){wetChannel(group,w,stream,ground,uniforms);if(w.vaderland.neighbourhoods)fallsMist(group,w,stream,uniforms);continue;}
     const pos=[],colors=[],index=[];
     for(let i=0;i<stream.points.length;i++){
       const p=stream.points[i],a=stream.points[Math.max(0,i-1)],b=stream.points[Math.min(i+1,stream.points.length-1)];
@@ -1004,6 +1136,8 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
     if(w.vaderland.cathedral_east)cathedralEast=buildCathedralEast(group,w,ground,uniforms,common);
     if(w.vaderland.lantern_marina)buildLanternMarina(group,w,ground,uniforms,common);
   }
+  const lanternRace=w.vaderland.lantern_race?buildLanternRace(group,w,uniforms,common,ground):null;
+  if(lanternRace){console.log('lantern race',JSON.stringify(lanternRace.stats));resources.push(lanternRace);}
   if(newest){wayfindingLights(group,w);roofPads(group,w);}
   streams(group,w,ground,uniforms);
   if(harbour){
@@ -1017,7 +1151,7 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
       dressHarbourDecks(harbour,marina.dock_finishes,uniforms,common);
       resources.push(depthMap.marinaDepthMap.value);
     }
-    const lanternLights=w.harbour?.timeTrial?w.obstacles.filter(o=>o.role==='race-mark'):[];
+    const lanternLights=w.harbour?.timeTrial?w.obstacles.filter(o=>o.role==='race-mark'&&!lanternRaceSolid(o.id)):[];
     const glowUniforms=lanternLights.length?{
       lanternPosition:{value:lanternLights.map(o=>new THREE.Vector3(o.center[0],o.center[1],o.center[2]+o.half[2]-.35))},
       lanternColor:{value:lanternLights.map(o=>new THREE.Color(o.color))},
@@ -1029,12 +1163,13 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
       'p = positionWorld.xyz;', 'p = positionWorld.xyz;surfaceOffset=position.z;'):vertex;
     harbour.water.material.dispose();
     const depthShader=marina?'uniform sampler2D marinaDepthMap;uniform vec4 marinaDepthArea;':'';
-    harbour.water.material=new THREE.ShaderMaterial({uniforms:{...uniforms,...glowUniforms,...depthMap},side:THREE.DoubleSide,vertexShader:waterVertex,
-      fragmentShader:'uniform sampler2D clouds;uniform sampler2D reliefLight;uniform float clock;uniform float waterClock;uniform float physicalTide;'+lanternDecl+depthShader+(showDisplacement?'varying float surfaceOffset;\n':'')+common+`
+    const raceWater=lanternRace?.water;
+    harbour.water.material=new THREE.ShaderMaterial({uniforms:{...uniforms,...glowUniforms,...depthMap,...raceWater?.uniforms},side:THREE.DoubleSide,vertexShader:waterVertex,
+      fragmentShader:'uniform sampler2D clouds;uniform sampler2D reliefLight;uniform float clock;uniform float waterClock;uniform float physicalTide;'+lanternDecl+depthShader+(raceWater?raceWater.declarations:'')+(showDisplacement?'varying float surfaceOffset;\n':'')+common+`
       void main(){vec3 v=normalize(cameraPosition-p);
         float ripple=fbm(p.xy*.038+vec2(mix(clock,waterClock,physicalTide)*.15,0.));
         vec3 norm=normalize(vec3(.14*(ripple-.5),.12*(fbm(p.xy*.047)-.5),1.));
-        if(physicalTide>.5)norm=normalize(normalize(n)+vec3(norm.xy*.32,0.));
+        if(physicalTide>.5)norm=normalize(normalize(n)+vec3(norm.xy*.32,0.));${raceWater?raceWater.normal:''}
         vec3 refl=reflect(-v,norm);vec3 skyLight=skySample(clouds,refl);
         float depth=texture2D(reliefLight,p.xy/16000.+.5).b;
         vec3 sea=mix(vec3(.032,.32,.30),vec3(.008,.061,.099),smoothstep(.04,.94,depth));
@@ -1078,6 +1213,7 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
           float dissolve=smoothstep(0.,.075,min(b.x,b.y));
           surfaceColor=mix(surfaceColor,localSea+reflections,dissolve*.96);
         }`:''}
+        ${raceWater?raceWater.colour:''}
         ${showDisplacement?`
         float nativeSlope=length(normalize(n).xy);
         float raised=smoothstep(.008,.070,surfaceOffset);

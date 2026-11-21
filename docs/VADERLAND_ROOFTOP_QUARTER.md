@@ -1,6 +1,6 @@
 # Vaderland 33 — Meridian Rooftop Quarter (offline candidate)
 
-Status: offline candidate on `claude/vaderland-rooftop-quarter-20261121`, branched from the reviewed Vaderland 32 snapshot (`77d9d45`). Nothing here has run in a live cockpit, been merged or been deployed. Vaderland 32 is unchanged and remains selectable.
+Status: offline candidate on `claude/vaderland-rooftop-quarter-20261121`, branched from the reviewed Vaderland 32 snapshot (`77d9d45`). Nothing here has run in a live cockpit or live harbour, been merged or been deployed. Vaderland 32 is unchanged and remains selectable.
 
 ## Direction
 
@@ -44,6 +44,42 @@ The world fingerprint must be computed on the reference PC; this Linux environme
 ## 3. Atmosphere (render-only)
 
 `public/vtx-env/vaderland/atmosphere.js`: a charcoal haze dome over Meridian lit from below by the same density field, so the core glows warm through the murk while the outskirts sink into ground fog; layered fog banks that are heavier over dark land and clear around the viewer; sparse motes that only show where there is light; wandering rain cells; rare distant flashes. Daylight haze is kept thin so the city does not turn grey.
+
+## 4. The Lantern Race (Vaderland 33)
+
+Generator: `tools/vaderland/lantern_race.py` (called by the rooftop generator). Physics: `src/vtx/water/rapids.py`, hooked into `HybridWaterField.evaluate`. Fleet: `src/vtx/harbour_trial.py`, `src/vtx/course_timing.py`, `src/vtx/harbour_session.py`. Client: `public/vtx-env/vaderland/lantern-race.js`, `lantern-marks.js`, the boat panel and the harbour map.
+
+A tidal race through the natural narrows between Heron Island and Needle Island in Lantern Sound (about 96 m wide at the throat, 3.5–6 m deep). Nothing is built in the water except rocks, marks and three anchored ramps; the terrain is unchanged.
+
+**Water physics.** The rapid is an analytical overlay on the existing hybrid water field, like the whirlpools, so every hull feels it through its ordinary hydrodynamics (relative flow, dynamic pressure, surface slope, vertical flow):
+
+- a current jet along the surveyed centreline, about 4.1 m/s (8 kn) in the throat, 1.3 m/s at the start and slack at the finish, strongest mid-channel ((1 − q²)^0.7 across the half width);
+- counter-current eddy lines along both banks (up to about 28% of the local current, reversed);
+- a standing-wave train. A surface wave stands still in a current when its phase speed equals the current, which in deep water gives k = g/u² (λ ≈ 10 m at 4 m/s). The phase is integrated along the reach as the current changes, and elevation, slope, vertical flow and vertical acceleration are consistent (tested against a numerical derivative);
+- rocks: a stagnation pillow of about 0.8·u²/2g upstream, flow parting around the rock and a slack, recirculating wake behind it;
+- boils drifting downstream at about 0.8 u.
+
+It is zero beyond the bank margin and tapers over 40 m beyond each end of the reach. `rapids_enabled` and `rapids_intensity` in the water configuration switch or scale it. Worlds without rapids are unchanged (Vaderland 32's harbour chart is identical).
+
+**Courses.** Three lines share a start gate in slack water and a finish in the run-out pool, each marked by lantern piles in its own colour (amber Main Chute, violet Rock Garden, cyan Eddy Line):
+
+| Line | Character | Gates |
+|---|---|---|
+| Main Chute | the fast water and the wave train, then the chute kicker before the finish | 18–26 m |
+| Rock Garden | a slalom between boulders on the east side; two rocks just awash show only as boils | 12–14 m |
+| Eddy Line | along the Heron bank through the eddies, finishing past the deep-water outlier ramp | 12–16 m |
+
+Lines are timed point to point on the fleet clock (`sprint` courses in `CourseTiming`). Crossing the start runs all three; the first line gate taken commits the boat to that line. Marker contact or an impact voids the run. Results, splits and fouls are checkpointed with the fleet (`lantern_races`, written only when a harbour has races). The boat panel stages the selected boat above the start for a chosen line.
+
+**Ramps.** Three anchored floating ramps with a slick, wet deck (friction 0.22, which governs the contact against any hull): a 14 m chute kicker (1.35 m lip) for planing hulls, an 8 m small-craft hop, and one 20 m deep-water outlier (3 m lip) launching across into 6 m of water. A slipway at Needle Island's north tip takes amphibious vehicles between the island trail and the pool.
+
+**Needle Island.** A 7 m gravel trail loop inset from the shore with a tabletop, for future wheeled vehicles; a basalt shelf above the throat that is also the landing zone of the **Low Line** air mission (five low hoops down the race past the Lantern Rock beacon, a held touchdown on the shelf, exit over the island).
+
+**Scenery.** About 560 conifers on both islands (physical trunks, like the existing forests), the Lantern Rock with a breathing beacon, lanterns along both banks and the trail with light pools, whitewater and spray drawn from the same rapid field the physics uses, and warm lantern light on the water at night.
+
+### Checks
+
+`tests/test_lantern_race.py`: jet, eddies and compact support of the rapid; stationary standing waves with λ = 2πu²/g and a consistent slope; rock pillow, parting flow and wake; sprint timing; line commitment, finish and checkpoint round trip; race staging; the rapid current in the fleet's water field and switched off by configuration; the ramp friction and priority in the fleet's MuJoCo model; the v32 harbour unchanged; race solids limited to rocks, ramps, marks, trees, the shelf and poles; rocks seated on the bed; every line in open, deep water between its gates; trail on land and clear of trees; the slipway reaching from land into the pool; the shelf validating as a landing surface.
 
 ## Next
 

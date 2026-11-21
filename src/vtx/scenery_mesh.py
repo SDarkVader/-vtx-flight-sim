@@ -10,6 +10,9 @@ def add_static_mesh(asset, worldbody, obstacle, **contact):
     vertices=' '.join(str(value) for vertex in obstacle['vertices'] for value in vertex)
     faces=' '.join(str(value) for face in obstacle['faces'] for value in face)
     ET.SubElement(asset,'mesh',name=name,vertex=vertices,face=faces)
+    if 'friction' in obstacle and 'friction' not in contact:
+        # A wet ramp is slicker than a hull; MuJoCo otherwise takes the larger of the two frictions.
+        contact=dict(contact,friction=f"{float(obstacle['friction'])} 0.005 0.0001",priority='1')
     position=obstacle['center']
     parent=worldbody
     if motion:=obstacle.get('motion'):
