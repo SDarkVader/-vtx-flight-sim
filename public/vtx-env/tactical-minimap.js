@@ -6,6 +6,7 @@ import { LAYOUT } from './layout.js';
 import {primaryRunwayCues} from './runway-layout.js?v=20261116-runway-1';
 import {drawHarbourMap, drawHarbourBoats} from './harbour-map.js?v=20261116-harbour-3';
 import {ALPINE_ACCESS,ALPINE_LIFTS,ALPINE_ROUTES,ALPINE_ZONES} from './vaderland/alpine-layout.js';
+import {meridianStreets} from './vaderland/meridian-streets.js';
 
 function evalCubicBezier(p0, p1, p2, p3, t) {
   const mt = 1 - t, mt2 = mt * mt, mt3 = mt2 * mt, t2 = t * t, t3 = t2 * t;
@@ -278,8 +279,8 @@ export class TacticalMinimap {
         g.setLineDash([]);
       }
       for(const stream of world.vaderland.streams||[])line(stream.points,stream.width_m,'#68b7cf');
-      for(const road of world.vaderland.routes)line(road.points,road.width_m,
-        road.edge_color??(road.kind==='viaduct'?'#edb770':road.kind==='express'?'#b99acb':'#868988'));
+      for(const road of meridianStreets(world))line(road.points,road.width_m,
+        road.edge_color??({viaduct:'#edb770',express:'#b99acb',boulevard:'#b9a48b',lane:'#706e65',cycleway:'#a38471'}[road.kind]??'#868988'));
       for(const o of world.obstacles){
         if(o.role!=='architecture')continue;
         const [x,y]=o.center,[a,b]=o.half;g.fillStyle='#a6a4a1';

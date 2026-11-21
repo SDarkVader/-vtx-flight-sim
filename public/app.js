@@ -23,8 +23,8 @@ import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js
 import {isArgonRotorHousing} from './argon-cutaway.js?v=3';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
 import {buildSky} from './vtx-env/sky.js?v=1';
-import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
-import {buildVaderland} from './vtx-env/vaderland/landscape.js?v=20261121-switchbacks';
+import {buildTerrain,heightfieldZ,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
+import {buildVaderland} from './vtx-env/vaderland/landscape.js?v=20261121-meridian-streets';
 import {createAlpineExplorer} from './alpine-explorer.js';
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
 import {buildAirfield} from './vtx-env/airfield.js?v=20261116-runway-1';
@@ -39,7 +39,7 @@ import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=20261117-cutaway';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261121-switchbacks';
+import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261121-meridian-streets';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=20261116-runway-1';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
@@ -149,7 +149,8 @@ if (innerWidth <= 800) {
  document.querySelector('header').after($('retry-bar'));
  $('viewport').after(document.querySelector('footer'));
 }
-const camera=new THREE.PerspectiveCamera(48,1,.1,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
+const defaultCameraNear=.1;
+const camera=new THREE.PerspectiveCamera(48,1,defaultCameraNear,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
 const renderer=new THREE.WebGLRenderer({antialias:quality.antialias,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,quality.pixelRatio));renderer.shadowMap.enabled=quality.shadows;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=quality.toneMapping;renderer.toneMappingExposure=quality.exposure;renderer.domElement.style.visibility='hidden';viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.enablePan=false;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
@@ -1680,6 +1681,17 @@ function animate(){
  // Never reveal an initial origin frame or the prior mission's frame.
  const physicalFix=boatViewId?harbourLayer?.boats.get(boatViewId)?.bodies.get('airframe')?.position:physicalAircraftPosition(truth);
  const revealReady=startupFrameReady({worldReady:!!world,offline:visualOnlyOffline,physicalPosition:physicalFix,transition:missionTransition,view:last});
+ if(!harbourOverviewState){
+  let near=defaultCameraNear;
+  const {x,y,z}=camera.position;
+  const {x:qx,y:qy}=camera.quaternion;
+  // Increase depth precision in steep aerial views so markings and paths resolve separately.
+  if(world?.vaderland&&(cameraMode==='free'||cameraMode==='orbit')&&1-2*(qx*qx+qy*qy)>.7){
+   const clearance=z-heightfieldZ(world,x,y);
+   near=Math.max(defaultCameraNear,Math.min(32,Math.floor(clearance/70)));
+  }
+  if(near!==camera.near){camera.near=near;camera.updateProjectionMatrix();}
+ }
  if(revealReady&&!window.__vtxNoRender){
   if(post)post.render();else renderer.render(scene,camera);
   renderer.domElement.style.visibility='visible';

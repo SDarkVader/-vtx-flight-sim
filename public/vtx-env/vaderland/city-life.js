@@ -7,8 +7,9 @@
 import * as THREE from 'three';
 import {heightfieldZ} from '../landscape.js';
 import {cityDensity,hash2} from './city-density.js';
+import {meridianStreets} from './meridian-streets.js';
 
-const LIT_KINDS = new Set(['street','arterial','boulevard','local','arrivals','marina-link','lane','track','viaduct']);
+const LIT_KINDS = new Set(['street','arterial','boulevard','local','arrivals','marina-link','lane','cycleway','track','viaduct']);
 const MERIDIAN = {x0:-3300, x1:3100, y0:500, y1:5800};
 const inMeridian = (x,y) => x>MERIDIAN.x0 && x<MERIDIAN.x1 && y>MERIDIAN.y0 && y<MERIDIAN.y1;
 const smooth=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
@@ -41,7 +42,7 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
   const root=new THREE.Group();root.name='Meridian city life';group.add(root);
   const time={value:0}, lit={value:0}, day={value:1};
   const shared={time,lit,day,night:uniforms.night};
-  const routes=(w.vaderland.routes||[]).filter(r=>LIT_KINDS.has(r.kind)&&(r.kind!=='track'||inMeridian(...r.points[0])));
+  const routes=meridianStreets(w).filter(r=>LIT_KINDS.has(r.kind)&&(r.kind!=='track'||inMeridian(...r.points[0])));
 
   // ---- 1. Street lamps: kept and brightened by density; open land stays unlit ------------
   const lamps=[], levels=[], pools=[], poolLevels=[], bases=[];
@@ -57,7 +58,8 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
       }
       continue;
     }
-    const avenue=r.width_m>=40, spacing=avenue?34:28;
+    const avenue=r.width_m>=40||r.kind==='boulevard', narrow=r.width_m<=6;
+    const spacing=narrow?48:avenue?34:28;
     const samples=walk(r.points,spacing,w);
     for(let k=0;k<samples.length;k++){
       const s=samples[k];
@@ -69,9 +71,9 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
         if(!avenue && side===1 && k%2)continue;                         // one side only on minor streets
         const x=s.x-s.ty*reach*side,y=s.y+s.tx*reach*side;
         if(hash2(x,y)>keep)continue;
-        const z=heightfieldZ(w,x,y),level=.30+.70*smooth(.05,.85,d);
+        const z=heightfieldZ(w,x,y),level=(.30+.70*smooth(.05,.85,d))*(narrow?.67:1);
         const white=avenue&&d>.55?1:0;
-        lamps.push(x,y,z+9.5,white?0:1);levels.push(level);bases.push(z);
+        lamps.push(x,y,z+(narrow?4.2:9.5),white?0:1);levels.push(level);bases.push(z);
         if(d>.22){pools.push(x+s.ty*2.2*side,y-s.tx*2.2*side,z+.45,white?0:1);poolLevels.push(level*smooth(.22,.8,d));}
       }
     }
@@ -81,7 +83,7 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
   // ---- 2. Traffic: volume follows density; empty roads at night are empty -----------------
   const cars=[];const random=rng(48611);
   for(const r of routes){
-    if(r.kind==='arrivals'||r.kind==='local'||r.kind==='track'||r.kind==='lane'||r.kind==='viaduct')continue;
+    if(r.kind==='arrivals'||r.kind==='local'||r.kind==='track'||r.kind==='lane'||r.kind==='cycleway'||r.kind==='viaduct')continue;
     const base=r.width_m>=40?.030:.016;                                // vehicles per metre per direction at full density
     const lanes=r.width_m>=40?2:1;
     for(let i=1;i<r.points.length;i++){

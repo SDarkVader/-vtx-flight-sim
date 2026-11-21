@@ -26,6 +26,7 @@ import {buildLanternRace,lanternRaceSolid} from './lantern-race.js';
 import {buildAtmosphere} from './atmosphere.js';
 import {cityDensity,DENSITY_BOUNDS} from './city-density.js';
 import {buildAlpineResort} from './alpine-resort.js';
+import {meridianStreets} from './meridian-streets.js';
 
 const vertex = `
 varying vec3 p;
@@ -474,6 +475,7 @@ function facadeMaterial(uniforms){
 
 function roadPaint(group,w,ground,uniforms){
   const positions=[],colors=[],indices=[];
+  const finishes={track:'#796957',lane:'#514a42',cycleway:'#63483d',local:'#3f4141'};
   const yard=w.vaderland.meridian_yard;
   const yardRoads=yard?w.vaderland.routes.filter(r=>r.kind==='experimental'):[];
   const junctions=yard?[w.vaderland.routes.find(r=>r.name==='Exchange Boulevard'),...yardRoads]:[];
@@ -549,14 +551,15 @@ function roadPaint(group,w,ground,uniforms){
       }
     }
   }
-  for(const r of w.vaderland.routes){
+  for(const r of meridianStreets(w)){
     if(r.kind==='taxi' || r.kind==='boardwalk' || r.kind==='arrivals' || r.kind==='speedway' || r.kind==='vertical-loop' || r.kind==='quarry')continue;
     const junction=junctions.includes(r)?r:undefined;
     const mitred=junction??(r.mitre?r:undefined);
-    strip(r.points,r.width_m,0,r.surface_color??(r.kind==='track'?'#796957':'#323942'),r.deck_z_m,mitred);
+    strip(r.points,r.width_m,0,r.surface_color??finishes[r.kind]??'#323942',r.deck_z_m,mitred);
     const edge=r.edge_color??(r.kind==='viaduct'?'#ffad55':r.kind==='express'?'#e6c58d':'#9da29d');
-    for(const side of [-1,1])strip(r.points,r.kind==='viaduct'?1.05:.48,(r.width_m/2-.65)*side,edge,r.deck_z_m,mitred);
-    if(r.width_m>40&&r.kind!=='apron')strip(r.points,.55,0,'#dfc887',r.deck_z_m);
+    if(r.kind!=='lane'&&r.kind!=='cycleway')
+      for(const side of [-1,1])strip(r.points,r.kind==='viaduct'?1.05:.48,(r.width_m/2-.65)*side,edge,r.deck_z_m,mitred);
+    if((r.width_m>40||r.kind==='boulevard')&&r.kind!=='apron')strip(r.points,.55,0,'#dfc887',r.deck_z_m);
     if(r.kind==='marina-link'&&r.width_m>10){
       let station=0;
       for(let i=1;i<r.points.length;i++){
@@ -752,7 +755,7 @@ function wayfindingLights(group,w){
   function lamp(x,y,z,color,size){
     pos.push(x,y,z);new THREE.Color(color).toArray(colors,colors.length);sizes.push(size);
   }
-  for(const r of w.vaderland.routes){
+  for(const r of meridianStreets(w)){
     const major=r.kind==='viaduct'||r.kind==='express'||r.kind==='boulevard';
     if(!major && r.width_m<40)continue;
     if(r.kind==='apron')continue;
