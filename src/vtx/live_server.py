@@ -1453,7 +1453,9 @@ def get_lab():
 async def physical_clock():
     last=time.monotonic();accum=0.;seen_run=None;seen_epoch=lab.clock_epoch
     while True:
-        await asyncio.sleep(.005)
+        # Yield to other requests even while catching up, without adding a
+        # timed wait between batches when complete physics steps are owed.
+        await asyncio.sleep(0 if accum >= DT and lab.active and not lab.paused else .005)
         now=time.monotonic();delta=now-last;last=now
         harbour_rate = lab.time_scale if lab.active else 1.
         if not getattr(lab.world,'harbour',None) and lab.harbour_helm_outside_airport:
@@ -1468,7 +1470,8 @@ async def physical_clock():
         if seen_run!=lab.run_id:
             seen_run=lab.run_id;accum=0.;continue
         accum+=delta*lab.time_scale
-        n=min(int(accum/DT),40)
+        # A short batch lets cockpit I/O run between groups of solver steps.
+        n=min(int(accum/DT),4)
         try:
             for _ in range(n):
                 if lab.active:lab.integrate()

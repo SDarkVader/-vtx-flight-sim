@@ -60,6 +60,40 @@ def test_r6_stream_reconnect_resumes_existing_flight(tmp_path, monkeypatch):
     assert after['active'] and after['mission'] == before['mission']
     assert after['observation']['t_s'] > before['observation']['t_s']
 
+def test_physical_clock_yields_without_sleeping_while_steps_are_owed(monkeypatch):
+    import asyncio
+    from types import SimpleNamespace
+    import vtx.live_server as server
+
+    delays, steps, steps_at_yield = [], [], []
+    now = 0.0
+    lab = SimpleNamespace(
+        active=True, paused=False, time_scale=1.0, run_id='offline-test',
+        clock_epoch=0, clock_lag_s=0.0, world=SimpleNamespace(),
+        harbour_helm_outside_airport=False, harbour_session=SimpleNamespace(set_rate=lambda rate: None),
+        integrate=lambda: steps.append(server.DT),
+    )
+
+    async def sleep(delay):
+        nonlocal now
+        delays.append(delay)
+        steps_at_yield.append(len(steps))
+        if len(delays) == 2:
+            now = .026
+        if len(delays) == 5:
+            raise asyncio.CancelledError
+
+    monkeypatch.setattr(server, 'lab', lab)
+    monkeypatch.setattr(server, 'time', SimpleNamespace(monotonic=lambda: now))
+    monkeypatch.setattr(server, 'asyncio', SimpleNamespace(sleep=sleep))
+    with pytest.raises(asyncio.CancelledError):
+        asyncio.run(server.physical_clock())
+    assert delays == [.005, .005, 0, 0, .005]
+    assert all(b - a <= 4 for a, b in zip(steps_at_yield, steps_at_yield[1:]))
+    assert 0 <= lab.clock_lag_s < server.DT
+    assert sum(steps) + lab.clock_lag_s == pytest.approx(now)
+
+
 def test_pilot_handover_preserves_run_goal_and_rejects_old_pilot(tmp_path,monkeypatch):
     import asyncio
     import vtx.live_server as server

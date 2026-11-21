@@ -409,10 +409,15 @@ class PhantomAircraft:
         b = self.bids['airframe']
         mass = float(m.body_subtreemass[b]); cg_w = d.subtree_com[b].copy()
         J = np.zeros((3, 3))
-        for i in range(1, m.nbody):
+        # The compiled world contains massless scenery bodies. Keep the sum
+        # in body order and include every body with mass or inertia.
+        has_mass = m.body_mass[1:] != 0
+        has_inertia = np.any(m.body_inertia[1:] != 0, axis=1)
+        identity = np.eye(3)
+        for i in np.flatnonzero(has_mass | has_inertia) + 1:
             R = d.ximat[i].reshape(3, 3); I = R @ np.diag(m.body_inertia[i]) @ R.T
             r = d.xipos[i] - cg_w
-            J += I + m.body_mass[i] * (r @ r * np.eye(3) - np.outer(r, r))
+            J += I + m.body_mass[i] * (r @ r * identity - np.outer(r, r))
         Rb = self.R()
         return dict(mass_kg=mass, cg_world_m=cg_w.tolist(), cg_body_m=(Rb.T @ (cg_w - d.xpos[b])).tolist(), inertia_body_kg_m2=(Rb.T @ J @ Rb).tolist())
 
