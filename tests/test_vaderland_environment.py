@@ -150,6 +150,14 @@ def test_market_chart_agrees_at_shores_and_between_grid_lines():
         probes.extend([edge, edge + [1e-8, 0], edge - [0, 1e-8]])
     x, y = np.concatenate(probes).T
     np.testing.assert_array_equal(world.harbour_water_mask(x,y), Vaderland.harbour_water_mask(world,x,y))
+    # A batch spanning the whole chart uses the general path. Also query
+    # one latitude band at a time, as the hull and waterline samples do.
+    for band in np.unique(np.floor(y / 32)):
+        selected = np.floor(y / 32) == band
+        np.testing.assert_array_equal(
+            world.harbour_water_mask(x[selected], y[selected]),
+            Vaderland.harbour_water_mask(world, x[selected], y[selected]),
+        )
 
 
 def test_market_shallow_water_reuses_only_bitwise_identical_cell_neighbourhoods():

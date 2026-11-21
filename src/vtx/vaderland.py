@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .harbour_water import contains
+from .harbour_water import contains, contains_edges
 from .world import TestWorld
 
 PACK = Path(__file__).resolve().parents[2] / 'inputs' / 'vaderland'
@@ -54,12 +54,14 @@ class Vaderland(TestWorld):
     def harbour_water_mask(self, x, y):
         x, y = np.broadcast_arrays(x, y)
         ox, oy = self.harbour['origin']
-        px, py = x.ravel()-ox, oy-y.ravel()
+        return self._harbour_water_membership(x.ravel()-ox, oy-y.ravel()).reshape(x.shape)
+
+    def _harbour_water_membership(self, px, py, outer_edges=None):
         p = np.column_stack((px, py))
         layout = self.harbour['layout']
-        wet = contains(p, layout['outer'])
+        wet = contains(p, layout['outer']) if outer_edges is None else contains_edges(p, *outer_edges)
         if not wet.any():
-            return wet.reshape(x.shape)
+            return wet
         left, right = px.min(), px.max()
         bottom, top = py.min(), py.max()
         for ring, lower, upper in self._island_bounds:
@@ -68,7 +70,7 @@ class Vaderland(TestWorld):
             nearby = wet & (px >= lower[0]) & (px <= upper[0]) & (py >= lower[1]) & (py <= upper[1])
             if np.any(nearby):
                 wet[nearby] &= ~contains(p[nearby], ring)
-        return wet.reshape(x.shape)
+        return wet
 
     def harbour_overlaps(self, x, y, radius):
         streams=self.vaderland.get('streams',())
@@ -465,8 +467,21 @@ class MarketQuarter(NightVelocity):
                     first = int(np.floor((cross_x.min() - lo[0]) / stride - 1e-10))
                     last = int(np.floor((cross_x.max() - lo[0]) / stride + 1e-10))
                     grid[row, first:last+1] = -1
-            self._water_cells=(lo,stride,grid)
-        lo,stride,grid=self._water_cells
+            # The common narrow hull query spans one latitude band. Preselect
+            # every outer edge that can cross a ray in that band. The exact
+            # crossing test and the individual island tests still apply.
+            outer_size = len(self.harbour['layout']['outer'])
+            starts, stops = self._shore[:outer_size], self._ends[:outer_size]
+            lower = np.minimum(starts[:,1], stops[:,1])
+            upper = np.maximum(starts[:,1], stops[:,1])
+            strips = []
+            for center_y in ay:
+                # Include either boundary for floating-point cell membership.
+                local_y = oy - center_y
+                overlaps = (lower <= local_y+stride/2+1e-9) & (upper >= local_y-stride/2-1e-9)
+                strips.append((starts[overlaps], stops[overlaps]))
+            self._water_cells=(lo,stride,grid,strips)
+        lo,stride,grid,strips=self._water_cells
         x,y=np.broadcast_arrays(x,y);xx=x.ravel();yy=y.ravel()
         i=np.floor((xx-lo[0])/stride).astype(int);j=np.floor((yy-lo[1])/stride).astype(int)
         valid=(i>=0)&(i<grid.shape[1])&(j>=0)&(j<grid.shape[0])
@@ -474,7 +489,11 @@ class MarketQuarter(NightVelocity):
         flags[valid]=grid[j[valid],i[valid]]
         edge=flags<0
         if edge.any():
-            flags[edge]=super().harbour_water_mask(xx[edge],yy[edge])
+            edge_rows = j[edge]
+            row = edge_rows[0]
+            outer_edges = strips[row] if np.all(edge_rows == row) else None
+            ox, oy = self.harbour['origin']
+            flags[edge] = self._harbour_water_membership(xx[edge]-ox, oy-yy[edge], outer_edges)
         return (flags>0).reshape(x.shape)
 
 

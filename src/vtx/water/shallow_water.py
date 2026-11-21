@@ -19,52 +19,55 @@ from vtx.water.open_water import OpenWaterWaveField, WaveSample
 
 
 def _audusse_rusanov_flux_1d(
-    h_l: np.ndarray,
-    hu_l: np.ndarray,
-    hv_l: np.ndarray,
-    z_l: np.ndarray,
-    h_r: np.ndarray,
-    hu_r: np.ndarray,
-    hv_r: np.ndarray,
-    z_r: np.ndarray,
+    h: np.ndarray,
+    u: np.ndarray,
+    v: np.ndarray,
+    bed: np.ndarray,
+    eta: np.ndarray,
     g: float,
     h_dry: float,
+    *,
+    axis: int,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Well-balanced Audusse hydrostatic reconstruction + Rusanov flux on 1D faces.
 
     Returns (flux_h, flux_hu, flux_hv, bed_src_left, bed_src_right) where
     bed_src_* = 0.5 * g * (h_rec^2 - h^2) directly ensures C-property (lake at rest).
     """
-    u_l = np.where(h_l > h_dry, hu_l / np.maximum(h_l, h_dry), 0.0)
-    v_l = np.where(h_l > h_dry, hv_l / np.maximum(h_l, h_dry), 0.0)
-    u_r = np.where(h_r > h_dry, hu_r / np.maximum(h_r, h_dry), 0.0)
-    v_r = np.where(h_r > h_dry, hv_r / np.maximum(h_r, h_dry), 0.0)
-
-    eta_l = h_l + z_l
-    eta_r = h_r + z_r
+    if axis == 1:
+        left, right = np.s_[:, :-1], np.s_[:, 1:]
+    else:
+        left, right = np.s_[:-1, :], np.s_[1:, :]
+    h_l, h_r = h[left], h[right]
+    z_l, z_r = bed[left], bed[right]
+    eta_l, eta_r = eta[left], eta[right]
     z_iface = np.maximum(z_l, z_r)
 
     h_star_l = np.maximum(0.0, eta_l - z_iface)
     h_star_r = np.maximum(0.0, eta_r - z_iface)
 
     # Zero velocity if reconstructed face depth is dry
-    u_l = np.where(h_star_l > h_dry, u_l, 0.0)
-    v_l = np.where(h_star_l > h_dry, v_l, 0.0)
-    u_r = np.where(h_star_r > h_dry, u_r, 0.0)
-    v_r = np.where(h_star_r > h_dry, v_r, 0.0)
+    wet_l = h_star_l > h_dry
+    wet_r = h_star_r > h_dry
+    u_l = np.where(wet_l, u[left], 0.0)
+    v_l = np.where(wet_l, v[left], 0.0)
+    u_r = np.where(wet_r, u[right], 0.0)
+    v_r = np.where(wet_r, v[right], 0.0)
 
     hu_star_l = h_star_l * u_l
     hv_star_l = h_star_l * v_l
     hu_star_r = h_star_r * u_r
     hv_star_r = h_star_r * v_r
+    h_star_l_sq = h_star_l * h_star_l
+    h_star_r_sq = h_star_r * h_star_r
 
     # Physical fluxes
     f0_l = hu_star_l
-    f1_l = hu_star_l * u_l + 0.5 * g * (h_star_l * h_star_l)
+    f1_l = hu_star_l * u_l + 0.5 * g * h_star_l_sq
     f2_l = hu_star_l * v_l
 
     f0_r = hu_star_r
-    f1_r = hu_star_r * u_r + 0.5 * g * (h_star_r * h_star_r)
+    f1_r = hu_star_r * u_r + 0.5 * g * h_star_r_sq
     f2_r = hu_star_r * v_r
 
     c_l = np.sqrt(g * h_star_l)
@@ -72,22 +75,19 @@ def _audusse_rusanov_flux_1d(
     s_max = np.maximum(np.abs(u_l) + c_l, np.abs(u_r) + c_r)
     # Zero numerical diffusion across completely dry interface
     both_dry = (h_star_l <= h_dry) & (h_star_r <= h_dry)
-    s_max = np.where(both_dry, 0.0, s_max)
+    diffusion = 0.5 * np.where(both_dry, 0.0, s_max)
 
-    flux_h = 0.5 * (f0_l + f0_r) - 0.5 * s_max * (h_star_r - h_star_l)
-    flux_hu = 0.5 * (f1_l + f1_r) - 0.5 * s_max * (hu_star_r - hu_star_l)
-    flux_hv = 0.5 * (f2_l + f2_r) - 0.5 * s_max * (hv_star_r - hv_star_l)
+    flux_h = 0.5 * (f0_l + f0_r) - diffusion * (h_star_r - h_star_l)
+    flux_hu = 0.5 * (f1_l + f1_r) - diffusion * (hu_star_r - hu_star_l)
+    flux_hv = 0.5 * (f2_l + f2_r) - diffusion * (hv_star_r - hv_star_l)
 
     # Topographic pressure correction: preserves eta = const -> exact zero tendency
     # Also prevents false dry-cliff pull on empty cell
-    eff_z_l = np.where(eta_l < z_iface, np.minimum(z_iface, eta_l + h_l), z_iface)
-    eff_z_r = np.where(eta_r < z_iface, np.minimum(z_iface, eta_r + h_r), z_iface)
-    p_l = 0.5 * g * (h_star_l * h_star_l - h_l * h_l)
-    p_r = 0.5 * g * (h_star_r * h_star_r - h_r * h_r)
+    p_l = 0.5 * g * (h_star_l_sq - h_l * h_l)
+    p_r = 0.5 * g * (h_star_r_sq - h_r * h_r)
     # Zero momentum source if cell is dry and wet neighbor is below cell bed
     p_l = np.where((h_l <= h_dry) & (eta_r <= z_l), 0.0, p_l)
     p_r = np.where((h_r <= h_dry) & (eta_l <= z_r), 0.0, p_r)
-    _ = (eff_z_l, eff_z_r)  # documented in reconstruction
 
     return flux_h, flux_hu, flux_hv, p_l, p_r
 
@@ -257,33 +257,23 @@ class ShallowWaterSolver:
         rho_w = float(self.config.rho_water_kg_m3)
         h_dry = self.h_dry
 
+        # A cell supplies four faces. Share its depth, elevation and velocities
+        # while retaining each face's own reconstruction and flux arithmetic.
+        wet_cells = self.h > h_dry
+        depth = np.maximum(self.h, h_dry)
+        u = np.where(wet_cells, self.hu / depth, 0.0)
+        v = np.where(wet_cells, self.hv / depth, 0.0)
+        eta = self.h + self.bed
+
         # --- X-direction interior faces: (ny, nx-1) ---
         fx_h, fx_hu, fx_hv, p_xl, p_xr = _audusse_rusanov_flux_1d(
-            self.h[:, :-1],
-            self.hu[:, :-1],
-            self.hv[:, :-1],
-            self.bed[:, :-1],
-            self.h[:, 1:],
-            self.hu[:, 1:],
-            self.hv[:, 1:],
-            self.bed[:, 1:],
-            g,
-            h_dry,
+            self.h, u, v, self.bed, eta, g, h_dry, axis=1
         )
 
         # --- Y-direction interior faces: (ny-1, nx) ---
         # Notice swap of (hu, hv) -> (hv, hu) along Y normal
         fy_h, fy_hv, fy_hu, p_yl, p_yr = _audusse_rusanov_flux_1d(
-            self.h[:-1, :],
-            self.hv[:-1, :],
-            self.hu[:-1, :],
-            self.bed[:-1, :],
-            self.h[1:, :],
-            self.hv[1:, :],
-            self.hu[1:, :],
-            self.bed[1:, :],
-            g,
-            h_dry,
+            self.h, v, u, self.bed, eta, g, h_dry, axis=0
         )
 
         dh = np.zeros_like(self.h)
@@ -338,10 +328,11 @@ class ShallowWaterSolver:
             hv_new += relax * (h_new * target_v - hv_new)
 
         # Semi-implicit Manning quadratic bottom friction (always stable for wet/dry)
-        u_tmp = np.where(wet, hu_new / np.maximum(h_new, self.h_vel_damp), 0.0)
-        v_tmp = np.where(wet, hv_new / np.maximum(h_new, self.h_vel_damp), 0.0)
+        friction_depth = np.maximum(h_new, self.h_vel_damp)
+        u_tmp = np.where(wet, hu_new / friction_depth, 0.0)
+        v_tmp = np.where(wet, hv_new / friction_depth, 0.0)
         speed = np.hypot(u_tmp, v_tmp)
-        cf = (g * (self.manning_n ** 2)) / np.power(np.maximum(h_new, self.h_vel_damp), 4.0 / 3.0)
+        cf = (g * (self.manning_n ** 2)) / np.power(friction_depth, 4.0 / 3.0)
         fric_denom = 1.0 + dt * cf * speed
         hu_new = np.where(wet, hu_new / fric_denom, 0.0)
         hv_new = np.where(wet, hv_new / fric_denom, 0.0)
@@ -722,9 +713,12 @@ class HybridWaterField:
         *,
         eta_only: bool = False,
     ) -> HybridWaterSample:
-        t_eval, xa, ya, bed, eta_swe, h_swe, u_swe, v_swe, wave = self._base_components(
-            x, y, z, t, eta_only
+        return self._evaluate_components(
+            self._base_components(x, y, z, t, eta_only), self._vessel_wake, eta_only
         )
+
+    def _evaluate_components(self, components, wake, eta_only):
+        t_eval, xa, ya, bed, eta_swe, h_swe, u_swe, v_swe, wave = components
 
         # Blend open-water orbital wave disturbance (zero-mean eta_wave = wave.eta)
         # atop SWE bathymetry-aware free surface (eta_swe).
@@ -749,8 +743,7 @@ class HybridWaterField:
             has_slope = self.open_water.amp.size > 0
 
         # Overlay analytical Kelvin V-wake & heave rings strictly aft/outside hull center when underway
-        wake = self._vessel_wake
-        if getattr(self.config, 'wake_enabled', True) and wake.get('active') and xa.size > 0:
+        if wake is not None and getattr(self.config, 'wake_enabled', True) and wake.get('active') and xa.size > 0:
             spd = float(wake['speed_mps'])
             draft_eff = max(float(wake['draft_m']), 0.15)
             amp_k = min(0.36, 0.032 * draft_eff * spd * min(spd / 2.0, 1.0))
