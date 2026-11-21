@@ -94,17 +94,20 @@ function raceFields(w,ground){
   const emitters=[];let seed=7707;const rnd=()=>((seed=Math.imul(seed,1664525)+1013904223>>>0)/4294967296);
   for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
     const x=x0+(i+.5)*cell,y=y0+(j+.5)*cell,o=(j*nx+i)*4,f=sample(x,y);
-    let white=0,vx=0,vy=0,eta=0;
+    let white=0,vx=0,vy=0,eta=0,spray=0;
     if(f){
       vx=f.vx;vy=f.vy;eta=f.eta;
-      white=smooth(.16,.40,eta)*smooth(2.2,3.4,f.speed)+.22*smooth(2.6,4.,f.speed)+1.4*f.core*f.eddy*f.taper*smooth(1.5,3.,f.u);
+      const crest=smooth(.16,.40,eta)*smooth(2.2,3.4,f.speed);
+      white=crest+.22*smooth(2.6,4.,f.speed)+1.4*f.core*f.eddy*f.taper*smooth(1.5,3.,f.u);
+      spray=crest;
       for(const r of rocks){
         const dx=x-r.x,dy=y-r.y;if(Math.abs(dx)>r.r*10||Math.abs(dy)>r.r*10)continue;
         const d=Math.hypot(dx,dy),ra=dx*f.tx+dy*f.ty,rl=-dx*f.ty+dy*f.tx,uu=smooth(.6,2.2,f.u*f.taper);
         if(r.top>-.15){
           const width=r.r*(1+Math.max(ra-r.r,0)/(5*r.r));
-          white+=uu*(Math.exp(-(((d-r.r)/1.3)**2))+.8*Math.exp(-(((ra+1.2*r.r)/(.7*r.r))**2))*Math.exp(-((rl/r.r)**2))
-            +(ra>r.r?.5*Math.exp(-(ra-r.r)/(5*r.r))*Math.exp(-((rl/width)**2)):0));
+          const strike=Math.exp(-(((d-r.r)/1.3)**2))*(ra<.3*r.r?1:.35)+.8*Math.exp(-(((ra+1.2*r.r)/(.7*r.r))**2))*Math.exp(-((rl/r.r)**2));
+          white+=uu*(strike+(ra>r.r?.5*Math.exp(-(ra-r.r)/(5*r.r))*Math.exp(-((rl/width)**2)):0));
+          spray+=uu*strike;
         }else white+=uu*(.55*Math.exp(-((d/(1.4*r.r))**2))+(ra>0?.3*Math.exp(-ra/(4*r.r))*Math.exp(-((rl/r.r)**2)):0));
       }
       white=Math.min(1,white);
@@ -118,7 +121,9 @@ function raceFields(w,ground){
     }
     light[o]=Math.min(1,r/(1+r))*255;light[o+1]=Math.min(1,g/(1+g))*255;light[o+2]=Math.min(1,b/(1+b))*255;
     light[o+3]=byte((level-ground.terrainZ(x,y))/8);         // water depth, 0 on land
-    if(white>.5&&emitters.length<420&&rnd()<white*.06&&ground.terrainZ(x,y)<level-.5)emitters.push([x,y,white,vx,vy]);
+    // Spray is thrown where water strikes rock and where crests break, not along wakes and eddy lines.
+    spray=Math.min(1,spray);
+    if(spray>.45&&emitters.length<420&&rnd()<spray*.07&&ground.terrainZ(x,y)<level-.5)emitters.push([x,y,spray,vx,vy]);
   }
   const texture=(data,type)=>{const t=new THREE.DataTexture(data,nx,ny,THREE.RGBAFormat,type);t.magFilter=t.minFilter=THREE.LinearFilter;
     t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;t.needsUpdate=true;return t;};
