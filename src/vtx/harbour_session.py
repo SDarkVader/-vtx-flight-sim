@@ -20,6 +20,7 @@ import uuid
 
 PREVIOUS_FLEET_DEPENDENCIES = "beb05b30b34be33f648a80e78fa6de18cf3d415e1cbb52084a85d5eb078beceb"
 SINGLE_PASS_FLEET_DEPENDENCIES = "95e8f62086a8333f1b2b96c35fac2d482d78f69a11aaca90f356ca6a1f4084e4"
+ARRAY_CAPTURE_FLEET_DEPENDENCIES = "fd3d0ce1a15884be8ac58ef529111a181920cfed95db748aed51a348bb9b39c9"
 WATER_ARRAY_ENCODING = "float64-le-base64"
 WATER_ARRAY_KEYS = ("h", "hu", "hv")
 
@@ -28,11 +29,12 @@ def _restore_worker_fleet(world, state):
     from .harbour_fleet import dependency_fingerprint
     from .harbour_trial import fleet_type
 
-    # The only pinned file change removes a redundant JSON validation pass.
-    # Retain the old save on disk and leave all other identity checks in force.
-    if (isinstance(state, dict) and state.get("dependencies_sha256") == PREVIOUS_FLEET_DEPENDENCIES
-            and dependency_fingerprint() == SINGLE_PASS_FLEET_DEPENDENCIES):
-        state = {**state, "dependencies_sha256": SINGLE_PASS_FLEET_DEPENDENCIES}
+    # These pinned changes only affect how an identical fleet state is captured.
+    # Leave the original save and the world, model, and solver cadence checks intact.
+    if (isinstance(state, dict) and state.get("dependencies_sha256") in
+            (PREVIOUS_FLEET_DEPENDENCIES, SINGLE_PASS_FLEET_DEPENDENCIES)
+            and dependency_fingerprint() == ARRAY_CAPTURE_FLEET_DEPENDENCIES):
+        state = {**state, "dependencies_sha256": ARRAY_CAPTURE_FLEET_DEPENDENCIES}
     return fleet_type(world).restore(world, state)
 
 
@@ -74,7 +76,7 @@ def _encode(fleet):
     import numpy as np
 
     # Validate each binary matrix before the strict encoder handles the metadata.
-    state = fleet.serialize(validate_json=False)
+    state = fleet.serialize(validate_json=False, water_arrays=True)
     shallow = state["water"]["native"]["shallow"]
     for key in WATER_ARRAY_KEYS:
         array = np.asarray(shallow[key], dtype="<f8")

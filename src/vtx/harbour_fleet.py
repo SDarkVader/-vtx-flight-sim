@@ -747,7 +747,7 @@ class HarbourFleet:
                 ),
             )
 
-    def serialize(self, *, validate_json=True):
+    def serialize(self, *, validate_json=True, water_arrays=False):
         with self._lock:
             self._validate_clocks()
             boats = {}
@@ -788,7 +788,7 @@ class HarbourFleet:
                 selectedId=self.selectedId,
                 boats=boats,
                 integration=self._integration_state().tolist(),
-                water=self.water.checkpoint_state(),
+                water=self.water.checkpoint_state(copy_arrays=water_arrays),
                 moorings=deepcopy(self.moorings),
                 occupancy=deepcopy(self.occupancy),
                 events=deepcopy(self.events),

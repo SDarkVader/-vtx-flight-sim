@@ -431,8 +431,8 @@ class ShallowWaterSolver:
             ),
         }
 
-    def checkpoint_state(self) -> dict[str, Any]:
-        """Serialize complete float64 shallow-water solver state into JSON-safe types."""
+    def checkpoint_state(self, *, copy_arrays=False) -> dict[str, Any]:
+        """Capture complete float64 state, optionally retaining detached NumPy arrays."""
         return {
             'nx': int(self.nx),
             'ny': int(self.ny),
@@ -441,9 +441,8 @@ class ShallowWaterSolver:
             'manning_n': float(self.manning_n),
             'water_level_m': float(self.water_level_m),
             'initial_volume_m3': float(self.initial_volume_m3),
-            'h': self.h.astype(np.float64, copy=False).tolist(),
-            'hu': self.hu.astype(np.float64, copy=False).tolist(),
-            'hv': self.hv.astype(np.float64, copy=False).tolist(),
+            **{key: (array.copy() if copy_arrays else array.tolist())
+               for key, array in (('h', self.h), ('hu', self.hu), ('hv', self.hv))},
             't': float(self.t),
             'substep_count': int(self.substep_count),
             '_expected_volume_m3': float(self._expected_volume_m3),
@@ -554,7 +553,7 @@ class HybridWaterField:
         self._vessel_wake = self._default_wake_state()
         self._state_version += 1
 
-    def checkpoint_state(self) -> dict[str, Any]:
+    def checkpoint_state(self, *, copy_arrays=False) -> dict[str, Any]:
         """Serialize complete float64 hybrid water field and SWE solver state."""
         wake_copy = {
             k: (
@@ -570,7 +569,7 @@ class HybridWaterField:
             'swe_step_interval_s': float(self.swe_step_interval_s),
             '_vessel_wake': wake_copy,
             'config': self.config.to_dict(),
-            'shallow': self.shallow.checkpoint_state(),
+            'shallow': self.shallow.checkpoint_state(copy_arrays=copy_arrays),
         }
 
     def restore_state(self, state: dict[str, Any]) -> None:

@@ -54,11 +54,18 @@ class Vaderland(TestWorld):
     def harbour_water_mask(self, x, y):
         x, y = np.broadcast_arrays(x, y)
         ox, oy = self.harbour['origin']
-        p = np.column_stack((x.ravel()-ox, oy-y.ravel()))
+        px, py = x.ravel()-ox, oy-y.ravel()
+        p = np.column_stack((px, py))
         layout = self.harbour['layout']
         wet = contains(p, layout['outer'])
+        if not wet.any():
+            return wet.reshape(x.shape)
+        left, right = px.min(), px.max()
+        bottom, top = py.min(), py.max()
         for ring, lower, upper in self._island_bounds:
-            nearby = wet & np.all((p >= lower) & (p <= upper), axis=1)
+            if right < lower[0] or left > upper[0] or top < lower[1] or bottom > upper[1]:
+                continue
+            nearby = wet & (px >= lower[0]) & (px <= upper[0]) & (py >= lower[1]) & (py <= upper[1])
             if np.any(nearby):
                 wet[nearby] &= ~contains(p[nearby], ring)
         return wet.reshape(x.shape)

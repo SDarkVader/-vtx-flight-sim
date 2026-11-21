@@ -463,13 +463,13 @@ class HarbourWater(HybridWaterField):
                 )
             return replace(base, **changes)
 
-    def checkpoint_state(self):
+    def checkpoint_state(self, *, copy_arrays=False):
         with self._guard:
             return dict(
                 schema="airport-harbour-water-v2",
                 world_sha256=self.world.fingerprint,
                 grid=deepcopy(self.grid_identity),
-                native=super().checkpoint_state(),
+                native=super().checkpoint_state(copy_arrays=copy_arrays),
                 wakes=deepcopy(self.wakes),
             )
 

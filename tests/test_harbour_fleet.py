@@ -41,7 +41,8 @@ def test_harbour_checkpoint_retry_preserves_atomic_replacement(tmp_path, monkeyp
     assert list(tmp_path.iterdir()) == [checkpoint]
 
 
-def test_worker_restores_only_the_known_equivalent_checkpoint(monkeypatch):
+@pytest.mark.parametrize("pin", ["PREVIOUS_FLEET_DEPENDENCIES", "SINGLE_PASS_FLEET_DEPENDENCIES"])
+def test_worker_restores_only_the_known_equivalent_checkpoint(monkeypatch, pin):
     from vtx import harbour_session
     from vtx.harbour_fleet import dependency_fingerprint
 
@@ -49,14 +50,14 @@ def test_worker_restores_only_the_known_equivalent_checkpoint(monkeypatch):
     fleet = HarbourFleet(world)
     state = fleet.serialize()
     current = dependency_fingerprint()
-    monkeypatch.setattr(harbour_session, "SINGLE_PASS_FLEET_DEPENDENCIES", current)
-    state["dependencies_sha256"] = harbour_session.PREVIOUS_FLEET_DEPENDENCIES
+    assert harbour_session.ARRAY_CAPTURE_FLEET_DEPENDENCIES == current
+    state["dependencies_sha256"] = previous = getattr(harbour_session, pin)
     restored = harbour_session._restore_worker_fleet(world, state)
-    assert state["dependencies_sha256"] == harbour_session.PREVIOUS_FLEET_DEPENDENCIES
+    assert state["dependencies_sha256"] == previous
     assert restored.dependencies_sha256 == current
     np.testing.assert_array_equal(restored._integration_state(), fleet._integration_state())
 
-    monkeypatch.setattr(harbour_session, "SINGLE_PASS_FLEET_DEPENDENCIES", "0" * 64)
+    monkeypatch.setattr(harbour_session, "ARRAY_CAPTURE_FLEET_DEPENDENCIES", "0" * 64)
     with pytest.raises(ValueError, match="physics/assets differ"):
         harbour_session._restore_worker_fleet(world, state)
 
@@ -68,11 +69,14 @@ def test_checkpoint_codec_preserves_original_water_values_and_accepts_legacy_jso
     original = fleet.serialize()
     legacy = gzip.compress(json.dumps(original, allow_nan=False).encode())
     packed = harbour_session._encode(fleet)
+    arrays = fleet.serialize(validate_json=False, water_arrays=True)["water"]["native"]["shallow"]
     assert harbour_session._decode(legacy) == original
     decoded = harbour_session._decode(packed)
     assert decoded == original
     restored = HarbourFleet.restore(harbour_world(), decoded)
     for key in harbour_session.WATER_ARRAY_KEYS:
+        assert not np.shares_memory(arrays[key], getattr(fleet.water.shallow, key))
+        np.testing.assert_array_equal(arrays[key], original["water"]["native"]["shallow"][key])
         np.testing.assert_array_equal(
             getattr(restored.water.shallow, key).view(np.uint64),
             getattr(fleet.water.shallow, key).view(np.uint64),
