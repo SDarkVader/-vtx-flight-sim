@@ -1,21 +1,29 @@
 export const ALPINE_ZONES = [
   {id: 'village', name: 'Base village', area: 'East Ridge Ski Resort', point: [3920, 810]},
   {id: 'mid', name: 'Mid-station', area: 'East Ridge Ski Resort', point: [4170, 1100]},
-  {id: 'summit', name: 'Resort summit', area: 'East Ridge Ski Resort', point: [4600, 1930]},
+  {id: 'summit', name: 'Lower ridge', area: 'East Ridge Ski Resort', point: [4600, 1930]},
+  {id: 'mountain-foot', name: 'Mountain station', area: 'East Ridge Ski Resort', point: [6240, 3670]},
+  {id: 'high-summit', name: 'High summit', area: 'East Ridge Ski Resort', point: [7060, 4680]},
   {id: 'cirque', name: 'Cirque launch', area: 'Northwest Cirque', point: [-7000, 6450]},
   {id: 'gorge', name: 'Cascade overlook', area: 'Northwest Cirque', point: [-4760, 3920]},
   {id: 'east-launch', name: 'Rocket launch', area: 'Northeast Range', point: [6900, 4800]},
   {id: 'race-west', name: 'West bank', area: 'Lantern Race crossing', point: [-660, -1944]},
   {id: 'race-east', name: 'East bank', area: 'Lantern Race crossing', point: [-300, -1944]},
+  {id: 'east-gully', name: 'Gully overlook', area: 'East Gully', point: [7700, 3390]},
 ];
 
-const [village, mid, summit, cirque, gorge, eastLaunch, raceWest, raceEast] = ALPINE_ZONES.map(zone => zone.point);
+const [village, mid, summit, mountainFoot, highSummit, cirque, gorge, eastLaunch, raceWest, raceEast, eastGully] =
+  ALPINE_ZONES.map(zone => zone.point);
 
 export const ALPINE_ACCESS = [[3956.75, 992.98], [3900, 948], [3845, 893], [3865, 840], village];
 
 export const ALPINE_LIFTS = [
   {id: 'lower-lift', name: 'Village lift', from: 'village', to: 'mid', points: [village, mid]},
   {id: 'upper-lift', name: 'Summit lift', from: 'mid', to: 'summit', points: [mid, summit]},
+  {id: 'ridge-connector', name: 'Mountain connector', from: 'summit', to: 'mountain-foot',
+    points: [summit, mountainFoot]},
+  {id: 'high-lift', name: 'High summit lift', from: 'mountain-foot', to: 'high-summit',
+    points: [mountainFoot, highSummit]},
 ];
 
 export const ALPINE_ROUTES = [
@@ -25,6 +33,15 @@ export const ALPINE_ROUTES = [
   {id: 'ridge', name: 'Ridge Run', grade: 'Upper resort slope', color: '#8ccfff', width: 44,
     kind: 'descent', from: 'summit', to: 'mid', points: [summit, [4500, 1795], [4380, 1630], [4270, 1480],
       [4250, 1350], [4160, 1230], mid]},
+  {id: 'storm-face', name: 'Storm Face', grade: 'Expert · high mountain', color: '#c1d7ff', width: 62,
+    kind: 'descent', from: 'high-summit', to: 'mountain-foot',
+    points: [highSummit, [7080, 4580], [7000, 4570], [7020, 4470], [6900, 4370],
+      [6890, 4250], [6760, 4200], [6710, 4110], [6570, 4060], [6470, 3900],
+      [6370, 3960], [6280, 3810], mountainFoot]},
+  {id: 'east-gully-run', name: 'East Gully', grade: 'Expert · unlit', color: '#dd987a',
+    kind:'descent', from:'high-summit', to:'east-gully',
+    points:[highSummit, [7180,4660], [7240,4570], [7340,4450], [7410,4330],
+      [7520,4210], [7600,4040], [7660,3850], [7700,3620], eastGully]},
   {id: 'zipline', name: 'Ridge zip line', kind: 'zipline', color: '#ffe4b4',
     from: 'summit', to: 'mid', points: [summit, mid]},
   {id: 'race-crossing', name: 'Lantern Race zip line', kind: 'zipline', color: '#9ee8e6',

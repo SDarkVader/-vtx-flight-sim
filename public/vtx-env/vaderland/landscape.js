@@ -213,12 +213,12 @@ void main(){
       float across=dot(p.xy,vec2(-down.y,down.x));
       float gully=fbm(vec2(across*.052,p.z*.0055+across*.0009));
       float steep=smoothstep(.22,.72,slope);
-      vec3 rock=mix(vec3(.078,.076,.084),vec3(.285,.245,.208),smoothstep(.30,.76,strata));
-      rock=mix(rock,vec3(.155,.152,.160),.30*bed);
+      vec3 rock=mix(vec3(.046,.075,.120),vec3(.345,.225,.153),smoothstep(.30,.76,strata));
+      rock=mix(rock,vec3(.13,.15,.19),.21*bed);
       rock*=mix(1.,.58+.62*gully,steep);
       rock*=clamp(detail*4.1,vec3(.40),vec3(1.75));
       float ledge=smoothstep(.60,.80,normal.z)*(1.-smoothstep(.88,.96,normal.z))*smoothstep(.42,.62,fbm(p.xy*.031+2.));
-      vec3 moss=mix(vec3(.028,.050,.027),vec3(.098,.106,.048),fbm(p.xy*.07));
+      vec3 moss=mix(vec3(.022,.058,.041),vec3(.104,.134,.056),fbm(p.xy*.07));
       rock=mix(rock,moss,ledge*.78);
       float scree=smoothstep(.16,.30,slope)*(1.-smoothstep(.44,.58,slope))*smoothstep(.52,.68,fbm(p.xy*.018+3.));
       rock=mix(rock,vec3(.235,.225,.215)*(.68+.62*hash(floor(p.xy*1.4))),scree*.55);
@@ -248,10 +248,14 @@ void main(){
   }
   float moonlit=rooftopPass>.5 ? mix(.075,.155,smoothstep(65.,480.,p.z)) : (photographic>.5?.074:.36);
   vec3 floorLight=lit*mix(1.,moonlit,night);
-  if(alpineOn>.5 && night>.01){
+  if(alpineOn>.5){
     vec2 uv=(p.xy-alpineBounds.xy)/alpineBounds.zw;
-    if(all(greaterThan(uv,vec2(0.)))&&all(lessThan(uv,vec2(1.))))
-      floorLight+=texture2D(alpineLight,uv).rgb*min(night*1.42,1.)*.41;
+    if(all(greaterThan(uv,vec2(0.)))&&all(lessThan(uv,vec2(1.)))){
+      vec4 resort=texture2D(alpineLight,uv);
+      vec3 exposedTrail=vec3(.145,.112,.072)*(.45+lambert)*(.81+.19*variation);
+      floorLight=mix(floorLight,exposedTrail,resort.a*(1.-night)*.44);
+      floorLight+=resort.rgb*min(night*1.42,1.)*.41;
+    }
   }
   if(marinaSurvey>.5 && p.x>840. && p.x<1210. && p.y>-1380. && p.y<-960.){
     float parcel=1.-smoothstep(.64,1.,length((p.xy-vec2(1023.,-1170.))/vec2(185.,205.)));
@@ -424,6 +428,10 @@ function facadeMaterial(uniforms){
           vec3 glazing=mix(reflection,vec3(.85,.39,.108)*(.70+.36*office),groupLight*.77);
           wall=mix(metal,mix(metal,glazing,shell),close);
           wall+=vec3(.31,.113,.032)*groupLight*(1.-close)*(.35+.65*step(.6,office));
+          if(rooftopPass>.5){
+            vec3 distantLift=mix(vec3(.24,.105,.038),vec3(.075,.19,.29),fract(district*1.73));
+            wall+=distantLift*groupLight*(1.-close)*.33;
+          }
           float sill=1.-smoothstep(.1,.42,abs(top-1.2));
           float averageSill=1.-smoothstep(.3,max(.55,fwidth(top)*1.1),abs(top-1.2));
           wall+=vec3(1.25,.47,.083)*mix(sill,averageSill*.83,1.-close);

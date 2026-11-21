@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {heightfieldZ} from '../landscape.js';
 import {ALPINE_ACCESS, ALPINE_LIFTS, ALPINE_ROUTES, ALPINE_ZONES} from './alpine-layout.js';
 
-const RESORT_BOUNDS = [3720, 730, 1070, 1270];
+const RESORT_BOUNDS = [3720, 730, 3540, 4190];
 const WARM = new THREE.Color('#ffc17f');
 const COOL = new THREE.Color('#a8d6ff');
 
@@ -45,25 +45,22 @@ export function measureAlpineRoutes(ground, waterLevel=0) {
   });
 }
 
-function groundLightMap(lamps) {
-  const size = 256, values = new Float32Array(size*size*3);
+function groundLightMap(lamps, tracks) {
+  const size = 512, values = new Float32Array(size*size*4);
   const [left, bottom, width, length] = RESORT_BOUNDS;
-  for (const {point:[x,y], color, radius, strength} of lamps) {
+  for (const {point:[x,y], color, radius, strength} of [...lamps,...tracks]) {
     const minI = Math.max(0, Math.floor((x-radius-left)/width*size));
     const maxI = Math.min(size-1, Math.ceil((x+radius-left)/width*size));
     const minJ = Math.max(0, Math.floor((y-radius-bottom)/length*size));
     const maxJ = Math.min(size-1, Math.ceil((y+radius-bottom)/length*size));
     for (let j=minJ; j<=maxJ; j++) for (let i=minI; i<=maxI; i++) {
       const dx=(left+(i+.5)*width/size-x)/radius, dy=(bottom+(j+.5)*length/size-y)/radius;
-      const light = Math.max(0, 1-dx*dx-dy*dy)**2 * strength, k=(j*size+i)*3;
-      values[k]+=light*color.r; values[k+1]+=light*color.g; values[k+2]+=light*color.b;
+      const mark = Math.max(0, 1-dx*dx-dy*dy)**2 * strength, k=(j*size+i)*4;
+      if(color){values[k]+=mark*color.r;values[k+1]+=mark*color.g;values[k+2]+=mark*color.b;}
+      else values[k+3]=Math.max(values[k+3],mark);
     }
   }
-  const pixels = new Uint8Array(size*size*4);
-  for (let i=0; i<size*size; i++) {
-    for (let j=0; j<3; j++) pixels[i*4+j]=Math.round(Math.min(1,values[i*3+j])*255);
-    pixels[i*4+3]=255;
-  }
+  const pixels = Uint8Array.from(values,value=>Math.round(Math.min(1,value)*255));
   const texture = new THREE.DataTexture(pixels,size,size);
   texture.minFilter=texture.magFilter=THREE.LinearFilter;
   texture.needsUpdate=true;
@@ -101,11 +98,12 @@ function lampPosts(lamps,ground) {
 function station(root, point, ground, size, night) {
   const [x,y]=point, z=ground(x,y), [width,depth,height]=size;
   const lodge=new THREE.Mesh(new THREE.BoxGeometry(width,depth,height),
-    new THREE.MeshBasicMaterial({color:'#785a47'}));
+    new THREE.MeshBasicMaterial({color:'#79523c'}));
   lodge.position.set(x,y,z+height*.26);
-  const roof=new THREE.Mesh(new THREE.CylinderGeometry(0,1,1,4,1),new THREE.MeshBasicMaterial({color:'#343937'}));
-  roof.rotation.set(Math.PI/2,Math.PI/4,0); roof.scale.set(width*.76, height*.55, depth*.76);
-  roof.position.set(x,y,z+height*.96);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(width*1.15,depth*1.18,height*.15),
+    new THREE.MeshBasicMaterial({color:'#48382c'}));
+  roof.rotation.x=-.14;
+  roof.position.set(x,y,z+height*.85);
   const windows=new THREE.Mesh(new THREE.PlaneGeometry(width*.77,height*.26),new THREE.MeshBasicMaterial({color:'#aa7751',side:THREE.DoubleSide}));
   windows.rotation.x=Math.PI/2;windows.position.set(x,y-depth/2-.04,z+height*.40);
   root.add(lodge,roof,windows);
@@ -133,24 +131,58 @@ function span(root,route,ground) {
   root.add(wire,pylons);
 }
 
+function summitCrown(root,[x,y],ground,night) {
+  const z=ground(x,y);
+  const feet=[[-14,-10],[14,-10],[0,17]].map(([dx,dy])=>
+    new THREE.Vector3(x+dx,y+dy,ground(x+dx,y+dy)));
+  const tips=[[-8,4,27],[17,0,42],[1,13,30]].map(([dx,dy,dz])=>
+    new THREE.Vector3(x+dx,y+dy,z+dz));
+  const geometry=new THREE.CylinderGeometry(.65,1.1,1,5);
+  const copper=new THREE.MeshBasicMaterial({color:'#895333'});
+  const shape=new THREE.InstancedMesh(geometry,copper,6);
+  const dummy=new THREE.Object3D(), up=new THREE.Vector3(0,1,0);
+  const beams=[...feet.map((foot,i)=>[foot,tips[i]]),...tips.map((tip,i)=>[tip,tips[(i+1)%3]])];
+  beams.forEach(([a,b],i)=>{
+    const direction=b.clone().sub(a);
+    dummy.position.copy(a).lerp(b,.5);
+    dummy.quaternion.setFromUnitVectors(up,direction.clone().normalize());
+    dummy.scale.set(1,direction.length(),1);
+    dummy.updateMatrix();shape.setMatrixAt(i,dummy.matrix);
+  });
+  shape.instanceMatrix.needsUpdate=true;
+  shape.name='Vaderland summit signal crown';
+  const crownLight=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(tips),
+    new THREE.LineBasicMaterial({color:'#ffd092',transparent:true,opacity:.4}));
+  root.add(shape,crownLight);
+  return ()=>{crownLight.material.opacity=night.value>.01?1:.4;};
+}
+
 export function buildAlpineResort(group, world, night) {
   const ground=(x,y)=>heightfieldZ(world,x,y);
   const root=new THREE.Group();root.name='East Ridge Ski Resort';group.add(root);
-  const lamps=[];
+  const lamps=[], tracks=[];
   const place=(point,color,radius,strength,height=6)=>lamps.push({point,color,radius,strength,height});
   for (const point of resample(ALPINE_ACCESS,32)) place(point,WARM,34,.22,4);
   for (const route of ALPINE_ROUTES.filter(route=>route.width)) {
-    const path=resample(route.points,43);
+    const high=route.id==='storm-face';
+    const path=resample(route.points,high?47:43);
+    for(const point of resample(route.points,route.width*.34)) tracks.push({point,radius:route.width*.56,strength:.92});
     path.forEach(([x,y],i)=>{
       const [px,py]=path[Math.min(i+1,path.length-1)];
       const dx=px-x,dy=py-y,side=(i%2===0 ? -1 : 1)*route.width*.50;
       const length=Math.hypot(dx,dy)||1;
-      place([x-dy/length*side,y+dx/length*side],COOL,47,.28,7);
+      place([x-dy/length*side,y+dx/length*side],COOL,high?75:47,high?.31:.28,high?11:7);
     });
   }
   const windows=[];
-  ALPINE_ZONES.slice(0,3).forEach(({point:[x,y]},i)=>{
-    windows.push(station(root,[x,y],ground,i===0?[28,16,8]:[19,12,7],night));
+  const resortZones=ALPINE_ZONES.filter(zone=>zone.area==='East Ridge Ski Resort');
+  resortZones.forEach(({id,point:[x,y]},i)=>{
+    if(id==='high-summit'){
+      windows.push(summitCrown(root,[x,y],ground,night));
+      for (const [dx,dy] of [[-10,-12],[24,-16],[-18,14]])place([x+dx,y+dy],WARM,58,.46,11);
+      return;
+    }
+    windows.push(station(root,[x,y],ground,i===0?[42,22,11]:[22,14,8],night));
     for (const [dx,dy] of [[-20,-12],[24,-11],[-19,15],[21,16]]) place([x+dx,y+dy],WARM,41,.45);
     if (i===0) for (const [dx,dy] of [[-43,13],[42,17],[-11,-36]]) {
       windows.push(station(root,[x+dx,y+dy],ground,[16,12,6],night));
@@ -159,13 +191,13 @@ export function buildAlpineResort(group, world, night) {
   });
   for (const route of [...ALPINE_LIFTS,...ALPINE_ROUTES.filter(route=>route.kind==='zipline')]) span(root,route,ground);
   const lights=bulbs(lamps,ground,night);root.add(lights,lampPosts(lamps,ground));
-  for(const {id,point:[x,y]} of ALPINE_ZONES.slice(3,6)){
+  for(const {id,point:[x,y]} of ALPINE_ZONES.filter(zone=>['cirque','gorge','east-launch','east-gully'].includes(zone.id))){
     const marker=new THREE.Mesh(new THREE.ConeGeometry(3.4,9,4),
       new THREE.MeshBasicMaterial({color:id==='east-launch'?'#acb6dc':'#dfa668'}));
     marker.rotation.x=Math.PI/2;marker.position.set(x,y,ground(x,y)+4.5);
     marker.name=id+' survey marker';root.add(marker);
   }
-  const texture=groundLightMap(lamps);
+  const texture=groundLightMap(lamps,tracks);
   const zones=ALPINE_ZONES.map(zone=>({...zone,elevation:ground(...zone.point)}));
   let lit;
   return {zones,routes:measureAlpineRoutes(ground,world.harbour?.waterLevelM),texture,bounds:RESORT_BOUNDS,

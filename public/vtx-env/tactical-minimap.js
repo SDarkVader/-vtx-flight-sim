@@ -298,9 +298,11 @@ export class TacticalMinimap {
           const x=px(zone.point[0]),y=py(zone.point[1]);
           g.fillStyle='#fff2d7';
           g.beginPath();g.arc(x,y,2.4,0,Math.PI*2);g.fill();
-          if(['village','cirque','east-launch','race-west'].includes(zone.id)){
+          if(['village','high-summit','cirque','east-launch','race-west'].includes(zone.id)){
+            const caption=zone.id==='high-summit'?zone.name:zone.area;
+            const labelY=y+(zone.id==='high-summit'?13:-7);
             g.lineWidth=3;g.strokeStyle='#17252a';
-            g.strokeText(zone.area,x,y-7);g.fillText(zone.area,x,y-7);
+            g.strokeText(caption,x,labelY);g.fillText(caption,x,labelY);
           }
         }
       }
