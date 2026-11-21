@@ -2,9 +2,8 @@
 //
 // The server sends rendering truth at about 10 Hz (nearer 9 Hz on Windows, where asyncio sleeps round up to
 // the 15.6 ms timer tick). Drawn as-is, the airframe steps 10 times a second however fast the browser renders.
-// This draws each body between the two most recent true poses, one sample interval behind, the same way the
-// boats are drawn. Every drawn pose lies between two physical states: nothing is predicted or extrapolated,
-// and the physics, records and evidence are untouched.
+// Retarget from the pose already on screen so an early sample cannot cause a camera or airframe jump.
+// Each transition aims for a measured pose without predicting future motion. Physics and records are untouched.
 //
 // Rotors keep the latest orientation, because a rotor turns a whole revolution or more between samples and
 // interpolating it would alias; their sub-frame spin is added from measured angular velocity as before.
@@ -13,28 +12,32 @@ const MAX_JUMP_M = 60;          // a larger step between samples is a reset or t
 const MIN_INTERVAL_MS = 25, MAX_INTERVAL_MS = 400;
 
 export function createPoseInterpolator({ maxJumpM = MAX_JUMP_M } = {}) {
-  let prev = null, cur = null, prevMs = 0, curMs = 0, interval = 100;
+  let prev = null, cur = null, curMs = 0, interval = 100;
 
-  function receive(truth, receivedMs) {
-    if (!truth?.body_poses) { prev = cur = null; return; }
-    if (cur && truth !== cur) {
-      prev = cur; prevMs = curMs;
-      const gap = receivedMs - prevMs;
+  function receive(truth, receivedMs, { snap = false } = {}) {
+    if (cur && truth?.body_poses && !snap && Number(truth.t_s) >= Number(cur.t_s)
+        && !Object.entries(truth.body_poses).some(([name, pose]) =>
+          !cur.body_poses[name] || jump(cur.body_poses[name].position, pose.position) > maxJumpM)) {
+      if (truth === cur) return;
+      prev = present(receivedMs);
+      const gap = receivedMs - curMs;
       if (gap > 0) interval = Math.min(MAX_INTERVAL_MS, Math.max(MIN_INTERVAL_MS, 0.7 * interval + 0.3 * gap));
+    } else {
+      prev = null;
+      interval = 100;
     }
-    cur = truth; curMs = receivedMs;
+    cur = truth?.body_poses ? truth : null;
+    curMs = receivedMs;
   }
 
   function present(nowMs, { frozen = false } = {}) {
     if (!cur) return null;
-    // A clock that went backwards is a new run or a restored checkpoint: never blend across it.
-    if (frozen || !prev || !(Number(cur.t_s) >= Number(prev.t_s))) return cur;
+    if (frozen || !prev) return cur;
     const alpha = Math.min(1, Math.max(0, (nowMs - curMs) / interval));
     if (alpha >= 1) return cur;
     const poses = {};
     for (const [name, pose] of Object.entries(cur.body_poses)) {
       const before = prev.body_poses?.[name];
-      if (!before || jump(before.position, pose.position) > maxJumpM) return cur;
       poses[name] = {
         ...pose,
         position: lerp3(before.position, pose.position, alpha),

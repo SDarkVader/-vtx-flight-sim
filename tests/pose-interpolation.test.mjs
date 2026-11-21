@@ -45,6 +45,20 @@ test('resets, new runs and pauses show the latest truth at once', () => {
   assert.equal(p.present(350, { frozen: true }).body_poses.airframe.position[0], 4);
 });
 
+test('an early packet does not advance the pose or camera on arrival', () => {
+  const p = createPoseInterpolator();
+  const q = [1, 0, 0, 0];
+  p.receive(truth(0, q), 0);
+  p.receive(truth(10, q), 100);
+  const before = p.present(145);
+  p.receive(truth(14, q), 145);
+  const after = p.present(145);
+  assert.deepEqual(after.body_poses.airframe.position, before.body_poses.airframe.position);
+  assert.deepEqual(after.mass.cg_world_m, before.mass.cg_world_m);
+  assert.ok(p.present(160).body_poses.airframe.position[0] > before.body_poses.airframe.position[0]);
+  assert.equal(p.present(350).body_poses.airframe.position[0], 14);
+});
+
 test('slerp is unit length and takes the short way round', () => {
   const q = slerp([1, 0, 0, 0], [-half, 0, 0, -half], 0.5);
   assert.ok(Math.abs(Math.hypot(...q) - 1) < 1e-12);
