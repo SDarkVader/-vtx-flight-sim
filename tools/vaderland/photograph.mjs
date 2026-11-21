@@ -68,6 +68,12 @@ const views = {
   lanes: {eye:[3010,-4356.35,145.3],target:[3330,-4356.35,145.9],fov:65},
   galleryAir: {eye:[2680,-4590,325],target:[3265,-4350,144],fov:53},
   street: {eye:[-644,2463,37],target:[112,2515,115],fov:62},
+  // Rooftop Quarter review cameras (NW wards and the A10-D approach).
+  approachNW: {eye:[-1050,3150,560], target:[-150,2250,140], fov:58, mode:'dusk', time:27},
+  approachDay: {eye:[-1050,3150,560], target:[-150,2250,140], fov:58, mode:'day', time:27},
+  wardsAir: {eye:[-2750,4900,430], target:[-1650,3500,60], fov:58, mode:'dusk', time:27},
+  wardsStreet: {eye:[-2200,3300,42.2], target:[-1500,3000,70], fov:62, mode:'dusk', time:27},
+  cityFromRunway: {eye:[-700,-1560,300], target:[-30,1400,183], fov:38, mode:'dusk', time:27},
   circuit: {eye:[3780,-4610,570],target:[5350,-3100,155],fov:52},
 };
 if(world.vaderland.speedway){

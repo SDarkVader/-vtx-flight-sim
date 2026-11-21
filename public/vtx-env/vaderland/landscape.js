@@ -20,6 +20,7 @@ import {buildMeridianYard} from './meridian-yard.js';
 import {buildVerticalLoops} from './vertical-loops.js';
 import {buildCathedralEast} from './cathedral-east.js';
 import {buildAirTrialMarkers} from './air-trials.js';
+import {buildCityLife} from './city-life.js';
 
 const vertex = `
 varying vec3 p;
@@ -156,7 +157,12 @@ void main(){
     vec3 uplandColor=mix(vec3(.018,.055,.032),vec3(.212,.215,.062),smoothstep(.27,.69,variation+macro*.13));
     uplandColor*=mix(vec3(1.),clamp(substrate*4.5,vec3(.42),vec3(1.6)),.68);
     uplandColor=mix(uplandColor,vec3(.085,.094,.105)*(.74+.4*grain),urban.g*.80);
-    uplandColor=mix(uplandColor,vec3(.21,.192,.165)*(.81+.29*grain),urban.r*.91);
+    // Ward paving reads as lots, gardens and courts rather than one pale slab.
+    vec2 wardLot=floor(p.xy/52.);float wardKind=hash(wardLot+vec2(5.,91.));
+    vec3 wardPave=wardKind<.30?mix(vec3(.025,.058,.028),vec3(.075,.12,.045),grain)
+                 :wardKind<.55?vec3(.150,.118,.090)*(.78+.34*grain)
+                 :vec3(.062,.066,.074)*(.80+.30*grain);
+    uplandColor=mix(uplandColor,wardPave,urban.r*.91);
     if(arrivalsSurvey>.5){
       float lawn=(1.-smoothstep(.73,1.,length((p.xy-vec2(0.,-397.))/vec2(390.,162.))));
       float mow=.5+.5*cos((p.x*.68+p.y*.43)*.72);
@@ -197,9 +203,21 @@ void main(){
   }
   if(marketPass>.5){
     vec2 q=abs((p.xy-vec2(0.,2480.))/vec2(1050.,1050.));float district=1.-smoothstep(.93,1.05,max(q.x,q.y));
-    float garden=fbm(p.xy*.012),stone=texture2D(granite,p.xy/4.5).r;
-    vec3 blocks=mix(vec3(.135,.151,.123),vec3(.286,.260,.224),smoothstep(.30,.59,garden))*(.72+.64*stone);
-    floorLight=mix(floorLight,blocks*mix(vec3(1.),vec3(.36,.40,.47),night),district*.94);
+    float stone=texture2D(granite,p.xy/4.5).r;
+    // Urban fabric instead of one stone blanket: each ~46 m lot is a pocket park, a warm
+    // plaza or a dark service court, so the ground stays darker and more varied than
+    // the lit facades above it.
+    vec2 lotId=floor(p.xy/46.),lotUv=fract(p.xy/46.);
+    float kind=hash(lotId+vec2(31.,7.)),canopy=fbm(p.xy*.11+lotId);
+    vec3 park=mix(vec3(.022,.052,.026),vec3(.070,.118,.046),canopy)*(.75+.5*stone);
+    vec3 plaza=mix(vec3(.118,.092,.070),vec3(.205,.160,.118),hash(lotId*1.7))*(.70+.62*stone);
+    vec3 court=mix(vec3(.040,.044,.052),vec3(.075,.078,.088),stone);
+    float bays=step(.82,fract(lotUv.x*7.))*step(.12,lotUv.y)*step(lotUv.y,.88)*step(.5,hash(lotId+3.));
+    court+=vec3(.10,.10,.085)*bays*.35;
+    vec3 blocks=kind<.36?park:kind<.62?plaza:court;
+    float lamp=exp(-length(lotUv-.5)*9.)*step(.36,kind)*step(kind,.62);
+    vec3 nightLift=vec3(.36,.40,.47)+vec3(1.,.55,.20)*lamp*2.2;
+    floorLight=mix(floorLight,blocks*mix(vec3(1.),nightLift,night),district*.94);
   }
   gl_FragColor=vec4(haze(floorLight),1.);
   #include <colorspace_fragment>
@@ -942,6 +960,8 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
   const ground=w.vaderland.routes.length?createGround(w,null):null;
   const gardens=w.vaderland.crest_gardens?buildCrestGardens(group,w,ground,uniforms,common):null;
   const market=w.vaderland.quarter?buildMarket(group,w,ground,uniforms,common):null;
+  const cityLife=w.vaderland.quarter&&!globalThis.__vtxNoCityLife?buildCityLife(group,w,uniforms):null;
+  if(cityLife)console.log('city life',JSON.stringify(cityLife.stats));
   const court=w.vaderland.parallax_court?buildParallaxCourt(group,w,ground,uniforms,common):null;
   const room=w.vaderland.instrument_room?buildInstrumentRoom(group,w,uniforms,common):null;
   if(ground){
@@ -1053,6 +1073,7 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
     gardens?.update(cam);
     cathedralEast?.update(timing);
     airMarks?.(timing);
+    cityLife?.update(seconds,mode);
     market?.update(cam,physicsTime);optics?.update(mode,cam,physicsTime);departments?.update(physicsTime,doors,timing,aircraftXY);
   }, dispose(){
     disposed=true;scene.fog=previous.fog;camera.far=previous.far;camera.updateProjectionMatrix();
