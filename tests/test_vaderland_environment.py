@@ -182,6 +182,7 @@ def test_market_shallow_water_reuses_only_bitwise_identical_cell_neighbourhoods(
 
 
 def test_harbour_worker_water_strips_preserve_the_stock_stencil():
+    from concurrent.futures import ThreadPoolExecutor
     from copy import deepcopy
     from types import SimpleNamespace
 
@@ -196,13 +197,14 @@ def test_harbour_worker_water_strips_preserve_the_stock_stencil():
     stock.hv[:] = rng.normal(0, 0.1, size=stock.h.shape)
     strips = deepcopy(stock)
 
-    for _ in range(4):
-        stock._advance_substep(0.05)
-        _advance_water_in_strips(ShallowWaterSolver._advance_substep, strips, 0.05)
-        for name in ('h', 'hu', 'hv'):
-            expected = getattr(stock, name).view(np.uint64)
-            actual = getattr(strips, name).view(np.uint64)
-            np.testing.assert_array_equal(actual, expected)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        for _ in range(4):
+            stock._advance_substep(0.05)
+            _advance_water_in_strips(ShallowWaterSolver._advance_substep, strips, 0.05, executor=executor)
+            for name in ('h', 'hu', 'hv'):
+                expected = getattr(stock, name).view(np.uint64)
+                actual = getattr(strips, name).view(np.uint64)
+                np.testing.assert_array_equal(actual, expected)
 
 
 def test_timing_rejects_overflight_and_requires_the_ordered_return():

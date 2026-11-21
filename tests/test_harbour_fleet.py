@@ -1,6 +1,7 @@
 """Real marine plants in a small isolated world; never a live Laboratory."""
 
 from copy import deepcopy
+import gzip
 import json
 from types import SimpleNamespace
 import numpy as np
@@ -38,6 +39,49 @@ def test_harbour_checkpoint_retry_preserves_atomic_replacement(tmp_path, monkeyp
         assert checkpoint.read_bytes() == b"new checkpoint"
         assert len(attempts) == 3
     assert list(tmp_path.iterdir()) == [checkpoint]
+
+
+def test_worker_restores_only_the_known_equivalent_checkpoint(monkeypatch):
+    from vtx import harbour_session
+    from vtx.harbour_fleet import dependency_fingerprint
+
+    world = harbour_world()
+    fleet = HarbourFleet(world)
+    state = fleet.serialize()
+    current = dependency_fingerprint()
+    monkeypatch.setattr(harbour_session, "SINGLE_PASS_FLEET_DEPENDENCIES", current)
+    state["dependencies_sha256"] = harbour_session.PREVIOUS_FLEET_DEPENDENCIES
+    restored = harbour_session._restore_worker_fleet(world, state)
+    assert state["dependencies_sha256"] == harbour_session.PREVIOUS_FLEET_DEPENDENCIES
+    assert restored.dependencies_sha256 == current
+    np.testing.assert_array_equal(restored._integration_state(), fleet._integration_state())
+
+    monkeypatch.setattr(harbour_session, "SINGLE_PASS_FLEET_DEPENDENCIES", "0" * 64)
+    with pytest.raises(ValueError, match="physics/assets differ"):
+        harbour_session._restore_worker_fleet(world, state)
+
+
+def test_checkpoint_codec_preserves_original_water_values_and_accepts_legacy_json():
+    from vtx import harbour_session
+
+    fleet = HarbourFleet(harbour_world())
+    original = fleet.serialize()
+    legacy = gzip.compress(json.dumps(original, allow_nan=False).encode())
+    packed = harbour_session._encode(fleet)
+    assert harbour_session._decode(legacy) == original
+    decoded = harbour_session._decode(packed)
+    assert decoded == original
+    restored = HarbourFleet.restore(harbour_world(), decoded)
+    for key in harbour_session.WATER_ARRAY_KEYS:
+        np.testing.assert_array_equal(
+            getattr(restored.water.shallow, key).view(np.uint64),
+            getattr(fleet.water.shallow, key).view(np.uint64),
+        )
+
+    damaged = json.loads(gzip.decompress(packed))
+    damaged["water"]["native"]["shallow"]["h"] = "AAAA"
+    with pytest.raises(ValueError, match="water array length"):
+        harbour_session._decode(gzip.compress(json.dumps(damaged).encode()))
 
 
 def harbour_world():

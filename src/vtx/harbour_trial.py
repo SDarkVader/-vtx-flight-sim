@@ -100,9 +100,9 @@ class LanternTrialFleet(HarbourFleet):
                 }
             return status
 
-    def serialize(self):
+    def serialize(self, *, validate_json=True):
         with self._lock:
-            state = super().serialize()
+            state = super().serialize(validate_json=validate_json)
             state['lantern_trial'] = {
                 'course':self.trial['id'], 'runs':{key:clock.save() for key,clock in self.race_clocks.items()},
                 'fouls':dict(self.race_fouls),

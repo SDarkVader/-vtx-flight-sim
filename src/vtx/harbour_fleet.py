@@ -747,7 +747,7 @@ class HarbourFleet:
                 ),
             )
 
-    def serialize(self):
+    def serialize(self, *, validate_json=True):
         with self._lock:
             self._validate_clocks()
             boats = {}
@@ -793,7 +793,8 @@ class HarbourFleet:
                 occupancy=deepcopy(self.occupancy),
                 events=deepcopy(self.events),
             )
-            json.dumps(state, allow_nan=False)
+            if validate_json:
+                json.dumps(state, allow_nan=False)
             return state
 
     @classmethod
