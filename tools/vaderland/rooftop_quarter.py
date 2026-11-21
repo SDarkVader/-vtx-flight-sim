@@ -1,13 +1,13 @@
-"""Vaderland 33: Meridian ward neighbourhoods, mini tracks, rooftop landing zones and missions.
+"""Vaderland 33: Meridian rooftop landing zones, missions and ward mini tracks.
 
-Fills the empty Meridian ward lots with small neighbourhoods (terraces, odd houses, round
-houses, towers, gardens, trees and lanes), gives some lots a mini track with physical
-ramps, lights landing zones of several sizes on existing and new roofs, and chains hoops
-and zones into missions that end with a runway touchdown and a takeoff gate.
+Lights landing zones of several sizes on existing Meridian roofs, chains hoops and zones
+into missions that end with a runway touchdown and a takeoff gate, and adds a few small
+ward tracks with physical ramps. No buildings are added: an earlier box-house infill was
+rejected by the owner (it read as blocks and departed from the baseline architecture), so
+any future infill must reuse the baseline Meridian building vocabulary.
 
-Physical shapes are boxes, cylinders and convex ramps. Gardens, lawns, paths and crop
-stripes are ground colour only; lanes and tracks are surveyed routes on the existing
-terrain. The terrain heightfield is not changed.
+The only new solids are convex ramps. Tracks are surveyed routes on the existing terrain,
+and the terrain heightfield is not changed.
 
     python tools/vaderland/rooftop_quarter.py [--out inputs/vaderland/rooftop-quarter-33.json.gz]
 """
@@ -29,10 +29,6 @@ CELL = 4.0
 X0, X1, Y0, Y1 = -3300., 3100., 680., 5800.
 TILE = 96.
 CENTRE = (-1090., 1090., 1390., 3570.)          # existing dense market district stays as built
-GEOM_BUDGET = 6500
-
-HOUSE_PALETTE = ['#c8553d', '#2f8f83', '#e0a43a', '#8e6cc4', '#e8e1d2', '#4f7cac', '#d97a9a', '#6f9e4f', '#b9794f', '#3d4b6b']
-LEAF = ['#2e5d34', '#3f7a3a', '#5b8f3a', '#2c4f3f', '#7a9a3a', '#c45a8a', '#d9822b', '#9c4fb0']
 PAD_CLASSES = [  # name, radius, colour, what the zone demands of a vehicle (the environment sets the challenge)
     ('S', 6.0, '#b46bff', 'footprint within 8 m; precise hover over a small high roof'),
     ('M', 10.0, '#36d6ff', 'footprint within 14 m; controlled vertical descent onto a mid-rise roof'),
@@ -116,35 +112,7 @@ class Builder:
     def __init__(self, world, survey, seed=3301):
         self.w, self.s = world, survey
         self.rng = np.random.default_rng(seed)
-        self.solids, self.roads, self.gardens, self.circuits, self.tracks = [], [], [], [], []
-        self.houses = []
-
-    # -- physical shapes ------------------------------------------------------------------
-    def box(self, ident, x, y, a, b, height, *, role='house', base=None, **extra):
-        low, high = self.s.ground(x, y, a, b)
-        bottom, top = (low - .6, high + height) if base is None else (base - .15, base + height)
-        o = dict(id=ident, kind='box', center=[r2(x), r2(y), r2((bottom + top) / 2)], half=[r2(a), r2(b), r2((top - bottom) / 2)],
-                 color=extra.pop('color', '#5a6470'), role=role, landable=True, **extra)
-        self.solids.append(o)
-        self.s.mark(x - a - 1, x + a + 1, y - b - 1, y + b + 1)
-        return o
-
-    def cylinder(self, ident, x, y, r, height, *, role, landable, base=None, **extra):
-        low, high = self.s.ground(x, y, r, r)
-        bottom, top = (low - .6, high + height) if base is None else (base - .15, base + height)
-        o = dict(id=ident, kind='cylinder', center=[r2(x), r2(y), r2((bottom + top) / 2)], half=[r2(r), r2(r), r2((top - bottom) / 2)],
-                 color=extra.pop('color', '#5a6470'), role=role, landable=landable, **extra)
-        self.solids.append(o)
-        self.s.mark(x - r - 1, x + r + 1, y - r - 1, y + r + 1)
-        return o
-
-    def tree(self, ident, x, y):
-        if not self.s.is_free(x - 3, x + 3, y - 3, y + 3):
-            return None
-        h = float(self.rng.uniform(7, 13))
-        r = float(self.rng.uniform(1.4, 2.3))
-        leaf = LEAF[int(self.rng.integers(0, 5))] if self.rng.random() < .85 else LEAF[int(self.rng.integers(5, len(LEAF)))]
-        return self.cylinder(ident, x, y, r, h, role='broadleaf', landable=False, color=leaf, crown_radius_m=r2(r * 2.1))
+        self.solids, self.roads, self.circuits, self.tracks = [], [], [], []
 
     def ramp(self, ident, x, y, heading, kind, base):
         """Convex ramp or tabletop on a straight, aligned with travel along `heading`."""
@@ -179,153 +147,6 @@ class Builder:
         self.solids.append(o)
         return o
 
-    def garden(self, kind, x0, y0, x1, y1, tone=0):
-        self.gardens.append([kind, r2(x0), r2(y0), r2(x1), r2(y1), int(tone)])
-
-    # -- lot types --------------------------------------------------------------------------
-    def homes(self, name, ax, ay, along_x, flavour):
-        S, m = TILE, 6.
-        c = (ax + S / 2, ay + S / 2)
-        lane_w = 7.
-        # Keep the longest clear stretch of the lane so it never overlaps street paint or a building.
-        run, best = [], []
-        for k in range(int(S // 4) + 1):
-            u = k * 4.
-            x, y = (ax + u, c[1]) if along_x else (c[0], ay + u)
-            if self.s.is_free(x - 4.5, x + 4.5, y - 4.5, y + 4.5):
-                run.append(u)
-                best = max(best, run, key=len)
-            else:
-                run = []
-        if len(best) < 10:
-            return self.park(name, ax, ay)
-        u0, u1 = best[0], best[-1]
-        if along_x:
-            lane = [[ax + u0, c[1]], [ax + u1, c[1]]]
-        else:
-            lane = [[c[0], ay + u0], [c[0], ay + u1]]
-        self.roads.append(dict(name=name + ' lane', kind='lane', width_m=lane_w, points=lane, edge_color='#c9a26b'))
-        self.s.mark(min(lane[0][0], lane[1][0]) - 4, max(lane[0][0], lane[1][0]) + 4, min(lane[0][1], lane[1][1]) - 4, max(lane[0][1], lane[1][1]) + 4)
-        k = 0
-        for side in (-1, 1):
-            setback = lane_w / 2 + float(self.rng.uniform(4, 7))
-            depth = float(self.rng.uniform(8.5, 11))
-            cursor = m
-            while cursor < S - m - 8:
-                odd = self.rng.random() < (.55 if flavour == 'odd' else .22)
-                if not odd:
-                    run = float(min(self.rng.uniform(26, 46), S - m - cursor))
-                    if run < 14:
-                        break
-                    units = max(2, int(run // float(self.rng.uniform(5.5, 8))))
-                    u0, u1 = cursor, cursor + run
-                    along = (u0 + u1) / 2
-                    off = side * (setback + depth / 2)
-                    x, y = (ax + along, c[1] + off) if along_x else (c[0] + off, ay + along)
-                    a, b = (run / 2, depth / 2) if along_x else (depth / 2, run / 2)
-                    if self.s.is_free(x - a, x + a, y - b, y + b):
-                        h = float(self.rng.uniform(6.5, 10.5))
-                        o = self.box(f'nb-{name}-{k}', x, y, a, b, h, style='terrace', units=units,
-                                     palette=int(self.rng.integers(0, 1 << 20)), front=[0, -side] if along_x else [-side, 0])
-                        self.houses.append(o)
-                        bx0, bx1 = (x - a, x + a) if along_x else (x + side * b, x + side * (b + 14))
-                        by0, by1 = (y + side * b, y + side * (b + 14)) if along_x else (y - b, y + b)
-                        self.garden('lawn', min(bx0, bx1), min(by0, by1), max(bx0, bx1), max(by0, by1), self.rng.integers(0, 4))
-                        for t in range(int(run // 18)):
-                            tu = u0 + 8 + t * 18
-                            back = side * (setback + depth + 8)
-                            tx, ty = (ax + tu, c[1] + back) if along_x else (c[0] + back, ay + tu)
-                            self.tree(f'nbt-{name}-{k}-{t}', tx, ty)
-                        k += 1
-                    cursor = u1 + float(self.rng.uniform(5, 10))
-                else:
-                    cursor = self.odd_house(f'{name}-{k}', ax, ay, c, along_x, side, setback, cursor) + float(self.rng.uniform(4, 8))
-                    k += 1
-        # street trees along the lane
-        for t in range(3):
-            u = 18 + t * 38
-            for side in (-1, 1):
-                off = side * (lane_w / 2 + 2.2)
-                tx, ty = (ax + u, c[1] + off) if along_x else (c[0] + off, ay + u)
-                self.tree(f'nbs-{name}-{t}-{side}', tx, ty)
-
-    def odd_house(self, name, ax, ay, c, along_x, side, setback, cursor):
-        roll = self.rng.random()
-        size = float(self.rng.uniform(8, 11))
-        along = cursor + size / 2 + 1
-        off = side * (setback + size / 2)
-        x, y = (ax + along, c[1] + off) if along_x else (c[0] + off, ay + along)
-        if not self.s.is_free(x - size / 2 - 1, x + size / 2 + 1, y - size / 2 - 1, y + size / 2 + 1):
-            return cursor + size
-        pal = int(self.rng.integers(0, 1 << 20))
-        front = [0, -side] if along_x else [-side, 0]
-        if roll < .30:      # round house
-            r = size / 2
-            self.cylinder(f'nb-{name}', x, y, r, float(self.rng.uniform(6, 9)), role='house', landable=True, style='silo', palette=pal, front=front)
-        elif roll < .55:    # narrow tower house, some with a roof pad
-            a = float(self.rng.uniform(3.2, 4.2))
-            o = self.box(f'nb-{name}', x, y, a, a, float(self.rng.uniform(14, 24)), style='tower', palette=pal, front=front)
-            self.houses.append(o)
-        else:               # stacked cubes: a lower block with a shifted, cantilevered upper block
-            a = size / 2
-            low = self.box(f'nb-{name}', x, y, a, a, float(self.rng.uniform(3.8, 4.6)), style='cube', palette=pal, front=front)
-            shift = float(self.rng.uniform(1.2, 2.6)) * (1 if self.rng.random() < .5 else -1)
-            ux, uy = (x + shift, y) if along_x else (x, y + shift)
-            top = low['center'][2] + low['half'][2]
-            self.box(f'nb-{name}-up', ux, uy, a * .82, a * .82, float(self.rng.uniform(3.4, 4.2)), base=top + .15,
-                     style='cube-upper', palette=pal ^ 0x5a5a5, front=front, support='stacked', parent=low['id'])
-            self.s.mark(ux - a, ux + a, uy - a, uy + a)
-        self.garden('bed', x - size / 2 - 3, y - size / 2 - 3, x + size / 2 + 3, y + size / 2 + 3, self.rng.integers(0, 6))
-        return cursor + size + 2
-
-    def park(self, name, ax, ay):
-        S = TILE
-        self.garden('lawn', ax + 4, ay + 4, ax + S - 4, ay + S - 4, self.rng.integers(0, 4))
-        cx, cy = ax + S / 2, ay + S / 2
-        self.garden('path', cx - 2, ay + 4, cx + 2, ay + S - 4)
-        self.garden('path', ax + 4, cy - 2, ax + S - 4, cy + 2)
-        self.garden('pond' if self.rng.random() < .4 else 'plaza', cx - 12, cy - 9, cx + 12, cy + 9)
-        for q in range(4):
-            qx, qy = (ax + 8 if q % 2 == 0 else cx + 6), (ay + 8 if q < 2 else cy + 6)
-            self.garden('bed', qx, qy, qx + 14, qy + 8, self.rng.integers(0, 6))
-        for t in range(int(self.rng.integers(9, 14))):
-            tx, ty = ax + float(self.rng.uniform(10, S - 10)), ay + float(self.rng.uniform(10, S - 10))
-            if abs(tx - cx) < 16 and abs(ty - cy) < 13:
-                continue
-            self.tree(f'nbt-{name}-{t}', tx, ty)
-
-    def allotment(self, name, ax, ay, along_x):
-        S = TILE
-        for i in range(9):
-            if along_x:
-                self.garden('crops', ax + 8, ay + 8 + i * 10.6, ax + S - 8, ay + 14 + i * 10.6, i % 5)
-            else:
-                self.garden('crops', ax + 8 + i * 10.6, ay + 8, ax + 14 + i * 10.6, ay + S - 8, i % 5)
-        for t in range(3):
-            self.tree(f'nbt-{name}-{t}', ax + 6 + t * 50, ay + 4)
-
-    def open_ground(self, name, ax, ay, along_x):
-        """Ground-only lots: pitches, wildflower meadows, car parks and allotments. No solids."""
-        S = TILE
-        kind = int(self.rng.integers(0, 4))
-        if kind == 0:       # sports pitch with a running track around it
-            self.garden('path', ax + 6, ay + 6, ax + S - 6, ay + S - 6)
-            self.garden('lawn', ax + 12, ay + 14, ax + S - 12, ay + S - 14, 3)
-            self.garden('pitch', ax + 18, ay + 22, ax + S - 18, ay + S - 22, 0)
-        elif kind == 1:     # wildflower meadow with mown paths
-            self.garden('bed', ax + 6, ay + 6, ax + S - 6, ay + S - 6, int(self.rng.integers(0, 6)))
-            self.garden('path', ax + S / 2 - 1.5, ay + 6, ax + S / 2 + 1.5, ay + S - 6)
-        elif kind == 2:     # car park with painted bays
-            self.garden('plaza', ax + 8, ay + 8, ax + S - 8, ay + S - 8)
-            for i in range(5):
-                self.garden('bays', ax + 12, ay + 14 + i * 15, ax + S - 12, ay + 22 + i * 15, 0)
-        else:
-            for i in range(8):
-                if along_x:
-                    self.garden('crops', ax + 8, ay + 8 + i * 10, ax + S - 8, ay + 14 + i * 10, i % 5)
-                else:
-                    self.garden('crops', ax + 8 + i * 10, ay + 8, ax + 14 + i * 10, ay + S - 8, i % 5)
-
     def track(self, name, ax, ay, index):
         """A short closed loop with kerbs, a tabletop and a kicker-and-landing on its straights."""
         S, w = TILE, 10.
@@ -358,8 +179,6 @@ class Builder:
                  dict(center=[r2(x0), r2((y0 + y1) / 2), gz(x0, (y0 + y1) / 2)], normal=[0., -1.], width_m=w + 4)]
         self.circuits.append(dict(name=name, length_m=r2(length), gates=gates))
         self.tracks.append(dict(name=name, ramps=[o['id'] for o in ramps], kerb=colour, spawn=[r2(x0 + 2), r2(y0 + r + 4)], ramp_class=cls))
-        for t in range(4):
-            self.tree(f'nbt-{name}-{t}', ax + 4 + t * 34, ay + 6)
 
     # -- the wards ---------------------------------------------------------------------------
     def fill(self):
@@ -375,27 +194,12 @@ class Builder:
         order = self.rng.permutation(len(tiles))
         n_tracks = 0
         for idx in order:
+            if n_tracks >= 14:
+                break
             i, j, ax, ay = tiles[idx]
-            if self.s.free_fraction(ax, ax + TILE, ay, ay + TILE) < .75:
-                continue
-            if len(self.solids) > GEOM_BUDGET:
-                self.open_ground(f'ward-lot-{i:02d}-{j:02d}', ax, ay, (i + j) % 2 == 0)
-                self.s.mark(ax + 4, ax + TILE - 4, ay + 4, ay + TILE - 4)
-                continue
-            cluster = (i // 3) * 7919 + (j // 3) * 104729
-            flavour = ['terraces', 'odd', 'gardens', 'terraces', 'odd'][cluster % 5]
-            along_x = (cluster // 5) % 2 == 0
-            roll = self.rng.random()
-            name = f'ward-lot-{i:02d}-{j:02d}'
-            if roll < .07 and n_tracks < 14 and self.s.free_fraction(ax, ax + TILE, ay, ay + TILE) > .985:
+            if self.s.free_fraction(ax, ax + TILE, ay, ay + TILE) > .985:
                 self.track(f'Ward Loop {n_tracks + 1}', ax, ay, n_tracks)
                 n_tracks += 1
-            elif flavour == 'gardens' and roll < .55 or roll > .88:
-                self.park(name, ax, ay)
-            elif roll > .80:
-                self.allotment(name, ax, ay, along_x)
-            else:
-                self.homes(name, ax, ay, along_x, flavour)
         return len(tiles)
 
 
@@ -418,7 +222,6 @@ def roof_tops(world, solids):
 def choose_pads(world, solids):
     obstacles = world.obstacles + solids
     world.obstacles = obstacles        # validate() and surface_z() must see the new roofs
-    shells = getattr(world, '_shells', None)
     pads, rng = [], np.random.default_rng(5101)
     tops = roof_tops(world, solids)
     rng.shuffle(tops)
@@ -519,6 +322,77 @@ def missions(world, pads):
     return out
 
 
+A10B_REPLAY = ROOT / 'evidence/phantom/a10c_airbrake_ecu_20261118/baseline/baseline_a10b.json'
+BRAKE_GATES_T = [9.0, 10.5, 12.0, 13.5, 15.0, 17.0, 19.0, 21.5, 24.5, 28.0]
+
+
+def a10b_path():
+    """Ground track of the 9 November A10-B fan-assisted braking turn (turn_fan schedule replay).
+
+    The replay logs forward speed, heading and height change at 20 Hz; integrating speed along
+    heading recovers the track. Returns rows of (t, x, y, dz, speed, heading_rad).
+    """
+    import hashlib
+    raw = A10B_REPLAY.read_bytes()
+    log = json.loads(raw)['log']
+    x = y = 0.
+    rows = [(log[0]['t'], 0., 0., log[0]['z'], log[0]['u'], math.radians(log[0]['hdg']))]
+    for a, b in zip(log, log[1:]):
+        dt, h = b['t'] - a['t'], math.radians(a['hdg'])
+        x += a['u'] * math.cos(h) * dt
+        y += a['u'] * math.sin(h) * dt
+        rows.append((b['t'], x, y, b['z'], b['u'], math.radians(b['hdg'])))
+    return rows, hashlib.sha256(raw).hexdigest()
+
+
+def brake_line(world):
+    """The Brake Line: gates on the exact path of the A10-B's 9 November braking turn, ending in a hover."""
+    rows, digest = a10b_path()
+    obstacles, terrain = world.obstacles, world.terrain_z
+    end = next(r for r in rows if r[4] < .6)                       # first moment the turn has bled off to a hover
+    for sx, sy, heading in [(-3150., 3950., -.17), (-3150., 4350., -.17), (-3050., 3550., -.10), (-2950., 4750., -.20)]:
+        c, s = math.cos(heading), math.sin(heading)
+        place = lambda x, y: (sx + x * c - y * s, sy + x * s + y * c)
+        ground = max(terrain(*place(r[1], r[2])) for r in rows[::10])
+        z0 = round(ground + 150., 1)
+        track = [(*place(r[1], r[2]), z0 + r[3]) for r in rows if r[0] <= end[0]]
+        clear = all(not (abs(q['center'][0] - x) < q['half'][0] + 25 and abs(q['center'][1] - y) < q['half'][1] + 25
+                         and abs(q['center'][2] - z) < q['half'][2] + 25) for x, y, z in track[::4] for q in obstacles)
+        if not clear:
+            continue
+        steps = []
+        for t in BRAKE_GATES_T:
+            r = min(rows, key=lambda q: abs(q[0] - t))
+            x, y = place(r[1], r[2])
+            h = r[5] + heading
+            radius = round(min(16., max(6., 4. + .12 * r[4])), 1)
+            centre = [r2(x), r2(y), r2(z0 + r[3])]
+            if not hoop_clear(obstacles, centre, None, radius):
+                break
+            steps.append(dict(type='hoop', center=centre, normal=[r2(math.cos(h)), r2(math.sin(h)), 0.],
+                              right=[r2(-math.sin(h)), r2(math.cos(h)), 0.], up=[0., 0., 1.], radius_m=radius,
+                              a10b_t_s=r2(r[0]), a10b_speed_m_s=r2(r[4])))
+        else:
+            hx, hy = place(end[1], end[2])
+            steps.append(dict(type='hover', center=[r2(hx), r2(hy), r2(z0 + end[3])], radius_m=6., half_height_m=3.,
+                              hold_s=4., max_speed_m_s=.6, a10b_t_s=r2(end[0])))
+            back = [place(-30. * k, 0.) for k in range(1, 31)]             # 900 m approach line on the ground
+            lights = [[r2(x), r2(y), r2(terrain(x, y) + .6), k] for k, (x, y) in enumerate(back)]
+            ghost = [[r2(x), r2(y), r2(z)] for x, y, z in track[::4]]
+            length = sum(math.dist(a[:2], b[:2]) for a, b in zip(track, track[1:]))
+            mission = dict(name='The Brake Line \u00b7 9 November', zone='Meridian West Wards', spawn=[-3300., 0.],
+                           length_m=r2(length), pad=None, size='M', tier='gold', steps=steps,
+                           brief='Ten gates on the exact track of the Phantom A10-B\'s first fan-assisted braking turn, '
+                                 'flown on 9 November 2026 by a scripted test pilot on the offline plant: 95 m/s to a '
+                                 'hover in about 26 s. Enter the first gate near cruise, brake through the shrinking '
+                                 'gates and hold the hover for 4 s without touching anything.',
+                           provenance=dict(source=str(A10B_REPLAY.relative_to(ROOT)).replace('\\', '/'), sha256=digest,
+                                           aircraft='phantom-a10b', schedule='turn_fan', start_s=rows[0][0], hover_s=end[0],
+                                           placement=dict(origin=[sx, sy], heading_rad=heading, altitude_m=z0)))
+            return mission, dict(lights=lights, ghost=ghost)
+    raise RuntimeError('No clear placement for the Brake Line')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, default=ROOT / 'inputs/vaderland/rooftop-quarter-33.json.gz')
@@ -529,20 +403,19 @@ def main():
     usable = builder.fill()
     pads = choose_pads(world, builder.solids)
     plan = missions(world, pads)
+    brake, brake_marks = brake_line(world)
+    plan.append(brake)
     for s in builder.solids:
         if s['kind'] == 'mesh':
             s['planes'] = [[float(v) for v in p] for p in s['planes']]
     design = dict(version='33', solids=builder.solids, roads=builder.roads, circuits=builder.circuits,
-                  neighbourhoods=dict(gardens=builder.gardens, tracks=builder.tracks, pads=pads, bounds=[X0, X1, Y0, Y1],
+                  neighbourhoods=dict(tracks=builder.tracks, pads=pads, bounds=[X0, X1, Y0, Y1],
                                       pad_classes=[dict(size=c, radius_m=r, colour=col, demands=u) for c, r, col, u in PAD_CLASSES]),
-                  missions=plan)
+                  missions=plan, brake_line=brake_marks)
     raw = json.dumps(design, separators=(',', ':'), allow_nan=False).encode()
     args.out.write_bytes(gzip.compress(raw, compresslevel=9, mtime=0))
-    kinds = {}
-    for s in builder.solids:
-        kinds[s.get('style') or s['role']] = kinds.get(s.get('style') or s['role'], 0) + 1
-    print(json.dumps(dict(usable_tiles=usable, solids=len(builder.solids), kinds=kinds, lanes=sum(r['kind'] == 'lane' for r in builder.roads),
-                          tracks=len(builder.tracks), gardens=len(builder.gardens), pads={c: sum(p['size'] == c for p in pads) for c, *_ in PAD_CLASSES},
+    print(json.dumps(dict(usable_tiles=usable, solids=len(builder.solids),
+                          tracks=len(builder.tracks), pads={c: sum(p['size'] == c for p in pads) for c, *_ in PAD_CLASSES},
                           missions=[m['name'] for m in plan], bytes=args.out.stat().st_size)))
 
 

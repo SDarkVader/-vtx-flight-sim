@@ -24,8 +24,8 @@ def test_existing_world_is_unchanged_and_extended(worlds):
     assert np.array_equal(old.heights, new.heights)
     added = new.obstacles[len(old.obstacles):]
     assert len({o['id'] for o in new.obstacles}) == len(new.obstacles)
-    assert all(o['id'].startswith(('nb-', 'nbt-', 'nbs-', 'nbr-')) for o in added)
-    assert len(added) <= 6600
+    assert all(o['id'].startswith('nbr-') and o['role'] == 'ramp' for o in added)   # no new buildings
+    assert len(added) <= 60
 
 
 def test_new_solids_do_not_intersect_existing_scenery(worlds):
@@ -148,3 +148,54 @@ def test_mission_record_survives_checkpoint(worlds):
     saved = timing.save()
     timing.restore(saved)
     assert set(timing.runs) >= {m['name'] for m in new.vaderland['missions']}
+
+
+def brake(new):
+    return next(m for m in new.vaderland['missions'] if m['name'].startswith('The Brake Line'))
+
+
+def test_brake_line_follows_the_recorded_a10b_turn(worlds):
+    import hashlib
+    from pathlib import Path
+    _, new = worlds
+    m = brake(new)
+    hoops, last = m['steps'][:-1], m['steps'][-1]
+    assert len(hoops) == 10 and last['type'] == 'hover'
+    speeds = [s['a10b_speed_m_s'] for s in hoops]
+    radii = [s['radius_m'] for s in hoops]
+    assert speeds == sorted(speeds, reverse=True) and speeds[0] > 90 and speeds[-1] < 8
+    assert radii == sorted(radii, reverse=True)
+    source = Path(__file__).resolve().parents[1] / m['provenance']['source']
+    assert hashlib.sha256(source.read_bytes()).hexdigest() == m['provenance']['sha256']
+    assert len(new.vaderland['brake_line']['lights']) == 30
+
+
+def through(timing, s, t, dt=.05, speed=40.):
+    n = s['normal']
+    a = [s['center'][i] - n[i] * 25 for i in range(3)]
+    b = [s['center'][i] + n[i] * 25 for i in range(3)]
+    return fly_segment(timing, [a, b], t, dt, speed)
+
+
+def test_brake_line_needs_a_held_hover_and_no_contact(worlds):
+    _, new = worlds
+    m = brake(new)
+    timing = MissionTiming([], [], [m])
+    t = 0.
+    for s in m['steps'][:-1]:
+        t = through(timing, s, t)
+    hover = m['steps'][-1]
+    c = hover['center']
+    t = fly_segment(timing, [[c[0] - 20, c[1], c[2]], [c[0] + .5, c[1], c[2] + .4]], t, speed=8.)
+    for _ in range(int(4.3 / .05)):
+        t += .05
+        timing.sample(t, [c[0] + .5, c[1], c[2] + .4], air_allowed=True, contact=False)
+    state = timing.runs[m['name']]
+    assert state['laps'] == 1 and state['last'] is not None and state['landing_error_m'] == [0.5]
+
+    again = MissionTiming([], [], [m])
+    t = through(again, m['steps'][0], 0.)
+    assert again.runs[m['name']]['next'] == 1
+    again.sample(t + .05, [c[0], c[1], 40.], contact=False)
+    again.sample(t + .10, [c[0], c[1], 40.], contact=True)
+    assert again.runs[m['name']]['next'] == 0 and again.runs[m['name']]['start'] is None

@@ -24,12 +24,13 @@ class RooftopQuarter(LanternMarinaDistrict):
         self.vaderland['routes'].extend(design['roads'])
         self.vaderland['neighbourhoods'] = design['neighbourhoods']
         self.vaderland['missions'] = design['missions']
+        self.vaderland['brake_line'] = design['brake_line']
         self.timing = MissionTiming(self.timing.courses + design['circuits'], self.timing.air, design['missions'])
         self.vaderland['time_trials'].extend(
             dict(course=c['name'], zone='Meridian Wards', spawn=t['spawn'], length_m=c['length_m'])
             for c, t in zip(design['circuits'], design['neighbourhoods']['tracks']))
         self.vaderland['time_trials'].extend(
             dict(course=m['name'], zone=m['zone'], spawn=m['spawn'], length_m=m['length_m'], format='mission',
-                 gates=len(m['steps']), tier=m['tier'], size=m['size'])
+                 gates=len(m['steps']), tier=m['tier'], size=m['size'], brief=m['brief'])
             for m in design['missions'])
         self.vaderland['places'].append({'name': 'Meridian Rooftop Quarter', 'point': [-2100., 3900.]})

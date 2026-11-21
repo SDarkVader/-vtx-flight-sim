@@ -70,6 +70,8 @@ const views = {
   street: {eye:[-644,2463,37],target:[112,2515,115],fov:62},
   // Rooftop Quarter review cameras (NW wards and the A10-D approach).
   approachNW: {eye:[-1050,3150,560], target:[-150,2250,140], fov:58, mode:'dusk', time:27},
+  approachNight: {eye:[-1050,3150,560], target:[-150,2250,140], fov:58, mode:'night', time:27},
+  farOminous: {eye:[-5600,-2600,950], target:[-200,3000,160], fov:42, mode:'dusk', time:27},
   approachDay: {eye:[-1050,3150,560], target:[-150,2250,140], fov:58, mode:'day', time:27},
   wardsAir: {eye:[-2750,4900,430], target:[-1650,3500,60], fov:58, mode:'dusk', time:27},
   wardsStreet: {eye:[-2200,3300,42.2], target:[-1500,3000,70], fov:62, mode:'dusk', time:27},
@@ -137,11 +139,11 @@ if(world.vaderland.neighbourhoods){
   const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
   const tz=world.obstacles.find(o=>o.id===nb.tracks[0].ramps[0]).center[2];
   views.trackDay={eye:[cx-95,cy-85,tz+48],target:[cx,cy,tz],fov:52,mode:'day',time:27};
+  const bl=world.vaderland.missions.find(q=>q.name.startsWith('The Brake Line'));
+  if(bl){const g0=bl.steps[0],g4=bl.steps[4],[ux,uy]=g0.normal;
+    views.brakeLine={eye:[g0.center[0]-ux*260,g0.center[1]-uy*260,g0.center[2]+18],target:[g4.center[0],g4.center[1],g4.center[2]-25],fov:56,mode:'night',time:27};}
   const m=world.vaderland.missions[0],h=m.steps[1],[nx,ny]=h.normal;
   views.hoopRun={eye:[h.center[0]-nx*140,h.center[1]-ny*140,h.center[2]+6],target:[h.center[0]+nx*200,h.center[1]+ny*200,h.center[2]-20],fov:60,mode:'dusk',time:27};
-  const lane=world.vaderland.routes.filter(r=>r.kind==='lane').sort((a,b)=>Math.hypot(a.points[0][0]+2100,a.points[0][1]-3900)-Math.hypot(b.points[0][0]+2100,b.points[0][1]-3900))[0];
-  const [lx,ly]=lane.points[0],[mx,my]=lane.points.at(-1),lz=world.obstacles.find(o=>o.id.startsWith('nb-'))?.center[2]??45;
-  views.laneLow={eye:[lx-(mx-lx)*.6+18,ly-(my-ly)*.6+14,lz+26],target:[(lx+mx)/2,(ly+my)/2,lz-6],fov:58,mode:'dusk',time:27};
 }
 if(world.vaderland.parallax){
   views.courtArrival={eye:[32.5,2356.6,32.7],target:[71,2380,42.2],fov:59,mode:'dusk',time:27};
