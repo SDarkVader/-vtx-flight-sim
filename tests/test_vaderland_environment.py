@@ -1,4 +1,5 @@
 """The new survey uses the same aircraft, with its own world and fleet identity."""
+import sys
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -52,8 +53,19 @@ def test_versions_keep_approaches_and_the_original_world():
         assert not np.any(w.heights[abs(axis)<=w.runway['width']/2])
         pins.add(live_server.world_fingerprint(w))
     assert len(pins)==17
-    assert live_server.world_fingerprint(make_world('vaderland-05'))=='1db17fec0eebea557d892569c47e546e3fbb9a59e919822390762606c7d05c0f'
-    assert live_server.world_fingerprint(make_world('vaderland-08'))=='812c79369610b8dfce07ff0aecb34095dd2aecf22f903b75f74f0bfb49779a62'
+    # The reference PC (Windows) and Linux CI hash Vaderland 05 and 08 differently. Their terrain
+    # is identical; two trees shared by both worlds differ in the last bits (tree-1 x by 1 ulp,
+    # tree-9 y by 2 ulps) because NumPy's scalar cos/sin use the platform C library (Windows UCRT
+    # vs glibc). Applying exactly those offsets on Linux reproduces both Windows pins. Pin each
+    # platform's value so either still catches any real change to these worlds.
+    pinned = {
+        'vaderland-05': {'win32': '1db17fec0eebea557d892569c47e546e3fbb9a59e919822390762606c7d05c0f',
+                         'linux': '508bfdaf215a127371f759465bb43c74b6964f269242ee3f62541e411076c80d'},
+        'vaderland-08': {'win32': '812c79369610b8dfce07ff0aecb34095dd2aecf22f903b75f74f0bfb49779a62',
+                         'linux': '09cb3a04f9b5ad7b4ef5ccf3028a2dd2e1eddfecd3e14d382eb023e56e170b72'},
+    }
+    for key, values in pinned.items():
+        assert live_server.world_fingerprint(make_world(key))==values.get(sys.platform, values['linux'])
     assert w.heights.max() < w.height_scale_m
 
 
