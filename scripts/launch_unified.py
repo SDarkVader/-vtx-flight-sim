@@ -9,7 +9,9 @@ import argparse
 import hashlib
 import os
 from pathlib import Path
+import shutil
 import socket
+import subprocess
 import sys
 import threading
 import time
@@ -85,17 +87,32 @@ def configure(data_root: Path, port: int) -> None:
     os.environ["VTX_ENFORCE_RELEASE"] = "0"
 
 
+def open_cockpit(url, desktop=False):
+    if desktop and os.name == "nt":
+        installed = (Path(os.environ[key]) / "Microsoft/Edge/Application/msedge.exe"
+                     for key in ("ProgramFiles(x86)", "ProgramFiles", "LOCALAPPDATA") if key in os.environ)
+        edge = next((path for path in installed if path.is_file()), shutil.which("msedge"))
+        if edge:
+            subprocess.Popen([str(edge), f"--app={url}"])
+            return
+    webbrowser.open(url)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=None,
                         help=f"Fixed port (refused if busy). Default: first free port from {DEFAULT_PORT}")
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT)
+    parser.add_argument("--initial-environment", help="Environment for a new workspace")
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument("--desktop", action="store_true", help="Bind locally and open a dedicated Windows app window")
     parser.add_argument("--check", action="store_true", help="Check configuration without launching")
     args = parser.parse_args(argv)
     if args.port is None:
         args.port = first_free_port(DEFAULT_PORT)
     configure(args.data_root, args.port)
+    if args.initial_environment:
+        os.environ["VTX_DEFAULT_ENVIRONMENT"] = args.initial_environment
     checkpoint = args.data_root / "pilot" / "live-flight-checkpoint.json"
     if checkpoint.exists():
         print(f"Note: an interrupted flight is saved at {checkpoint}; it will be offered for recovery.", flush=True)
@@ -106,14 +123,13 @@ def main(argv=None):
     import uvicorn
     from vtx.dashboard_site import app
 
-    server = uvicorn.Server(uvicorn.Config(
-        RevalidateFrontend(app), host="0.0.0.0", port=args.port, log_level="warning"
-    ))
+    host = "127.0.0.1" if args.desktop else "0.0.0.0"
+    server = uvicorn.Server(uvicorn.Config(RevalidateFrontend(app), host=host, port=args.port, log_level="warning"))
     if not args.no_browser:
         def open_when_ready():
             for _ in range(60):
                 if server.started:
-                    webbrowser.open(f"http://127.0.0.1:{args.port}/")
+                    open_cockpit(f"http://127.0.0.1:{args.port}/", args.desktop)
                     return
                 time.sleep(0.5)
         threading.Thread(target=open_when_ready, daemon=True).start()
