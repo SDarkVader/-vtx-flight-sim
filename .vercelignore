@@ -26,3 +26,10 @@ evidence/r6_clearance_audit.json
 evidence/argon_task01_transmission_tanks.json
 # Recorded mobile flight archives are GitHub evidence, not Vercel runtime files.
 evidence/phantom/mobile_flights_20261104/
+# Research stills, wing-cassette videos, design-sweep dumps and visual-regression
+# captures are GitHub evidence. No server code or page reads them; together they
+# pushed the Python function past Vercel's 225 MB bundle ceiling.
+evidence/phantom/media/
+evidence/phantom/a9_sweep.json
+evidence/phantom/a10_sweep.json
+evidence/visual/
