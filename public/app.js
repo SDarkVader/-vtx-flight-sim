@@ -24,10 +24,11 @@ import {isArgonRotorHousing} from './argon-cutaway.js?v=3';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
 import {buildSky} from './vtx-env/sky.js?v=1';
 import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
-import {buildVaderland} from './vtx-env/vaderland/landscape.js';
+import {buildVaderland} from './vtx-env/vaderland/landscape.js?v=20261121-alpine';
+import {createAlpineExplorer} from './alpine-explorer.js';
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
 import {buildAirfield} from './vtx-env/airfield.js?v=20261116-runway-1';
-import {buildHarbour,createHarbourControls,harbourOverviewView,setBoatCockpit,setBoatLighting} from './vtx-env/harbour.js?v=20261118-selector';
+import {buildHarbour,createHarbourControls,harbourOverviewView,setBoatCockpit,setBoatLighting} from './vtx-env/harbour.js?v=20261121-pose-pacing';
 import {boatCameraView} from './vtx-env/harbour-camera.js?v=3';
 import {createVehicleWorkspace} from './vehicle-workspace.js';
 import {loadPinnedGltf,verifiedVisualAssets} from './visual-identity.js';
@@ -38,7 +39,7 @@ import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=20261117-cutaway';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261117-scale-zoom';
+import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261121-alpine';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=20261116-runway-1';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
@@ -154,6 +155,8 @@ const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
 const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m),()=>world);
+const alpineExplorer=createAlpineExplorer({trigger:$('alpine-open'),dialog:$('alpine-dialog'),
+  showView:({eye,target})=>{setCameraMode('free');freeCam.teleport(eye,target);}});
 const sky=buildSky(scene,renderer,{quality}),environment={};
 // Desktop-app tier only: post-processing. Day/night is presentation only and never touches the physics.
 const post=createPost(renderer,scene,camera,quality);
@@ -607,13 +610,14 @@ function syncEnvironmentControls(envKey){
 }
 function clearWorldGroup(){
  restoreHarbourOverview();
+  alpineExplorer.setWorld(null);
  environment.vaderland?.dispose();environment.vaderland=null;
  harbourLayer?.dispose();harbourLayer=null;
  const keepTextures=new Set([markerA.material?.map,markerB.material?.map].filter(Boolean));
  for(const child of [...worldGroup.children]){
   worldGroup.remove(child);
   const geometries=new Set(),materials=new Set(),textures=new Set();
-  child.traverse(n=>{if(!n.isMesh&&!n.isLineSegments&&!n.isPoints)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture&&!keepTextures.has(v))textures.add(v);}});
+  child.traverse(n=>{if(!n.isMesh&&!n.isLine&&!n.isPoints)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture&&!keepTextures.has(v))textures.add(v);}});
   geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());
  }
  environment.buildings=null;environment.kit=null;environment.volcano=null;environment.serviceRoads=null;environment.dressing=null;
@@ -747,6 +751,7 @@ function buildWorld(w){
   if(harbourLayer)worldGroup.add(harbourLayer.root);
  }
  harbourControls.setWorld(w);
+ alpineExplorer.setWorld(environment.vaderland?.alpine);
  harbourControls.setEnabled(!!w.harbour&&!replayFrames&&!worldUnavailable);
  const chosen=lightingChoice??(w.vaderland?.city_lights?'dusk':'day');
  if(timeOfDay.mode===chosen)timeOfDay.refresh();else timeOfDay.set(chosen);

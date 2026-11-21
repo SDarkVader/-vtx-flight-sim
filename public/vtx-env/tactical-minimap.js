@@ -5,6 +5,7 @@
 import { LAYOUT } from './layout.js';
 import {primaryRunwayCues} from './runway-layout.js?v=20261116-runway-1';
 import {drawHarbourMap, drawHarbourBoats} from './harbour-map.js?v=20261116-harbour-3';
+import {ALPINE_ACCESS,ALPINE_LIFTS,ALPINE_ROUTES,ALPINE_ZONES} from './vaderland/alpine-layout.js';
 
 function evalCubicBezier(p0, p1, p2, p3, t) {
   const mt = 1 - t, mt2 = mt * mt, mt3 = mt2 * mt, t2 = t * t, t3 = t2 * t;
@@ -285,6 +286,24 @@ export class TacticalMinimap {
         g.fillRect(px(x-a),py(y+b),Math.max(.65,scaleM(a*2)),Math.max(.65,scaleM(b*2)));
       }
       const r=world.runway;line([[r.x0,r.yc],[r.x1,r.yc]],r.width+8,'#f4e2b7');
+      if(world.id==='vaderland-33'){
+        line(ALPINE_ACCESS,12,'#e7bd7a');
+        for(const route of [...ALPINE_LIFTS,...ALPINE_ROUTES]){
+          if(route.kind!=='descent')g.setLineDash([3,3]);
+          line(route.points,12,route.color??'#c4d3e2');
+          g.setLineDash([]);
+        }
+        g.font='10px system-ui';g.textAlign='center';
+        for(const zone of ALPINE_ZONES){
+          const x=px(zone.point[0]),y=py(zone.point[1]);
+          g.fillStyle='#fff2d7';
+          g.beginPath();g.arc(x,y,2.4,0,Math.PI*2);g.fill();
+          if(['village','cirque','east-launch','race-west'].includes(zone.id)){
+            g.lineWidth=3;g.strokeStyle='#17252a';
+            g.strokeText(zone.area,x,y-7);g.fillText(zone.area,x,y-7);
+          }
+        }
+      }
       g.font='11px system-ui';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#17252a';
       for(const place of world.vaderland.places){
         const x=px(place.point[0]),y=py(place.point[1])-7;g.strokeText(place.name,x,y);

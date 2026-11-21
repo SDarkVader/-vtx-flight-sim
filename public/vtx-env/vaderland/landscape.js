@@ -25,6 +25,7 @@ import {buildNeighbourhoods,neighbourhoodSolid} from './neighbourhood.js';
 import {buildLanternRace,lanternRaceSolid} from './lantern-race.js';
 import {buildAtmosphere} from './atmosphere.js';
 import {cityDensity,DENSITY_BOUNDS} from './city-density.js';
+import {buildAlpineResort} from './alpine-resort.js';
 
 const vertex = `
 varying vec3 p;
@@ -85,6 +86,12 @@ vec3 haze(vec3 color){
   if(arrivalsSurvey>.5){
     vec3 ray=normalize(p-cameraPosition);
     float warm=pow(max(0.,dot(ray,normalize(vec3(.92,.36,.09)))),3.);
+    if(rooftopPass>.5){
+      vec3 shade=mix(vec3(.067,.122,.201),vec3(.026,.044,.078),night);
+      vec3 sunset=mix(vec3(.275,.171,.134),vec3(.084,.047,.037),night);
+      float distanceHaze=(1.-exp(-d*.000071))*exp(-max(0.,p.z)*.00049);
+      return mix(color,mix(shade,sunset,warm*.83),distanceHaze);
+    }
     vec3 atmosphere=mix(vec3(.112,.153,.226),vec3(.37,.204,.178),warm);
     float extinction=(1.-exp(-d*.000096))*exp(-max(0.,p.z)*.00017);
     return mix(color,atmosphere*mix(1.,.38,night),extinction);
@@ -137,6 +144,9 @@ uniform float raceOn;
 uniform sampler2D raceLight;
 uniform vec4 raceArea;
 uniform float raceLevel;
+uniform float alpineOn;
+uniform sampler2D alpineLight;
+uniform vec4 alpineBounds;
 void main(){
   vec3 normal=normalize(n);
   float slope=1.-normal.z;
@@ -229,13 +239,20 @@ void main(){
     mat=mix(mat,vec3(.65,.80,.99)*(.77+.23*grain),snowLine);
     float shade=rooftopPass>.5?clamp(lambert+relief*.55,0.,1.2):lambert;   // gullies catch and lose the light
     vec3 rim=vec3(1.93,.99,.49)*shade*occ.x;
-    lit=mat*(vec3(.21,.31,.56)*occ.y+rim)*(.88+.19*grain);
+    vec3 skylight=rooftopPass>.5 ? vec3(.26,.39,.63) : vec3(.21,.31,.56);
+    lit=mat*(skylight*occ.y+rim)*(.88+.19*grain);
     if(arrivalsSurvey>.5){
       vec2 shade=forecourtShadow(p.xy);
       lit*=mix(vec3(.52,.66,.88),vec3(1.),shade.x)*mix(.69,1.,shade.y);
     }
   }
-  vec3 floorLight=lit*mix(1.,photographic>.5?.074:.36,night);
+  float moonlit=rooftopPass>.5 ? mix(.075,.155,smoothstep(65.,480.,p.z)) : (photographic>.5?.074:.36);
+  vec3 floorLight=lit*mix(1.,moonlit,night);
+  if(alpineOn>.5 && night>.01){
+    vec2 uv=(p.xy-alpineBounds.xy)/alpineBounds.zw;
+    if(all(greaterThan(uv,vec2(0.)))&&all(lessThan(uv,vec2(1.))))
+      floorLight+=texture2D(alpineLight,uv).rgb*min(night*1.42,1.)*.41;
+  }
   if(marinaSurvey>.5 && p.x>840. && p.x<1210. && p.y>-1380. && p.y<-960.){
     float parcel=1.-smoothstep(.64,1.,length((p.xy-vec2(1023.,-1170.))/vec2(185.,205.)));
     float green=fbm(p.xy*.034+vec2(4.3,59.7));
@@ -1143,6 +1160,10 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
   let disposed=false;
   const loader=new THREE.TextureLoader();
   const resources=[];
+  const alpine=w.id==='vaderland-33'?buildAlpineResort(group,w,uniforms.night):null;
+  if(alpine)resources.push(alpine);
+  Object.assign(uniforms,{alpineOn:{value:alpine?1:0},alpineLight:{value:alpine?.texture??null},
+    alpineBounds:{value:new THREE.Vector4(...(alpine?.bounds??[0,0,1,1]))}});
   function texture(name,url,srgb,repeat){
     return new Promise((resolve,reject)=>{
       const t=loader.load(new URL(url,import.meta.url).href,resolve,undefined,reject);
@@ -1340,11 +1361,12 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
     if(w.vaderland.harbour_surface)harbour.setWaterSurface(followTide(harbour.water,w.vaderland.harbour_surface));
     group.add(harbour.root);
   }
-  return {ready:Promise.all([ready,court?.ready,gardens?.ready]),cityGlow:!!court,hasDusk:!!w.vaderland.city_lights,update(cam,seconds,mode='day',physicsTime=0,doors,timing,aircraftXY){
+  return {ready:Promise.all([ready,court?.ready,gardens?.ready]),alpine,cityGlow:!!court,hasDusk:!!w.vaderland.city_lights,update(cam,seconds,mode='day',physicsTime=0,doors,timing,aircraftXY){
     if(disposed)return;
     dome.position.copy(cam.position);uniforms.clock.value=seconds;
     uniforms.blueHour.value=mode==='dusk'&&w.vaderland.city_lights?1:0;
     uniforms.night.value=mode==='night'?1:uniforms.blueHour.value*.65;
+    alpine?.update();
     room?.update(physicsTime);
     gardens?.update(cam);
     cathedralEast?.update(timing);
