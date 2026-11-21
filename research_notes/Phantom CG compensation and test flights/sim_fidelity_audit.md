@@ -5,7 +5,7 @@
 *Method:*
 - *No tracked file was modified.*
 - *All experiments (E1 to E10) ran offline in a byte-identical scratch mirror of the worktree. No server was started, and port 8765 was never touched.*
-- *Scripts and JSON results are in `C:\Users\steve\AppData\Local\Temp\claude\C--Users-steve-Documents-Github--vtx-flight-sim--claude-worktrees-dreamy-khayyam-7059f0\38a34963-97f9-41b6-85d4-74b9f5683e04\scratchpad\audit\` (results in `results\`).*
+- *Scripts and JSON results are in `audit` (results in `results\`).*
 - *Unless stated otherwise, the configuration is the R6 calibration one: `airframe_variant='r6'`, 1200 rpm, 10 kg fuel, 300 kW, gear `baseline`.*
 
 *Line numbers are at `bce9339`. The Phantom build is editing `src/vtx/live_server.py`, so patches there are given by code anchor, not line number.*

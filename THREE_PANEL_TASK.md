@@ -4,8 +4,8 @@ Agent: Antigravity Main Agent, Gemini 4 Argon Medium
 This task supersedes earlier descriptions of three separate interactive interfaces, an Airport On/Off toggle, or an independent sandbox simulator.
 
 ## Working location and safety
-Use ONLY C:\Users\steve\Documents\Github\vtx-three-panel-20261110, branch work/three-panel-ui-20261110, based on merged commit ed6da13f2bc087b5cc3252c467002c0dd89b61ab.
-The original checkout C:\Users\steve\Documents\Github\-vtx-flight-sim has hundreds of local changes and unresolved conflicts: DO NOT modify/reset/clean/merge it. Leave ports 8765 and 8766 and all historical flight data alone. The isolated development launcher is RUN_THREE_PANEL_DEV.ps1 (port 18911). Do not push, merge or deploy.
+Use ONLY the isolated three-panel worktree, branch work/three-panel-ui-20261110, based on merged commit ed6da13f2bc087b5cc3252c467002c0dd89b61ab.
+The original checkout has hundreds of local changes and unresolved conflicts: DO NOT modify/reset/clean/merge it. Leave ports 8765 and 8766 and all historical flight data alone. The isolated development launcher is RUN_THREE_PANEL_DEV.ps1 (port 18911). Do not push, merge or deploy.
 
 ## Exact UI behavior
 ONE shared live flight cockpit/screen. Keep the existing surrounding screen, panels, buttons, AI pilot controls, manual controls, aircraft/model selector, actuators, physics settings, telemetry, experiments, cameras, and records unchanged and functional.

@@ -74,24 +74,24 @@ Counts are Git status entries at audit time, including staged, unstaged and untr
 
 | Worktree | Branch or HEAD | Status entries | Unmerged |
 |---|---|---:|---:|
-| `C:/Users/steve/Documents/Github/-vtx-flight-sim` | `main` | 418 | 2 |
-| `C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/agent-ab30c2b8b057df1a2` | `worktree-agent-ab30c2b8b057df1a2` | 138 | 0 |
-| `C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/dreamy-khayyam-7059f0` | `research/phantom-a9-cassette` | 31 | 0 |
-| `C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/friendly-hamilton-2c334c` | `claude/phantom-a10-sim` | 30 | 0 |
-| `C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/hello-8d1b2f` | `claude/hello-8d1b2f` | 0 | 0 |
-| `C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/vtx-phantom-retractable-wings-da1842` | `claude/vtx-phantom-retractable-wings-da1842` | 0 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-a10-checkpoint-20261106` | `checkpoint/phantom-a10-live-20261106` | 0 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-a10-exterior-fix-20261104` | `fix/a10-exterior-visible` | 26 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-canonical-r6-20261103` | `fix/canonical-r6-launch-20261103` | 0 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-dashboard-cockpit-20261107` | `work/dashboard-cockpit-20261107` | 1 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-flight-index-20261104` | `work/qa-flight-index-20261104` | 4 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-integrated-candidate-20261105` | `integration/a10-unified-pilot-20261105` | 0 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-integration-20261109` | `integration/workspace-verified-20261109` | 12 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-three-mode-recovery` | `fix/restore-three-pilot-modes` | 0 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-unified-integration-20261107` | `integration/vtx-unified-20261107` | 0 | 0 |
-| `C:/Users/steve/Documents/Github/vtx-visual-traffic-review-20261104` | `detached` | 29 | 0 |
-| `C:/Users/steve/OneDrive/Documents/ChatGPT/VTX/sim-audit-fixes` | `fix/simulator-audit-20261103` | 0 | 0 |
-| `C:/Users/steve/OneDrive/Documents/ChatGPT/VTX/unified-airport` | `work/unified-airport-20261104` | 15 | 0 |
+| `the primary checkout` | `main` | 418 | 2 |
+| `agent-ab30c2b8b057df1a2` | `worktree-agent-ab30c2b8b057df1a2` | 138 | 0 |
+| `dreamy-khayyam-7059f0` | `research/phantom-a9-cassette` | 31 | 0 |
+| `friendly-hamilton-2c334c` | `claude/phantom-a10-sim` | 30 | 0 |
+| `hello-8d1b2f` | `claude/hello-8d1b2f` | 0 | 0 |
+| `vtx-phantom-retractable-wings-da1842` | `claude/vtx-phantom-retractable-wings-da1842` | 0 | 0 |
+| `vtx-a10-checkpoint-20261106` | `checkpoint/phantom-a10-live-20261106` | 0 | 0 |
+| `vtx-a10-exterior-fix-20261104` | `fix/a10-exterior-visible` | 26 | 0 |
+| `vtx-canonical-r6-20261103` | `fix/canonical-r6-launch-20261103` | 0 | 0 |
+| `vtx-dashboard-cockpit-20261107` | `work/dashboard-cockpit-20261107` | 1 | 0 |
+| `vtx-flight-index-20261104` | `work/qa-flight-index-20261104` | 4 | 0 |
+| `vtx-integrated-candidate-20261105` | `integration/a10-unified-pilot-20261105` | 0 | 0 |
+| `vtx-integration-20261109` | `integration/workspace-verified-20261109` | 12 | 0 |
+| `vtx-three-mode-recovery` | `fix/restore-three-pilot-modes` | 0 | 0 |
+| `vtx-unified-integration-20261107` | `integration/vtx-unified-20261107` | 0 | 0 |
+| `vtx-visual-traffic-review-20261104` | `detached` | 29 | 0 |
+| `sim-audit-fixes` | `fix/simulator-audit-20261103` | 0 | 0 |
+| `unified-airport` | `work/unified-airport-20261104` | 15 | 0 |
 
 ## Outstanding reconciliation
 

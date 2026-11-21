@@ -2,7 +2,7 @@
 
 This file was meant to go to `dreamy-khayyam-7059f0/research_notes/Phantom CG compensation and test flights/graphics_changes.md`, but the worktree sandbox blocked writing outside this worktree, so it lives here. Copy it there if needed.
 
-Worktree: `C:\Users\steve\Documents\Github\-vtx-flight-sim\.claude\worktrees\agent-ab30c2b8b057df1a2` (from research/phantom-a9-cassette @ bce9339). Nothing is committed.
+Worktree: `agent-ab30c2b8b057df1a2` (from research/phantom-a9-cassette @ bce9339). Nothing is committed.
 
 ## What changed
 Only `public/` changed. Nothing changed under src/, tools/, scripts/, inputs/ or tests/*.py, and no JSON changed. Aircraft visuals were not touched.

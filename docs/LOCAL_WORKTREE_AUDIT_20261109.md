@@ -2,7 +2,7 @@
 
 Comparison against integration commit `a058c94`. The integration worktree itself is excluded. Tracked files are compared with the integration tree using Git blob hashes. Untracked files are listed without opening them. Unmerged index entries are not treated as resolved.
 
-## C:/Users/steve/Documents/Github/-vtx-flight-sim
+## Primary checkout
 
 Status entries: 418; working content equal to integration: 348; differing: 31; unmerged: 2; untracked: 37; missing: 0; unreadable: 0.
 
@@ -79,7 +79,7 @@ Status entries: 418; working content equal to integration: 348; differing: 31; u
 | `??` | `src/vtx/world.py.before-runway-extension.bak` | untracked; preserved in place |
 | `??` | `tools/navigation_controller.py` | untracked; preserved in place |
 
-## C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/agent-ab30c2b8b057df1a2
+## Agent-ab30c2b8b057df1a2
 
 Status entries: 144; working content equal to integration: 123; differing: 4; unmerged: 0; untracked: 17; missing: 0; unreadable: 0.
 
@@ -107,7 +107,7 @@ Status entries: 144; working content equal to integration: 123; differing: 4; un
 | `??` | `evidence/visual/before/before_desktop_trees-south.jpg` | untracked; preserved in place |
 | `??` | `evidence/visual/before/before_desktop_water-west.jpg` | untracked; preserved in place |
 
-## C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/dreamy-khayyam-7059f0
+## Dreamy-khayyam-7059f0
 
 Status entries: 31; working content equal to integration: 0; differing: 0; unmerged: 0; untracked: 31; missing: 0; unreadable: 0.
 
@@ -145,7 +145,7 @@ Status entries: 31; working content equal to integration: 0; differing: 0; unmer
 | `??` | `public/vtx-env/sky (1).js` | untracked; preserved in place |
 | `??` | `public/vtx-env/vegetation (1).js` | untracked; preserved in place |
 
-## C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/friendly-hamilton-2c334c
+## Friendly-hamilton-2c334c
 
 Status entries: 30; working content equal to integration: 0; differing: 0; unmerged: 0; untracked: 30; missing: 0; unreadable: 0.
 
@@ -182,7 +182,7 @@ Status entries: 30; working content equal to integration: 0; differing: 0; unmer
 | `??` | `tools/closed_loop_pilot.py` | untracked; preserved in place |
 | `??` | `tools/waypoint_controller.py` | untracked; preserved in place |
 
-## C:/Users/steve/Documents/Github/vtx-a10-exterior-fix-20261104
+## Vtx-a10-exterior-fix-20261104
 
 Status entries: 26; working content equal to integration: 0; differing: 0; unmerged: 0; untracked: 26; missing: 0; unreadable: 0.
 
@@ -215,7 +215,7 @@ Status entries: 26; working content equal to integration: 0; differing: 0; unmer
 | `??` | `split-animation-targets.py` | untracked; preserved in place |
 | `??` | `tests/visual-phantom-flight-animation.test.mjs` | untracked; preserved in place |
 
-## C:/Users/steve/Documents/Github/vtx-dashboard-cockpit-20261107
+## Vtx-dashboard-cockpit-20261107
 
 Status entries: 1; working content equal to integration: 0; differing: 0; unmerged: 0; untracked: 1; missing: 0; unreadable: 0.
 
@@ -223,7 +223,7 @@ Status entries: 1; working content equal to integration: 0; differing: 0; unmerg
 |---|---|---|
 | `??` | `qa_published.cjs` | untracked; preserved in place |
 
-## C:/Users/steve/Documents/Github/vtx-flight-index-20261104
+## Vtx-flight-index-20261104
 
 Status entries: 4; working content equal to integration: 0; differing: 3; unmerged: 0; untracked: 1; missing: 0; unreadable: 0.
 
@@ -234,7 +234,7 @@ Status entries: 4; working content equal to integration: 0; differing: 3; unmerg
 | ` M` | `tools/flight_index_builder.py` | working content differs from integration |
 | `??` | `docs/flights/20261104T141525-0cb6f8.md` | untracked; preserved in place |
 
-## C:/Users/steve/Documents/Github/vtx-visual-traffic-review-20261104
+## Vtx-visual-traffic-review-20261104
 
 Status entries: 30; working content equal to integration: 0; differing: 0; unmerged: 0; untracked: 30; missing: 0; unreadable: 0.
 
@@ -271,7 +271,7 @@ Status entries: 30; working content equal to integration: 0; differing: 0; unmer
 | `??` | `scratch/visual-smoke.mjs` | untracked; preserved in place |
 | `??` | `scratch/wide-clearance.mjs` | untracked; preserved in place |
 
-## C:/Users/steve/OneDrive/Documents/ChatGPT/VTX/unified-airport
+## Unified-airport
 
 Status entries: 15; working content equal to integration: 0; differing: 10; unmerged: 0; untracked: 5; missing: 0; unreadable: 0.
 
@@ -297,7 +297,7 @@ Status entries: 15; working content equal to integration: 0; differing: 10; unme
 
 These compare stage-zero index blobs with integration HEAD, independently of working-file comparison above. Unmerged entries are retained as conflicts.
 
-### C:/Users/steve/Documents/Github/-vtx-flight-sim
+### Primary checkout
 
 374 staged paths; 350 match integration HEAD and 24 differ.
 
@@ -328,7 +328,7 @@ These compare stage-zero index blobs with integration HEAD, independently of wor
 | `A ` | `tests/test_sim_fixes_20261103.py` | `5b39a164350c3c3cec470df6f033d814820deb02` | `fd1f4f9c55f108e7bb1cb90c17f6926ce7217def` |
 | `A ` | `tools/phantom/phantom_persistent_pilot.py` | `b1f09a6ba657603683c3b4837ec28eeb44613f4b` | `d330ce51be003103e95a24653fc03b59b7ddc2bb` |
 
-### C:/Users/steve/Documents/Github/-vtx-flight-sim/.claude/worktrees/agent-ab30c2b8b057df1a2
+### Agent-ab30c2b8b057df1a2
 
 127 staged paths; 123 match integration HEAD and 4 differ.
 
