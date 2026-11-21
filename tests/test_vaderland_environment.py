@@ -1,4 +1,5 @@
 """The new survey uses the same aircraft, with its own world and fleet identity."""
+import sys
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -52,8 +53,19 @@ def test_versions_keep_approaches_and_the_original_world():
         assert not np.any(w.heights[abs(axis)<=w.runway['width']/2])
         pins.add(live_server.world_fingerprint(w))
     assert len(pins)==17
-    assert live_server.world_fingerprint(make_world('vaderland-05'))=='1db17fec0eebea557d892569c47e546e3fbb9a59e919822390762606c7d05c0f'
-    assert live_server.world_fingerprint(make_world('vaderland-08'))=='812c79369610b8dfce07ff0aecb34095dd2aecf22f903b75f74f0bfb49779a62'
+    # The reference PC (Windows) and Linux CI hash Vaderland 05 and 08 differently. Their terrain
+    # is identical; two trees shared by both worlds differ in the last bits (tree-1 x by 1 ulp,
+    # tree-9 y by 2 ulps) because NumPy's scalar cos/sin use the platform C library (Windows UCRT
+    # vs glibc). Applying exactly those offsets on Linux reproduces both Windows pins. Pin each
+    # platform's value so either still catches any real change to these worlds.
+    pinned = {
+        'vaderland-05': {'win32': '1db17fec0eebea557d892569c47e546e3fbb9a59e919822390762606c7d05c0f',
+                         'linux': '508bfdaf215a127371f759465bb43c74b6964f269242ee3f62541e411076c80d'},
+        'vaderland-08': {'win32': '812c79369610b8dfce07ff0aecb34095dd2aecf22f903b75f74f0bfb49779a62',
+                         'linux': '09cb3a04f9b5ad7b4ef5ccf3028a2dd2e1eddfecd3e14d382eb023e56e170b72'},
+    }
+    for key, values in pinned.items():
+        assert live_server.world_fingerprint(make_world(key))==values.get(sys.platform, values['linux'])
     assert w.heights.max() < w.height_scale_m
 
 
@@ -150,6 +162,14 @@ def test_market_chart_agrees_at_shores_and_between_grid_lines():
         probes.extend([edge, edge + [1e-8, 0], edge - [0, 1e-8]])
     x, y = np.concatenate(probes).T
     np.testing.assert_array_equal(world.harbour_water_mask(x,y), Vaderland.harbour_water_mask(world,x,y))
+    # A batch spanning the whole chart uses the general path. Also query
+    # one latitude band at a time, as the hull and waterline samples do.
+    for band in np.unique(np.floor(y / 32)):
+        selected = np.floor(y / 32) == band
+        np.testing.assert_array_equal(
+            world.harbour_water_mask(x[selected], y[selected]),
+            Vaderland.harbour_water_mask(world, x[selected], y[selected]),
+        )
 
 
 def test_market_shallow_water_reuses_only_bitwise_identical_cell_neighbourhoods():
@@ -181,6 +201,32 @@ def test_market_shallow_water_reuses_only_bitwise_identical_cell_neighbourhoods(
             np.testing.assert_array_equal(a.view(np.uint64), b.view(np.uint64))
 
 
+def test_harbour_worker_water_strips_preserve_the_stock_stencil():
+    from concurrent.futures import ThreadPoolExecutor
+    from copy import deepcopy
+    from types import SimpleNamespace
+
+    from vtx.harbour_session import _advance_water_in_strips
+    from vtx.water.shallow_water import ShallowWaterSolver
+
+    rng = np.random.default_rng(33)
+    world = SimpleNamespace(half=500, terrain_z_array=lambda x, y: 2 * np.sin(x / 50))
+    stock = ShallowWaterSolver(world, nx=97, ny=151)
+    stock.h *= rng.uniform(0.5, 1.5, size=stock.h.shape)
+    stock.hu[:] = rng.normal(0, 0.1, size=stock.h.shape)
+    stock.hv[:] = rng.normal(0, 0.1, size=stock.h.shape)
+    strips = deepcopy(stock)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        for _ in range(4):
+            stock._advance_substep(0.05)
+            _advance_water_in_strips(ShallowWaterSolver._advance_substep, strips, 0.05, executor=executor)
+            for name in ('h', 'hu', 'hv'):
+                expected = getattr(stock, name).view(np.uint64)
+                actual = getattr(strips, name).view(np.uint64)
+                np.testing.assert_array_equal(actual, expected)
+
+
 def test_timing_rejects_overflight_and_requires_the_ordered_return():
     from vtx.course_timing import CourseTiming
     gates=[dict(center=[x,0,0],normal=[1,0],width_m=12) for x in (0,20)]
@@ -190,3 +236,50 @@ def test_timing_rejects_overflight_and_requires_the_ordered_return():
         clock.sample(t,position)
     assert clock.runs['circuit']['laps']==1
     assert clock.runs['circuit']['last']==pytest.approx(.95)
+
+
+def test_sparse_changed_cells_match_the_stock_stencil_on_shores_and_walls():
+    """The changed-cells path is bitwise the stock kernel, including wet/dry fronts and walls."""
+    from copy import deepcopy
+    from dataclasses import replace
+    from types import SimpleNamespace
+
+    from vtx.water.repeated_faces import RepeatedFaces
+    from vtx.water.shallow_water import ShallowWaterSolver
+
+    rng = np.random.default_rng(7)
+    # A sloping bed crosses the waterline: mostly dry land, a wavy shore and a strip of open
+    # water. Wind and current then change only the wet cells, so the sparse path runs with them.
+    world = SimpleNamespace(half=500, terrain_z_array=lambda x, y: x / 40 + 9 + 0.4 * np.sin(y / 37))
+    baseline = ShallowWaterSolver(world, nx=131, ny=117)
+    baseline.config = replace(baseline.config, wind_speed_mps=3., current_speed_mps=.2)
+    local = deepcopy(baseline)
+    advance = RepeatedFaces(local)
+    used = []
+    original = RepeatedFaces._advance_cells
+
+    def spy(self, dt, current, dirty):
+        used.append(int(np.count_nonzero(dirty)))
+        return original(self, dt, current, dirty)
+
+    RepeatedFaces._advance_cells = spy
+    try:
+        for step in range(24):
+            ny, nx = baseline.h.shape
+            rows = np.r_[0, ny - 1, rng.integers(0, ny, 5)]
+            cols = np.r_[nx - 1, 0, rng.integers(0, nx, 5)]
+            kick = rng.normal(0, .3, rows.size)
+            for field in (baseline, local):
+                field.hu[rows, cols] += kick
+                field.hv[rows[::-1], cols] -= kick
+                if step == 11:
+                    field.h[40:44, 60:66] += .05  # a mound across the shore
+            dt = .04 if step != 17 else .043  # one changed timestep falls back to the full stencil
+            baseline._advance_substep(dt)
+            advance(dt)
+            for name in ('h', 'hu', 'hv'):
+                np.testing.assert_array_equal(getattr(local, name).view(np.uint64),
+                                              getattr(baseline, name).view(np.uint64))
+    finally:
+        RepeatedFaces._advance_cells = original
+    assert len(used) >= 19 and max(used) < baseline.h.size * RepeatedFaces.cells_limit

@@ -19,7 +19,7 @@ export function makeAirportModel(THREE,kind,color=0xe4e9e6){
   rotor.add(new THREE.Mesh(new THREE.BoxGeometry(5.8,.18,.08),dark));
   for(const y of [-.65,.65])mesh(new THREE.BoxGeometry(3.2,.1,.1),dark,.2,y,.22);
  }else{
-  const fuselage=mesh(new THREE.CylinderGeometry(.48,.62,6.7,12),paint,0,0,1.1);fuselage.rotation.z=Math.PI/2;
+  const fuselage=mesh(new THREE.CylinderGeometry(.48,.62,6.7,12),paint,0,0,1.1);fuselage.rotation.z=Math.PI/2;fuselage.name='airport-fuselage';
   mesh(new THREE.BoxGeometry(1.6,9.2,.16),paint,-.15,0,1.25);
   mesh(new THREE.BoxGeometry(1.05,3.2,.12),paint,-2.6,0,1.45);
   mesh(new THREE.BoxGeometry(.8,.12,1.1),paint,-2.8,0,1.88);

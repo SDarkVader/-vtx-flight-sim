@@ -5,6 +5,8 @@ import {dirname, resolve} from 'node:path';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
+import {createPoseInterpolator} from '../public/vtx-env/pose-interpolation.js';
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const threeUrl = new URL('../public/vendor/three.module.js', import.meta.url).href;
 const effectsUrl = new URL('../public/vtx-env/phantom-effects.js', import.meta.url).href;
@@ -102,6 +104,38 @@ test('visual wheels preserve authored dimensions and attachment datums while fol
       assert.deepEqual(wheel.node.scale.toArray(), [1, 1, 1]);
       assert.ok(wheel.podJoint.node.position.distanceTo(wheel.podJoint.pos) < 1e-12);
     }
+  }
+});
+
+test('interpolated world rotations cannot hide a measured rear wheel', () => {
+  const yaw = new THREE.Vector3(0, 0, 1);
+  const axle = new THREE.Vector3(0, 1, 0);
+  const wxyz = q => [q.w, q.x, q.y, q.z];
+  function sample(t, heading, angle) {
+    const pod = new THREE.Quaternion().setFromAxisAngle(yaw, heading);
+    const wheel = pod.clone().multiply(new THREE.Quaternion().setFromAxisAngle(axle, angle));
+    return {
+      t_s: t,
+      variant: 'phantom-a10d',
+      config_sha256: '58d12857e3d38b50deeefa982974f4e54bd37f72823218a3e5c31b9000144ba3',
+      phantom: {joints: {pod_RL: 0, pod_RL_susp: 0.03, pod_RL_wheel: angle}},
+      body_poses: {
+        airframe: {position: [t, 0, 1], quaternion_wxyz: wxyz(pod)},
+        pod_RL: {position: [t - 1, 1, 1], quaternion_wxyz: wxyz(pod)},
+        pod_RL_wheel: {position: [t - 1, 1, 1.03], quaternion_wxyz: wxyz(wheel)},
+      },
+    };
+  }
+  const p = createPoseInterpolator();
+  const previous = sample(5, 0, 0.2), latest = sample(5.1, 0.24, 2.4);
+  p.receive(previous, 0);
+  p.receive(latest, 100);
+  const rig = attachPhantom(assetRig());
+  const rear = rig.wheels.find(wheel => wheel.idx === 2);
+  for (const now of [100, 125, 150, 175, 200]) {
+    updatePhantom(rig, p.present(now), false, [], true, latest);
+    assert.equal(rear.node.visible, true, `rear wheel at ${now} ms`);
+    assert.equal(rear.fit.pose_status, 'measured-fixed-steering');
   }
 });
 

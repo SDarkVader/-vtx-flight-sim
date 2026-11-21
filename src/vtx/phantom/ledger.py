@@ -228,7 +228,8 @@ class PhantomLedger:
             q[f'canard_{side}_fold'] = WING_SIGN[side] * math.pi / 2 if canards == 'folded' else 0.0
         return q
 
-    def mass_properties(self, q=None, fuel_kg=None, occupants=None):
+    def mass_properties(self, q=None, fuel_kg=None, occupants=None, *, include_inertia=True):
+        """Compute mass and CG, and the inertia tensor when the caller needs it."""
         q = self.configuration() if q is None else q
         poses = self.body_poses(q)
         cap = self.p['fuel.tank_capacity_kg']
@@ -238,22 +239,36 @@ class PhantomLedger:
             fuel = [float(x) for x in fuel_kg]
         else:
             fuel = [min(float(fuel_kg) / 2, cap)] * 2
-        M = 0.0; mr = np.zeros(3); items = []
-        for c in self.components:
-            if not self.included(c, occupants):
+        total_mass = 0.0
+        mass_moment = np.zeros(3)
+        inertials = []
+        for component in self.components:
+            if not self.included(component, occupants):
                 continue
-            m = c.mass_kg; I = np.array(c.inertia_kg_m2)
-            if 'fuel' in c.tags:
-                f = fuel[0 if c.id.endswith('left') else 1]; I = I * (f / m); m = f
-            if m <= 0:
+            is_fuel = 'fuel' in component.tags
+            mass = fuel[0 if component.id.endswith('left') else 1] if is_fuel else component.mass_kg
+            if mass <= 0:
                 continue
-            R, p = poses[c.body]
-            r = p + R @ (np.array(c.position_m) - self.bodies[c.body].anchor)
-            items.append((m, r, R @ I @ R.T)); M += m; mr += m * r
-        cg = mr / M; J = np.zeros((3, 3))
-        for m, r, I in items:
-            d = r - cg; J += I + m * (d @ d * np.eye(3) - np.outer(d, d))
-        return dict(mass_kg=M, cg_m=cg.tolist(), inertia_about_cg_kg_m2=J.tolist())
+            rotation, origin = poses[component.body]
+            position = origin + rotation @ (np.array(component.position_m) - self.bodies[component.body].anchor)
+            total_mass += mass
+            mass_moment += mass * position
+            if include_inertia:
+                inertia = np.array(component.inertia_kg_m2)
+                if is_fuel:
+                    inertia = inertia * (mass / component.mass_kg)
+                inertials.append((mass, position, rotation @ inertia @ rotation.T))
+
+        cg = mass_moment / total_mass
+        properties = dict(mass_kg=total_mass, cg_m=cg.tolist())
+        if include_inertia:
+            inertia_at_cg = np.zeros((3, 3))
+            identity = np.eye(3)
+            for mass, position, inertia in inertials:
+                offset = position - cg
+                inertia_at_cg += inertia + mass * (offset @ offset * identity - np.outer(offset, offset))
+            properties['inertia_about_cg_kg_m2'] = inertia_at_cg.tolist()
+        return properties
 
     def body_inertials(self, fuel=None):
         """Per MuJoCo body: (mass, COM in body frame, inertia about COM) at the build pose."""

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "integrated_runtime_sha256": "477dfaefcd49c734485ca97521c885783cf946bc6b753627c2192555c4c17b5c",
+  "integrated_runtime_sha256": "25a4f40ec45743c887b541c4fd4079a67d0d0dee85d883160844fcdea441b0b9",
   "previous_integrated_runtimes": [
     {
       "sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
@@ -76,6 +76,12 @@
       "commit": "ceca99fe9fbe1e37649645b8f1792d7432d932b8",
       "superseded": "2026-11-20",
       "reason": "Meridian City Lights is independently selectable. The new scenery extends the Market Quarter and inherits its water-cell reuse. Aircraft source, settings and assets retain their reviewed versions."
+    },
+    {
+      "sha256": "477dfaefcd49c734485ca97521c885783cf946bc6b753627c2192555c4c17b5c",
+      "commit": "77d9d452285cdb2faa1faf3669f46a2aa5749856",
+      "superseded": "2026-11-21",
+      "reason": "Vaderland 33 harbour throughput and scenery. Harbour timing, packed checkpoints, two-thread and changed-cell shallow-water stencils, exact water-query reuse and bounded Phantom terrain rays, each reproducing its predecessor bit for bit; the Lantern Race, Rooftop Quarter, alpine routes and Meridian streets; explicit LF rules for 14 runtime files so Windows and Linux hash the same bytes. Repin authorised by the owner on 21 Nov 2026 so CI verifies the current runtime."
     }
   ],
   "text_dependencies_sha256_lf": {

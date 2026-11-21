@@ -175,3 +175,15 @@ html[data-boat-focus^="ricochet-"] .mission-panel > :not(.aircraft-choice):not(#
 html[data-boat-focus^="ricochet-"] :is(#attitude,#consequence,#retry-bar,#suspension-schematic-status,footer,#main-aircraft-note) {
  display:none !important;
 }
+
+#phantom-panel .slider-scale, #phantom-cockpit .slider-scale {
+  grid-column: 1 / -1; position: relative; margin: 0 2px; min-width: 0; height: 14px;
+  color: #acbfbd; font: 9px/10px ui-monospace, monospace; pointer-events: none;
+}
+#phantom-cockpit .slider-scale { margin-inline: 6px; }
+.slider-scale > span { position: absolute; top: 0; padding-top: 4px; transform: translateX(-50%); }
+.slider-scale > span::before { content: ""; position: absolute; left: 50%; top: 0; height: 3px; border-left: 1px solid currentColor; }
+.slider-scale > span:first-child { transform: none; }
+.slider-scale > span:first-child::before { left: 0; }
+.slider-scale > span:last-child { transform: translateX(-100%); }
+.slider-scale > span:last-child::before { left: 100%; }

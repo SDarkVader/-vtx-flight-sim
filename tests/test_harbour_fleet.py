@@ -1,11 +1,94 @@
 """Real marine plants in a small isolated world; never a live Laboratory."""
 
 from copy import deepcopy
+import gzip
 import json
 from types import SimpleNamespace
 import numpy as np
 import pytest
 from vtx.harbour_fleet import HarbourFleet, DT
+
+
+@pytest.mark.parametrize("persistent", [False, True])
+def test_harbour_checkpoint_retry_preserves_atomic_replacement(tmp_path, monkeypatch, persistent):
+    from vtx import harbour_session
+
+    checkpoint = tmp_path / "current.json.gz"
+    checkpoint.write_bytes(b"old checkpoint")
+    real_replace = harbour_session.os.replace
+    attempts = []
+
+    def contested_replace(source, target):
+        assert target.read_bytes() == b"old checkpoint"
+        attempts.append(source)
+        if persistent or len(attempts) <= 2:
+            error = PermissionError("file is open elsewhere")
+            error.winerror = 5
+            raise error
+        real_replace(source, target)
+
+    monkeypatch.setattr(harbour_session.os, "replace", contested_replace)
+    monkeypatch.setattr(harbour_session.time, "sleep", lambda _: None)
+    if persistent:
+        with pytest.raises(PermissionError):
+            harbour_session._publish(checkpoint, b"new checkpoint")
+        assert checkpoint.read_bytes() == b"old checkpoint"
+        assert len(attempts) == 5
+    else:
+        harbour_session._publish(checkpoint, b"new checkpoint")
+        assert checkpoint.read_bytes() == b"new checkpoint"
+        assert len(attempts) == 3
+    assert list(tmp_path.iterdir()) == [checkpoint]
+
+
+@pytest.mark.parametrize("pin", [
+    "PREVIOUS_FLEET_DEPENDENCIES", "SINGLE_PASS_FLEET_DEPENDENCIES",
+    "ARRAY_CAPTURE_FLEET_DEPENDENCIES", "SAMPLE_REUSE_FLEET_DEPENDENCIES",
+])
+def test_worker_restores_only_the_known_equivalent_checkpoint(monkeypatch, pin):
+    from vtx import harbour_session
+    from vtx.harbour_fleet import dependency_fingerprint
+
+    world = harbour_world()
+    fleet = HarbourFleet(world)
+    state = fleet.serialize()
+    current = dependency_fingerprint()
+    assert harbour_session.SHARED_WATER_FLEET_DEPENDENCIES == current
+    state["dependencies_sha256"] = previous = getattr(harbour_session, pin)
+    restored = harbour_session._restore_worker_fleet(world, state)
+    assert state["dependencies_sha256"] == previous
+    assert restored.dependencies_sha256 == current
+    np.testing.assert_array_equal(restored._integration_state(), fleet._integration_state())
+
+    monkeypatch.setattr(harbour_session, "SHARED_WATER_FLEET_DEPENDENCIES", "0" * 64)
+    with pytest.raises(ValueError, match="physics/assets differ"):
+        harbour_session._restore_worker_fleet(world, state)
+
+
+def test_checkpoint_codec_preserves_original_water_values_and_accepts_legacy_json():
+    from vtx import harbour_session
+
+    fleet = HarbourFleet(harbour_world())
+    original = fleet.serialize()
+    legacy = gzip.compress(json.dumps(original, allow_nan=False).encode())
+    packed = harbour_session._encode(fleet)
+    arrays = fleet.serialize(validate_json=False, water_arrays=True)["water"]["native"]["shallow"]
+    assert harbour_session._decode(legacy) == original
+    decoded = harbour_session._decode(packed)
+    assert decoded == original
+    restored = HarbourFleet.restore(harbour_world(), decoded)
+    for key in harbour_session.WATER_ARRAY_KEYS:
+        assert not np.shares_memory(arrays[key], getattr(fleet.water.shallow, key))
+        np.testing.assert_array_equal(arrays[key], original["water"]["native"]["shallow"][key])
+        np.testing.assert_array_equal(
+            getattr(restored.water.shallow, key).view(np.uint64),
+            getattr(fleet.water.shallow, key).view(np.uint64),
+        )
+
+    damaged = json.loads(gzip.decompress(packed))
+    damaged["water"]["native"]["shallow"]["h"] = "AAAA"
+    with pytest.raises(ValueError, match="water array length"):
+        harbour_session._decode(gzip.compress(json.dumps(damaged).encode()))
 
 
 def harbour_world():
@@ -357,17 +440,13 @@ def test_airport_crop_keeps_global_lattice_and_offset_sample_impulses_exact():
 
 
 @pytest.mark.parametrize("wave_mode", ["still", "regular", "irregular"])
-def test_shared_query_cache_is_exact_for_overlapping_wakes_shores_and_new_steps(
+def test_shared_query_is_exact_for_overlapping_wakes_shores_and_new_steps(
     wave_mode,
 ):
     from vtx.harbour_water import HarbourWorld, HarbourWater
-    from vtx.water.shallow_water import HybridWaterField
     from vtx.water.datum import WaterEnvironmentConfig
 
-    class UncachedWater(HarbourWater):
-        def _base_components(self, x, y, z, t, eta_only):
-            return HybridWaterField._base_components(self, x, y, z, t, eta_only)
-
+    class AllWakesWater(HarbourWater):
         @staticmethod
         def _zero_wake_contribution(wake, x, y):
             return False
@@ -381,7 +460,7 @@ def test_shared_query_cache_is_exact_for_overlapping_wakes_shores_and_new_steps(
         water_level_m=7.0, wave_mode=wave_mode, wave_height_m=0.25, wind_speed_mps=1.0
     )
     cached = HarbourWater(world, config)
-    reference = UncachedWater(world, config)
+    reference = AllWakesWater(world, config)
     x = np.array([-100.01, -99.99, -35.0, 0.0, 30.0, 99.99, 100.01, 115.0])
     y = np.array([0.0, -45.0, 20.0, 0.0, -10.0, 35.0, 0.0, 0.0])
     for separation in (30.0, 500.0):
@@ -418,12 +497,11 @@ def test_shared_query_cache_is_exact_for_overlapping_wakes_shores_and_new_steps(
                         getattr(actual, field).tobytes()
                         == getattr(expected, field).tobytes()
                     ), field
-                assert cached._query_base_cache is None
             cached.step(DT)
             reference.step(DT)
 
 
-def test_water_query_cache_clears_after_interruption(monkeypatch):
+def test_interrupted_water_query_leaves_wake_untouched(monkeypatch):
     from vtx.harbour_water import HarbourWorld, HarbourWater
     from vtx.water.datum import WaterEnvironmentConfig
 
@@ -431,6 +509,7 @@ def test_water_query_cache_clears_after_interruption(monkeypatch):
         HarbourWorld(harbour_world()), WaterEnvironmentConfig(water_level_m=7.0)
     )
     original = water.open_water.evaluate
+    wake = deepcopy(water._vessel_wake)
 
     def interrupted(*args, **kwargs):
         raise RuntimeError("injected query interruption")
@@ -438,7 +517,7 @@ def test_water_query_cache_clears_after_interruption(monkeypatch):
     monkeypatch.setattr(water.open_water, "evaluate", interrupted)
     with pytest.raises(RuntimeError, match="query interruption"):
         water.evaluate(-50.0, 50.0)
-    assert water._query_base_cache is None
+    assert water._vessel_wake == wake
     monkeypatch.setattr(water.open_water, "evaluate", original)
     assert float(water.evaluate(-50.0, 50.0).wet_fraction) > 0
 

@@ -9,6 +9,7 @@ No pose, velocity or force is ever written to the vehicle except through these p
 """
 from __future__ import annotations
 import base64, gzip, hashlib, io, json, math, sys, zlib
+from functools import cached_property
 import xml.etree.ElementTree as ET
 import mujoco as mj
 import numpy as np
@@ -16,11 +17,12 @@ from ..aircraft import DT
 from .params import Params, ROOT, load_a10b_characteristics
 from .flight_revisions import REGISTRY_PATH, flight_revision
 from .ledger import PhantomLedger
-from .geometry import PODS, SIDE, FRONT, WING_SIDES, WING_SIGN, PINS
+from .geometry import PODS, SIDE, FRONT, WING_SIDES, WING_SIGN, PINS, cross3
 from .propulsion import DuctedFan
 from .energy_bus import EnergyBus
 from .surface_aero import SurfaceAero
 from .controls import FlightControl, default_command
+from .terrain_ray import GROUND_GROUP, TerrainRay
 
 AIRBORNE_DEBOUNCE_S = 0.25   # continuous no-support time before the plant counts itself airborne
 VEH = dict(contype='2', conaffinity='1', group='3')
@@ -28,6 +30,7 @@ WING_STATES = ('stowed', 'hatch_opening', 'sliding_out', 'pinning', 'locked', 'u
 CHECKPOINT_DERIVED_FIELDS = ('xpos', 'xquat', 'xmat', 'xipos', 'ximat', 'xanchor', 'xaxis', 'cdof', 'cdof_dot',
                              'geom_xpos', 'geom_xmat', 'site_xpos', 'site_xmat', 'subtree_com', 'cvel', 'actuator_force',
                              'actuator_velocity')
+PACKED_CHECKPOINT_FIELDS = ('geom_xpos', 'geom_xmat')
 
 
 def checkpoint_json(value):
@@ -409,19 +412,33 @@ class PhantomAircraft:
         b = self.bids['airframe']
         mass = float(m.body_subtreemass[b]); cg_w = d.subtree_com[b].copy()
         J = np.zeros((3, 3))
-        for i in range(1, m.nbody):
+        # The compiled world contains massless scenery bodies. Keep the sum
+        # in body order and include every body with mass or inertia.
+        has_mass = m.body_mass[1:] != 0
+        has_inertia = np.any(m.body_inertia[1:] != 0, axis=1)
+        identity = np.eye(3)
+        for i in np.flatnonzero(has_mass | has_inertia) + 1:
             R = d.ximat[i].reshape(3, 3); I = R @ np.diag(m.body_inertia[i]) @ R.T
             r = d.xipos[i] - cg_w
-            J += I + m.body_mass[i] * (r @ r * np.eye(3) - np.outer(r, r))
+            J += I + m.body_mass[i] * (r @ r * identity - np.outer(r, r))
         Rb = self.R()
         return dict(mass_kg=mass, cg_world_m=cg_w.tolist(), cg_body_m=(Rb.T @ (cg_w - d.xpos[b])).tolist(), inertia_body_kg_m2=(Rb.T @ J @ Rb).tolist())
 
     def pod_axis(self, k):
         return self.data.xmat[self.bids[f'pod_{k}']].reshape(3, 3) @ np.array([0, SIDE[k], 0])
 
+    @cached_property
+    def _terrain_ray(self):
+        return TerrainRay.build(self.model, self.data, self.gid['terrain'])
+
     def ray_height(self, p, direction):
-        gid = np.zeros(1, np.int32)
-        dist = mj.mj_ray(self.model, self.data, p, direction, np.array([1, 0, 0, 0, 0, 0], np.uint8), 1, -1, gid)
+        if getattr(self.world, 'environment_key', None) == 'vaderland-33' and TerrainRay.suitable(p, direction):
+            query = self._terrain_ray
+            if query is not None:
+                hit = query.hit(p, direction)
+                if hit is not None:
+                    return hit[0]
+        dist = mj.mj_ray(self.model, self.data, p, direction, GROUND_GROUP, True, -1, None)
         return None if dist < 0 else float(dist)
 
     # ------------------------------------------------------------ commands
@@ -545,7 +562,7 @@ class PhantomAircraft:
                           fan_vertical_n=float(sum(st.get('thrust_n', 0.0) * self.pod_axis(k)[2] for k, st in zip(PODS, self.fan_state))),
                           u_ground=float(cy * d.qvel[0] + sy * d.qvel[1]), v_ground_left=float(-sy * d.qvel[0] + cy * d.qvel[1]))
         joint_positions = {name: float(self.joint(name)[0]) for name in self.L.bodies if name in self.jid}
-        led = self.L.mass_properties(joint_positions, fuel_kg=list(self.fuel))
+        led = self.L.mass_properties(joint_positions, fuel_kg=list(self.fuel), include_inertia=False)
         fan_en = {k: abs(self.joint(f'pod_{k}')[0]) >= math.radians(P['pods.fan_enable_tilt_deg']) for k in PODS}
         avail = {k: self.fan.thrust_max * min(1.0, (self.bus.motor_power_limit(i) / P['pods.motor_power_peak_w']) ** (2 / 3)) for i, k in enumerate(PODS)}
         al = self.alloc = self.fcc.update(float(d.time), sensed, float(sum(self.model.body_mass)), led['cg_m'][0], g, fan_en, avail)
@@ -776,7 +793,7 @@ class PhantomAircraft:
     def point_velocity(self, b, p):
         v6 = np.zeros(6)
         mj.mj_objectVelocity(self.model, self.data, mj.mjtObj.mjOBJ_XBODY, b, v6, 0)
-        return v6[3:] + np.cross(v6[:3], p - self.data.xpos[b])
+        return v6[3:] + cross3(v6[:3], p - self.data.xpos[b])
 
     # ------------------------------------------------------------ contacts
     def contact_samples(self):
@@ -985,6 +1002,14 @@ class PhantomAircraft:
         spec = mj.mjtState.mjSTATE_INTEGRATION
         integration = np.empty(mj.mj_stateSize(m, spec))
         mj.mj_getState(m, d, integration, spec)
+        # Preserve each float exactly without converting the entire scenery to decimal JSON.
+        derived = {name: getattr(d, name) for name in CHECKPOINT_DERIVED_FIELDS}
+        for name in PACKED_CHECKPOINT_FIELDS:
+            values = derived[name]
+            if not np.isfinite(values).all():
+                raise ValueError('Non-finite checkpoint derived state: ' + name)
+            raw = values.astype('<f8', copy=False).tobytes()
+            derived[name] = {'float64le': base64.b64encode(raw).decode('ascii')}
         evolving = dict(wing_timer=self.wing_timer, nose_lift=self.nose_lift,
                         rng_state=self.rng.bit_generator.state, rudder=self.rudder, tvc=self.tvc,
                         fan_omega_cmd=self.fan_omega_cmd, fan_state=self.fan_state,
@@ -1007,7 +1032,7 @@ class PhantomAircraft:
                     model_state=dict(body_mass=m.body_mass, body_inertia=m.body_inertia,
                                      qpos_spring=m.qpos_spring, jnt_range=m.jnt_range,
                                      dof_frictionloss=m.dof_frictionloss), evolving=evolving,
-                    derived_state={name:getattr(d,name) for name in CHECKPOINT_DERIVED_FIELDS},
+                    derived_state=derived,
                     contact_samples=(self.contact_samples() if getattr(self, '_restored_contact_samples', None) is None
                                      else self._restored_contact_samples),
                     qpos=d.qpos.tolist(), qvel=d.qvel.tolist(), act=d.act.tolist(), ctrl=d.ctrl.tolist(), qacc_warmstart=d.qacc_warmstart.tolist(), time=float(d.time),
@@ -1053,8 +1078,18 @@ class PhantomAircraft:
         mj.mj_forward(m, d)
         d.qacc_warmstart[:] = warmstart
         for name in CHECKPOINT_DERIVED_FIELDS:
-            arr = np.asarray(s['derived_state'][name], dtype=float)
             target = getattr(d, name)
+            stored = s['derived_state'][name]
+            if name in PACKED_CHECKPOINT_FIELDS and isinstance(stored, dict):
+                encoded = stored.get('float64le')
+                if not isinstance(encoded, str) or len(encoded) != 4 * ((target.nbytes + 2) // 3):
+                    raise ValueError('Invalid packed checkpoint derived state: ' + name)
+                raw = base64.b64decode(encoded, validate=True)
+                if len(raw) != target.nbytes:
+                    raise ValueError('Invalid packed checkpoint derived state: ' + name)
+                arr = np.frombuffer(raw, dtype='<f8').reshape(target.shape)
+            else:
+                arr = np.asarray(stored, dtype=float)
             if arr.shape != target.shape or not np.all(np.isfinite(arr)):
                 raise ValueError('Checkpoint derived state cannot be reconstructed: ' + name)
             target[:] = arr

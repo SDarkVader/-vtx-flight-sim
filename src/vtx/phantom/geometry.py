@@ -18,6 +18,13 @@ CAD_SIDE = {'left': 'R', 'right': 'L'}   # A9 _R objects sit at +Y = physical le
 PINS = ('FRONT_OUT', 'FRONT_IN', 'REAR_OUT', 'REAR_IN')
 
 
+def cross3(a, b):
+    """Cross product for the plant's fixed-width float64 vectors."""
+    ax, ay, az = a
+    bx, by, bz = b
+    return np.array([ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx])
+
+
 def rot(axis, angle):
     a = np.asarray(axis, float); a = a / np.linalg.norm(a)
     x, y, z = a; c, s = np.cos(angle), np.sin(angle); C = 1 - c

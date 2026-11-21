@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import base64
+from concurrent.futures import ThreadPoolExecutor
+from copy import copy
+from functools import partial
 import gzip
 import hashlib
 import json
@@ -15,9 +18,108 @@ import time
 import uuid
 
 
+PREVIOUS_FLEET_DEPENDENCIES = "beb05b30b34be33f648a80e78fa6de18cf3d415e1cbb52084a85d5eb078beceb"
+SINGLE_PASS_FLEET_DEPENDENCIES = "95e8f62086a8333f1b2b96c35fac2d482d78f69a11aaca90f356ca6a1f4084e4"
+ARRAY_CAPTURE_FLEET_DEPENDENCIES = "fd3d0ce1a15884be8ac58ef529111a181920cfed95db748aed51a348bb9b39c9"
+SAMPLE_REUSE_FLEET_DEPENDENCIES = "775b90acbd6315599e63b176c5de80cc2392cc81875496a258958469cda42ef6"
+# Sparse changed-cell SWE kernel: bitwise the stock stencil, same cadence and stored state.
+SHARED_WATER_FLEET_DEPENDENCIES = "89f2cb34dcc52c7e41d9ad388fb11dce67d1844fa72f51e4e1b93a0544c0fbb2"
+WATER_ARRAY_ENCODING = "float64-le-base64"
+WATER_ARRAY_KEYS = ("h", "hu", "hv")
+
+
+def _restore_worker_fleet(world, state):
+    from .harbour_fleet import dependency_fingerprint
+    from .harbour_trial import fleet_type
+
+    # These pinned changes preserve the force law, step cadence and stored state.
+    # Leave the original save and the world, model, and solver cadence checks intact.
+    if (isinstance(state, dict) and state.get("dependencies_sha256") in
+            (PREVIOUS_FLEET_DEPENDENCIES, SINGLE_PASS_FLEET_DEPENDENCIES,
+             ARRAY_CAPTURE_FLEET_DEPENDENCIES, SAMPLE_REUSE_FLEET_DEPENDENCIES)
+            and dependency_fingerprint() == SHARED_WATER_FLEET_DEPENDENCIES):
+        state = {**state, "dependencies_sha256": SHARED_WATER_FLEET_DEPENDENCIES}
+    return fleet_type(world).restore(world, state)
+
+
+def _advance_water_in_strips(advance, field, dt, *, executor=None):
+    """Keep the existing local SWE stencil in cache, including true wall faces."""
+    import numpy as np
+
+    strip_rows = 64
+    rows = field.h.shape[0]
+    if rows <= strip_rows:
+        advance(field, dt)
+        return
+
+    inputs = field.h, field.hu, field.hv, field.bed
+    outputs = tuple(np.empty_like(layer) for layer in inputs[:3])
+    def advance_strip(start):
+        patch = copy(field)
+        stop = min(start + strip_rows, rows)
+        top, bottom = max(0, start - 1), min(rows, stop + 1)
+        patch.h, patch.hu, patch.hv, patch.bed = (layer[top:bottom] for layer in inputs)
+        advance(patch, dt)
+        core = slice(start - top, stop - top)
+        for out, result in zip(outputs, (patch.h, patch.hu, patch.hv)):
+            out[start:stop] = result[core]
+
+    dispatch = executor.map if executor else map
+    for _ in dispatch(advance_strip, range(0, rows, strip_rows)):
+        pass
+    field.h, field.hu, field.hv = outputs
+
+
+def _partition_harbour_water(fleet, executor=None):
+    if fleet.water._repeated_basin:
+        stencil = fleet.water.shallow._advance_substep
+        stencil.stock = partial(_advance_water_in_strips, stencil.stock, executor=executor)
+
+
 def _encode(fleet):
-    raw = json.dumps(fleet.serialize(), allow_nan=False, separators=(",", ":")).encode()
+    import numpy as np
+
+    # Validate each binary matrix before the strict encoder handles the metadata.
+    state = fleet.serialize(validate_json=False, water_arrays=True)
+    shallow = state["water"]["native"]["shallow"]
+    for key in WATER_ARRAY_KEYS:
+        array = np.asarray(shallow[key], dtype="<f8")
+        if not np.isfinite(array).all():
+            raise ValueError(f"Invalid harbour water array {key}")
+        shallow[key] = base64.b64encode(array.tobytes()).decode("ascii")
+    shallow["array_encoding"] = WATER_ARRAY_ENCODING
+    raw = json.dumps(state, allow_nan=False, separators=(",", ":")).encode()
     return gzip.compress(raw, compresslevel=1, mtime=0)
+
+
+def _decode(payload):
+    import numpy as np
+
+    state = json.loads(gzip.decompress(payload))
+    if not isinstance(state, dict):
+        return state
+    water = state.get("water", {}).get("native", {})
+    shallow = water.get("shallow", {})
+    if "array_encoding" not in shallow:
+        return state
+    if shallow.pop("array_encoding") != WATER_ARRAY_ENCODING:
+        raise ValueError("Unrecognized harbour water array encoding")
+    nx, ny = shallow["nx"], shallow["ny"]
+    if type(nx) is not int or type(ny) is not int or nx < 1 or ny < 1:
+        raise ValueError("Invalid harbour water grid dimensions")
+    size = nx * ny * 8
+    for key in WATER_ARRAY_KEYS:
+        value = shallow[key]
+        if not isinstance(value, str) or len(value) != 4 * ((size + 2) // 3):
+            raise ValueError(f"Invalid harbour water array length for {key}")
+        raw = base64.b64decode(value, validate=True)
+        if len(raw) != size:
+            raise ValueError(f"Invalid harbour water array bytes for {key}")
+        array = np.frombuffer(raw, dtype="<f8").reshape(ny, nx)
+        if not np.isfinite(array).all():
+            raise ValueError(f"Invalid harbour water array {key}")
+        shallow[key] = array.tolist()
+    return state
 
 
 def _public_fleet(fleet):
@@ -57,7 +159,16 @@ def _publish(path, payload):
             stream.write(payload)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        # Windows can briefly deny replacement while another process has the
+        # old checkpoint open. Keep the durable file until the atomic swap works.
+        for delay in (0.01, 0.025, 0.05, 0.1, None):
+            try:
+                os.replace(temporary, path)
+                break
+            except OSError as exc:
+                if delay is None or getattr(exc, "winerror", None) not in (5, 32, 33):
+                    raise
+                time.sleep(delay)
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -141,6 +252,11 @@ def _restart_boat(world, fleet, body):
 
 
 def _run(connection, rate, seed, snapshot, environment):
+    with ThreadPoolExecutor(max_workers=2, thread_name_prefix="harbour-water") as water_workers:
+        _serve_fleet(connection, rate, seed, snapshot, environment, water_workers)
+
+
+def _serve_fleet(connection, rate, seed, snapshot, environment, water_workers):
     """Only this process mutates the fleet. Commands and snapshots run between solver steps."""
     try:
         from .world import make_world
@@ -150,10 +266,11 @@ def _run(connection, rate, seed, snapshot, environment):
         world = make_world(environment, seed=seed)
         fleet_class = fleet_type(world)
         fleet = (
-            fleet_class.restore(world, json.loads(gzip.decompress(snapshot)))
+            _restore_worker_fleet(world, _decode(snapshot))
             if snapshot is not None
             else fleet_class(world)
         )
+        _partition_harbour_water(fleet, water_workers)
         connection.send((True, None))
     except Exception as exc:
         connection.send((False, str(exc)))
@@ -197,6 +314,7 @@ def _run(connection, rate, seed, snapshot, environment):
                             result["error"] = fault
                     elif action == "restart":
                         candidate = _restart_boat(world, fleet, body)
+                        _partition_harbour_water(candidate, water_workers)
                         payload = _encode(candidate)
                         history = current.parent / "harbour-history" / (uuid.uuid4().hex + ".json.gz")
                         _publish(history, _encode(fleet))

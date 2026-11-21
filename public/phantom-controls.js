@@ -32,13 +32,16 @@ import {cockpitTelemetry} from './cockpit-telemetry.js?v=1';
 import {flapInterlockMessage} from './flap-interlock.js?v=1';
 import {renderReadout} from './phantom-readouts.js?v=1';
 import {createPatchQueue, editArrayCommand} from './phantom-command-queue.js?v=1';
+import {addSliderScale} from './slider-scale.js?v=1';
 const FIELDS=[['collective',0,1,0.01,0],['vertical_speed_m_s',-3,3,0.1,0],['pitch',-1,1,0.02,0],['roll',-1,1,0.02,0],['yaw',-1,1,0.02,0],['engine',0,1,0.05,1]];
 export function createPhantomPanel({api,toast,canControl=()=>true}){
   let dirty=false,beat=0,pending=false,lastView=null,engaged=false,engagedRun,voiceReason=null,pendingVoice=null; let vtol=true,legsExtended=true,brakes=true,wing=false,can=false,airbrake=false;
+  let accepted, rejected=false;
   const patchQueue=createPatchQueue();
   const optimisticFields=new Set();
   function engage(){if(!engaged){engaged=true;engagedRun=lastView?.run_id;toast?.('Phantom panel has taken manual control');}}
-  function disengage(){engaged=false;engagedRun=undefined;patchQueue.clear();optimisticFields.clear();dirty=false;}
+  function disengage(){engaged=false;engagedRun=undefined;patchQueue.clear();optimisticFields.clear();dirty=false;accepted=undefined;rejected=false;}
+  function cockpitAvailable(){return canControl()&&lastView?.active&&!lastView.paused&&lastView.authority==='manual';}
   const cmd={schema:'phantom-fbw-1',engine:1,collective:0,vertical_speed_m_s:0,pitch:0,roll:0,yaw:0,stability_mode:'attitude'};
   function queuePatch(patch){if(!canControl()||!lastView?.active||lastView.authority!=='manual'){toast?.('Manual flight controls are unavailable.');return;}engage();Object.assign(cmd,structuredClone(patch));for(const field of Object.keys(patch))optimisticFields.add(field);patchQueue.add(patch);dirty=patchQueue.dirty;}
   function changedArray(field,index,value,count){return editArrayCommand(optimisticFields.has(field)?cmd[field]:undefined,lastView?.rendering_truth?.command?.[field],index,value,count);}
@@ -60,6 +63,7 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
       input.onchange=()=>{const v=lastView;if(!v?.active||v.authority!=='manual')return;const count=field==='wheel_drive'||field==='brake'||field==='pod_tilt_deg'||field==='leg_extension_m'?4:2;queuePatch({[field]:changedArray(field,index,Number(input.value),count)});};
     }
     const steer=document.createElement('label'); steer.style.display='block'; steer.title='Wheel steering / yaw (left −, right +)'; steer.textContent='Steer / yaw '; steerInput=document.createElement('input'); steerInput.type='range'; steerInput.min=-1; steerInput.max=1; steerInput.step=.01; steerInput.value=0; steerInput.style.width='100%'; steerInput.setAttribute('aria-label','Wheel steering and yaw'); steer.appendChild(steerInput); const steerMeter=document.createElement('meter');steerMeter.id='ph-steer-meter';steerMeter.min=-1;steerMeter.max=1;steerMeter.value=0;steerMeter.style.width='100%';steerMeter.setAttribute('aria-label','Wheel steering and yaw command in effect');steer.appendChild(steerMeter); const steerActual=document.createElement('output');steerActual.id='ph-steer-actual';steer.appendChild(steerActual); surfaceControls.appendChild(steer);
+    steerInput.step=.01;
     steerInput.onchange=()=>{const v=lastView;if(!v?.active||v.authority!=='manual')return;queuePatch({yaw:Number(steerInput.value)});};
     // Surfaces the flight computer positions itself: display only (bar + value), no slider. Scales are the airframe's travel limits.
     for(const [label,key,lo,hi,unit] of [['Rudder','rudder',-25,25,'°'],['DRS / stabilator','drs',-10,55,'°'],['Booster vector pitch','tvcp',-20,20,'°'],['Booster vector yaw','tvcy',-20,20,'°'],['Spring-seat setting','nose',0,0.2,' m'],['FL suspension position','susp0',-.35,.1,' m'],['FR suspension position','susp1',-.35,.1,' m'],['Steer FL','steer0',-35,35,'°'],['Steer FR','steer1',-35,35,'°'],['Wing L deployed','wingl',0,100,'%'],['Wing R deployed','wingr',0,100,'%'],['Canard L unfolded','cfl',0,100,'%'],['Canard R unfolded','cfr',0,100,'%'],['FL wheel speed','ws0',-150,150,''],['FR wheel speed','ws1',-150,150,''],['RL wheel speed','ws2',-150,150,''],['RR wheel speed','ws3',-150,150,'']]){
@@ -74,6 +78,7 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
       const i=l.querySelector('input'),o=l.querySelector('output');i.dataset.liveField=k;i.oninput=()=>{o.value=i.value;queuePatch({[k]:+i.value});};s.appendChild(l);}
     for(const [side,index] of [['Left',0],['Right',1]]){const l=document.createElement('label');l.style.display='block';l.title=`Front ${side.toLowerCase()} surface (canard pitch), degrees`;l.innerHTML=`Front ${side[0]} surface <output>0</output><input type=range min=-20 max=25 step=1 value=0 style="width:100%"><meter min=-20 max=25 value=0 style="width:100%" data-live-meter="canard_pitch_deg" data-live-index="${index}" aria-label="Front ${side.toLowerCase()} surface actual position"></meter>`;
       const i=l.querySelector('input'),o=l.querySelector('output');i.dataset.liveField='canard_pitch_deg';i.dataset.liveIndex=index;i.oninput=()=>{o.value=i.value;queuePatch({canard_pitch_deg:changedArray('canard_pitch_deg',index,+i.value,2)});};s.appendChild(l);}
+    for(const input of el.querySelectorAll('input[type=range]'))addSliderScale(input);
     el.querySelector('#ph-mode').onchange=e=>queuePatch({stability_mode:e.target.value});
     el.querySelector('#ph-take').onclick=()=>{if(engaged)disengage();else engage();};
     el.querySelector('#ph-gear').onclick=e=>{vtol=!vtol;queuePatch({pod_tilt_deg:Array(4).fill(vtol?90:0)});e.target.textContent='Pods / wheels: '+(vtol?'90°':'0°');};
@@ -129,10 +134,28 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
     const say=el.querySelector('#ph-say');say.onkeydown=e=>{if(e.key==='Enter'&&say.value.trim()){hear(say.value.trim(),'text');say.value='';}e.stopPropagation();};   // typed fallback / tests: __phantomVoice('boost 50 percent')
   }
   setInterval(async()=>{const v=lastView;beat++;if(!canControl()||!heartbeatDue({engaged,pending,view:v,dirty,beat,engagedRun}))return;
-    const ticket=patchQueue.take();dirty=patchQueue.dirty;pending=true;try{await api('/api/action',{schema:'phantom-fbw-1',...ticket.patch,authority:'manual',expected_run_id:v.run_id,observation_id:v.observation.observation_id,reason:voiceReason||'Manual Phantom operator controls'});voiceReason=null;}
-    catch(e){patchQueue.retry(ticket);dirty=patchQueue.dirty;toast(e.message);}finally{pending=false;}},100);
+    const ticket=patchQueue.take();dirty=patchQueue.dirty;pending=true;try{const response=await api('/api/action',{schema:'phantom-fbw-1',...ticket.patch,authority:'manual',expected_run_id:v.run_id,observation_id:v.observation.observation_id,reason:voiceReason||'Manual Phantom operator controls'});voiceReason=null;
+      if(engaged&&engagedRun===v.run_id){accepted=response;rejected=false;}}
+    catch(e){if(engaged&&engagedRun===v.run_id){patchQueue.retry(ticket);dirty=patchQueue.dirty;rejected=true;}toast(e.message);}finally{pending=false;}},100);
   return {
     disengage,
+    cockpitStatus(){
+      const awaiting=accepted?.apply_t_s>lastView?.observation?.t_s;
+      return {available:!!cockpitAvailable(),engaged,waiting:dirty||pending||awaiting,rejected};
+    },
+    toggleCockpitControl(){
+      if(cockpitAvailable()){if(engaged)disengage();else engage();}
+    },
+    commandFromCockpit(patch){
+      if(cockpitAvailable()&&engaged)queuePatch(patch);
+    },
+    axisFromCockpit(field, value, index){
+      if(!cockpitAvailable()||!engaged)return;
+      const commandValue=field==='aileron_trim_deg'?changedArray(field,index,value,2)
+        : field==='booster_throttle'?Array(2).fill(value)
+        : field==='wheel_drive'?Array(4).fill(value):value;
+      queuePatch({[field]:commandValue});
+    },
     show(on){el.style.display=on?'block':'none';},
     update(v){if(!engaged&&v.observation){const o=v.observation;if(Array.isArray(o.pod_tilt_deg)){vtol=o.pod_tilt_deg[0]>45;el.querySelector('#ph-gear').textContent='Pods / wheels: '+(vtol?'90°':'0°');}if(Array.isArray(o.leg_extension_m)){legsExtended=o.leg_extension_m[0]>.26;el.querySelector('#ph-legs').textContent='Legs: '+(legsExtended?'extended':'retracted');}}if(engaged&&engagedRun===undefined)engagedRun=v.run_id;if(engaged&&(!v.active||v.authority!=='manual'||v.run_id!==engagedRun))disengage();lastView=v;const o=v.observation||{},t=v.rendering_truth||{};
       for(const control of el.querySelectorAll('input,button,select'))control.disabled=!canControl()||(!v.active&&control.id!=='ph-voice'&&control.id!=='ph-say');

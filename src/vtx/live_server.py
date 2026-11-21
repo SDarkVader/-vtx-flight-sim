@@ -1453,7 +1453,9 @@ def get_lab():
 async def physical_clock():
     last=time.monotonic();accum=0.;seen_run=None;seen_epoch=lab.clock_epoch
     while True:
-        await asyncio.sleep(.005)
+        # Yield to other requests even while catching up, without adding a
+        # timed wait between batches when complete physics steps are owed.
+        await asyncio.sleep(0 if accum >= DT and lab.active and not lab.paused else .005)
         now=time.monotonic();delta=now-last;last=now
         harbour_rate = lab.time_scale if lab.active else 1.
         if not getattr(lab.world,'harbour',None) and lab.harbour_helm_outside_airport:
@@ -1468,7 +1470,8 @@ async def physical_clock():
         if seen_run!=lab.run_id:
             seen_run=lab.run_id;accum=0.;continue
         accum+=delta*lab.time_scale
-        n=min(int(accum/DT),40)
+        # A short batch lets cockpit I/O run between groups of solver steps.
+        n=min(int(accum/DT),4)
         try:
             for _ in range(n):
                 if lab.active:lab.integrate()
@@ -2374,15 +2377,30 @@ async def stream(ws:WebSocket):
     if not _authorized(ws.headers,ws.cookies):
         await ws.close(code=1008);return
     await ws.accept()
+    loop=asyncio.get_running_loop()
+    next_send=loop.time()
+    interval=None
     try:
         while True:
+            delay=next_send-loop.time()
+            if delay>0:
+                await asyncio.sleep(delay)
             try:
                 snapshot=lab.view()
             except Exception:
-                await asyncio.sleep(.05)
+                next_send=loop.time()+.05
+                interval=None
                 continue
             await ws.send_json(snapshot)
-            await asyncio.sleep(.25 if lab.paused or not lab.active else .1)
+            period=.25 if lab.paused or not lab.active else .1
+            sent_at=loop.time()
+            if period!=interval:
+                next_send=sent_at+period
+            else:
+                # Skip missed slots and avoid sending a second frame immediately after a stall.
+                slots=max(1,math.ceil((sent_at+period/2-next_send)/period))
+                next_send+=slots*period
+            interval=period
     except (WebSocketDisconnect,RuntimeError):pass
 from .experiments import install_experiment_routes
 install_experiment_routes(app, get_lab, Laboratory, Mission, parse_action, DT)

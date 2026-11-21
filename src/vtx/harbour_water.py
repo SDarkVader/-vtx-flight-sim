@@ -20,20 +20,24 @@ DRY_HALO_CELLS = 3
 def contains(points, ring):
     points = np.atleast_2d(points)
     ring = np.asarray(ring, dtype=float)
-    inside = np.zeros(len(points), dtype=bool)
     if not len(points):
-        return inside
+        return np.zeros(0, dtype=bool)
     end = np.roll(ring, -1, axis=0)
     relevant = (np.maximum(ring[:, 1], end[:, 1]) > points[:, 1].min()) & (
         np.minimum(ring[:, 1], end[:, 1]) <= points[:, 1].max()
     )
-    a = ring[relevant]
-    b = end[relevant]
+    return contains_edges(points, ring[relevant], end[relevant])
+
+
+def contains_edges(points, a, b):
+    """Apply the chart's half-open crossing rule to prepared polygon edges."""
+    inside = np.zeros(len(points), dtype=bool)
+    delta = b - a
     for start in range(0, len(points), 512):
         p = points[start : start + 512]
         crosses = (a[None, :, 1] > p[:, None, 1]) != (b[None, :, 1] > p[:, None, 1])
-        x = a[None, :, 0] + (b - a)[None, :, 0] * (p[:, None, 1] - a[None, :, 1]) / (
-            (b - a)[None, :, 1] + 1e-100
+        x = a[None, :, 0] + delta[None, :, 0] * (p[:, None, 1] - a[None, :, 1]) / (
+            delta[None, :, 1] + 1e-100
         )
         inside[start : start + len(p)] = (
             np.count_nonzero(crosses & (p[:, None, 0] < x), axis=1) % 2 == 1
@@ -257,20 +261,19 @@ class HarbourWater(HybridWaterField):
             * valid[:, None]
         )
         weights /= np.maximum(weights.sum(axis=1)[:, None], 1e-12)
-        interp = lambda a: np.sum(a.ravel()[ids] * weights, axis=1).reshape(shape)
-        h = interp(s.h)
-        # Gather first: exact same per-cell addition/reduction, without making
-        # a whole-grid temporary for each small hull sample.
-        eta = np.sum((s.bed.ravel()[ids] + s.h.ravel()[ids]) * weights, axis=1).reshape(
-            shape
-        )
+        interpolate = lambda cells: np.sum(cells * weights, axis=1).reshape(shape)
+        depths = s.h.ravel()[ids]
+        h = interpolate(depths)
+        eta = interpolate(s.bed.ravel()[ids] + depths)
         if eta_only:
             return eta, h, np.empty(0), np.empty(0)
+        denominator = np.maximum(h, s.h_vel_damp)
+        wet = h > s.h_vel_damp
         return (
             eta,
             h,
-            np.where(h > s.h_vel_damp, interp(s.hu) / np.maximum(h, s.h_vel_damp), 0),
-            np.where(h > s.h_vel_damp, interp(s.hv) / np.maximum(h, s.h_vel_damp), 0),
+            np.where(wet, interpolate(s.hu.ravel()[ids]) / denominator, 0),
+            np.where(wet, interpolate(s.hv.ravel()[ids]) / denominator, 0),
         )
 
     @staticmethod
@@ -357,22 +360,6 @@ class HarbourWater(HybridWaterField):
         return dict(vessels=deepcopy(self.wakes))
 
     @staticmethod
-    def _query_key(value):
-        if value is None:
-            return None
-        array = np.asarray(value)
-        return array.shape, array.dtype.str, array.tobytes()
-
-    def _base_components(self, x, y, z, t, eta_only):
-        cache = getattr(self, "_query_base_cache", None)
-        if cache is None:
-            return super()._base_components(x, y, z, t, eta_only)
-        key = tuple(self._query_key(v) for v in (x, y, z, t)) + (eta_only,)
-        if key not in cache:
-            cache[key] = super()._base_components(x, y, z, t, eta_only)
-        return cache[key]
-
-    @staticmethod
     def _zero_wake_contribution(wake, x, y):
         # Exact upstream amplitude and strict support-box gates. The near-wake
         # equations and every individual shore clamp stay in the parent field.
@@ -396,80 +383,71 @@ class HarbourWater(HybridWaterField):
         )
 
     def evaluate(self, x, y, z=None, t=None, *, eta_only=False):
-        # One frozen query only: configuration, water clock and arrays cannot
-        # change under this guard. No cache survives a return or interruption.
+        # Compute the frozen base once and reuse it for each analytical wake.
         with self._guard:
-            previous = getattr(self, "_query_base_cache", None)
-            self._query_base_cache = {}
-            try:
-                return self._evaluate_scoped(x, y, z=z, t=t, eta_only=eta_only)
-            finally:
-                self._query_base_cache = previous
+            components = self._base_components(x, y, z, t, eta_only)
+            return self._water_sample(components, x, y, eta_only)
 
-    def _evaluate_scoped(self, x, y, z=None, t=None, *, eta_only=False):
-        with self._guard:
-            self._vessel_wake = self._default_wake_state()
-            base = super().evaluate(x, y, z=z, t=t, eta_only=eta_only)
-            eta = base.eta.copy()
-            velocity = base.velocity.copy()
-            acceleration = base.acceleration.copy()
-            pressure = base.dynamic_pressure.copy()
-            slope = (
-                None
-                if eta_only
-                else -base.normal[..., :2]
-                / np.maximum(base.normal[..., 2, None], 1e-12)
-            )
-            if self.config.wake_enabled:
-                for wake in self.wakes.values():
-                    if not wake.get("active"):
-                        continue
-                    self._vessel_wake = wake
-                    sample = (
-                        base
-                        if self._zero_wake_contribution(wake, x, y)
-                        else super().evaluate(x, y, z=z, t=t, eta_only=eta_only)
+    def _water_sample(self, components, x, y, eta_only):
+        base = self._evaluate_components(components, None, eta_only)
+        eta = base.eta.copy()
+        velocity = base.velocity.copy()
+        acceleration = base.acceleration.copy()
+        pressure = base.dynamic_pressure.copy()
+        slope = (
+            None
+            if eta_only
+            else -base.normal[..., :2]
+            / np.maximum(base.normal[..., 2, None], 1e-12)
+        )
+        if self.config.wake_enabled:
+            for wake in self.wakes.values():
+                if not wake.get("active"):
+                    continue
+                sample = (
+                    base
+                    if self._zero_wake_contribution(wake, x, y)
+                    else self._evaluate_components(components, wake, eta_only)
+                )
+                eta += sample.eta - base.eta
+                if not eta_only:
+                    velocity += sample.velocity - base.velocity
+                    acceleration += sample.acceleration - base.acceleration
+                    pressure += sample.dynamic_pressure - base.dynamic_pressure
+                    slope += -sample.normal[..., :2] / np.maximum(
+                        sample.normal[..., 2, None], 1e-12
+                    ) + base.normal[..., :2] / np.maximum(
+                        base.normal[..., 2, None], 1e-12
                     )
-                    eta += sample.eta - base.eta
-                    if not eta_only:
-                        velocity += sample.velocity - base.velocity
-                        acceleration += sample.acceleration - base.acceleration
-                        pressure += sample.dynamic_pressure - base.dynamic_pressure
-                        slope += -sample.normal[..., :2] / np.maximum(
-                            sample.normal[..., 2, None], 1e-12
-                        ) + base.normal[..., :2] / np.maximum(
-                            base.normal[..., 2, None], 1e-12
-                        )
-            self._vessel_wake = self._default_wake_state()
-            wet = self.world.mask(x, y)
-            bed = self._base_components(x, y, z, t, eta_only)[3]
-            eta = np.where(wet, np.maximum(eta, bed), bed)
-            depth = np.where(wet, np.maximum(eta - bed, 0), 0)
-            changes = dict(
-                eta=eta,
-                depth=depth,
-                wet_fraction=np.where(wet, np.clip(depth / 0.04, 0, 1), 0),
+        wet = self.world.mask(x, y)
+        bed = components[3]
+        eta = np.where(wet, np.maximum(eta, bed), bed)
+        depth = np.where(wet, np.maximum(eta - bed, 0), 0)
+        changes = dict(
+            eta=eta,
+            depth=depth,
+            wet_fraction=np.where(wet, np.clip(depth / 0.04, 0, 1), 0),
+        )
+        if not eta_only:
+            normal = np.concatenate(
+                (-slope, np.ones(slope.shape[:-1] + (1,))), axis=-1
             )
-            if not eta_only:
-                normal = np.concatenate(
-                    (-slope, np.ones(slope.shape[:-1] + (1,))), axis=-1
-                )
-                normal /= np.linalg.norm(normal, axis=-1)[..., None]
-                changes.update(
-                    normal=normal,
-                    velocity=np.where(wet[..., None], velocity, 0),
-                    acceleration=np.where(wet[..., None], acceleration, 0),
-                    dynamic_pressure=np.where(wet, pressure, 0),
-                )
-            return replace(base, **changes)
+            normal /= np.linalg.norm(normal, axis=-1)[..., None]
+            changes.update(
+                normal=normal,
+                velocity=np.where(wet[..., None], velocity, 0),
+                acceleration=np.where(wet[..., None], acceleration, 0),
+                dynamic_pressure=np.where(wet, pressure, 0),
+            )
+        return replace(base, **changes)
 
-    def checkpoint_state(self):
+    def checkpoint_state(self, *, copy_arrays=False):
         with self._guard:
             return dict(
                 schema="airport-harbour-water-v2",
                 world_sha256=self.world.fingerprint,
                 grid=deepcopy(self.grid_identity),
-                native=super().checkpoint_state(),
+                native=super().checkpoint_state(copy_arrays=copy_arrays),
                 wakes=deepcopy(self.wakes),
             )
 

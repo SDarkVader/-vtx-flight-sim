@@ -263,7 +263,7 @@ const fixedRearSteerConfigs = {
   'phantom-a10c-runway-20261112': '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f',
   'phantom-a10c-vtol-20261112': '2fee0b4036382d033ed927ce7e56f48bd362a2c15893344f5c8c691b5587049f',
 };
-export function updatePhantom(rig, truth, parked = false, wheelOffsets = [], requireWheelPose = false) {
+export function updatePhantom(rig, truth, parked = false, wheelOffsets = [], requireWheelPose = false, measuredTruth = truth) {
   if (!rig || !truth) return;
   const q = truth.phantom?.joints;
   if (q || parked) {
@@ -305,7 +305,11 @@ export function updatePhantom(rig, truth, parked = false, wheelOffsets = [], req
     let confirmedFixedSteer = false, measuredSpin = null, measuredSteer = null;
     const knownConfig = Object.hasOwn(fixedRearSteerConfigs, truth.variant) && fixedRearSteerConfigs[truth.variant] === truth.config_sha256;
     if (knownConfig && Number.isFinite(q?.[`pod_${pod}_wheel`])) {
-      const a = podPose?.quaternion_wxyz, b = truth.body_poses?.[`pod_${pod}_wheel`]?.quaternion_wxyz;
+      // Separate interpolation of two world orientations does not preserve
+      // their local joint axes. Decode spin and steer from the same raw sample.
+      const poses = measuredTruth?.body_poses;
+      const a = poses?.[`pod_${pod}`]?.quaternion_wxyz;
+      const b = poses?.[`pod_${pod}_wheel`]?.quaternion_wxyz;
       if (validArray(a, 4) && validArray(b, 4)) {
         const podQ = new THREE.Quaternion(a[1], a[2], a[3], a[0]);
         const actualQ = new THREE.Quaternion(b[1], b[2], b[3], b[0]);

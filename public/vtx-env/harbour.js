@@ -155,6 +155,16 @@ export function applyBoatPoses(rig, poses, previous = null, fraction = 1) {
   return missing;
 }
 
+function displayedBoatPoses(rig) {
+  const poses = {};
+  for (const [name, node] of rig.bodies) {
+    if (!node.visible) continue;
+    const {w, x, y, z} = node.quaternion;
+    poses[name] = {position: node.position.toArray(), quaternion_wxyz: [w, x, y, z]};
+  }
+  return poses;
+}
+
 function disposeTree(root) {
   const geometries = new Set(), materials = new Set(), textures = new Set();
   root.traverse(node => {if (node.geometry) geometries.add(node.geometry); for (const material of [].concat(node.material || [])) {materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});
@@ -234,8 +244,10 @@ export function buildHarbour(world, {fetchModel, onError = () => {}} = {}) {
       if(latest)tide.update(latest);
     },
     update(state, {snap = false, now = performance.now()} = {}) {
-      const advancing = latest?.available && latest.generation === state?.generation &&
-        Number.isFinite(latest.t_s) && state?.t_s > latest.t_s;
+      const continuing = !snap && latest?.available && latest.generation === state?.generation &&
+        Number.isFinite(latest.t_s);
+      const advancing = continuing && state?.t_s > latest.t_s;
+      const repeated = continuing && state?.t_s === latest.t_s;
       latest = state;
       tide?.update(state);
       updateTrialMarks?.(state);
@@ -257,10 +269,17 @@ export function buildHarbour(world, {fetchModel, onError = () => {}} = {}) {
         if (!state.available) {if (rig) rig.root.visible = false; continue;}
         if (!rig || rig.identity !== identity) {if (rig) rig.root.visible = false; void load(boat);}
         else {
-          const interval = now - rig.receivedAt;
-          rig.previous = !snap && advancing && interval > 0 && interval < 300 ? rig.poses : null;
-          rig.poses = boat.body_poses; rig.receivedAt = now; rig.interval = interval;
-          rig.missingBodies = applyBoatPoses(rig, rig.poses, rig.previous, rig.previous ? 0 : 1);
+          // A paused restart can publish new body poses at the same clock time.
+          if (!repeated || JSON.stringify(boat.body_poses) !== JSON.stringify(rig.poses)) {
+            const gap = now - rig.receivedAt;
+            const smooth = advancing && gap > 0 && gap < 300;
+            // A packet can arrive before the last blend reaches its measured target.
+            rig.previous = smooth ? displayedBoatPoses(rig) : null;
+            rig.interval = smooth ? THREE.MathUtils.clamp(.7 * (rig.interval ?? gap) + .3 * gap, 40, 250) : null;
+            rig.poses = boat.body_poses;
+            rig.receivedAt = now;
+            rig.missingBodies = applyBoatPoses(rig, rig.poses, rig.previous, smooth ? 0 : 1);
+          }
           rig.root.visible = boatsVisible && state.available;
         }
       }

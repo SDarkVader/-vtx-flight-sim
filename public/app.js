@@ -5,7 +5,8 @@ import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
 import {tiltFromDirection} from './tilt-direction.js?v=fan-direction-6';
 import {zoomDistance} from './camera-zoom.js?v=1';
 import {rotorVisualOffset} from './rotor-visual.js?v=1';
-import {createPoseInterpolator} from './vtx-env/pose-interpolation.js?v=1';
+import {createPoseInterpolator} from './vtx-env/pose-interpolation.js?v=2';
+import {createFrameGate} from './vtx-env/frame-pacing.js?v=1';
 const poseInterpolator=createPoseInterpolator();
 import {physicalCameraTarget,physicalAircraftPosition} from './physical-camera-target.js?v=2';
 import {cockpitAxes} from './cockpit-axes.js?v=1';
@@ -17,26 +18,28 @@ import {createSuspensionSchematic,suspensionSchematicDescriptor} from './suspens
 import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
 import {missionDeparture} from './mission-departure.js?v=20261116-start';
 import {startupFrameReady} from './startup-visibility.js?v=20261116-start';
-import {cockpitTelemetry} from './cockpit-telemetry.js?v=1';
+import {cockpitTelemetry,phantomCockpitStates,phantomCockpitSwitches,phantomCockpitAuthority,phantomSystemIndications} from './cockpit-telemetry.js?v=4';
 import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=20261117-clear-sight-4';
 import {isArgonRotorHousing} from './argon-cutaway.js?v=3';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
 import {buildSky} from './vtx-env/sky.js?v=1';
-import {buildTerrain,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
-import {buildVaderland} from './vtx-env/vaderland/landscape.js';
+import {buildTerrain,heightfieldZ,makeHills,makeSkyline,makeFarForest,makeWater} from './vtx-env/landscape.js?v=1';
+import {buildVaderland} from './vtx-env/vaderland/landscape.js?v=20261121-meridian-streets';
+import {createAlpineExplorer} from './alpine-explorer.js';
 import {buildBuildings} from './vtx-env/buildings.js?v=3';
 import {buildAirfield} from './vtx-env/airfield.js?v=20261116-runway-1';
-import {buildHarbour,createHarbourControls,harbourOverviewView,setBoatCockpit,setBoatLighting} from './vtx-env/harbour.js?v=20261118-selector';
+import {buildHarbour,createHarbourControls,harbourOverviewView,setBoatCockpit,setBoatLighting} from './vtx-env/harbour.js?v=20261121-pose-pacing';
 import {boatCameraView} from './vtx-env/harbour-camera.js?v=3';
 import {createVehicleWorkspace} from './vehicle-workspace.js';
 import {loadPinnedGltf,verifiedVisualAssets} from './visual-identity.js';
-import {createPhantomAvionics} from './phantom-avionics.js?v=3';
+import {addSliderScale} from './slider-scale.js?v=1';
+import {createPrimaryFlightDisplay,primaryFlightReadings,createViewAttitude,createViewCompass,viewBearing} from './phantom-primary-flight.js?v=3';
 import {updateBoatAvionics} from './boat-avionics.js?v=4';
 import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=20261117-cutaway';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261117-scale-zoom';
+import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261121-meridian-streets';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=20261116-runway-1';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
@@ -45,10 +48,10 @@ import {buildRideTrajectory,sampleRideTrajectory,inspectRideClearance} from './v
 import {attachVisualPhantom,animateVisualPhantom} from './vtx-env/visual-phantom-animation.js?v=2';
 import {createAirportOperations} from './vtx-env/airport-operations.js?v=20261117-traffic-10';
 import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js?v=2';
-import {makeAirportModel} from './vtx-env/airport-models.js?v=1';
+import {makeAirportModel} from './vtx-env/airport-models.js?v=2';
 import {airportViewSelection,sceneryPoseAt,sceneryPassengerSeat,sceneryPassengerSight} from './scenery-view.js?v=20261117-traffic-10';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
-import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261118-a10d';import {createPhantomPanel} from './phantom-controls.js?v=20261118-selector-a10d';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
+import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261121-measured-wheels';import {createPhantomPanel} from './phantom-controls.js?v=20261121-flight-deck';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
 const phantomMissionNote=document.createElement('p');
@@ -130,28 +133,31 @@ function selectedFuel(){const value=Number($('initial-fuel').value);if(!Number.i
 function selectedWind(){return ['wind-east','wind-north','wind-up'].map(id=>{const value=Number($(id).value);if(!Number.isFinite(value))throw Error('Enter finite wind components.');return value;});}
 
 console.log('VTX: module ready');
-const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(pointer:coarse)').matches||innerWidth<800;
-const mobileView=mobile;
+const viewport=$('viewport'),scene=new THREE.Scene();const mobile=matchMedia('(pointer:coarse)').matches;
 // Phones default to the lighter display path. The physics and model are unchanged.
 const lightweightView=mobile||new URLSearchParams(location.search).has('lite');
 // ?fps=N caps the browser's frame rate (for example on a shared or battery-powered machine); otherwise desktop High draws every display frame.
 const frameCapMs=(n=>Number.isFinite(n)&&n>0?1000/n:null)(Number(new URLSearchParams(location.search).get('fps')));
 // Rendering quality tier (visual only; physics unaffected): phone low, ?lite lite, desktop high, ?quality= overrides.
-import {resolveQuality} from './vtx-env/quality.js?v=gfx-20261111-ultra';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
+import {resolveQuality} from './vtx-env/quality.js?v=20261121-frame-pacing';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
 import {createPost} from './vtx-env/post.js?v=2';import {createTimeOfDay} from './vtx-env/time-of-day.js?v=2';import {buildAirfieldKit} from './vtx-env/airfield-kit.js?v=1';
 import {createGameAudio} from './vtx-env/game-audio.js';
 const quality=resolveQuality({mobile,search:location.search});scene.userData.quality=quality.name;
+const drawDue=createFrameGate(lightweightView?1000/15:frameCapMs??quality.frameMs??0);
 // On phones keep retained-flight actions and indicator bar directly below the flight view.
 if (innerWidth <= 800) {
  document.querySelector('header').after($('retry-bar'));
  $('viewport').after(document.querySelector('footer'));
 }
-const camera=new THREE.PerspectiveCamera(48,1,.1,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
+const defaultCameraNear=.1;
+const camera=new THREE.PerspectiveCamera(48,1,defaultCameraNear,6000);camera.up.set(0,0,1);camera.position.set(9,-11,8);
 const renderer=new THREE.WebGLRenderer({antialias:quality.antialias,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,quality.pixelRatio));renderer.shadowMap.enabled=quality.shadows;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=quality.toneMapping;renderer.toneMappingExposure=quality.exposure;renderer.domElement.style.visibility='hidden';viewport.appendChild(renderer.domElement);
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,0,1.4);orbit.enableDamping=true;orbit.enablePan=false;orbit.maxPolarAngle=Math.PI*.49;orbit.minDistance=2;orbit.maxDistance=600;
 // Keep pinch gestures on the renderer and avoid two-finger panning fighting the chase target.
 orbit.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;renderer.domElement.style.touchAction='none';
 const freeCam=createFreeCamera(camera,renderer,viewport,m=>setCameraMode(m),()=>world);
+const alpineExplorer=createAlpineExplorer({trigger:$('alpine-open'),dialog:$('alpine-dialog'),
+  showView:({eye,target})=>{setCameraMode('free');freeCam.teleport(eye,target);}});
 const sky=buildSky(scene,renderer,{quality}),environment={};
 // Desktop-app tier only: post-processing. Day/night is presentation only and never touches the physics.
 const post=createPost(renderer,scene,camera,quality);
@@ -303,7 +309,112 @@ $('airport-camera').onchange=()=>{const mode=$('airport-camera').value;if(mode==
 const lightPool=createLightPool(scene,quality.localLights);scene.onBeforeRender=(r,s,cam)=>lightPool.update(cam);
 const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);post?.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);
 const worldGroup=new THREE.Group();worldGroup.name='vtx-world';scene.add(worldGroup);
-const phantomAvionics=createPhantomAvionics();scene.add(phantomAvionics.root);
+const phantomCockpitDeck=$('phantom-cockpit'), cockpitTake=$('phantom-cockpit-take'), cockpitMode=$('phantom-cockpit-mode');
+const cockpitAlerts=$('phantom-cockpit-alerts'), primaryFlight=createPrimaryFlightDisplay(phantomCockpitDeck);
+const navigation=$('phantom-navigation'), updateViewCompass=createViewCompass($('phantom-view-compass'));
+const viewAttitude=createViewAttitude($('phantom-view-attitude'));
+const pilotViewDirection=new THREE.Vector3();
+const hudOpacity=$('phantom-hud-opacity'), hudOpacityOutput=hudOpacity.parentElement.querySelector('output');
+function setHudOpacity(value){
+  const percent=Math.round(Math.min(100,Math.max(30,value)));
+  hudOpacity.value=percent;
+  hudOpacityOutput.textContent=percent+'%';
+  phantomCockpitDeck.style.setProperty('--hud-opacity',percent/100);
+  navigation.style.setProperty('--hud-opacity',percent/100);
+  primaryFlight.opacity(percent/100);
+  viewAttitude.opacity(percent/100);
+}
+try{
+  const saved=localStorage.getItem('vtx-phantom-hud-opacity');
+  if(saved!==null&&Number.isFinite(Number(saved)))setHudOpacity(Number(saved));
+}catch{}
+hudOpacity.oninput=()=>{
+  setHudOpacity(Number(hudOpacity.value));
+  try{localStorage.setItem('vtx-phantom-hud-opacity',hudOpacity.value);}catch{}
+};
+const cockpitReadouts=[...phantomCockpitDeck.querySelectorAll('[data-system],[data-flight]')];
+const cockpitSwitches=[...phantomCockpitDeck.querySelectorAll('[data-switch]')].map(button=>({button, action:button.querySelector('[data-action]')}));
+const cockpitFlightInputs=[...phantomCockpitDeck.querySelectorAll('[data-axis]')].map(input=>{
+  const {axis,axisIndex,unit}=input.dataset;
+  const index=axisIndex===undefined?undefined:Number(axisIndex);
+  const format=value=>unit==='%'?Math.round(value*100)+'%':Math.round(value)+'°';
+  addSliderScale(input,format);
+  input.oninput=()=>phantomPanel?.axisFromCockpit(axis,Number(input.value),index);
+  return {input,axis,index,format,feedback:input.parentElement.querySelector('output'),
+    actual:input.parentElement.querySelector('[data-axis-actual]')};
+});
+let lastCockpitView, lastCockpitStale, displayedSwitches={};
+function setCockpitText(field, value){
+  if(field.textContent!==value)field.textContent=value;
+}
+cockpitTake.onclick=()=>phantomPanel?.toggleCockpitControl();
+for(const {button} of cockpitSwitches)button.onclick=()=>{
+  const choice=displayedSwitches[button.dataset.switch];
+  if(choice)phantomPanel?.commandFromCockpit(choice.patch);
+};
+function updatePhantomCockpit(visible, stale, recording){
+  const hidden=!visible;
+  if(phantomCockpitDeck.hidden!==hidden)phantomCockpitDeck.hidden=hidden;
+  if(navigation.hidden!==hidden)navigation.hidden=hidden;
+  if(hidden)return;
+  const view=recording??last;
+  const status=recording?null:phantomPanel?.cockpitStatus();
+  const authority=phantomCockpitAuthority(view,status,{stale,recording:!!recording});
+  setCockpitText(cockpitMode,authority.label);
+  if(cockpitMode.dataset.tone!==authority.tone)cockpitMode.dataset.tone=authority.tone;
+  if(cockpitTake.disabled===authority.canTake)cockpitTake.disabled=!authority.canTake;
+  setCockpitText(cockpitTake,status?.engaged?'Release control':'Take control');
+  if(view!==lastCockpitView||stale!==lastCockpitStale){
+    lastCockpitView=view;
+    lastCockpitStale=stale;
+    const raw=recording??view?.rendering_truth;
+    const observation=recording?.observation??(recording?undefined:view?.observation);
+    const systems=stale?{}:phantomCockpitStates(observation,raw);
+    const flight=primaryFlightReadings(observation,stale);
+    primaryFlight.update(flight);
+    viewAttitude.update(flight);
+    const warnings=flight.warnings.filter(value=>typeof value==='string');
+    cockpitAlerts.hidden=warnings.length===0;
+    cockpitAlerts.dataset.tone=warnings.some(value=>['IMPACT','FUEL_EXHAUSTED'].includes(value))?'fault':'warning';
+    setCockpitText(cockpitAlerts,warnings.map(value=>value.replaceAll('_',' ')).join(' · '));
+    const indications=phantomSystemIndications(systems);
+    displayedSwitches=stale||recording?{}:phantomCockpitSwitches(view?.rendering_truth);
+    for(const field of cockpitReadouts)setCockpitText(field,(field.dataset.system?systems[field.dataset.system]:flight[field.dataset.flight])??'—');
+    for(const {button,action} of cockpitSwitches){
+      const name=button.dataset.switch, choice=displayedSwitches[name];
+      button.dataset.state=indications[name];
+      button.setAttribute('aria-pressed',String(choice?.selected??false));
+      const unavailable=name==='airbrake'&&!stale&&raw?.phantom&&!raw.phantom.transition_ecu;
+      setCockpitText(action,choice?.label??(unavailable?'Unavailable':''));
+    }
+    for(const {axis,index,actual} of cockpitFlightInputs){
+      if(!actual)continue;
+      const feedback={
+        pitch:flight.pitchDegrees,roll:flight.bankDegrees,yaw:systems.rudder,
+        booster_throttle:systems.boosters,
+        wheel_drive:systems.frontWheels&&systems.rearWheels?`${systems.frontWheels} · ${systems.rearWheels}`:null,
+        aileron_trim_deg:systems.ailerons?.split(' / ')[index],
+      };
+      setCockpitText(actual,feedback[axis]??'—');
+    }
+  }
+  for(const axis of cockpitFlightInputs){
+    const {input,format,feedback}=axis;
+    const raw=stale?null:(recording??view?.rendering_truth)?.command?.[axis.axis];
+    const group=axis.index===undefined&&Array.isArray(raw)?raw:null;
+    const mixed=group?.some(value=>value!==group[0]);
+    const value=group?.[0]??(axis.index===undefined?raw:raw?.[axis.index]);
+    const valid=Number.isFinite(value);
+    setCockpitText(feedback,mixed?'Mixed':valid?format(value):'—');
+    const disabled=!authority.canTake||!status?.engaged||!valid;
+    if(input.disabled!==disabled)input.disabled=disabled;
+    if(valid&&document.activeElement!==input&&Number(input.value)!==value)input.value=value;
+  }
+  for(const {button} of cockpitSwitches){
+    const disabled=!authority.canCommand||!displayedSwitches[button.dataset.switch];
+    if(button.disabled!==disabled)button.disabled=disabled;
+  }
+}
 let harbourLayer=null,harbourOverviewState=null,harbourViewActive=false,boatViewId=null;
 let harbourEnvironment=null,helmRequest=0;
 function setBoatFocus(id){
@@ -500,13 +611,14 @@ function syncEnvironmentControls(envKey){
 }
 function clearWorldGroup(){
  restoreHarbourOverview();
+  alpineExplorer.setWorld(null);
  environment.vaderland?.dispose();environment.vaderland=null;
  harbourLayer?.dispose();harbourLayer=null;
  const keepTextures=new Set([markerA.material?.map,markerB.material?.map].filter(Boolean));
  for(const child of [...worldGroup.children]){
   worldGroup.remove(child);
   const geometries=new Set(),materials=new Set(),textures=new Set();
-  child.traverse(n=>{if(!n.isMesh&&!n.isLineSegments&&!n.isPoints)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture&&!keepTextures.has(v))textures.add(v);}});
+  child.traverse(n=>{if(!n.isMesh&&!n.isLine&&!n.isPoints)return;if(n.geometry)geometries.add(n.geometry);for(const m of (Array.isArray(n.material)?n.material:[n.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture&&!keepTextures.has(v))textures.add(v);}});
   geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());
  }
  environment.buildings=null;environment.kit=null;environment.volcano=null;environment.serviceRoads=null;environment.dressing=null;
@@ -640,6 +752,7 @@ function buildWorld(w){
   if(harbourLayer)worldGroup.add(harbourLayer.root);
  }
  harbourControls.setWorld(w);
+ alpineExplorer.setWorld(environment.vaderland?.alpine);
  harbourControls.setEnabled(!!w.harbour&&!replayFrames&&!worldUnavailable);
  const chosen=lightingChoice??(w.vaderland?.city_lights?'dusk':'day');
  if(timeOfDay.mode===chosen)timeOfDay.refresh();else timeOfDay.set(chosen);
@@ -1094,7 +1207,7 @@ addEventListener('pagehide',saveCameraPreference);
 const keys=new Set();
 function typing(e){return /INPUT|TEXTAREA|SELECT/.test(e.target.tagName);}
 addEventListener('keydown',e=>{
- if(typing(e)||document.querySelector('dialog[open]'))return;
+ if(typing(e)||e.target.closest?.('#phantom-cockpit')||document.querySelector('dialog[open]'))return;
  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
  if(e.code==='KeyC'&&!e.repeat)$('cockpit').click();
  if(!vehicleWorkspace.aircraftInput||rideEnabled||last?.rendering_truth?.phantom)return;
@@ -1289,7 +1402,8 @@ function updateView(v){
  }
  const nextAsset=visualAsset(v.rendering_truth?.provenance?.render_asset);
  if(model?.visible && nextAsset && loadedAsset!==nextAsset){model.visible=false;renderer.clear();}
- last=v;showTimeTrial();syncCameraPreference(v);latestTruthReceivedMs=performance.now();poseInterpolator.receive(v.rendering_truth,latestTruthReceivedMs);cityClock.receive(v,latestTruthReceivedMs);panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
+ const snapPose = !last?.active || last.paused || !v.active || v.paused || last.run_id !== v.run_id;
+ last=v;showTimeTrial();syncCameraPreference(v);latestTruthReceivedMs=performance.now();poseInterpolator.receive(v.rendering_truth,latestTruthReceivedMs,{snap:snapPose});cityClock.receive(v,latestTruthReceivedMs);panelWasStale=false;aircraftFx?.updateAvionics?.(v.observation);
  if(!replayFrames)showAttitude(v.rendering_truth,'LIVE');
  const envLocked=!!harbourEnvironment||document.documentElement.dataset.vtxPreviewPending==='1';
  $('restart-flight').hidden=!v.active;
@@ -1405,7 +1519,6 @@ function connect(){
 }
 api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&&w.default_departure.length===2){departure=[...w.default_departure];$('dep').value=departure.join(', ');}buildWorld(w);connect();let helm;try{helm=sessionStorage.getItem('vtx-helm');}catch{}if(helm)void openBoat(helm,true).catch(error=>toast(error.message));}).catch(error=>{console.warn('Unable to load selected environment',error);return fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{visualOnlyOffline=true;buildWorld(w);$('view-sync').textContent= 'SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';});}).catch(e=>{$('loading').textContent='Unable to load airport: '+e.message;console.error('Airport world',e);});
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
-let lastFrameMs=0;
 function audibleTraffic(){
  const traffic=[];
  for(const actor of visualTraffic?.actors??[]){
@@ -1430,11 +1543,10 @@ function animate(){
  requestAnimationFrame(animate);
  if(document.hidden)return;
  const now=performance.now();
- const frameMs=lightweightView?67:frameCapMs??quality.frameMs??(quality.name==='high'?0:50);
- if(now-lastFrameMs<frameMs)return;
- lastFrameMs=now;
+ if(!drawDue(now))return;
  // Between 10 Hz telemetry samples the airframe is drawn between its two latest true poses (presentation only).
- const truth=replayFrames?replayFrames[replayFrame]:(poseInterpolator.present(now,{frozen:!last?.active||!!last?.paused})??last?.rendering_truth);
+ const measuredTruth=replayFrames?replayFrames[replayFrame]:last?.rendering_truth;
+ const truth=replayFrames?measuredTruth:(poseInterpolator.present(now,{frozen:!last?.active||!!last?.paused})??measuredTruth);
  harbourControls.setEnabled(!!world?.harbour&&!replayFrames&&!worldUnavailable);
  if(!replayFrames)harbourLayer?.animate(now);
  if(replayFrames)showAttitude(truth,'REPLAY');
@@ -1468,13 +1580,25 @@ function animate(){
    }
   }if(phantomRig){
    const offsets=(truth.phantom?.wheel_rad_s||[]).map(omega=>rotorVisualOffset(omega,now-latestTruthReceivedMs,last?.time_scale,!!last?.active&&!replayFrames,last?.paused));
-   updatePhantom(phantomRig,truth,false,offsets,true);
+   updatePhantom(phantomRig,truth,false,offsets,true,measuredTruth);
   }if(truth.pitch_deg)for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}
  }
  if(truth&&!rideEnabled&&!boatViewId){
   const physicalTarget=physicalCameraTarget(truth);if(physicalTarget)pos.set(...physicalTarget);
   if(cameraMode==='chase'){const delta=pos.clone().sub(orbit.target);camera.position.add(delta);orbit.target.copy(pos);camera.up.set(0,0,1);orbit.update();}
-  else if(cameraMode==='cockpit'){const cabin=truth.body_poses.cabin,a=cabin.quaternion_wxyz;q.set(a[1],a[2],a[3],a[0]);camera.position.set(...cabin.position);if(truth.phantom)camera.position.add(new THREE.Vector3(0,.15,.30).applyQuaternion(q));if(!truth.phantom)camera.position.add(new THREE.Vector3(-.30,.02,.25).applyQuaternion(q));camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));const cp=Math.cos(cockpitPitch);const sight=truth.phantom?new THREE.Vector3(Math.cos(cockpitYaw)*cp,Math.sin(cockpitYaw)*cp,Math.sin(cockpitPitch)):new THREE.Vector3(Math.sin(cockpitYaw)*cp,-Math.cos(cockpitYaw)*cp,Math.sin(cockpitPitch));cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));camera.lookAt(cameraTarget);}
+  else if(cameraMode==='cockpit'){
+   const cabin=truth.body_poses.cabin,[qw,qx,qy,qz]=cabin.quaternion_wxyz;
+   q.set(qx,qy,qz,qw);
+   const side=Math.sin(cockpitYaw), forward=Math.cos(cockpitYaw), cp=Math.cos(cockpitPitch);
+   // Lean toward the selected Phantom window. A centred look keeps the forward eye.
+   const eye=truth.phantom?new THREE.Vector3(.30,.15+.24*side,.62+.26*side*side):new THREE.Vector3(-.30,.02,.25);
+   const sight=truth.phantom?new THREE.Vector3(forward*cp,side*cp,Math.sin(cockpitPitch))
+     :new THREE.Vector3(side*cp,-forward*cp,Math.sin(cockpitPitch));
+   camera.position.set(...cabin.position).add(eye.applyQuaternion(q));
+   camera.up.copy(new THREE.Vector3(0,0,1).applyQuaternion(q));
+   cameraTarget.copy(camera.position).add(sight.applyQuaternion(q));
+   camera.lookAt(cameraTarget);
+  }
   else if(cameraMode==='free'){freeCam.update(0.08);}
   else{camera.up.set(0,0,1);orbit.update();}
   sky.follow(pos);
@@ -1535,7 +1659,12 @@ function animate(){
    }
   }
  }
- phantomAvionics.update(truth?.body_poses?.cabin,last?.observation,!!truth?.phantom&&!rideEnabled&&!boatViewId&&cameraMode==='cockpit'&&modelReady&&!replayFrames,now-latestTruthReceivedMs>2000);
+ const phantomCockpit=!!truth?.phantom&&!rideEnabled&&!boatViewId&&cameraMode==='cockpit';
+ const cockpitStale=!replayFrames&&now-latestTruthReceivedMs>2000;
+ const cockpitRecording=replayFrames?measuredTruth:null;
+ updatePhantomCockpit(phantomCockpit,cockpitStale,cockpitRecording);
+ if(phantomCockpit)camera.getWorldDirection(pilotViewDirection);
+ updateViewCompass(phantomCockpit?viewBearing(pilotViewDirection.x,pilotViewDirection.y):null,phantomCockpit);
  const doorState=boatViewId?harbourControls.state?.iris??last?.iris:last?.iris;
  const portalControls=document.getElementById('iris-controls');portalControls.hidden=!world?.vaderland?.operations||!!replayFrames||worldUnavailable;
  if(!portalControls.hidden){document.querySelector('#district-view option[value="plaza"]').hidden=!world.vaderland.civic_district;const side=document.getElementById('iris-side').value,travel=doorState?.[side]??1;
@@ -1552,6 +1681,17 @@ function animate(){
  // Never reveal an initial origin frame or the prior mission's frame.
  const physicalFix=boatViewId?harbourLayer?.boats.get(boatViewId)?.bodies.get('airframe')?.position:physicalAircraftPosition(truth);
  const revealReady=startupFrameReady({worldReady:!!world,offline:visualOnlyOffline,physicalPosition:physicalFix,transition:missionTransition,view:last});
+ if(!harbourOverviewState){
+  let near=defaultCameraNear;
+  const {x,y,z}=camera.position;
+  const {x:qx,y:qy}=camera.quaternion;
+  // Increase depth precision in steep aerial views so markings and paths resolve separately.
+  if(world?.vaderland&&(cameraMode==='free'||cameraMode==='orbit')&&1-2*(qx*qx+qy*qy)>.7){
+   const clearance=z-heightfieldZ(world,x,y);
+   near=Math.max(defaultCameraNear,Math.min(32,Math.floor(clearance/70)));
+  }
+  if(near!==camera.near){camera.near=near;camera.updateProjectionMatrix();}
+ }
  if(revealReady&&!window.__vtxNoRender){
   if(post)post.render();else renderer.render(scene,camera);
   renderer.domElement.style.visibility='visible';

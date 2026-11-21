@@ -25,6 +25,8 @@ import {buildNeighbourhoods,neighbourhoodSolid} from './neighbourhood.js';
 import {buildLanternRace,lanternRaceSolid} from './lantern-race.js';
 import {buildAtmosphere} from './atmosphere.js';
 import {cityDensity,DENSITY_BOUNDS} from './city-density.js';
+import {buildAlpineResort} from './alpine-resort.js';
+import {meridianStreets} from './meridian-streets.js';
 
 const vertex = `
 varying vec3 p;
@@ -85,6 +87,12 @@ vec3 haze(vec3 color){
   if(arrivalsSurvey>.5){
     vec3 ray=normalize(p-cameraPosition);
     float warm=pow(max(0.,dot(ray,normalize(vec3(.92,.36,.09)))),3.);
+    if(rooftopPass>.5){
+      vec3 shade=mix(vec3(.067,.122,.201),vec3(.026,.044,.078),night);
+      vec3 sunset=mix(vec3(.275,.171,.134),vec3(.084,.047,.037),night);
+      float distanceHaze=(1.-exp(-d*.000071))*exp(-max(0.,p.z)*.00049);
+      return mix(color,mix(shade,sunset,warm*.83),distanceHaze);
+    }
     vec3 atmosphere=mix(vec3(.112,.153,.226),vec3(.37,.204,.178),warm);
     float extinction=(1.-exp(-d*.000096))*exp(-max(0.,p.z)*.00017);
     return mix(color,atmosphere*mix(1.,.38,night),extinction);
@@ -137,6 +145,9 @@ uniform float raceOn;
 uniform sampler2D raceLight;
 uniform vec4 raceArea;
 uniform float raceLevel;
+uniform float alpineOn;
+uniform sampler2D alpineLight;
+uniform vec4 alpineBounds;
 void main(){
   vec3 normal=normalize(n);
   float slope=1.-normal.z;
@@ -203,12 +214,12 @@ void main(){
       float across=dot(p.xy,vec2(-down.y,down.x));
       float gully=fbm(vec2(across*.052,p.z*.0055+across*.0009));
       float steep=smoothstep(.22,.72,slope);
-      vec3 rock=mix(vec3(.078,.076,.084),vec3(.285,.245,.208),smoothstep(.30,.76,strata));
-      rock=mix(rock,vec3(.155,.152,.160),.30*bed);
+      vec3 rock=mix(vec3(.046,.075,.120),vec3(.345,.225,.153),smoothstep(.30,.76,strata));
+      rock=mix(rock,vec3(.13,.15,.19),.21*bed);
       rock*=mix(1.,.58+.62*gully,steep);
       rock*=clamp(detail*4.1,vec3(.40),vec3(1.75));
       float ledge=smoothstep(.60,.80,normal.z)*(1.-smoothstep(.88,.96,normal.z))*smoothstep(.42,.62,fbm(p.xy*.031+2.));
-      vec3 moss=mix(vec3(.028,.050,.027),vec3(.098,.106,.048),fbm(p.xy*.07));
+      vec3 moss=mix(vec3(.022,.058,.041),vec3(.104,.134,.056),fbm(p.xy*.07));
       rock=mix(rock,moss,ledge*.78);
       float scree=smoothstep(.16,.30,slope)*(1.-smoothstep(.44,.58,slope))*smoothstep(.52,.68,fbm(p.xy*.018+3.));
       rock=mix(rock,vec3(.235,.225,.215)*(.68+.62*hash(floor(p.xy*1.4))),scree*.55);
@@ -229,13 +240,24 @@ void main(){
     mat=mix(mat,vec3(.65,.80,.99)*(.77+.23*grain),snowLine);
     float shade=rooftopPass>.5?clamp(lambert+relief*.55,0.,1.2):lambert;   // gullies catch and lose the light
     vec3 rim=vec3(1.93,.99,.49)*shade*occ.x;
-    lit=mat*(vec3(.21,.31,.56)*occ.y+rim)*(.88+.19*grain);
+    vec3 skylight=rooftopPass>.5 ? vec3(.26,.39,.63) : vec3(.21,.31,.56);
+    lit=mat*(skylight*occ.y+rim)*(.88+.19*grain);
     if(arrivalsSurvey>.5){
       vec2 shade=forecourtShadow(p.xy);
       lit*=mix(vec3(.52,.66,.88),vec3(1.),shade.x)*mix(.69,1.,shade.y);
     }
   }
-  vec3 floorLight=lit*mix(1.,photographic>.5?.074:.36,night);
+  float moonlit=rooftopPass>.5 ? mix(.075,.155,smoothstep(65.,480.,p.z)) : (photographic>.5?.074:.36);
+  vec3 floorLight=lit*mix(1.,moonlit,night);
+  if(alpineOn>.5){
+    vec2 uv=(p.xy-alpineBounds.xy)/alpineBounds.zw;
+    if(all(greaterThan(uv,vec2(0.)))&&all(lessThan(uv,vec2(1.)))){
+      vec4 resort=texture2D(alpineLight,uv);
+      vec3 exposedTrail=vec3(.145,.112,.072)*(.45+lambert)*(.81+.19*variation);
+      floorLight=mix(floorLight,exposedTrail,resort.a*(1.-night)*.44);
+      floorLight+=resort.rgb*min(night*1.42,1.)*.41;
+    }
+  }
   if(marinaSurvey>.5 && p.x>840. && p.x<1210. && p.y>-1380. && p.y<-960.){
     float parcel=1.-smoothstep(.64,1.,length((p.xy-vec2(1023.,-1170.))/vec2(185.,205.)));
     float green=fbm(p.xy*.034+vec2(4.3,59.7));
@@ -407,6 +429,10 @@ function facadeMaterial(uniforms){
           vec3 glazing=mix(reflection,vec3(.85,.39,.108)*(.70+.36*office),groupLight*.77);
           wall=mix(metal,mix(metal,glazing,shell),close);
           wall+=vec3(.31,.113,.032)*groupLight*(1.-close)*(.35+.65*step(.6,office));
+          if(rooftopPass>.5){
+            vec3 distantLift=mix(vec3(.24,.105,.038),vec3(.075,.19,.29),fract(district*1.73));
+            wall+=distantLift*groupLight*(1.-close)*.33;
+          }
           float sill=1.-smoothstep(.1,.42,abs(top-1.2));
           float averageSill=1.-smoothstep(.3,max(.55,fwidth(top)*1.1),abs(top-1.2));
           wall+=vec3(1.25,.47,.083)*mix(sill,averageSill*.83,1.-close);
@@ -449,6 +475,7 @@ function facadeMaterial(uniforms){
 
 function roadPaint(group,w,ground,uniforms){
   const positions=[],colors=[],indices=[];
+  const finishes={track:'#796957',lane:'#514a42',cycleway:'#63483d',local:'#3f4141'};
   const yard=w.vaderland.meridian_yard;
   const yardRoads=yard?w.vaderland.routes.filter(r=>r.kind==='experimental'):[];
   const junctions=yard?[w.vaderland.routes.find(r=>r.name==='Exchange Boulevard'),...yardRoads]:[];
@@ -524,14 +551,15 @@ function roadPaint(group,w,ground,uniforms){
       }
     }
   }
-  for(const r of w.vaderland.routes){
+  for(const r of meridianStreets(w)){
     if(r.kind==='taxi' || r.kind==='boardwalk' || r.kind==='arrivals' || r.kind==='speedway' || r.kind==='vertical-loop' || r.kind==='quarry')continue;
     const junction=junctions.includes(r)?r:undefined;
     const mitred=junction??(r.mitre?r:undefined);
-    strip(r.points,r.width_m,0,r.surface_color??(r.kind==='track'?'#796957':'#323942'),r.deck_z_m,mitred);
+    strip(r.points,r.width_m,0,r.surface_color??finishes[r.kind]??'#323942',r.deck_z_m,mitred);
     const edge=r.edge_color??(r.kind==='viaduct'?'#ffad55':r.kind==='express'?'#e6c58d':'#9da29d');
-    for(const side of [-1,1])strip(r.points,r.kind==='viaduct'?1.05:.48,(r.width_m/2-.65)*side,edge,r.deck_z_m,mitred);
-    if(r.width_m>40&&r.kind!=='apron')strip(r.points,.55,0,'#dfc887',r.deck_z_m);
+    if(r.kind!=='lane'&&r.kind!=='cycleway')
+      for(const side of [-1,1])strip(r.points,r.kind==='viaduct'?1.05:.48,(r.width_m/2-.65)*side,edge,r.deck_z_m,mitred);
+    if((r.width_m>40||r.kind==='boulevard')&&r.kind!=='apron')strip(r.points,.55,0,'#dfc887',r.deck_z_m);
     if(r.kind==='marina-link'&&r.width_m>10){
       let station=0;
       for(let i=1;i<r.points.length;i++){
@@ -727,7 +755,7 @@ function wayfindingLights(group,w){
   function lamp(x,y,z,color,size){
     pos.push(x,y,z);new THREE.Color(color).toArray(colors,colors.length);sizes.push(size);
   }
-  for(const r of w.vaderland.routes){
+  for(const r of meridianStreets(w)){
     const major=r.kind==='viaduct'||r.kind==='express'||r.kind==='boulevard';
     if(!major && r.width_m<40)continue;
     if(r.kind==='apron')continue;
@@ -1143,6 +1171,10 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
   let disposed=false;
   const loader=new THREE.TextureLoader();
   const resources=[];
+  const alpine=w.id==='vaderland-33'?buildAlpineResort(group,w,uniforms.night):null;
+  if(alpine)resources.push(alpine);
+  Object.assign(uniforms,{alpineOn:{value:alpine?1:0},alpineLight:{value:alpine?.texture??null},
+    alpineBounds:{value:new THREE.Vector4(...(alpine?.bounds??[0,0,1,1]))}});
   function texture(name,url,srgb,repeat){
     return new Promise((resolve,reject)=>{
       const t=loader.load(new URL(url,import.meta.url).href,resolve,undefined,reject);
@@ -1340,11 +1372,12 @@ export function buildVaderland(group,w,scene,camera,sky,harbour){
     if(w.vaderland.harbour_surface)harbour.setWaterSurface(followTide(harbour.water,w.vaderland.harbour_surface));
     group.add(harbour.root);
   }
-  return {ready:Promise.all([ready,court?.ready,gardens?.ready]),cityGlow:!!court,hasDusk:!!w.vaderland.city_lights,update(cam,seconds,mode='day',physicsTime=0,doors,timing,aircraftXY){
+  return {ready:Promise.all([ready,court?.ready,gardens?.ready]),alpine,cityGlow:!!court,hasDusk:!!w.vaderland.city_lights,update(cam,seconds,mode='day',physicsTime=0,doors,timing,aircraftXY){
     if(disposed)return;
     dome.position.copy(cam.position);uniforms.clock.value=seconds;
     uniforms.blueHour.value=mode==='dusk'&&w.vaderland.city_lights?1:0;
     uniforms.night.value=mode==='night'?1:uniforms.blueHour.value*.65;
+    alpine?.update();
     room?.update(physicsTime);
     gardens?.update(cam);
     cathedralEast?.update(timing);
