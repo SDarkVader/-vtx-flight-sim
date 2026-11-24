@@ -1,0 +1,6652 @@
+{
+ "glb": "C:\\Users\\steve\\Documents\\Github\\vtx-r6-evidence-20261124\\audit\\drive\\r6-r3-drive-candidate.glb",
+ "contact_tol_mm": 1.0,
+ "parts": 703,
+ "bodies": [
+  "airframe",
+  "cabin",
+  "gear1",
+  "gear2",
+  "gear3",
+  "gear4",
+  "gear5",
+  "gear6",
+  "nacelle1",
+  "nacelle2",
+  "nacelle3",
+  "nacelle4",
+  "rotor1",
+  "rotor2",
+  "rotor3",
+  "rotor4",
+  "shaft1",
+  "shaft2",
+  "shaft3",
+  "shaft4"
+ ],
+ "contacts": 2095,
+ "main_assembly_parts": 691,
+ "floating_groups": [
+  {
+   "parts": [
+    "P08 | Cockpit panel",
+    "P08 | Instrument screen",
+    "P08 | Instrument screen.001",
+    "V3 P08 | Compact flight yoke base",
+    "V3 P08 | Coordinated yaw twist dial",
+    "V3 P08 | Physical guarded descent/land switch",
+    "V3 P08 | Physical hover-hold switch",
+    "V3 P08 | Pilot climb/descent thumb rocker",
+    "V3 P08 | Short-stroke fly-by-wire yoke stem",
+    "V3 P08 | Yoke cushioned grip",
+    "V3 P08 | Yoke cushioned grip.001",
+    "V3 P08 | Yoke lateral grips"
+   ],
+   "bodies": [
+    "cabin"
+   ],
+   "centre_m": [
+    0.0,
+    -0.594,
+    1.27
+   ],
+   "nearest_gap_mm": null,
+   "nearest_part": null
+  }
+ ],
+ "free_rod_ends": [
+  {
+   "part": "P01 | Mount A",
+   "body": "airframe",
+   "end": 1,
+   "tip_m": [
+    -0.47,
+    0.79,
+    0.58
+   ],
+   "length_m": 0.494,
+   "gap_mm": null
+  },
+  {
+   "part": "P01 | Mount B",
+   "body": "airframe",
+   "end": 1,
+   "tip_m": [
+    0.47,
+    0.79,
+    0.58
+   ],
+   "length_m": 0.494,
+   "gap_mm": null
+  },
+  {
+   "part": "V2 P06 | Turbine/gearbox lower cradle side 1",
+   "body": "airframe",
+   "end": 1,
+   "tip_m": [
+    0.42,
+    -0.1,
+    0.62
+   ],
+   "length_m": 1.052,
+   "gap_mm": 62.7
+  },
+  {
+   "part": "V2 P06 | Turbine/gearbox lower cradle side -1",
+   "body": "airframe",
+   "end": 1,
+   "tip_m": [
+    -0.42,
+    -0.1,
+    0.62
+   ],
+   "length_m": 1.052,
+   "gap_mm": 62.7
+  }
+ ],
+ "artifacts": [],
+ "articulation_breaks": [
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 4.23
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 40.6
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 84.56
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 46.96
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 26.23
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 15.21
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 15.21
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 4.23
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 40.6
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 1.18
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 1.18
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 26.23
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 46.96
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 15.21
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 29.06
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 15.21
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 29.06
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 4.23
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 40.6
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 84.56
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 46.96
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 26.23
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 15.21
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 15.21
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 4.23
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 40.61
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 1.18
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 1.18
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 26.23
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 46.96
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 15.21
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 29.06
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 15.21
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 29.06
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 32.72
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "P02 | F1 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 40.14
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 43.26
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 40.11
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head L",
+    "P02 | F1 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 52.6
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 4.71
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "P02 | F1 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 4.44
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "P02 | F1 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 11.45
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 21.45
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "P02 | F1 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 60.59
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 7.87
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 39.46
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 UPPER nacelle tie L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 23.03
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F1 UPPER nacelle tie R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 62.52
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 15.22
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 15.22
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 7.15
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 41.36
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P03 | F2 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 30.88
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 13.04
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 13.04
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 6.66
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 6.66
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 40.96
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "P02 | F3 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 40.14
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 43.26
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 40.11
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 4.26
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 32.72
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 4.44
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "P02 | F3 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 11.45
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 21.45
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "P02 | F3 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 60.59
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 52.6
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 4.71
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 39.46
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 7.87
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 60.12
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 62.52
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 16.61
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 23.03
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 26.08
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 6.98
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 42.29
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 26.08
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 6.98
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 7.15
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 41.36
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P03 | F4 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 30.88
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 13.04
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 13.04
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 37.08
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 44.73
+  },
+  {
+   "pose": "tilt_x",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 37.08
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 4.23
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 40.61
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 1.18
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 1.18
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 26.23
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 46.96
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 35.98
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 92.58
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 72.37
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 118.57
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 79.31
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 40.6
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 4.23
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 84.56
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 46.96
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 26.23
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 35.98
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 42.81
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 72.37
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 92.58
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 118.57
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 79.31
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 4.23
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 40.6
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 1.18
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 1.18
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 26.23
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 46.96
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 35.98
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 92.58
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 72.37
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 118.57
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 79.31
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 40.6
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 4.23
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 84.56
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 46.96
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 26.23
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 35.98
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 42.81
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 72.37
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 92.58
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 118.57
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 79.31
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 26.08
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 6.98
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 26.08
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 6.98
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head L",
+    "P02 | F1 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 57.94
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "P02 | F1 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 57.94
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P03 | F1 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 30.88
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 13.04
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 13.04
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 UPPER nacelle tie L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 37.08
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F1 UPPER nacelle tie R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 37.08
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 36.08
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 32.72
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "P02 | F2 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 40.14
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 43.26
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 40.11
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 47.92
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 4.71
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head R",
+    "P02 | F2 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 11.45
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head R",
+    "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 21.45
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head R",
+    "P02 | F2 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 60.59
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 7.87
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 39.46
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 51.82
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 23.03
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 62.52
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 26.1
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 15.22
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 26.1
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 15.22
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 57.94
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 57.94
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P03 | F3 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 30.88
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 13.04
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 13.04
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 6.66
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 6.66
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "P02 | F4 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 40.14
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 43.26
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 40.11
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 36.08
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 32.72
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head L",
+    "P02 | F4 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 11.45
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head L",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 21.45
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head L",
+    "P02 | F4 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 60.59
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 47.92
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 4.71
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 39.46
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 7.87
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 62.52
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 51.82
+  },
+  {
+   "pose": "tilt_y",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 23.03
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 48.98
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 60.68
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 25.69
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 49.03
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 29.18
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 78.79
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 9.54
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 61.24
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 60.68
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 48.98
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 23.18
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 47.69
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 78.79
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 29.18
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 29.82
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 9.54
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 51.74
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 61.24
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 48.98
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 60.68
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 49.03
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 25.69
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 29.18
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 78.79
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 9.54
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 61.24
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 60.68
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 48.98
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 47.69
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 23.18
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 78.79
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 29.18
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 29.82
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 9.54
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 51.74
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 61.24
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 34.61
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "P02 | F1 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 32.83
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 41.54
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 37.81
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head L",
+    "P02 | F1 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 69.36
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "P02 | F1 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 36.84
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 10.57
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "P02 | F1 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 39.13
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P03 | F1 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 6.91
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 14.03
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 28.07
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 UPPER nacelle tie L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 24.23
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F1 UPPER nacelle tie R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 54.38
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 5.94
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 15.63
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "P02 | F2 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 20.72
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 29.58
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 26.06
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 30.62
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head R",
+    "P02 | F2 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 1.05
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head R",
+    "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 11.19
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head R",
+    "P02 | F2 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 40.85
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 58.98
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P03 | F2 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 5.09
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 20.12
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 23.06
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 13.88
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 48.35
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 56.28
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "P02 | F3 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 19.99
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 23.36
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 24.56
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 17.47
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 36.84
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 10.57
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "P02 | F3 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 39.13
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 69.36
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P03 | F3 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 6.91
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 28.07
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 14.03
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 42.81
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "P02 | F4 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 31.69
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 46.51
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 36.86
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 44.69
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 28.34
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head L",
+    "P02 | F4 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 1.05
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head L",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 11.19
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head L",
+    "P02 | F4 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 40.85
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 30.62
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 58.98
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P03 | F4 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 5.09
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 23.06
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 20.12
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 60.72
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 54.26
+  },
+  {
+   "pose": "tilt_diag",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 16.59
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 60.68
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 48.98
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 49.03
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 25.69
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 78.79
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 29.18
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 61.24
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 9.54
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 48.98
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 60.68
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 47.69
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 23.18
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 29.18
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 78.79
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 51.74
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 61.24
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 29.82
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 9.54
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 60.68
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 48.98
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 25.69
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 49.03
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 78.79
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 29.18
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 61.24
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 9.54
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 48.98
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 60.68
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 23.18
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 47.69
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 29.18
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 78.79
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 51.74
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 61.24
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 29.82
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 9.54
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "P02 | F1 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 19.99
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 23.36
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 24.56
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 17.47
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head L",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 10.57
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head L",
+    "P02 | F1 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 39.13
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "P02 | F1 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 10.34
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P03 | F1 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 6.91
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 28.07
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 14.03
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F1 UPPER nacelle tie L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 42.81
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 24.21
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "P02 | F2 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 31.69
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 46.51
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 36.86
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 28.34
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "P02 | F2 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 1.05
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 11.19
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "P02 | F2 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 40.85
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 15.12
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P03 | F2 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 5.09
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 23.06
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 20.12
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 41.15
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 60.72
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 16.59
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 7.53
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 34.61
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "P02 | F3 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 32.83
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 41.54
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 37.81
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 10.34
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head R",
+    "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 10.57
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head R",
+    "P02 | F3 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 39.13
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P03 | F3 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 6.91
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 14.03
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 28.07
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 19.36
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 24.23
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 10.78
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 54.38
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 15.63
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 23.81
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "P02 | F4 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 20.72
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 29.58
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 26.06
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "P02 | F4 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 1.05
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 11.19
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "P02 | F4 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 40.85
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 15.12
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P03 | F4 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 5.09
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 20.12
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 23.06
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 33.37
+  },
+  {
+   "pose": "tilt_neg_diag",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 48.35
+  },
+  {
+   "pose": "spin_37",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "spin_37",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "spin_37",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "spin_37",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "spin_37",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "spin_37",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "spin_37",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "spin_37",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "cabin_extreme",
+   "parts": [
+    "P05 | Lateral gimbal trunnion",
+    "P05 | Inner roll ring XZ"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "cabin_extreme",
+   "parts": [
+    "P05 | Lateral gimbal trunnion.001",
+    "P05 | Inner roll ring XZ"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "cabin_extreme",
+   "parts": [
+    "V2 P06 | Turbine/gearbox lower cradle side 1",
+    "P04 | Window perimeter seal.041"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "cabin_extreme",
+   "parts": [
+    "V2 P06 | Turbine/gearbox lower cradle side 1",
+    "P05 | Inner roll ring XZ"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "cabin_extreme",
+   "parts": [
+    "V2 P06 | Turbine/gearbox lower cradle side -1",
+    "P04 | Window perimeter seal.004"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "cabin_extreme",
+   "parts": [
+    "V2 P06 | Turbine/gearbox lower cradle side -1",
+    "P05 | Inner roll ring XZ"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "P05 | Lateral gimbal trunnion",
+    "P05 | Inner roll ring XZ"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "P05 | Lateral gimbal trunnion.001",
+    "P05 | Inner roll ring XZ"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V2 P06 | Turbine/gearbox lower cradle side 1",
+    "P04 | Window perimeter seal.041"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V2 P06 | Turbine/gearbox lower cradle side 1",
+    "P05 | Inner roll ring XZ"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V2 P06 | Turbine/gearbox lower cradle side -1",
+    "P04 | Window perimeter seal.004"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V2 P06 | Turbine/gearbox lower cradle side -1",
+    "P05 | Inner roll ring XZ"
+   ],
+   "bodies": [
+    "airframe",
+    "cabin"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 25.58
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 26.54
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 fixed X bearing support ring",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 12.64
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 25.69
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 49.03
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 10.46
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 29.72
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 fixed Y ring trunnion",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 40.59
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss 1",
+    "P02 | F1 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 48.39
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 4.62
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F1 static trunnion boss -1",
+    "P02 | F1 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 25.58
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 26.54
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 fixed X bearing support ring",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 12.64
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 47.69
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 23.18
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 10.46
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 29.72
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 fixed Y ring trunnion",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 40.59
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 51.74
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 48.39
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss 1",
+    "P02 | F2 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 29.82
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 4.62
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F2 static trunnion boss -1",
+    "P02 | F2 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 25.58
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 26.54
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 fixed X bearing support ring",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 12.64
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 49.03
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 25.69
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 10.46
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 29.72
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 fixed Y ring trunnion",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 40.59
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss 1",
+    "P02 | F3 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 48.39
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 4.62
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F3 static trunnion boss -1",
+    "P02 | F3 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 25.58
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 26.54
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 fixed X bearing support ring",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 12.64
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 23.18
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 47.69
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 10.46
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 29.72
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 fixed Y ring trunnion",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 40.59
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 pitch actuator ring"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 51.74
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 1"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 48.39
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss 1",
+    "P02 | F4 blade 2"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 29.82
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 3"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 4.62
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V3 P06 | F4 static trunnion boss -1",
+    "P02 | F4 blade 4"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": null
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 17.47
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "P02 | F1 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 19.99
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 23.36
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 24.56
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head L",
+    "P02 | F1 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 10.34
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "V4 P03 | F1 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 10.57
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 primary trunnion load head R",
+    "P02 | F1 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor1"
+   ],
+   "gap_mm": 38.76
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P03 | F1 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 6.91
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 14.03
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 transverse hub support",
+    "V3 P06 | F1 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 28.07
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F1 UPPER nacelle tie R",
+    "V3 P06 | F1 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle1"
+   ],
+   "gap_mm": 42.81
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 23.81
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "P02 | F2 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 20.72
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 29.58
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 26.06
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 15.63
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "P02 | F2 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 1.05
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "V4 P03 | F2 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 11.19
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 primary trunnion load head L",
+    "P02 | F2 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor2"
+   ],
+   "gap_mm": 40.65
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 15.12
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P03 | F2 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 5.09
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 23.06
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 transverse hub support",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 20.12
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie L",
+    "P02 | F2 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 33.37
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F2 UPPER nacelle tie L",
+    "V3 P06 | F2 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle2"
+   ],
+   "gap_mm": 48.35
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "P02 | F3 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 32.83
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 41.54
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg L",
+    "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 37.81
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 7.53
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 34.61
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "V4 P03 | F3 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 10.57
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head L",
+    "P02 | F3 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor3"
+   ],
+   "gap_mm": 38.76
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 primary trunnion load head R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 10.34
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P03 | F3 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 6.91
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 28.07
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 transverse hub support",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 14.03
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "P02 | F3 fixed stator vane 2"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 10.78
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie L",
+    "V3 P06 | F3 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 54.38
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie R",
+    "P02 | F3 fixed stator vane 5"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 19.36
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F3 UPPER nacelle tie R",
+    "V3 P06 | F3 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle3"
+   ],
+   "gap_mm": 24.23
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 28.34
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 24.21
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "P02 | F4 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 31.69
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 46.51
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 PRIMARY deep-angle axial leg R",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 36.86
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "P02 | F4 lower stator boss"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 1.05
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "V4 P03 | F4 nacelle-local 7.5:1 reduction gearbox V4 candidate"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 11.19
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 primary trunnion load head R",
+    "P02 | F4 collective-pitch rotor hub"
+   ],
+   "bodies": [
+    "airframe",
+    "rotor4"
+   ],
+   "gap_mm": 40.65
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 15.12
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P03 | F4 CV boot envelope"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 5.09
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 20.12
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 transverse hub support",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 23.06
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie L",
+    "V3 P06 | F4 actuator 2 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 16.59
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "P02 | F4 fixed stator vane 1"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 41.15
+  },
+  {
+   "pose": "combined_extreme",
+   "parts": [
+    "V4 P06 | F4 UPPER nacelle tie R",
+    "V3 P06 | F4 actuator 1 pivot clevis"
+   ],
+   "bodies": [
+    "airframe",
+    "nacelle4"
+   ],
+   "gap_mm": 60.72
+  }
+ ],
+ "near_misses_between_groups": [],
+ "poses_checked": [
+  "rest",
+  "tilt_x",
+  "tilt_y",
+  "tilt_diag",
+  "tilt_neg_diag",
+  "spin_37",
+  "gear_full_stroke",
+  "cabin_extreme",
+  "shaft_half_turn",
+  "combined_extreme"
+ ],
+ "clean": false
+}
