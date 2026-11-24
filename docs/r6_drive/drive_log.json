@@ -1,0 +1,122 @@
+[
+ {
+  "part": "P03 | F1 rising fan spindle",
+  "op": "lengthen to the tilt pivot",
+  "top_from_m": 1.49,
+  "top_to_m": 1.99
+ },
+ {
+  "part": "R3 P03 | F1 tilt-pivot CV joint",
+  "op": "new copy of V3 P03 | F1 CV boot envelope centred on the physics tilt pivot",
+  "centre_m": [
+   2.6,
+   0.0,
+   1.98
+  ]
+ },
+ {
+  "part": "R3 P03 | F1 tilt-pivot CV race",
+  "op": "new copy of V3 P03 | F1 torque transfer spherical CV primary centred on the physics tilt pivot",
+  "centre_m": [
+   2.6,
+   0.0,
+   1.98
+  ]
+ },
+ {
+  "part": "R3 P03 | F1 nacelle input stub shaft",
+  "op": "new shaft from the pivot into the gearbox",
+  "z_from_m": 1.97,
+  "z_to_m": 2.076
+ },
+ {
+  "part": "P03 | F2 rising fan spindle",
+  "op": "lengthen to the tilt pivot",
+  "top_from_m": 1.49,
+  "top_to_m": 1.99
+ },
+ {
+  "part": "R3 P03 | F2 tilt-pivot CV joint",
+  "op": "new copy of V3 P03 | F2 CV boot envelope centred on the physics tilt pivot",
+  "centre_m": [
+   0.0,
+   2.6,
+   1.98
+  ]
+ },
+ {
+  "part": "R3 P03 | F2 tilt-pivot CV race",
+  "op": "new copy of V3 P03 | F2 torque transfer spherical CV primary centred on the physics tilt pivot",
+  "centre_m": [
+   0.0,
+   2.6,
+   1.98
+  ]
+ },
+ {
+  "part": "R3 P03 | F2 nacelle input stub shaft",
+  "op": "new shaft from the pivot into the gearbox",
+  "z_from_m": 1.97,
+  "z_to_m": 2.076
+ },
+ {
+  "part": "P03 | F3 rising fan spindle",
+  "op": "lengthen to the tilt pivot",
+  "top_from_m": 1.49,
+  "top_to_m": 1.99
+ },
+ {
+  "part": "R3 P03 | F3 tilt-pivot CV joint",
+  "op": "new copy of V3 P03 | F3 CV boot envelope centred on the physics tilt pivot",
+  "centre_m": [
+   -2.6,
+   0.0,
+   1.98
+  ]
+ },
+ {
+  "part": "R3 P03 | F3 tilt-pivot CV race",
+  "op": "new copy of V3 P03 | F3 torque transfer spherical CV primary centred on the physics tilt pivot",
+  "centre_m": [
+   -2.6,
+   0.0,
+   1.98
+  ]
+ },
+ {
+  "part": "R3 P03 | F3 nacelle input stub shaft",
+  "op": "new shaft from the pivot into the gearbox",
+  "z_from_m": 1.97,
+  "z_to_m": 2.076
+ },
+ {
+  "part": "P03 | F4 rising fan spindle",
+  "op": "lengthen to the tilt pivot",
+  "top_from_m": 1.49,
+  "top_to_m": 1.99
+ },
+ {
+  "part": "R3 P03 | F4 tilt-pivot CV joint",
+  "op": "new copy of V3 P03 | F4 CV boot envelope centred on the physics tilt pivot",
+  "centre_m": [
+   0.0,
+   -2.6,
+   1.98
+  ]
+ },
+ {
+  "part": "R3 P03 | F4 tilt-pivot CV race",
+  "op": "new copy of V3 P03 | F4 torque transfer spherical CV primary centred on the physics tilt pivot",
+  "centre_m": [
+   0.0,
+   -2.6,
+   1.98
+  ]
+ },
+ {
+  "part": "R3 P03 | F4 nacelle input stub shaft",
+  "op": "new shaft from the pivot into the gearbox",
+  "z_from_m": 1.97,
+  "z_to_m": 2.076
+ }
+]
