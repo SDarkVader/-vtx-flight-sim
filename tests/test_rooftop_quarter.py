@@ -21,12 +21,25 @@ def overlap(a, b, gap=0.):
 def test_existing_world_is_unchanged_and_extended(worlds):
     old, new = worlds
     assert new.obstacles[:len(old.obstacles)] == old.obstacles
-    assert np.array_equal(old.heights, new.heights)
     added = new.obstacles[len(old.obstacles):]
     assert len({o['id'] for o in new.obstacles}) == len(new.obstacles)
     wards = [o for o in added if not o['id'].startswith('lr-')]      # the Lantern Race has its own checks
     assert all(o['id'].startswith('nbr-') and o['role'] == 'ramp' for o in wards)   # no new buildings
     assert len(wards) <= 60
+
+
+def test_meridian_road_blend_is_local_and_eases_the_grade_break(worlds):
+    old, new = worlds
+    axis = np.linspace(-new.half, new.half, new.n)
+    changed_rows, changed_cols = np.where(old.heights != new.heights)
+    assert new.version == '33.1'
+    assert len(changed_rows) > 0
+    assert np.all(abs(axis[changed_cols]) < 80)
+    assert np.all(abs(axis[changed_rows] - 640) < 125)
+    y = range(600, 681)
+    original_z = [old.terrain_z(-7.65, point) for point in y]
+    blended_z = [new.terrain_z(-7.65, point) for point in y]
+    assert np.max(abs(np.diff(blended_z, n=2))) < 0.2 * np.max(abs(np.diff(original_z, n=2)))
 
 
 def test_new_solids_do_not_intersect_existing_scenery(worlds):
