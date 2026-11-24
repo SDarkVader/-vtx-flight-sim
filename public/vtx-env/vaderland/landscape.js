@@ -3,7 +3,7 @@ import {heightfieldZ} from '../landscape.js';
 import {createGround} from '../ground.js';
 import {primaryRunwayCues,resolvePrimaryRunway} from '../runway-layout.js';
 import {followTide} from './tidal-surface.js';
-import {airportTree,buildAirport} from './airfield.js';
+import {airportTree,buildAirport} from './airfield.js?v=20261124-runway-depth';
 import {dressHarbourDecks,dressLanding} from './landing.js';
 import {buildTerminal} from './terminal.js';
 import {district} from './district.js';

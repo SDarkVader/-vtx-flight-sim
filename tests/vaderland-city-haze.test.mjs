@@ -35,7 +35,7 @@ test('city atmosphere retains the point effects without adding any fog geometry'
 test('the sky glow is wired to the existing opaque sky and gated to the photographic rooftop city', async () => {
   assert.match(citySkyGlow, /float\s+meridianSkyGlow\(vec3\s+ray\)/);
   const source = await readFile(new URL('../public/vtx-env/vaderland/landscape.js', import.meta.url), 'utf8');
-  assert.match(source, /import\s*\{[^}]*\bcitySkyGlow\b[^}]*\}\s*from\s*['"]\.\/atmosphere\.js['"]/);
+  assert.match(source, /import\s*\{[^}]*\bcitySkyGlow\b[^}]*\}\s*from\s*['"]\.\/atmosphere\.js(?:\?[^'"]+)?['"]/);
   const start = source.indexOf('const dome=new THREE.Mesh');
   const end = source.indexOf('terrainTiles(group,w,uniforms);', start);
   assert.ok(start >= 0 && end > start, 'found the background sky before the terrain draw');
