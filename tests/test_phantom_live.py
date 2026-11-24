@@ -31,7 +31,10 @@ def test_phantom_pilot_handover_fences_previous_owner(tmp_path,monkeypatch):
 def test_legacy_mission_dump_has_no_phantom_key():
     d = mission_dump(Mission(**DEP))
     assert 'phantom' not in d
-    assert d == {k: v for k, v in Mission(**DEP).model_dump().items() if k != 'phantom'}
+    assert 'departure_heading_deg' not in d
+    assert d == {k: v for k, v in Mission(**DEP).model_dump().items()
+                 if k not in ('phantom', 'departure_heading_deg')}
+    assert mission_dump(Mission(**DEP, departure_heading_deg=212.3))['departure_heading_deg'] == 212.3
 
 
 def test_action_dispatch_by_schema():

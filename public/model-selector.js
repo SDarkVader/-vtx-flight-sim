@@ -4,6 +4,7 @@ import {SCENERY_VEHICLES} from './scenery-view.js?v=20261117-traffic-10';
 const byId = id => document.getElementById(id);
 const airframe = byId('airframe'), main = byId('main-aircraft'), start = byId('start');
 const startConfiguration = byId('phantom-start'), status = byId('validation');
+const startHeading = byId('departure-heading');
 const mainAircraft = ['phantom-a10c', 'r6'];
 let view, pending = false, boatId = null;
 
@@ -17,6 +18,12 @@ function showActual(next) {
   main.disabled = airframe.disabled = false;
   startConfiguration.disabled = !!view.active;
   if (view.start_configuration) startConfiguration.value = view.start_configuration;
+  if (startHeading) {
+    const phantom = actual.startsWith('phantom');
+    byId('departure-heading-label').hidden = !phantom || !!boatId;
+    startHeading.disabled = !!view.active || !phantom || !!boatId;
+    if (document.activeElement !== startHeading && phantom) startHeading.value = view.departure_heading_deg ?? 90;
+  }
   start.disabled = !!view.active || !known || !!boatId || document.documentElement.dataset.vtxWorldUnavailable === '1';
   byId('aircraft-evidence').textContent = flownEvidence(view);
   byId('aircraft-evidence').hidden = !byId('aircraft-evidence').textContent;
@@ -49,6 +56,8 @@ async function preview(variant, selecting, position, targetEnvironment) {
     document.dispatchEvent(new CustomEvent('vtx-aircraft-departure-request', {detail:choice}));
   const payload = {airframe_variant:variant, start_configuration:startConfiguration.value, environment};
   if (environment === current) payload.departure = choice.departure;
+  if (variant.startsWith('phantom') && startHeading?.value)
+    payload.departure_heading_deg = Number(startHeading.value);
   if (previous?.active) payload.save_run_id = previous.run_id;
   const result = await request('/api/model-preview', payload);
   if (result.observation?.configuration?.airframe_variant !== variant ||
@@ -75,6 +84,7 @@ async function choose(value, {selecting=true, position, environment} = {}) {
   let failure;
   document.documentElement.dataset.vtxPreviewPending = '1';
   main.disabled = airframe.disabled = startConfiguration.disabled = start.disabled = true;
+  if (startHeading) startHeading.disabled = true;
   try {
     if (value.startsWith('boat:') || value.startsWith('scenery:')) {
       await board(value);
@@ -132,6 +142,15 @@ for (const menu of [main, airframe]) menu.addEventListener('change', () => {
 });
 startConfiguration.addEventListener('change', () => {
   if (!startConfiguration.disabled) void choose(airframe.value, {selecting:false}).catch(()=>{});
+});
+startHeading?.addEventListener('change', () => {
+  if (startHeading.disabled || !startHeading.value) return;
+  const heading = Number(startHeading.value);
+  if (!Number.isFinite(heading)) return;
+  startHeading.value = ((heading % 360) + 360) % 360;
+  void choose(airframe.value, {selecting:false}).catch(() => {
+    startHeading.value = view?.departure_heading_deg ?? 90;
+  });
 });
 document.addEventListener('vtx-preview-start', e => {
   choose(airframe.value, {selecting:false, position:e.detail.position, environment:e.detail.environment}).then(e.detail.resolve, e.detail.reject);

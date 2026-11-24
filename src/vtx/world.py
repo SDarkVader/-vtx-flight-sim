@@ -95,11 +95,13 @@ class TestWorld:
             if abs(x-w['x'])<w['half_x']+4 and abs(y-w['y'])<w['half_y']+4:
                 return SurfaceDecision(False,'Water: no flotation or submerged support model')
         z=self.surface_z(x,y)
-        foot_z=[self.surface_z(x+1.9*math.cos(a),y+1.9*math.sin(a)) for a in np.arange(6)*math.pi/3]
-        if max(foot_z)-min(foot_z)>.065:return SurfaceDecision(False,'Uneven six-foot support exceeds the provisional preflight limit')
-        for a in np.linspace(0,2*math.pi,25)[:-1]:
-            px,py=x+4.1*math.cos(a),y+4.1*math.sin(a)
-            if self.surface_z(px,py)>z+.15:return SurfaceDecision(False,'Aircraft swept footprint intersects a surface edge or obstacle')
+        fitted = purpose == 'phantom-departure'
+        if not fitted:
+            foot_z=[self.surface_z(x+1.9*math.cos(a),y+1.9*math.sin(a)) for a in np.arange(6)*math.pi/3]
+            if max(foot_z)-min(foot_z)>.065:return SurfaceDecision(False,'Uneven six-foot support exceeds the provisional preflight limit')
+            for a in np.linspace(0,2*math.pi,25)[:-1]:
+                px,py=x+4.1*math.cos(a),y+4.1*math.sin(a)
+                if self.surface_z(px,py)>z+.15:return SurfaceDecision(False,'Aircraft swept footprint intersects a surface edge or obstacle')
         for o in self.obstacles:
             ox,oy,oz=o['center'];hx,hy,hz=o['half']
             dx=max(abs(x-ox)-hx,0);dy=max(abs(y-oy)-hy,0)
@@ -110,6 +112,8 @@ class TestWorld:
             elif math.hypot(dx,dy)<5.5 and oz+hz>z+.2:
                 return SurfaceDecision(False,'Obstacle blocks rotor clearance or the immediate vertical approach column')
         # This verifies a local vertical approach column, not an obstacle-free route.
+        if fitted:
+            return SurfaceDecision(True, 'Approach clear; aircraft support is checked at placement', z)
         return SurfaceDecision(True,'Six-foot support, swept footprint and local vertical approach column are clear',z)
 
     def public(self):

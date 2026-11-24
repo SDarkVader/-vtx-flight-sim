@@ -115,7 +115,18 @@ def landing_support(world,point,purpose,variant):
         from .phantom.mission import footprint
         if world.harbour_overlaps(point.x_m,point.y_m,footprint(variant)['swept_radius_m']):
             return SurfaceDecision(False,'Harbour water overlaps the aircraft footprint')
+    if purpose == 'departure' and phantom_live.is_phantom_variant(variant):
+        purpose = 'phantom-departure'
     return world.validate(point,purpose)
+
+
+def place_at_departure(aircraft, request, terrain_z):
+    if phantom_live.is_phantom_variant(request.airframe_variant):
+        heading = 90.0 if request.departure_heading_deg is None else request.departure_heading_deg
+        aircraft.spawn_on_surface(*request.departure, terrain_z, heading_deg=90.0 - heading)
+        aircraft.departure_heading_deg = heading % 360.0
+    else:
+        aircraft.spawn(*request.departure, terrain_z)
 
 
 class Action(BaseModel):
@@ -151,6 +162,7 @@ class Action(BaseModel):
 class Mission(BaseModel):
     model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
     departure:list[float]=Field(default_factory=lambda:[0.,0.])
+    departure_heading_deg:float|None=Field(default=None, allow_inf_nan=False)
     destination:list[float]=Field(default_factory=lambda:[-50.,20.])
     authority:str='manual'
     time_scale:float=Field(default=1.,ge=.01,le=1)
@@ -216,6 +228,7 @@ def mission_dump(request):
     operator; an unset value is the four-fan default and is not Phantom fuel."""
     d=request.model_dump()
     if d.get('phantom') is None:d.pop('phantom',None)
+    if d.get('departure_heading_deg') is None:d.pop('departure_heading_deg',None)
     if phantom_live.is_phantom_variant(d.get('airframe_variant')):d['fuel_kg_explicit']='fuel_kg' in request.model_fields_set
     return d
 
@@ -406,7 +419,7 @@ class Laboratory:
             aircraft=Aircraft(flight_world,request.gear_variant,request.reference_rpm,fuel_kg=request.fuel_kg,
                 airframe_variant=request.airframe_variant,engine_power_limit_kw=request.engine_power_limit_kw,
                 atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
-        aircraft.spawn(*request.departure,world.surface_z(*request.departure))
+        place_at_departure(aircraft, request, flight_world.surface_z(*request.departure))
         if aircraft.provenance['model_xml_sha256']!=state['model_xml_sha256'] or aircraft.provenance.get('config_sha256')!=state.get('config_sha256'):
             raise ValueError('Selected aircraft model or configuration differs; record retained')
         if state.get('environment_identity')!=environment_identity(world,flight_world,aircraft):
@@ -1085,7 +1098,7 @@ class Laboratory:
                                fuel_kg=request.fuel_kg,airframe_variant=request.airframe_variant,
                                engine_power_limit_kw=request.engine_power_limit_kw,
                                atmosphere_model=request.atmosphere_model,wind_world_mps=request.wind_world_mps)
-        candidate.spawn(*request.departure,departure_check.terrain_z_m)
+        place_at_departure(candidate, request, departure_check.terrain_z_m)
         self._remember_inspection_selection(request,candidate,target_world)
         self.world=target_world;self.aircraft=candidate
         self.phantom_landing_site=None;self.phantom_cg_gate=None
@@ -1105,6 +1118,8 @@ class Laboratory:
                           environment_label=getattr(self.world,'label','Main Airport'),
                           label=request.label,
                           ignore_scenery_collisions=request.ignore_scenery_collisions,landing_precision_m=request.landing_precision_m)
+        if request.departure_heading_deg is not None and phantom_live.is_phantom_variant(request.airframe_variant):
+            self.mission['departure_heading_deg'] = candidate.departure_heading_deg
         self.objective=None
         self.pilot_owner=None;self.pending_pilot=None;self.pilot_epoch=0
         self.fallback_controller=None;self.fallback_status=None
@@ -1379,6 +1394,7 @@ class Laboratory:
         retry_env=request.get('environment',old.get('environment') or hint.get('mission',{}).get('environment_key') or hint.get('mission',{}).get('environment'))
         if not retry_env:raise HTTPException(409,'Retained mission has no environment; choose one explicitly')
         m=Mission(departure=hint['mission']['departure'],destination=hint['mission']['destination'],
+                  departure_heading_deg=old.get('departure_heading_deg'),
                   authority=request.get('authority','manual'),time_scale=retained('time_scale'),
                   stability_assist=retained('stability_assist'),
                   reference_rpm=retained('reference_rpm'),gear_variant=retained('gear_variant'),
@@ -1422,6 +1438,7 @@ class Laboratory:
     def view(self):
         return dict(mode='live' if self.active else 'inspection',run_id=self.run_id,authority=self.authority,
                     start_configuration=getattr(self.aircraft,'start_configuration',None),
+                    departure_heading_deg=(self.mission or {}).get('departure_heading_deg',getattr(self.aircraft,'departure_heading_deg',None)),
                     runtime_source_sha256=RUNTIME_SOURCE_SHA256, runtime_hash_scheme='vtx-python-tree-at-import-v1',
                     server_frontend_last_capture_sha256=(self.server_frontend_identity or {}).get('sha256'),
                     browser_frontend_verified=False,
@@ -1760,18 +1777,14 @@ async def model_preview(request:dict):
             if not options.pop('fuel_kg_explicit',True):options.pop('fuel_kg',None)
     phantom={**(options.get('phantom') or {}),'start_configuration':request.get('start_configuration','vtol')}
     options.update(environment=request.get('environment'),airframe_variant=variant,departure=request.get('departure',dep_default),phantom=phantom)
+    if 'departure_heading_deg' in request:options['departure_heading_deg']=request['departure_heading_deg']
     try:selection=Mission(**options)
     except ValidationError as e:raise HTTPException(422,str(e))
     flight_world=copy.copy(target_world) if selection.ignore_scenery_collisions else target_world
     if selection.ignore_scenery_collisions:flight_world.obstacles=[]
     point=MapPoint(*selection.departure)
-    if phantom_live.is_phantom_variant(selection.airframe_variant):
-        from .phantom.mission import validate_phantom
-        verdict=validate_phantom(flight_world,point,selection.airframe_variant)
-        if not verdict['ok']:raise HTTPException(422,verdict['reason'])
-    else:
-        verdict=flight_world.validate(point,'departure')
-        if not verdict.valid:raise HTTPException(422,verdict.reason)
+    verdict = landing_support(flight_world, point, 'departure', selection.airframe_variant)
+    if not verdict.valid:raise HTTPException(422,verdict.reason)
     lab.preview_generation+=1
     generation=lab.preview_generation
     def build():
@@ -1782,7 +1795,7 @@ async def model_preview(request:dict):
                               fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
                               engine_power_limit_kw=selection.engine_power_limit_kw,
                               atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
-        aircraft.spawn(*selection.departure,flight_world.surface_z(*selection.departure))
+        place_at_departure(aircraft, selection, verdict.terrain_z_m)
         return aircraft
     try:aircraft=await asyncio.to_thread(build)
     except ValueError as e:raise HTTPException(422,str(e)) from e
@@ -1823,16 +1836,11 @@ async def set_environment(request:dict):
     start_cfg=request.get('start_configuration') or getattr(lab.aircraft,'start_configuration','vtol')
     dep=request.get('departure') if request.get('departure') is not None else list(target_world.default_departure)
     dest=request.get('destination') if request.get('destination') is not None else list(target_world.default_destination)
-    try:selection=Mission(environment=env_key,airframe_variant=current_variant,departure=dep,destination=dest,phantom={'start_configuration':start_cfg})
+    try:selection=Mission(environment=env_key,airframe_variant=current_variant,departure=dep,destination=dest,departure_heading_deg=request.get('departure_heading_deg'),phantom={'start_configuration':start_cfg})
     except ValidationError as e:raise HTTPException(422,str(e))
     point=MapPoint(*selection.departure)
-    if phantom_live.is_phantom_variant(selection.airframe_variant):
-        from .phantom.mission import validate_phantom
-        verdict=validate_phantom(target_world,point,selection.airframe_variant)
-        if not verdict['ok']:raise HTTPException(422,verdict['reason'])
-    else:
-        verdict=target_world.validate(point,'departure')
-        if not verdict.valid:raise HTTPException(422,verdict.reason)
+    verdict = landing_support(target_world, point, 'departure', selection.airframe_variant)
+    if not verdict.valid:raise HTTPException(422,verdict.reason)
     lab.preview_generation+=1
     generation=lab.preview_generation
     def build():
@@ -1843,9 +1851,10 @@ async def set_environment(request:dict):
                               fuel_kg=selection.fuel_kg,airframe_variant=selection.airframe_variant,
                               engine_power_limit_kw=selection.engine_power_limit_kw,
                               atmosphere_model=selection.atmosphere_model,wind_world_mps=selection.wind_world_mps)
-        aircraft.spawn(*selection.departure,target_world.surface_z(*selection.departure))
+        place_at_departure(aircraft, selection, verdict.terrain_z_m)
         return aircraft
-    aircraft=await asyncio.to_thread(build)
+    try:aircraft=await asyncio.to_thread(build)
+    except ValueError as e:raise HTTPException(422,str(e)) from e
     if lab.active or generation!=lab.preview_generation:
         raise HTTPException(409,'The flight or model selection changed while the environment was loading')
     if getattr(aircraft,'is_phantom',False):
@@ -1942,9 +1951,11 @@ async def pilot_failure(request:dict):
     return dict(run_id=lab.run_id, pilot_epoch=lab.pilot_epoch,
                 pilot_owner=lab.pilot_owner, objective=lab.objective, fallback=lab.fallback_status)
 @app.get('/api/validate')
-async def validate(x:float,y:float,variant:str|None=None,ignore_scenery_collisions:bool=False):
+async def validate(x:float,y:float,variant:str|None=None,ignore_scenery_collisions:bool=False,purpose:str='mission'):
     from dataclasses import asdict
     world=lab.world_for(ignore_scenery_collisions)
+    if purpose == 'departure':
+        return asdict(landing_support(world,MapPoint(x,y),purpose,variant))
     if phantom_live.is_phantom_variant(variant):
         from .phantom.mission import validate_phantom
         return validate_phantom(world,MapPoint(x,y),variant)

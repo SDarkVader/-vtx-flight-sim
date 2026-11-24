@@ -12,9 +12,10 @@ const end=source.indexOf("$('end').onclick",start);
 assert.ok(start>=0 && end>start);
 const handler=source.slice(start,end);
 
-async function startMission({variant='phantom-a10c',environment='airport',departure=[-700,0],explicit=false,fail=false}={}){
- const els=Object.fromEntries(['start','dep','start-preset','airframe','ignore-scenery','landing-precision','pilot','scale','phantom-start','assist','drive','gear','power-limit','atmosphere-model','engine','engine-value','loading'].map(id=>[id,{value:'',checked:false}]));
+async function startMission({variant='phantom-a10c',environment='airport',departure=[-700,0],explicit=false,fail=false,heading=''}={}){
+ const els=Object.fromEntries(['start','dep','start-preset','airframe','ignore-scenery','landing-precision','pilot','scale','phantom-start','departure-heading','assist','drive','gear','power-limit','atmosphere-model','engine','engine-value','loading'].map(id=>[id,{value:'',checked:false}]));
  Object.assign(els.airframe,{value:variant});
+ els['departure-heading'].value=heading;
  Object.assign(els['start-preset'],{options:[{value:'-700,0'},{value:'-3885,0'}]});
  Object.assign(els.pilot,{value:'manual'});Object.assign(els.scale,{value:'1'});Object.assign(els['phantom-start'],{value:'road'});
  const sent=[];
@@ -40,6 +41,9 @@ assert.deepEqual((await startMission({explicit:true})).sent[0].body.departure,[-
 assert.deepEqual((await startMission({departure:[205,-85],explicit:true})).sent[0].body.departure,[205,-85]);
 assert.deepEqual((await startMission({environment:'sandbox'})).sent[0].body.departure,[-700,0]);
 assert.deepEqual((await startMission({variant:'r6'})).sent[0].body.departure,[-700,0]);
+assert.equal((await startMission({heading:'212.3'})).sent[0].body.departure_heading_deg,212.3);
+assert.equal((await startMission({heading:'0'})).sent[0].body.departure_heading_deg,0);
+assert.equal((await startMission({variant:'r6',heading:'212.3'})).sent[0].body.departure_heading_deg,undefined);
 assert.equal(startupFrameReady({worldReady:true,physicalPosition:null,view:null}),false);
 assert.equal(startupFrameReady({worldReady:true,physicalPosition:[-700,0,0],transition:{previousRunId:'old'},view:{active:true,run_id:'old'}}),false);
 assert.equal(startupFrameReady({worldReady:true,physicalPosition:[-3885,0,0],transition:{previousRunId:'old'},view:{active:true,run_id:'new'}}),true);

@@ -374,6 +374,76 @@ class PhantomAircraft:
         self.data.qpos[3:7] = [1, 0, 0, 0]
         self.data.qvel[:] = 0
         mj.mj_forward(self.model, self.data)
+        self._set_spawn_reference()
+
+    def spawn_on_surface(self, x, y, z, heading_deg=0.0):
+        """Place the selected ground supports against the collision surface at the chosen yaw."""
+        d, m = self.data, self.model
+        heading = math.radians(heading_deg % 360.0)
+        forward_xy = np.array([math.cos(heading), math.sin(heading)])
+        d.qpos[:3] = [x, y, z]
+        mj.mju_axisAngle2Quat(d.qpos[3:7], np.array([0., 0., 1.]), heading)
+        d.qvel[:] = 0
+        mj.mj_forward(m, d)
+
+        road = self.start_configuration == 'road'
+        prefix = 'tyre' if road else 'foot'
+        supports = [self.gid[f'{prefix}_{pod}'] for pod in PODS]
+        down = np.array([0., 0., -1.])
+        origin_z = z + 3.0
+
+        def surface_z(xy):
+            hit = self.ray_height(np.array([*xy, origin_z]), down)
+            if hit is None:
+                raise ValueError('No collision surface under a ground support')
+            return origin_z - hit
+
+        xy = d.geom_xpos[supports, :2].copy()
+        heights = np.array([surface_z(point) for point in xy])
+        slope = np.linalg.lstsq(xy - xy.mean(axis=0), heights - heights.mean(), rcond=None)[0]
+        normal = np.array([-slope[0], -slope[1], 1.0])
+        normal /= np.linalg.norm(normal)
+        forward = np.array([*forward_xy, slope @ forward_xy])
+        forward /= np.linalg.norm(forward)
+        basis = np.column_stack((forward, np.cross(normal, forward), normal))
+        mj.mju_mat2Quat(d.qpos[3:7], basis.ravel())
+        mj.mj_forward(m, d)
+
+        # Check the actual support shapes across the fitted surface.
+        lifts = []
+        for geom in supports:
+            center = d.geom_xpos[geom]
+            radius, half_width = m.geom_size[geom, :2]
+            if road:
+                axis = d.geom_xmat[geom].reshape(3, 3)[:, 2]
+                radial = normal - (axis @ normal) * axis
+                radial_length = np.linalg.norm(radial)
+                if radial_length < 1e-9:
+                    raise ValueError('The tyre tread cannot face the surveyed support surface')
+                tread = center - radius * radial / radial_length
+                points = [tread + edge * half_width * axis for edge in (-1, 0, 1)]
+            else:
+                points = [center - radius * normal]
+            lifts.append(max(surface_z(point[:2]) - point[2] for point in points))
+        lift = max(lifts)
+        travel = []
+        for pod in PODS:
+            name = f'pod_{pod}_susp' if road else f'leg_{pod}_oleo'
+            joint = self.jid.get(name)
+            travel.append(float(np.ptp(m.jnt_range[joint])) if joint is not None else 0.)
+        if sum(lift - height <= stroke + 0.005 for height, stroke in zip(lifts, travel)) < 3:
+            raise ValueError('Fewer than three ground supports can reach the surface within suspension travel')
+        d.qpos[2] += lift + 0.005
+        mj.mj_forward(m, d)
+        for contact in d.contact:
+            if contact.dist >= 0.0:
+                continue
+            names = [m.geom(int(g)).name for g in (contact.geom1, contact.geom2)]
+            if any(name in self.gid and m.geom_group[self.gid[name]] == 3 for name in names):
+                raise ValueError('Ground placement overlaps collision geometry: ' + ' / '.join(names))
+        self._set_spawn_reference()
+
+    def _set_spawn_reference(self):
         self.spawn_z = float(self.data.qpos[2])
         rp = self.data.site_xpos[self.model.site('radar').id]
         h = self.ray_height(rp, np.array([0, 0, -1.0]))
