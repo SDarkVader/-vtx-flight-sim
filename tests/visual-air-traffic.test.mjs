@@ -29,7 +29,7 @@ assert.equal(snapshot.obstacles.length,38);
 assert.ok(snapshot.heights_m.every(row=>row.length===101&&row.every(Number.isFinite)));
 const frontend=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
 assert.match(frontend,/fetch\('\/vtx-env\/ride-world\.json/);
-assert.match(frontend,/if\(revealReady&&!window\.__vtxNoRender\)\{\s*if\(post\)post\.render\(\);else renderer\.render\(scene,camera\)/);
+assert.match(frontend,/if\(\(revealReady\|\|keepParkedView\)&&!window\.__vtxNoRender\)\{\s*if\(post\)post\.render\(\);else renderer\.render\(scene,camera\)/);
 const circuit=runwayCircuit();
 const cg=[-.15156246846624952,.00004531509472356366,.5529781802070567];
 const pts=circuit.points.map(p=>[p[0],p[1],p[2]+cg[2]]);
