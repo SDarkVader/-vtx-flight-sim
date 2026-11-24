@@ -32,6 +32,15 @@ export function phantomCockpitAuthority(view, status, {stale, recording} = {}) {
   return mode('Manual control active', 'active', true, true);
 }
 
+const openingWingStates = new Set(['hatch_opening', 'sliding_out', 'pinning', 'locked']);
+
+export function wingDeployRequested(command, measured) {
+  if (command === 'deploy') return true;
+  if (command === 'stow') return false;
+  if (command === 'hold') return openingWingStates.has(measured?.left) && openingWingStates.has(measured?.right);
+  return null;
+}
+
 export function phantomCockpitSwitches(truth = {}) {
   const command = truth.command ?? {};
   const four = value => Array.isArray(value) && value.length === 4 && value.every(Number.isFinite);
@@ -40,6 +49,7 @@ export function phantomCockpitSwitches(truth = {}) {
   const pods = command.pod_tilt_deg;
   const legs = command.leg_extension_m;
   const brake = command.brake;
+  const wings = wingDeployRequested(command.wing, truth.phantom?.wing_state);
   const airbrake = truth.phantom?.transition_ecu && (command.airbrake ?? truth.phantom.transition_ecu.airbrake);
   return {
     brakes: four(brake) ? brake.some(value => value > 0)
@@ -48,8 +58,8 @@ export function phantomCockpitSwitches(truth = {}) {
       ? group('pod_tilt_deg', 'Set road', 0) : group('pod_tilt_deg', 'Set VTOL', 90) : null,
     legs: four(legs) ? legs.every(value => value > .26)
       ? group('leg_extension_m', 'Retract', 0) : group('leg_extension_m', 'Extend', .52) : null,
-    wings: command.wing === 'deploy' ? single('wing', 'Stow', 'stow', true)
-      : command.wing === 'stow' ? single('wing', 'Deploy', 'deploy', false) : null,
+    wings: wings === true ? single('wing', 'Stow', 'stow', true)
+      : wings === false ? single('wing', 'Deploy', 'deploy', false) : null,
     canards: command.canard_fold === 'deployed' ? single('canard_fold', 'Fold', 'folded', true)
       : command.canard_fold === 'folded' ? single('canard_fold', 'Deploy', 'deployed', false) : null,
     airbrake: airbrake === 'on' ? single('airbrake', 'Release', 'off', true)

@@ -71,14 +71,29 @@ test('readouts clear unavailable values and distinguish zero from missing',()=>{
 test('restored held commands determine toggle actions without sending new commands',()=>{
   const command={wing:'deploy',canard_fold:'deployed',brake:[1,1,1,1],pod_tilt_deg:[0,0,0,0],leg_extension_m:[.52,.52,.52,.52]};
   const before=structuredClone(command),state=heldControlToggles(command);
-  assert.deepEqual(state.wing,{value:true,label:'Wing stow'});
+  assert.deepEqual(state.wing,{value:true,label:'Stow wings'});
   assert.deepEqual(state.can,{value:true,label:'Canards fold'});
   assert.deepEqual(state.brakes,{value:true,label:'Brakes on'});
   assert.deepEqual(state.vtol,{value:false,label:'Pods / wheels: 0°'});
   assert.deepEqual(state.legsExtended,{value:true,label:'Legs: extended'});
   assert.deepEqual(command,before);
   assert.deepEqual(heldControlToggles({wing:'stow',canard_fold:'folded'}),{
-    wing:{value:false,label:'Wing deploy'},can:{value:false,label:'Canards deploy'}});
+    wing:{value:false,label:'Deploy wings'},can:{value:false,label:'Canards deploy'}});
+});
+
+test('a fresh Road hold replaces the previous sortie wing action with deploy',()=>{
+  const preview={left:'stowed',right:'stowed'};
+  assert.equal(heldControlToggles({wing:'deploy'},new Set(),undefined,preview).wing.value,true);
+  assert.deepEqual(heldControlToggles({wing:'hold'},new Set(),undefined,preview).wing,
+    {value:false,label:'Deploy wings'});
+  assert.equal(heldControlToggles({wing:'hold'},new Set(['wing']),undefined,preview).wing,undefined);
+});
+
+test('a neutral wing command uses the measured wing position',()=>{
+  const hold=(left,right)=>heldControlToggles({wing:'hold'},new Set(),undefined,{left,right}).wing;
+  assert.deepEqual(hold('locked','locked'),{value:true,label:'Stow wings'});
+  assert.deepEqual(hold('sliding_out','pinning'),{value:true,label:'Stow wings'});
+  assert.deepEqual(hold('sliding_in','hatch_closing'),{value:false,label:'Deploy wings'});
 });
 
 test('the air-brake button follows the held transition-ECU command',()=>{

@@ -70,6 +70,13 @@ test('selected switch positions remain distinct from measured indications',()=>{
   assert.equal(lights.brakes,'inactive');
   assert.equal(lights.airbrake,'inactive');
 });
+test('the flight deck offers the correct first wing command for a neutral start',()=>{
+  const truth={command:{wing:'hold'},phantom:{wing_state:{left:'stowed',right:'stowed'}}};
+  assert.deepEqual(phantomCockpitSwitches(truth).wings,{label:'Deploy',selected:false,patch:{wing:'deploy'}});
+  truth.phantom.wing_state={left:'locked',right:'locked'};
+  assert.deepEqual(phantomCockpitSwitches(truth).wings,{label:'Stow',selected:true,patch:{wing:'stow'}});
+  assert.equal(phantomCockpitSwitches({}).wings,null);
+});
 test('cockpit distinguishes available authority from active, pending, and read-only states',()=>{
   const view={active:true,authority:'manual',observation:{warning_lamps:[]}};
   const held={available:true,engaged:true};

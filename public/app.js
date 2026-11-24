@@ -18,7 +18,7 @@ import {createSuspensionSchematic,suspensionSchematicDescriptor} from './suspens
 import {knownAircraft, flownEvidence} from './aircraft-selection.js?v=1';
 import {missionDeparture} from './mission-departure.js?v=20261116-start';
 import {startupFrameReady} from './startup-visibility.js?v=20261116-start';
-import {cockpitTelemetry,phantomCockpitStates,phantomCockpitSwitches,phantomCockpitAuthority,phantomSystemIndications} from './cockpit-telemetry.js?v=4';
+import {cockpitTelemetry,phantomCockpitStates,phantomCockpitSwitches,phantomCockpitAuthority,phantomSystemIndications} from './cockpit-telemetry.js?v=20261124-wing-actions';
 import {isCockpitObstruction,setCockpitVisibility} from './cockpit-visibility.js?v=20261117-clear-sight-4';
 import {isArgonRotorHousing} from './argon-cutaway.js?v=3';
 // Vader's Taxis environment (visual only; physics collision comes from world.py).
@@ -51,7 +51,7 @@ import {VEHICLE_MODELS,DEFAULT_VISUAL_MODEL} from './vtx-env/vehicle-registry.js
 import {makeAirportModel} from './vtx-env/airport-models.js?v=2';
 import {airportViewSelection,sceneryPoseAt,sceneryPassengerSeat,sceneryPassengerSight} from './scenery-view.js?v=20261117-traffic-10';
 import {attachAirportEnergyEffects} from './vtx-env/airport-energy-effects.js?v=1';
-import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261121-measured-wheels';import {createPhantomPanel} from './phantom-controls.js?v=live-slider-input';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
+import {attachPhantom,updatePhantom,detachPhantomEffects} from './vtx-env/phantom-look.js?v=20261121-measured-wheels';import {createPhantomPanel} from './phantom-controls.js?v=20261124-wing-actions';let phantomRig=null,phantomPanel=null; // Phantom hooks (render + phantom-fbw-1 panel)
 
 const $=id=>document.getElementById(id);
 const phantomMissionNote=document.createElement('p');
@@ -348,7 +348,8 @@ function setCockpitText(field, value){
   if(field.textContent!==value)field.textContent=value;
 }
 cockpitTake.onclick=()=>phantomPanel?.toggleCockpitControl();
-for(const {button} of cockpitSwitches)button.onclick=()=>{
+for(const {button} of cockpitSwitches)button.onclick=event=>{
+  if(button.dataset.switch==='wings'&&event.detail>1)return;
   const choice=displayedSwitches[button.dataset.switch];
   if(choice)phantomPanel?.commandFromCockpit(choice.patch);
 };

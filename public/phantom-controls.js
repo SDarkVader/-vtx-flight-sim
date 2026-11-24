@@ -8,11 +8,14 @@ export function heartbeatDue({engaged,pending,view,dirty,beat,engagedRun}){
   if(engagedRun!==undefined&&view.run_id!==engagedRun)return false;
   return dirty;
 }
-// Buttons describe the held command and offer the opposite group action.
+const wingActionLabel=deployed=>deployed?'Stow wings':'Deploy wings';
+
+// Buttons offer the opposite group action. A neutral wing command uses the measured wing state.
 // Pending local edits retain their optimistic state until the plant confirms them.
-export function heldControlToggles(command={},optimisticFields=new Set(),transitionEcu){
+export function heldControlToggles(command={},optimisticFields=new Set(),transitionEcu,wingState){
   const result={};
-  if(!optimisticFields.has('wing')&&['deploy','stow'].includes(command.wing))result.wing={value:command.wing==='deploy',label:'Wing '+(command.wing==='deploy'?'stow':'deploy')};
+  const deployed=wingDeployRequested(command.wing,wingState);
+  if(!optimisticFields.has('wing')&&deployed!==null)result.wing={value:deployed,label:wingActionLabel(deployed)};
   if(!optimisticFields.has('canard_fold')&&['deployed','folded'].includes(command.canard_fold))result.can={value:command.canard_fold==='deployed',label:'Canards '+(command.canard_fold==='deployed'?'fold':'deploy')};
   const brakeState=command.airbrake??transitionEcu?.airbrake;
   if(!optimisticFields.has('airbrake')&&['on','off'].includes(brakeState))result.airbrake={value:brakeState==='on',label:brakeState==='on'?'Air-brake ON: release':'Air-brake: engage'};
@@ -28,7 +31,7 @@ export function heldControlToggles(command={},optimisticFields=new Set(),transit
   return result;
 }
 import {parseUtterance,statusReadback,createSpeech,speak} from './voice-pilot.js?v=1';
-import {cockpitTelemetry} from './cockpit-telemetry.js?v=1';
+import {cockpitTelemetry,wingDeployRequested} from './cockpit-telemetry.js?v=20261124-wing-actions';
 import {flapInterlockMessage} from './flap-interlock.js?v=1';
 import {renderReadout} from './phantom-readouts.js?v=1';
 import {createPatchQueue, editArrayCommand} from './phantom-command-queue.js?v=1';
@@ -43,7 +46,7 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
   function disengage(){engaged=false;engagedRun=undefined;patchQueue.clear();optimisticFields.clear();dirty=false;accepted=undefined;rejected=false;}
   function cockpitAvailable(){return canControl()&&lastView?.active&&!lastView.paused&&lastView.authority==='manual';}
   const cmd={schema:'phantom-fbw-1',engine:1,collective:0,vertical_speed_m_s:0,pitch:0,roll:0,yaw:0,stability_mode:'attitude'};
-  function queuePatch(patch){if(!canControl()||!lastView?.active||lastView.authority!=='manual'){toast?.('Manual flight controls are unavailable.');return;}engage();Object.assign(cmd,structuredClone(patch));for(const field of Object.keys(patch))optimisticFields.add(field);patchQueue.add(patch);dirty=patchQueue.dirty;}
+  function queuePatch(patch){if(!canControl()||!lastView?.active||lastView.authority!=='manual'){toast?.('Manual flight controls are unavailable.');return false;}engage();Object.assign(cmd,structuredClone(patch));for(const field of Object.keys(patch))optimisticFields.add(field);patchQueue.add(patch);dirty=patchQueue.dirty;return true;}
   function changedArray(field,index,value,count){return editArrayCommand(optimisticFields.has(field)?cmd[field]:undefined,lastView?.rendering_truth?.command?.[field],index,value,count);}
   let surfaceControls, steerInput;
   let el=document.getElementById('phantom-panel');
@@ -51,10 +54,19 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
     el.style.display='none';
     el.innerHTML='<b id="ph-aircraft">PHANTOM</b><div id="ph-feedback" style="margin:8px 0;font:12px monospace;white-space:pre-line"></div><div id="ph-surface-controls"></div><div id="ph-sliders"></div>'+
       '<label>Mode <select id="ph-mode"><option>attitude</option><option>rate_damping</option><option>attitude_vs</option><option>off</option></select></label> '+
-      '<button id="ph-voice" title="Push to talk: boost 50 percent, brakes off, drive 80 percent, take-off configuration, downforce, nose up 8, status, confirm">🎙 Voice</button> <button id="ph-take">Take control</button> <button id="ph-gear">Pods / wheels: 90°</button> <button id="ph-legs">Legs: extended</button> <button id="ph-brake">Brakes on</button> <button id="ph-wing">Wing deploy</button> <button id="ph-canard">Canards deploy</button> <button id="ph-airbrake" title="Transition ECU: fan-assisted air-braking into hover. Engaging sets pods 90°, boosters off and vertical-speed mode; the ECU runs fans, spoilerons, DRS airbrake, canards and turn coordination. Stick, pedal and vertical speed stay yours.">Air-brake: engage</button>'+
+      '<button id="ph-voice" title="Push to talk: boost 50 percent, brakes off, drive 80 percent, take-off configuration, downforce, nose up 8, status, confirm">🎙 Voice</button> <button id="ph-take">Take control</button> <button id="ph-gear">Pods / wheels: 90°</button> <button id="ph-legs">Legs: extended</button> <button id="ph-brake">Brakes on</button> <button id="ph-wing">Deploy wings</button> <button id="ph-canard">Canards deploy</button> <button id="ph-airbrake" title="Transition ECU: fan-assisted air-braking into hover. Engaging sets pods 90°, boosters off and vertical-speed mode; the ECU runs fans, spoilerons, DRS airbrake, canards and turn coordination. Stick, pedal and vertical speed stay yours.">Air-brake: engage</button>'+
       '<input id="ph-say" type="text" placeholder="Type an instruction to the pilot, then Enter" aria-label="Typed pilot instruction" style="width:100%;margin-top:6px">'+
       '<div id="ph-voice-log" style="margin-top:6px;font-size:12px;color:#9fe6d6"></div><div id="ph-state" style="margin-top:6px;white-space:pre-wrap;font-family:monospace;font-size:11px"></div>';
     document.querySelector('.controls-panel').appendChild(el);
+    // Cancel secondary downs before native ranges can move or take focus.
+    const ignoreSecondaryClick=event=>{
+      if(event.button!==2)return;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    for(const type of ['pointerdown','mousedown','contextmenu','auxclick']){
+      el.addEventListener(type,ignoreSecondaryClick,true);
+    }
     surfaceControls=el.querySelector('#ph-surface-controls');
     const specs=[['Left aileron','aileron_trim_deg',-20,20,0],['Right aileron','aileron_trim_deg',-20,20,1],['Left flap','flap_deg',-5,35,0],['Right flap','flap_deg',-5,35,1],['Left canard','canard_pitch_deg',-20,25,0],['Right canard','canard_pitch_deg',-20,25,1],...['Front left','Front right','Rear left','Rear right'].flatMap((name,i)=>[[name+' wheel drive','wheel_drive',-1,1,i],[name+' brake','brake',0,1,i],[name+' pod tilt','pod_tilt_deg',0,90,i],[name+' leg extension','leg_extension_m',0,.52,i]]),['Left booster throttle','booster_throttle',0,1,0],['Right booster throttle','booster_throttle',0,1,1]];
     for(const [label,field,lo,hi,index] of specs){
@@ -84,7 +96,14 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
     el.querySelector('#ph-gear').onclick=e=>{vtol=!vtol;queuePatch({pod_tilt_deg:Array(4).fill(vtol?90:0)});e.target.textContent='Pods / wheels: '+(vtol?'90°':'0°');};
     el.querySelector('#ph-legs').onclick=e=>{legsExtended=!legsExtended;queuePatch({leg_extension_m:Array(4).fill(legsExtended?.52:0)});e.target.textContent='Legs: '+(legsExtended?'extended':'retracted');};
     el.querySelector('#ph-brake').onclick=e=>{brakes=!brakes;queuePatch({brake:Array(4).fill(brakes?1:0)});e.target.textContent='Brakes '+(brakes?'on':'off');};
-    el.querySelector('#ph-wing').onclick=e=>{wing=!wing;queuePatch({wing:wing?'deploy':'stow'});e.target.textContent='Wing '+(wing?'stow':'deploy');};
+    el.querySelector('#ph-wing').onclick=e=>{
+      if(e.detail>1)return;
+      const deploy=!wing;
+      if(queuePatch({wing:deploy?'deploy':'stow'})){
+        wing=deploy;
+        e.currentTarget.textContent=wingActionLabel(wing);
+      }
+    };
     el.querySelector('#ph-canard').onclick=e=>{can=!can;queuePatch({canard_fold:can?'deployed':'folded'});e.target.textContent='Canards '+(can?'fold':'deploy');};
     el.querySelector('#ph-airbrake').onclick=e=>{airbrake=!airbrake;queuePatch({airbrake:airbrake?'on':'off'});e.target.textContent=airbrake?'Air-brake ON: release':'Air-brake: engage';};
     // ---- voice pilot: patches this same cmd (same run and authority rules as the sliders)
@@ -92,7 +111,7 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
     const syncUi=()=>{for(const l of s.children){const k=l.firstChild.textContent.trim();if(k in cmd){l.querySelector('input').value=cmd[k];l.querySelector('output').value=cmd[k];}}
       el.querySelector('#ph-mode').value=cmd.stability_mode;
       if(cmd.brake){brakes=cmd.brake[0]>0.5;el.querySelector('#ph-brake').textContent='Brakes '+(brakes?'on':'off');}
-      if(cmd.wing){wing=cmd.wing==='deploy';el.querySelector('#ph-wing').textContent='Wing '+(wing?'stow':'deploy');}
+      if(cmd.wing==='deploy'||cmd.wing==='stow'){wing=cmd.wing==='deploy';el.querySelector('#ph-wing').textContent=wingActionLabel(wing);}
       if(cmd.canard_fold){can=cmd.canard_fold==='deployed';el.querySelector('#ph-canard').textContent='Canards '+(can?'fold':'deploy');}
       if(cmd.pod_tilt_deg){vtol=cmd.pod_tilt_deg[0]>45;el.querySelector('#ph-gear').textContent='Pods / wheels: '+(vtol?'90°':'0°');}};
     const apply=(r,heard)=>{queuePatch(r.patch);voiceReason=`Voice: "${heard}" -> ${r.intent} ${JSON.stringify(r.patch)}`;syncUi();};
@@ -164,7 +183,7 @@ export function createPhantomPanel({api,toast,canControl=()=>true}){
         if(!engaged)for(const key of Object.keys(cmd))if(key!=='schema'&&t.command[key]!=null)cmd[key]=structuredClone(t.command[key]);
         if(!dirty&&!pending)for(const input of el.querySelectorAll('[data-live-field]')){const raw=t.command[input.dataset.liveField];const value=input.dataset.liveIndex!=null?raw?.[Number(input.dataset.liveIndex)]:raw;if(value!=null&&document.activeElement!==input){input.value=value;input.parentElement.querySelector('output').value=Number(value).toFixed(2);}}
         if(!dirty&&!pending&&document.activeElement!==el.querySelector('#ph-mode'))el.querySelector('#ph-mode').value=t.command.stability_mode||'attitude';
-        const held=heldControlToggles(t.command,optimisticFields,t.phantom?.transition_ecu);
+        const held=heldControlToggles(t.command,optimisticFields,t.phantom?.transition_ecu,t.phantom?.wing_state??o.wing_state);
         if(held.vtol){vtol=held.vtol.value;el.querySelector('#ph-gear').textContent=held.vtol.label;}
         if(held.legsExtended){legsExtended=held.legsExtended.value;el.querySelector('#ph-legs').textContent=held.legsExtended.label;}
         if(held.brakes){brakes=held.brakes.value;el.querySelector('#ph-brake').textContent=held.brakes.label;}
