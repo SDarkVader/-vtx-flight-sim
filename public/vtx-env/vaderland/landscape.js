@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import {heightfieldZ} from '../landscape.js';
 import {createGround} from '../ground.js';
-import {primaryRunwayCues} from '../runway-layout.js';
+import {primaryRunwayCues,resolvePrimaryRunway} from '../runway-layout.js';
 import {followTide} from './tidal-surface.js';
-import {airportTree,buildAirport} from './airfield.js';
+import {airportTree,buildAirport} from './airfield.js?v=20261124-runway-depth';
 import {dressHarbourDecks,dressLanding} from './landing.js';
 import {buildTerminal} from './terminal.js';
 import {district} from './district.js';
@@ -148,7 +148,13 @@ uniform float raceLevel;
 uniform float alpineOn;
 uniform sampler2D alpineLight;
 uniform vec4 alpineBounds;
+#ifdef SURVEYED_RUNWAY
+uniform vec4 runwayBounds;
+#endif
 void main(){
+  #ifdef SURVEYED_RUNWAY
+  if(all(greaterThanEqual(p.xy,runwayBounds.xy)) && all(lessThan(p.xy,runwayBounds.zw))) discard;
+  #endif
   vec3 normal=normalize(n);
   float slope=1.-normal.z;
   float macro=fbm(p.xy*.0016);
@@ -316,7 +322,18 @@ void main(){
 
 function terrainTiles(group,w,uniforms) {
   const h=w.heights_m, n=h.length, step=2*w.half_m/(n-1), tile=80;
+  // The surveyed pavement draws at the terrain height, so leave its footprint to that mesh.
   const material=new THREE.ShaderMaterial({uniforms,vertexShader:vertex,fragmentShader:terrainFragment});
+  let runwayBounds, runwayTerrain;
+  if(w.vaderland.airfield){
+    const runway=resolvePrimaryRunway(w);
+    const halfWidth=runway.width/2+runway.shoulder_width;
+    runwayBounds=new THREE.Vector4(runway.x0,runway.yc-halfWidth,runway.x1,runway.yc+halfWidth);
+    runwayTerrain=new THREE.ShaderMaterial({
+      uniforms:{...uniforms,runwayBounds:{value:runwayBounds}},vertexShader:vertex,fragmentShader:terrainFragment,
+      defines:{SURVEYED_RUNWAY:1},
+    });
+  }
   for(let j0=0;j0<n-1;j0+=tile) for(let i0=0;i0<n-1;i0+=tile){
     const nx=Math.min(tile,n-1-i0)+1, ny=Math.min(tile,n-1-j0)+1;
     const pos=new Float32Array(nx*ny*3), normals=new Float32Array(pos.length);
@@ -335,7 +352,11 @@ function terrainTiles(group,w,uniforms) {
     g.setAttribute('position',new THREE.BufferAttribute(pos,3));
     g.setAttribute('normal',new THREE.BufferAttribute(normals,3));
     g.setIndex(new THREE.BufferAttribute(indices,1));g.computeBoundingSphere();
-    const mesh=new THREE.Mesh(g,material);mesh.name='Vaderland terrain';group.add(mesh);
+    const intersectsRunway=runwayBounds && i0*step-w.half_m<runwayBounds.z
+      && (i0+nx-1)*step-w.half_m>runwayBounds.x && j0*step-w.half_m<runwayBounds.w
+      && (j0+ny-1)*step-w.half_m>runwayBounds.y;
+    const mesh=new THREE.Mesh(g,intersectsRunway?runwayTerrain:material);
+    mesh.name='Vaderland terrain';group.add(mesh);
   }
 }
 

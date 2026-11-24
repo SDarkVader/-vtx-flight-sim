@@ -6,12 +6,15 @@ const vert=`
   void main(){kind=surface;p=position;n=vec3(0.,0.,1.);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}
 `;
 
+const runwaySurfaceOrder=-80, runwayMarkingOrder=-79;
+
 function sign(group,canvas,width,height,position,rot=0,vertical=false){
   const t=new THREE.CanvasTexture(canvas);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;
   const m=new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3});
   const face=new THREE.Mesh(new THREE.PlaneGeometry(width,height),m);
   face.rotation.order='ZYX';if(vertical)face.rotation.x=Math.PI/2;
   face.rotation.z=rot;face.position.set(...position);group.add(face);
+  return face;
 }
 
 function lettering(label,fg,bg){
@@ -38,18 +41,19 @@ function terminalMark(group,o,diameter=116.5){
 }
 
 function makePaving(group,w,uniforms,common){
-  const positions=[],types=[],mark=[],col=[],lamps=[];
+  const newLayer=()=>({positions:[],types:[],mark:[],col:[]});
+  const hardstanding=newLayer(),runway=newLayer(),lamps=[];
   const cues=primaryRunwayCues(w),r=cues.runway;
-  function polygon(points,z,type,tint){
+  function polygon(points,z,type,tint,layer=hardstanding){
     const verts=THREE.ShapeUtils.triangulateShape(points.map(p=>new THREE.Vector2(...p)),[]);
     const rgb=tint?new THREE.Color(tint):null;
     for(const tri of verts)for(const i of tri){
-      (rgb?mark:positions).push(...points[i],z);
-      if(rgb)col.push(rgb.r,rgb.g,rgb.b);else types.push(type);
+      (rgb?layer.mark:layer.positions).push(...points[i],z);
+      if(rgb)layer.col.push(rgb.r,rgb.g,rgb.b);else layer.types.push(type);
     }
   }
-  function rect(x,y,a,b,z,type,tint){
-    polygon([[x-a,y-b],[x+a,y-b],[x+a,y+b],[x-a,y+b]],z,type,tint);
+  function rect(x,y,a,b,z,type,tint,layer){
+    polygon([[x-a,y-b],[x+a,y-b],[x+a,y+b],[x-a,y+b]],z,type,tint,layer);
   }
   function strip(points,width,offset,z,type,tint){
     const sides=[];
@@ -60,7 +64,17 @@ function makePaving(group,w,uniforms,common){
     }
     for(let i=1;i<sides.length;i++)polygon([sides[i-1][0],sides[i][0],sides[i][1],sides[i-1][1]],z,type,tint);
   }
-  rect(0,0,r.length/2,19,.014,0);rect(0,0,r.length/2,15,.027,2);
+  // The terrain shader leaves this footprint to the surveyed deck.
+  const runwayY=r.yc;
+  const runwayZ=r.elevation_m, halfWidth=r.width/2, halfShoulder=r.shoulder_width/2;
+  const spanCount=Math.ceil(r.length/200), span=r.length/spanCount;
+  for(let i=0;i<spanCount;i++){
+    const x=r.x0+(i+.5)*span;
+    rect(x,runwayY,span/2,halfWidth,runwayZ,2,null,runway);
+    for(const side of [-1,1]){
+      rect(x,runwayY+side*(halfWidth+halfShoulder),span/2,halfShoulder,runwayZ,0,null,runway);
+    }
+  }
   rect(0,-45,r.length/2-42,6,.018,0);
   rect(7,-78,260,32,.019,1);
   if(w.vaderland.arrivals){
@@ -117,20 +131,28 @@ function makePaving(group,w,uniforms,common){
       station+=l;
     }
   }
-  for(let x=-r.length/2+103;x<r.length/2-90;x+=58)rect(x,0,13.5,.28,.053,0,'#dfe0d7');
+  const runwayMark=(x,y,a,b,tint)=>rect(x,y,a,b,runwayZ,0,tint,runway);
+  for(let x=-r.length/2+103;x<r.length/2-90;x+=58)runwayMark(x,0,13.5,.28,'#dfe0d7');
   for(const side of [-1,1]){
-    rect(0,side*14.45,r.length/2-.1,.19,.055,0,'#edebdf');
+    runwayMark(0,side*14.45,r.length/2-.1,.19,'#edebdf');
     for(const direction of [-1,1]){
       const end=(r.length/2)*direction;
       for(const distance of [160,310,465,620]){
-        if(distance===310)rect(end-direction*distance,side*8.2,18,2.20,.056,0,'#e8e5d9');
+        if(distance===310)runwayMark(end-direction*distance,side*8.2,18,2.20,'#e8e5d9');
         else for(let i=0;i<(distance===160?3:distance===465?2:1);i++)
-          rect(end-direction*distance,side*(8.5+i*1.15),10.8,.35,.056,0,'#dbdfd6');
+          runwayMark(end-direction*distance,side*(8.5+i*1.15),10.8,.35,'#dbdfd6');
       }
-      for(let i=0;i<5;i++)rect(end-direction*17,side*(3+i*2.1),12.6,.57,.057,0,'#eeece2');
+      for(let i=0;i<5;i++)runwayMark(end-direction*17,side*(3+i*2.1),12.6,.57,'#eeece2');
     }
   }
-  for(const n of cues.numbers)sign(group,lettering(n.label,'#e5e5d9'),15.5,15.5,[n.x+(n.label==='08'?24:-24),0,.061],n.rotation);
+  for(const n of cues.numbers){
+    const label=sign(group,lettering(n.label,'#e5e5d9'),15.5,15.5,[n.x+(n.label==='08'?24:-24),0,runwayZ],n.rotation);
+    label.renderOrder=runwayMarkingOrder;
+    label.material.transparent=false;
+    label.material.alphaTest=.35;
+    label.material.polygonOffset=false;
+    label.material.depthFunc=THREE.AlwaysDepth;
+  }
   for(const lamp of [...cues.edgeLights,...cues.thresholdLights])lamps.push([lamp[0],lamp[1],.16,lamp[2],.56]);
   for(const p of w.vaderland.airfield.pads){
     const arc=(r,lo,hi)=>Array.from({length:65},(_,i)=>{const a=lo+(hi-lo)*i/64;return [p.x+r*Math.cos(a),p.y+r*Math.sin(a)];});
@@ -143,8 +165,7 @@ function makePaving(group,w,uniforms,common){
   function geom(pos){
     const b=new THREE.BufferGeometry();b.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));return b;
   }
-  const pavement=geom(positions);pavement.setAttribute('surface',new THREE.Float32BufferAttribute(types,1));
-  const material=new THREE.ShaderMaterial({uniforms,side:THREE.DoubleSide,vertexShader:vert,
+  const pavementShader={uniforms,side:THREE.DoubleSide,vertexShader:vert,
     fragmentShader:'varying float kind;uniform sampler2D reliefLight;'+common+`
     void main(){
       float grain=fbm(p.xy*6.7), mottling=fbm(p.xy*.039);
@@ -170,10 +191,30 @@ function makePaving(group,w,uniforms,common){
       color*=mix(vec3(.45,.55,.71),vec3(1.),contact.x)*mix(.67,1.,contact.y);
       gl_FragColor=vec4(haze(color*mix(1.,.38,night)),1.);
       #include <colorspace_fragment>
-    }`,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-  const base=new THREE.Mesh(pavement,material);base.name='Meridian surveyed hardstanding';group.add(base);
-  const paint=geom(mark);paint.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-  group.add(new THREE.Mesh(paint,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4})));
+    }`,polygonOffset:true,polygonOffsetUnits:-2};
+  for(const [name,layer,asphaltBias,paintBias] of [
+    ['Meridian surveyed hardstanding',hardstanding,-2,-4],
+    ['Meridian runway',runway,null,0],
+  ]){
+    const pavement=geom(layer.positions);
+    pavement.setAttribute('surface',new THREE.Float32BufferAttribute(layer.types,1));
+    const baseMaterial=new THREE.ShaderMaterial({
+      ...pavementShader,polygonOffset:asphaltBias!==null,polygonOffsetFactor:asphaltBias??0,
+    });
+    const base=new THREE.Mesh(pavement,baseMaterial);base.name=name;group.add(base);
+    if(layer===runway)base.renderOrder=runwaySurfaceOrder;
+    const paint=geom(layer.mark);paint.setAttribute('color',new THREE.Float32BufferAttribute(layer.col,3));
+    const markings=new THREE.Mesh(paint,new THREE.MeshBasicMaterial({
+      vertexColors:true,side:THREE.DoubleSide,depthWrite:layer!==runway,
+      polygonOffset:layer!==runway,polygonOffsetFactor:paintBias,polygonOffsetUnits:-4,
+    }));
+    // Flat paint changes the deck's colour early and leaves its depth for tyres and other geometry.
+    if(layer===runway){
+      markings.renderOrder=runwayMarkingOrder;
+      markings.material.depthFunc=THREE.AlwaysDepth;
+    }
+    markings.name=name+' markings';group.add(markings);
+  }
   for(const [x,y,z] of w.vaderland.airfield.lamps)lamps.push([x,y,z-.15,'#ffe0a1',1.05]);
   const light=geom(lamps.flatMap(l=>l.slice(0,3)));light.setAttribute('tint',new THREE.Float32BufferAttribute(lamps.flatMap(l=>new THREE.Color(l[3]).toArray()),3));
   light.setAttribute('diameter',new THREE.Float32BufferAttribute(lamps.map(l=>l[4]),1));
