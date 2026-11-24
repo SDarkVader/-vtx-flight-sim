@@ -15,9 +15,9 @@ assert.equal(VEHICLE_MODELS.r6.sourceRevision,'P0-V4A-assembly-r6');
 assert.equal(VEHICLE_MODELS.r6.calibrationId,'ARGON-R6-LIVE-STABILITY-CALIBRATION-20261101');
 assert.deepEqual(VEHICLE_MODELS.r6.cgLocal,[-0.0003,0.0792,1.4097]);
 // Scenic R6 traffic shows the owner-confirmed connected R6 assembly, the same display as the piloted R6.
-assert.equal(VEHICLE_MODELS.r6.asset.split('?')[0],'/assets/airframe-r6-blendstra-rig.glb');
+assert.equal(VEHICLE_MODELS.r6.asset.split('?')[0],'/assets/airframe-r6-connected-r2.glb');
 assert.equal(VEHICLE_MODELS.r6.physicsVariant,'r6-argon-20261103');
-const r6=readFileSync(new URL('../public/assets/airframe-r6-blendstra-rig.glb',import.meta.url));
+const r6=readFileSync(new URL('../public/assets/airframe-r6-connected-r2.glb',import.meta.url));
 assert.equal(createHash('sha256').update(r6).digest('hex'),VEHICLE_MODELS.r6.sha256);
 const r6Manifest=JSON.parse(r6.subarray(20,20+r6.readUInt32LE(12)).toString());
 assert.equal(r6Manifest.meshes.length,691);

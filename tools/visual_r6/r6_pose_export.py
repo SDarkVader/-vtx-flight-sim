@@ -39,11 +39,33 @@ def set_tilt(x, y):
         d.qpos[ac.qadr[f'nacelle{i}_y']] = y
 
 
+def set_joints(values):
+    for name, v in values.items():
+        d.qpos[ac.qadr[name]] = v
+
+
 result = {'rest': poses()}
 for label, (x, y) in {'tilt_x': (tilt, 0.0), 'tilt_y': (0.0, tilt),
-                      'tilt_diag': (tilt / math.sqrt(2), tilt / math.sqrt(2))}.items():
+                      'tilt_diag': (tilt / math.sqrt(2), tilt / math.sqrt(2)),
+                      'tilt_neg_diag': (-tilt / math.sqrt(2), -tilt / math.sqrt(2))}.items():
     set_tilt(x, y)
     result[label] = poses()
+set_tilt(0.0, 0.0)
+# Every other articulation at its extremes (joint ranges from the physics model).
+spin = {f'{k}{i}_spin': math.radians(37.0) for k in ('rotor', 'shaft') for i in range(1, 5)}
+gear_full = {f'gear{i}_stroke': 0.25 for i in range(1, 7)}
+cabin = {'cabin_x': math.radians(15.0), 'cabin_y': -math.radians(15.0), 'cabin_z': math.radians(90.0)}
+for label, values in {'spin_37': spin, 'gear_full_stroke': gear_full, 'cabin_extreme': cabin}.items():
+    set_joints(values)
+    result[label] = poses()
+    set_joints({k: 0.0 for k in values})
+set_joints({f'shaft{i}_spin': math.pi for i in range(1, 5)})
+result['shaft_half_turn'] = poses()
+set_joints({f'shaft{i}_spin': 0.0 for i in range(1, 5)})
+set_tilt(tilt / math.sqrt(2), -tilt / math.sqrt(2))
+set_joints({**spin, **gear_full, **cabin})
+result['combined_extreme'] = poses()
+set_joints({k: 0.0 for k in {**spin, **gear_full, **cabin}})
 set_tilt(0.0, 0.0)
 result['meta'] = dict(tilt_deg=math.degrees(tilt), model_xml_sha256=__import__('hashlib').sha256(ac.xml.encode()).hexdigest())
 json.dump(result, open(out, 'w'), indent=1)

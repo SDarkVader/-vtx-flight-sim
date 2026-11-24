@@ -7,8 +7,10 @@ shows or flies resolves to the same bytes:
            MuJoCo model.xml sha256 d5b83de4… (byte-identical to the flight record)
   ledger   evidence/source/airframe_ledger_r6.json sha256 787b032b…
   record   the physics provenance names render asset /assets/airframe-r6.glb (flight identity, unchanged)
-  display  public/assets/airframe-r6-blendstra-rig.glb sha256 7325d0b3…, the owner-confirmed connected
-           assembly (Blendstra project dde793df…), 20 body containers at the MuJoCo body frames.
+  display  public/assets/airframe-r6-connected-r2.glb sha256 0e91bb06…: the owner-confirmed connected assembly
+           (Blendstra project dde793df…, rig 7325d0b3…) after the owner-approved connectivity cleanup of 24 Nov
+           (tools/visual_r6/r6_rig_cleanup.py); 20 body containers at the MuJoCo body frames. Shaft containers carry
+           extras.vtx_spin_centre so the cockpit spins each drawn shaft about its own centreline.
            The cockpit maps the recorded name to it explicitly (app.js R6_DISPLAY); scenic traffic uses it too.
 
 `python tools/visual_r6/r6_unified.py` prints the identity report and exits
@@ -33,8 +35,10 @@ REQUEST = dict(gear_variant='critical-damping-proposal', rpm=1200.0, fuel_kg=10.
 MODEL_XML_SHA256 = 'd5b83de425ad8da24e128faafaff399dd3e457474a2dabb7bbf4165c56220d16'
 LEDGER_SHA256 = '787b032b82c724984a88df596e81708687a5ae5f4d23396113e88fc1a162ab3e'
 RECORD_RENDER_ASSET = '/assets/airframe-r6.glb'   # named by the flight record's physics provenance
-DISPLAY_ASSET = '/assets/airframe-r6-blendstra-rig.glb'
-DISPLAY_SHA256 = '7325d0b303398c4ec0e9ece398cdcf63176db2555205b06c4d32a74a095c1489'
+DISPLAY_ASSET = '/assets/airframe-r6-connected-r2.glb'
+DISPLAY_SHA256 = '0e91bb0667bcc5d756ad0478a0d7bf86525263ecd2e8289d7e64fe3773186a04'
+SOURCE_RIG_ASSET = '/assets/airframe-r6-blendstra-rig.glb'   # the connected rig r2 was cleaned from (kept unchanged)
+SOURCE_RIG_SHA256 = '7325d0b303398c4ec0e9ece398cdcf63176db2555205b06c4d32a74a095c1489'
 CONNECTED_REFERENCE_SHA256 = '58ff9950622f7a3fce63aa3c1e9fc50cefe717e42506fb5bebfd25dea06a727c'  # assets/reference/r6-blendstra-reference.glb
 # Disconnected assembly (floating rod, actuator and cable ends near each duct). Kept for the
 # record, but never displayed as the R6.
@@ -89,7 +93,9 @@ def report() -> dict:
     xml_sha = hashlib.sha256(ac.xml.encode()).hexdigest()
     display = ROOT / 'public' / DISPLAY_ASSET.lstrip('/')
     reg = registry_r6()
-    frames = container_frames(glb_json(display))
+    display_json = glb_json(display)
+    frames = container_frames(display_json)
+    spin_centres = {n.get('name'): n.get('extras', {}).get('vtx_spin_centre') for n in display_json['nodes']}
     mj.mj_forward(ac.model, ac.data)
     root = mj.mj_name2id(ac.model, mj.mjtObj.mjOBJ_BODY, 'airframe')
     ra, pa = ac.data.xmat[root].reshape(3, 3), ac.data.xpos[root]
@@ -122,6 +128,9 @@ def report() -> dict:
         'registry_r6_not_retired_visual': reg['sha256'] not in RETIRED_DISPLAY_SHA256,
         'display_has_all_20_bodies': not missing,
         'display_pivots_match_physics': worst_m < 1e-4 and worst_deg < 1e-3,
+        'source_rig_kept_unchanged': sha256(ROOT / 'public' / SOURCE_RIG_ASSET.lstrip('/')) == SOURCE_RIG_SHA256,
+        'shafts_spin_about_drawn_centreline': all(len(spin_centres.get(f'shaft{i}') or []) == 3 for i in range(1, 5))
+            and 'shaftSpinNodes' in app and 'vtx_spin_centre' in app,
     }
     return dict(run_id=RUN_ID, flight_commit=FLIGHT_COMMIT, variant=VARIANT,
                 model_xml_sha256=xml_sha, display_asset=DISPLAY_ASSET, display_sha256=sha256(display),
