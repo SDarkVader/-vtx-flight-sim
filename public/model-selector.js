@@ -8,6 +8,12 @@ const startHeading = byId('departure-heading');
 const mainAircraft = ['phantom-a10c', 'r6'];
 let view, pending = false, boatId = null;
 
+function showHeading() {
+  const degrees = startHeading.value;
+  byId('departure-heading-value').value = degrees + '°';
+  startHeading.setAttribute('aria-valuetext', degrees + ' degrees');
+}
+
 function showActual(next) {
   view = next;
   if (pending) return;
@@ -23,6 +29,7 @@ function showActual(next) {
     byId('departure-heading-label').hidden = !phantom || !!boatId;
     startHeading.disabled = !!view.active || !phantom || !!boatId;
     if (document.activeElement !== startHeading && phantom) startHeading.value = view.departure_heading_deg ?? 90;
+    showHeading();
   }
   start.disabled = !!view.active || !known || !!boatId || document.documentElement.dataset.vtxWorldUnavailable === '1';
   byId('aircraft-evidence').textContent = flownEvidence(view);
@@ -143,13 +150,16 @@ for (const menu of [main, airframe]) menu.addEventListener('change', () => {
 startConfiguration.addEventListener('change', () => {
   if (!startConfiguration.disabled) void choose(airframe.value, {selecting:false}).catch(()=>{});
 });
+startHeading?.addEventListener('input', showHeading);
 startHeading?.addEventListener('change', () => {
   if (startHeading.disabled || !startHeading.value) return;
   const heading = Number(startHeading.value);
   if (!Number.isFinite(heading)) return;
-  startHeading.value = ((heading % 360) + 360) % 360;
+  startHeading.value = heading;
+  showHeading();
   void choose(airframe.value, {selecting:false}).catch(() => {
     startHeading.value = view?.departure_heading_deg ?? 90;
+    showHeading();
   });
 });
 document.addEventListener('vtx-preview-start', e => {

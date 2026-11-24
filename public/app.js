@@ -39,7 +39,7 @@ import {buildTrees,buildForecourt} from './vtx-env/vegetation.js?v=1';
 import {enhanceAircraft} from './vtx-env/aircraft-look.js?v=20261117-cutaway';
 import {preparePhysicalVisual} from './vtx-env/physical-visual.js?v=1';
 import {buildVolcanoBasement} from './vtx-env/volcano-basement.js?v=1';
-import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261121-meridian-streets';
+import {TacticalMinimap, liveMapObservation} from './vtx-env/tactical-minimap.js?v=20261124-map-pan';
 import {buildServiceRoads} from './vtx-env/service-roads.js?v=2';
 import {createFreeCamera} from './free-camera.js?v=20261116-runway-1';
 import {createVisualAirTraffic,clearOfPhysicalAircraft} from './vtx-env/visual-air-traffic.js?v=3';
@@ -560,10 +560,8 @@ function syncEnvironmentControls(envKey){
  currentEnvironment=[...$('environment-select').options].some(o=>o.value===envKey)?envKey:'airport';
  const select=$('environment-select');
  if(select)select.value=currentEnvironment;
- for(const [id,key] of [['env-airport','airport'],['env-sandbox','sandbox']]){
-  const btn=$(id);
-  if(!btn)continue;
-  const active=currentEnvironment===key;
+ for(const btn of document.querySelectorAll('#environment-switch [data-environment]')){
+  const active=currentEnvironment===btn.dataset.environment;
   btn.classList.toggle('selected',active);
   btn.setAttribute('aria-pressed',String(active));
  }
@@ -878,19 +876,20 @@ let miniMap=null,largeMinimap=null;
 function getMinimap(canvas){
   if(!canvas)return null;
   if(canvas===$('map')){
-    if(!miniMap)miniMap=new TacticalMinimap(canvas,{isLarge:false});
+    if(!miniMap)miniMap=new TacticalMinimap(canvas,{isLarge:false,redraw:()=>drawMap(canvas)});
     return miniMap;
   }
   if(canvas===$('large-map')){
-    if(!largeMinimap)largeMinimap=new TacticalMinimap(canvas,{isLarge:true});
+    if(!largeMinimap)largeMinimap=new TacticalMinimap(canvas,{isLarge:true,redraw:()=>drawMap(canvas)});
     return largeMinimap;
   }
   return null;
 }
 const onMap=async(event,canvas)=>{
   // Map B remains editable throughout a sortie; A only sets the next departure.
-  const rect=canvas.getBoundingClientRect();
   const mm=getMinimap(canvas);
+  if(mm?.isNavigationClick(event))return;
+  const rect=canvas.getBoundingClientRect();
   let x,y;
   if(mm){
     const proj=mm.getProjection(world?.half_m||500);
@@ -945,8 +944,9 @@ async function switchEnvironment(envKey){
   await new Promise((resolve,reject)=>document.dispatchEvent(new CustomEvent('vtx-preview-start',{detail:{environment:envKey,resolve,reject}})));
  }catch(error){syncEnvironmentControls(last.environment.key);throw error;}
 }
-if($('env-airport'))$('env-airport').onclick=guard(()=>switchEnvironment('airport'));
-if($('env-sandbox'))$('env-sandbox').onclick=guard(()=>switchEnvironment('sandbox'));
+for(const button of document.querySelectorAll('#environment-switch [data-environment]')){
+ button.onclick=guard(()=>switchEnvironment(button.dataset.environment));
+}
 if($('environment-select'))$('environment-select').onchange=guard(()=>switchEnvironment($('environment-select').value));
 function showDeparture(){
  $('dep').value=departure.join(', ');
@@ -1413,7 +1413,7 @@ function updateView(v){
  $('save-flight').disabled=!v.active;
  $('retry-bar').hidden=!v.retry_available||v.active;
  $('retry-status').textContent='Retry the retained mission from its departure.';
- for(const id of ['environment-select','env-airport','env-sandbox']){const el=$(id);if(el)el.disabled=envLocked;}
+ for(const el of document.querySelectorAll('#environment-select, #environment-switch [data-environment]'))el.disabled=envLocked;
  if(!harbourEnvironment&&v.environment?.key&&v.environment.key!==currentEnvironment){
   syncEnvironmentControls(v.environment.key);
  }
@@ -1519,7 +1519,11 @@ function connect(){
   setTimeout(connect,1000);
  };
 }
-api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&&w.default_departure.length===2){departure=[...w.default_departure];$('dep').value=departure.join(', ');}buildWorld(w);connect();let helm;try{helm=sessionStorage.getItem('vtx-helm');}catch{}if(helm)void openBoat(helm,true).catch(error=>toast(error.message));}).catch(error=>{console.warn('Unable to load selected environment',error);return fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{visualOnlyOffline=true;buildWorld(w);$('view-sync').textContent= 'SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';});}).catch(e=>{$('loading').textContent='Unable to load airport: '+e.message;console.error('Airport world',e);});
+api('/api/world').then(w=>{if(!last?.active&&Array.isArray(w.default_departure)&&w.default_departure.length===2){departure=[...w.default_departure];$('dep').value=departure.join(', ');}buildWorld(w);connect();let helm;try{helm=sessionStorage.getItem('vtx-helm');}catch{}if(helm)void openBoat(helm,true).catch(error=>toast(error.message));}).catch(error=>{
+ if(document.documentElement.hasAttribute('data-vtx-local-road-display'))throw error;
+ console.warn('Unable to load selected environment',error);
+ return fetch('/vtx-env/ride-world.json?v=1').then(response=>{if(!response.ok)throw Error('Airport terrain unavailable: HTTP '+response.status);return response.json();}).then(w=>{visualOnlyOffline=true;buildWorld(w);$('view-sync').textContent='SCRIPTED TRAFFIC - PHYSICAL BACKEND OFFLINE';});
+}).catch(error=>{$('loading').textContent='Unable to load the selected environment: '+error.message;console.error('Environment load',error);});
 const q=new THREE.Quaternion(),pos=new THREE.Vector3(),cameraTarget=new THREE.Vector3();
 function audibleTraffic(){
  const traffic=[];

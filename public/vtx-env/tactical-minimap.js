@@ -126,7 +126,7 @@ function drawAircraftMarker(ctx, canvas, proj, fix) {
 }
 
 export class TacticalMinimap {
-  constructor(canvas, { isLarge = false } = {}) {
+  constructor(canvas, { isLarge = false, redraw } = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.isLarge = isLarge;
@@ -136,8 +136,8 @@ export class TacticalMinimap {
     this.center = [0, 100]; // centered to capture both runways and northern facilities
     this.airportCenter = [0, 100];
     this.tacticalMode = false; // false: airport, true: whole world
-    this.dragStart = null;
-    this.isDragging = false;
+    this.suppressPointerClick = false;
+    this.redraw = redraw ?? (() => { if (this.lastRender) this.render(...this.lastRender); });
     
     this.bindEvents();
   }
@@ -149,6 +149,7 @@ export class TacticalMinimap {
     
     // Double click to toggle tactical zoom
     c.addEventListener('dblclick', (e) => {
+      if (this.isNavigationClick(e)) return;
       this.tacticalMode = !this.tacticalMode;
       this.zoom = this.tacticalMode ? 1000 / (this.worldHalf * 2 * Math.max(1, c.width / c.height)) : this.airportZoom;
       this.center = this.tacticalMode ? [0, 0] : [...this.airportCenter];
@@ -156,36 +157,68 @@ export class TacticalMinimap {
       e.preventDefault();
     });
 
-    // Touch support: drag to pan
-    let touchDist = 0;
-    c.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1) {
-        this.isDragging = true;
-        this.dragStart = [e.touches[0].clientX, e.touches[0].clientY, ...this.center];
-      } else if (e.touches.length === 2) {
-        touchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    const pointers = new Map();
+    const dragThreshold = 5;
+    let redrawPending = false;
+    const pinchDistance = () => {
+      const [first, second] = pointers.values();
+      return Math.hypot(second[0] - first[0], second[1] - first[1]);
+    };
+    const movePointer = e => {
+      const previous = pointers.get(e.pointerId);
+      if (!previous) return;
+      const point = [e.clientX, e.clientY];
+      const dx = point[0] - previous[0], dy = point[1] - previous[1];
+      if (!dx && !dy) return;
+      if (pointers.size > 1) {
+        const previousDistance = pointers.size === 2 ? pinchDistance() : 0;
+        pointers.set(e.pointerId, point);
+        if (previousDistance > 0) this.zoomBy(pinchDistance() / previousDistance);
+        return;
       }
-    }, { passive: true });
-
-    c.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 1 && this.isDragging && this.dragStart) {
-        const dx = e.touches[0].clientX - this.dragStart[0];
-        const dy = e.touches[0].clientY - this.dragStart[1];
-        const span = 1000 / this.zoom;
-        const rect = c.getBoundingClientRect();
-        this.center[0] = this.dragStart[2] - (dx / rect.width) * span;
-        this.center[1] = this.dragStart[3] + (dy / rect.height) * span * c.height / c.width;
-        backgroundCache.delete(c);
-      } else if (e.touches.length === 2 && touchDist > 0) {
-        const newDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-        const scale = newDist / touchDist;
-        this.zoomBy(scale);
-        touchDist = newDist;
-        backgroundCache.delete(c);
+      if (!this.suppressPointerClick && Math.hypot(dx, dy) < dragThreshold) return;
+      this.suppressPointerClick = true;
+      pointers.set(e.pointerId, point);
+      const rect = c.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const span = 1000 / this.zoom;
+      this.center[0] -= dx * span / rect.width;
+      this.center[1] += dy * span * c.height / (rect.height * c.width);
+      if (redrawPending) return;
+      redrawPending = true;
+      requestAnimationFrame(() => {
+        redrawPending = false;
+        this.redraw();
+      });
+    };
+    c.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      this.suppressPointerClick = pointers.size > 0;
+      pointers.set(e.pointerId, [e.clientX, e.clientY]);
+      if (e.isTrusted) c.setPointerCapture(e.pointerId);
+    });
+    c.addEventListener('pointermove', e => {
+      if (e.buttons & 1) movePointer(e);
+    });
+    c.addEventListener('pointerup', e => {
+      if (!pointers.has(e.pointerId)) return;
+      movePointer(e);
+      pointers.delete(e.pointerId);
+      // Pointer capture may deliver a click after a release outside the map.
+      const rect = c.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX >= rect.right || e.clientY < rect.top || e.clientY >= rect.bottom) {
+        this.suppressPointerClick = true;
       }
-    }, { passive: true });
+    });
+    const cancelPointer = e => {
+      if (pointers.delete(e.pointerId)) this.suppressPointerClick = true;
+    };
+    c.addEventListener('pointercancel', cancelPointer);
+    c.addEventListener('lostpointercapture', cancelPointer);
+  }
 
-    c.addEventListener('touchend', () => { this.isDragging = false; }, { passive: true });
+  isNavigationClick(event) {
+    return this.suppressPointerClick && event.isTrusted === true;
   }
 
   zoomBy(factor,anchor=[this.canvas.width/2,this.canvas.height/2]){
@@ -195,7 +228,7 @@ export class TacticalMinimap {
     this.zoom=Math.max(limits.min,Math.min(limits.max,this.zoom*factor));
     const after=this.getProjection();this.center[0]+=point[0]-after.unpx(anchor[0]);this.center[1]+=point[1]-after.unpy(anchor[1]);
     backgroundCache.delete(this.canvas);
-    if(this.lastRender)this.render(...this.lastRender);
+    this.redraw();
   }
 
   getProjection(worldHalf = 500) {
