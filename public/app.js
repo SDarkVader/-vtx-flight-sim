@@ -805,7 +805,10 @@ suspensionSchematicToggle.onclick=()=>{
  suspensionSchematicToggle.setAttribute('aria-pressed',String(suspensionSchematicEnabled));
 };
 // Render the asset identified by the physical snapshot, including during replay.
-function visualAsset(a){return typeof a==='string'&&a.startsWith('/assets/')?a:null;}
+// The flown R6 physics record names /assets/airframe-r6.glb; the owner-confirmed connected assembly of that
+// aircraft is the Blendstra rig (same 20 body frames). Explicit and pinned: see docs/R6_UNIFIED.md.
+const R6_DISPLAY={'/assets/airframe-r6.glb':'/assets/airframe-r6-blendstra-rig.glb'};
+function visualAsset(a){return typeof a==='string'&&a.startsWith('/assets/')?(R6_DISPLAY[a]||a):null;}
 function loadAirframe(asset){
  if(asset===loadedAsset||performance.now()<assetRetryAfter)return;loadedAsset=asset;
  modelReady=false;if(model)model.visible=false;

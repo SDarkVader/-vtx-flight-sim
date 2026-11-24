@@ -1,4 +1,5 @@
-"""The R6 the game flies and the R6 it shows are one aircraft: the 3 November A-to-B R6."""
+"""The R6 the game flies and the R6 it shows are one aircraft: the 3 November A-to-B R6 physics,
+displayed with the owner-confirmed connected assembly."""
 import importlib.util
 from pathlib import Path
 
@@ -16,7 +17,7 @@ def test_r6_model_physics_and_display_are_the_flown_a_to_b_aircraft():
     assert report['display_sha256'] == r6_unified.DISPLAY_SHA256
 
 
-def test_no_r6_entry_shows_the_disconnected_p0_v4_rig():
+def test_no_r6_entry_shows_the_disconnected_assembly():
     text = (ROOT / 'public/vtx-env/vehicle-registry.js').read_text(encoding='utf-8')
     for digest, name in r6_unified.RETIRED_DISPLAY_SHA256.items():
         assert digest not in text and name not in text
