@@ -10,6 +10,7 @@ import {cityDensity,hash2} from './city-density.js';
 import {meridianStreets} from './meridian-streets.js';
 
 const LIT_KINDS = new Set(['street','arterial','boulevard','local','arrivals','marina-link','lane','cycleway','track','viaduct']);
+const WEST_FRONTAGES = new Set(['West Exchange Crescent','Orchard Rise']);
 const MERIDIAN = {x0:-3300, x1:3100, y0:500, y1:5800};
 const inMeridian = (x,y) => x>MERIDIAN.x0 && x<MERIDIAN.x1 && y>MERIDIAN.y0 && y<MERIDIAN.y1;
 const smooth=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
@@ -21,6 +22,12 @@ const lightHaze = `
 vec3 lightHaze(vec3 c,vec3 world){
   float d=length(cameraPosition-world);
   return c*mix(.18,1.,exp(-d*.00007));
+}`;
+const streetPalette = `
+vec3 streetTint(float tone,vec3 cool,vec3 sodium){
+  if(tone<.5)return cool;
+  if(tone<1.5)return sodium;
+  return tone<2.5?vec3(1.,.22,.15):vec3(.20,.53,1.);
 }`;
 
 // Walk a polyline at fixed spacing and return samples with tangent and terrain height.
@@ -45,7 +52,7 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
   const routes=meridianStreets(w).filter(r=>LIT_KINDS.has(r.kind)&&(r.kind!=='track'||inMeridian(...r.points[0])));
 
   // ---- 1. Street lamps: kept and brightened by density; open land stays unlit ------------
-  const lamps=[], levels=[], pools=[], poolLevels=[], bases=[];
+  const lamps=[], levels=[], pools=[], poolLevels=[], poolAxes=[], bases=[];
   for(const r of routes){
     if(r.kind==='viaduct'){                                             // bridge lighting is constant, at deck height
       for(const s of walk(r.points,46,w)){
@@ -54,18 +61,21 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
           const x=s.x-s.ty*reach*side,y=s.y+s.tx*reach*side;
           lamps.push(x,y,deck+8.5,1);levels.push(.62);bases.push(deck);
           pools.push(x+s.ty*2.*side,y-s.tx*2.*side,deck+.35,1);poolLevels.push(.42);
+          poolAxes.push(s.tx,s.ty,29,Math.min(11,r.width_m*.55));
         }
       }
       continue;
     }
     const avenue=r.width_m>=40||r.kind==='boulevard', narrow=r.width_m<=6;
+    const westernFrontage=WEST_FRONTAGES.has(r.name);
     const spacing=narrow?48:avenue?34:28;
     const samples=walk(r.points,spacing,w);
     for(let k=0;k<samples.length;k++){
       const s=samples[k];
       if(k>0 && Math.abs(s.z-samples[k-1].z)>spacing*.16)continue;   // bridges, cuttings: no lamp on the slope
       const d=density.sample(s.x,s.y);
-      const keep=d<.035?0:.12+.88*smooth(.06,.55,d);
+      const frontage=westernFrontage?smooth(.105,.22,d):0;
+      const keep=d<.035?0:Math.max(.12+.88*smooth(.06,.55,d),.57*frontage);
       const reach=r.width_m/2+1.2;
       for(const side of [-1,1]){
         if(!avenue && side===1 && k%2)continue;                         // one side only on minor streets
@@ -73,12 +83,22 @@ export function buildCityLife(group, w, uniforms, density=cityDensity(w)){
         if(hash2(x,y)>keep)continue;
         const z=heightfieldZ(w,x,y),level=(.30+.70*smooth(.05,.85,d))*(narrow?.67:1);
         const white=avenue&&d>.55?1:0;
-        lamps.push(x,y,z+(narrow?4.2:9.5),white?0:1);levels.push(level);bases.push(z);
-        if(d>.22){pools.push(x+s.ty*2.2*side,y-s.tx*2.2*side,z+.45,white?0:1);poolLevels.push(level*smooth(.22,.8,d));}
+        const accent=hash2(x+11,y-7);
+        const tone=white?0:d>.52&&(r.kind==='lane'||r.kind==='local'||narrow)&&accent<.16
+          ?(accent<.086?2:3):1;
+        lamps.push(x,y,z+(narrow?4.2:9.5),tone);levels.push(level);bases.push(z);
+        const poolStrength=Math.max(smooth(.16,.78,d),frontage*.44);
+        if(poolStrength>0){
+          const inward=Math.max(2.2,r.width_m*.22);
+          const poolX=x+s.ty*inward*side,poolY=y-s.tx*inward*side;
+          pools.push(poolX,poolY,heightfieldZ(w,poolX,poolY)+.45,tone);
+          poolLevels.push(level*poolStrength);
+          poolAxes.push(s.tx,s.ty,spacing*(narrow?.58:.76),Math.max(5,Math.min(12,r.width_m*.62)));
+        }
       }
     }
   }
-  root.add(lampHeads(lamps,levels,shared), lampPools(pools,poolLevels,shared), lampPosts(lamps,bases));
+  root.add(lampHeads(lamps,levels,shared), lampPools(pools,poolLevels,poolAxes,shared), lampPosts(lamps,bases));
 
   // ---- 2. Traffic: volume follows density; empty roads at night are empty -----------------
   const cars=[];const random=rng(48611);
@@ -147,14 +167,17 @@ function lampHeads(data,levels,u){
       q=position.xy;warm=lamp.w;world=lamp.xyz;glow=level;
       vec4 view=viewMatrix*vec4(lamp.xyz,1.);
       float d=-view.z;
-      float size=max(.55,d*.0021);                                   // >= ~1.2 px at any range
+      float size=max(.55,d*.0021)*(1.+.38*smoothstep(.35,1.,level));
       view.xy+=position.xy*size*lit;
       gl_Position=projectionMatrix*view;
     }`,`
-    uniform float lit;varying vec2 q;varying float warm,glow;varying vec3 world;${lightHaze}
+    uniform float lit;varying vec2 q;varying float warm,glow;varying vec3 world;${lightHaze}${streetPalette}
     void main(){
       float r=dot(q,q);if(r>1.)discard;
-      vec3 c=mix(vec3(.80,.84,.92),vec3(1.,.56,.20),warm)*exp(-r*3.2)*1.9*glow;
+      float spread=1.+.38*smoothstep(.35,1.,glow);
+      float core=exp(-r*3.2*spread*spread)*1.9;
+      float halo=.17*exp(-r*2.)*smoothstep(.35,.9,glow);
+      vec3 c=streetTint(warm,vec3(.76,.85,1.),vec3(1.,.56,.21))*(core+halo)*glow*(1.-smoothstep(.68,1.,r));
       gl_FragColor=vec4(lightHaze(c,world)*lit,1.);
     }`,{lit:u.lit});
   const mesh=new THREE.Mesh(g,m);mesh.frustumCulled=false;mesh.name='Street lamps';return mesh;
@@ -173,23 +196,25 @@ function lampPosts(data,bases){
   mesh.name='Street lamp posts';return mesh;
 }
 
-// Flat additive light pools on the road surface: the lit grid seen from the air.
-function lampPools(data,levels,u){
+// Oriented spills light the street between lamp heads when viewed from above.
+function lampPools(data,levels,axes,u){
   const n=data.length/4;
-  const g=instancedQuad(n,[['pool',4,data],['level',1,levels]]);
+  const g=instancedQuad(n,[['pool',4,data],['level',1,levels],['poolAxes',4,axes]]);
   const m=additive(`
-    attribute vec4 pool;attribute float level;varying vec2 q;varying float warm,glow;varying vec3 world;
+    attribute vec4 pool,poolAxes;attribute float level;varying vec2 q;varying float warm,glow;varying vec3 world;
     void main(){
       q=position.xy;warm=pool.w;glow=level;
-      world=pool.xyz+vec3(position.xy*8.5,0.);
+      vec2 along=poolAxes.xy,across=vec2(-along.y,along.x);
+      world=pool.xyz+vec3(along*q.x*poolAxes.z+across*q.y*poolAxes.w,0.);
       gl_Position=projectionMatrix*viewMatrix*vec4(world,1.);
     }`,`
-    uniform float lit;varying vec2 q;varying float warm,glow;varying vec3 world;${lightHaze}
+    uniform float lit;varying vec2 q;varying float warm,glow;varying vec3 world;${lightHaze}${streetPalette}
     void main(){
       float r=dot(q,q);if(r>1.)discard;
       vec3 V=normalize(cameraPosition-world);
       float facing=smoothstep(.05,.45,V.z);                       // grazing pools would smear along the road
-      vec3 c=mix(vec3(.26,.28,.33),vec3(.55,.27,.08),warm)*pow(1.-r,2.4)*.30*facing*glow;
+      vec3 tint=streetTint(warm,vec3(.44,.50,.56),vec3(.74,.38,.12));
+      vec3 c=tint*pow(1.-r,2.)*.46*facing*glow;
       gl_FragColor=vec4(lightHaze(c,world)*lit,1.);
     }`,{lit:u.lit});
   m.polygonOffset=true;m.polygonOffsetFactor=-4;m.polygonOffsetUnits=-8;
