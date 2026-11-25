@@ -34,8 +34,9 @@ def _load_maneuver_suite():
 
 def test_all_19_dofs_and_9_control_surfaces_authority_and_signs():
     suite = _load_maneuver_suite()
+    results = suite.run_profiles_parallel(('rc01-planing-3pt-v1', 'rc01-hydrofoil-ski-v1'), mode='maneuver_a')
     for profile_id in ('rc01-planing-3pt-v1', 'rc01-hydrofoil-ski-v1'):
-        res_a = suite.run_maneuver_a_authority_at_rest(profile_id)
+        res_a = results[profile_id]
         topo = res_a['topology']
 
         # 19 total velocity DOFs: 6 freejoint + 2 sponson slide + 2 fan spin + 9 control surfaces

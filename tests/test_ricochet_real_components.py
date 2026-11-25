@@ -7,6 +7,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
+import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -371,8 +374,31 @@ def _run_accel_profile(profile_id: str, duration_s: float = 24.0) -> dict:
 
 
 def test_option1_vs_option2_hump_clearance_and_stability(tmp_path):
-    opt1 = _run_accel_profile('rc01-planing-3pt-v1', duration_s=22.0)
-    opt2 = _run_accel_profile('rc01-hydrofoil-ski-v1', duration_s=22.0)
+    profiles = ('rc01-planing-3pt-v1', 'rc01-hydrofoil-ski-v1')
+    env = dict(os.environ)
+    extra_py = os.pathsep.join([str(ROOT / 'src'), str(ROOT / 'tests')])
+    env['PYTHONPATH'] = extra_py + (os.pathsep + env['PYTHONPATH'] if env.get('PYTHONPATH') else '')
+    worker_code = (
+        'import json, pathlib, sys; '
+        'from test_ricochet_real_components import _run_accel_profile; '
+        'res = _run_accel_profile(sys.argv[1], duration_s=22.0); '
+        'pathlib.Path(sys.argv[2]).write_text(json.dumps(res), encoding="utf-8")'
+    )
+    jobs = []
+    for pid in profiles:
+        pf = tmp_path / f'{pid}.json'
+        proc = subprocess.Popen(
+            [sys.executable, '-c', worker_code, pid, str(pf)],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env, cwd=str(ROOT),
+        )
+        jobs.append((pid, pf, proc))
+    loaded = {}
+    for pid, pf, proc in jobs:
+        stdout, stderr = proc.communicate()
+        assert proc.returncode == 0, f'Worker failed for {pid} ({proc.returncode}):\n{stdout}\n{stderr}'
+        loaded[pid] = json.loads(pf.read_text(encoding='utf-8'))
+    opt1 = loaded['rc01-planing-3pt-v1']
+    opt2 = loaded['rc01-hydrofoil-ski-v1']
     out_path = tmp_path / 'option1_vs_option2_comparison.json'
     out_path.write_text(json.dumps({'option1': opt1, 'option2': opt2}, indent=2), encoding='utf-8')
     print('\n=== OPTION 1 (3-PT PLANING) ===')

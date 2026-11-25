@@ -33,8 +33,11 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import pathlib
+import subprocess
 import sys
+import tempfile
 import time
 from types import SimpleNamespace
 from typing import Any
@@ -896,17 +899,52 @@ def run_profile_qualification(profile_id: str, *, include_maneuver_a: bool = Tru
     }
 
 
+def run_profiles_parallel(
+    profiles: tuple[str, ...],
+    *,
+    mode: str = 'qual',
+    include_maneuver_a: bool = True,
+) -> dict[str, Any]:
+    """Run independent profile simulations concurrently in isolated Python subprocesses."""
+    script = pathlib.Path(__file__).resolve()
+    env = dict(os.environ)
+    src_path = str(REPO_ROOT / 'src')
+    env['PYTHONPATH'] = src_path + (os.pathsep + env['PYTHONPATH'] if env.get('PYTHONPATH') else '')
+    with tempfile.TemporaryDirectory(prefix='vtx-rc01-qual-') as td:
+        td_path = pathlib.Path(td)
+        jobs: list[tuple[str, pathlib.Path, subprocess.Popen[str]]] = []
+        for pid in profiles:
+            out_file = td_path / f'{pid}.json'
+            cmd = [sys.executable, str(script), '--worker', mode, pid, str(out_file)]
+            if not include_maneuver_a:
+                cmd.append('--no-maneuver-a')
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env, cwd=str(REPO_ROOT))
+            jobs.append((pid, out_file, proc))
+        results: dict[str, Any] = {}
+        for pid, out_file, proc in jobs:
+            stdout, stderr = proc.communicate()
+            if proc.returncode != 0:
+                raise RuntimeError(f'Worker {mode} failed for {pid} (rc={proc.returncode}):\n{stdout}\n{stderr}')
+            results[pid] = json.loads(out_file.read_text(encoding='utf-8'))
+        return results
+
+
 def run_qualification_suite(
     out_json_path: pathlib.Path | str | None = None,
     *,
     include_maneuver_a: bool = True,
+    parallel: bool = True,
 ) -> dict[str, Any]:
     """Run the complete closed-loop qualification suite across Option 1 and Option 2."""
     t0 = time.time()
     profiles = ('rc01-planing-3pt-v1', 'rc01-hydrofoil-ski-v1')
-    results: dict[str, Any] = {}
-    for pid in profiles:
-        results[pid] = run_profile_qualification(pid, include_maneuver_a=include_maneuver_a)
+    if parallel and len(profiles) > 1:
+        results = run_profiles_parallel(profiles, mode='qual', include_maneuver_a=include_maneuver_a)
+    else:
+        results = {
+            pid: run_profile_qualification(pid, include_maneuver_a=include_maneuver_a)
+            for pid in profiles
+        }
     report = {
         'schema': 'vtx-ricochet-closed-loop-qualification-1',
         'contract': 'ricochet.live.sensor_observation -> normalize_ricochet_action -> RicochetAction -> craft.set_command',
@@ -922,6 +960,20 @@ def run_qualification_suite(
 
 
 def main() -> None:
+    if len(sys.argv) >= 5 and sys.argv[1] == '--worker':
+        mode = sys.argv[2]
+        pid = sys.argv[3]
+        out_file = pathlib.Path(sys.argv[4]).resolve()
+        include_a = '--no-maneuver-a' not in sys.argv[5:]
+        if mode == 'maneuver_a':
+            payload = run_maneuver_a_authority_at_rest(pid)
+        elif mode == 'qual':
+            payload = run_profile_qualification(pid, include_maneuver_a=include_a)
+        else:
+            raise ValueError(f'Unknown worker mode: {mode}')
+        out_file.write_text(json.dumps(payload), encoding='utf-8')
+        return
+
     wt = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else REPO_ROOT
     out_json = (
         pathlib.Path(sys.argv[2]).resolve()
