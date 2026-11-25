@@ -1,5 +1,5 @@
 // Runs every suite in a headless Chromium against the built page. Needs Node 18+ and Playwright (npm i playwright).
-//   node tools/sound-studio/mobile/test/run.js
+//   node tools/producer/test/run.js
 // Suites make synthetic audio (including a calibrated 997 Hz tone), play it through the page and check what comes out.
 const http = require('http'), fs = require('fs'), path = require('path'), { spawn, spawnSync } = require('child_process');
 const root = path.resolve(__dirname, '..'), out = path.join(__dirname, 'out');
@@ -17,7 +17,7 @@ const run = (file, env) => new Promise(resolve => {
   child.on('close', code => { clearTimeout(timer); resolve({ code, stdout, stderr }); });
 });
 server.listen(0, '127.0.0.1', async () => {
-  const url = `http://127.0.0.1:${server.address().port}/Sound%20Studio%20Mobile.html`;
+  const url = `http://127.0.0.1:${server.address().port}/VTX%20Producer.html`;
   if (!fs.existsSync(path.join(__dirname, 'assets'))) spawnSync('node', [path.join(__dirname, 'gen.js')], { stdio: 'inherit' });
   let pass = 0, fail = 0;
   for (const suite of ['dsp', 'smoke', 'audio', 'ui', 'takes', 'vehicle', 'scene', 'persist', 'overflow', 'touch']) {

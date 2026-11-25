@@ -46,7 +46,7 @@ const SOUNDS = fs.readdirSync(A('Sounds')).map(f => A('Sounds/' + f));
   await page.click('text=Copy project');
   const proj = await page.locator('#projectOut').inputValue();
   const parsed = JSON.parse(proj);
-  ok('project JSON is stamped and holds the whole state', parsed.app === 'VTX Sound Studio' && parsed.schema === 1 && parsed.mix && parsed.veh && parsed.scenes && parsed.edits && parsed.rack, Object.keys(parsed).join(','));
+  ok('project JSON is stamped and holds the whole state', parsed.app === 'VTX Producer' && parsed.schema === 1 && parsed.mix && parsed.veh && parsed.scenes && parsed.edits && parsed.rack, Object.keys(parsed).join(','));
   ok('the project holds no audio data', proj.length < 60000, Math.round(proj.length / 1024) + ' KB');
   // wipe, then apply the project
   await page.locator('#mixWrap details summary', { hasText: 'Project' }).scrollIntoViewIfNeeded();
@@ -61,7 +61,7 @@ const SOUNDS = fs.readdirSync(A('Sounds')).map(f => A('Sounds/' + f));
   ok('applying the project brings the state back', restored.bass === before.bass && restored.fader === before.fader && restored.scene === before.scene && restored.clunk === before.clunk, JSON.stringify(restored));
   await page.locator('#mixWrap details summary', { hasText: 'Project' }).click();
   await page.locator('#projectIn').fill('{"not":"ours"}'); await page.click('text=Apply pasted project');
-  ok('a foreign file is refused', (await page.locator('#projectNote').textContent()).includes('not a VTX Sound Studio project'));
+  ok('a foreign file is refused', (await page.locator('#projectNote').textContent()).includes('not a VTX Producer project'));
   await page.locator('#projectIn').fill('nonsense'); await page.click('text=Apply pasted project');
   ok('invalid JSON is refused', (await page.locator('#projectNote').textContent()).includes('not valid JSON'));
   // keep takes off clears the library

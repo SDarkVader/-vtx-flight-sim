@@ -1,7 +1,6 @@
 // =====================================================================================
 // SCENE BENCH: ambience as looping beds and random one-shots, with crossfades between scenes
 // =====================================================================================
-const uid = () => Math.random().toString(36).slice(2, 8);
 const GAPS = [0.5, 1, 2, 3, 4, 6, 8, 12, 20, 30, 60];
 const FADES = [0.25, 0.5, 1, 2, 3, 5, 8, 12];
 const SCENE_LENS = [10, 20, 30, 60, 90, 120];

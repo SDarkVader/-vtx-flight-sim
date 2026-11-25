@@ -9,7 +9,7 @@ const URL = process.env.STUDIO_URL || 'http://127.0.0.1:8123/studio.html';
   await page.goto(URL);
   await page.waitForTimeout(500);
   const ok = (n, c, e = '') => console.log((c ? 'PASS ' : 'FAIL ') + n + (e ? '  ' + e : ''));
-  ok('page title', (await page.title()) === 'VTX Sound Studio');
+  ok('page title', (await page.title()) === 'VTX Producer');
   for (const tab of ['mix', 'music', 'vehicle', 'scene', 'takes']) {
     await page.click(`#t-${tab}`);
     await page.waitForTimeout(250);

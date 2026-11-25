@@ -1,10 +1,13 @@
 // =====================================================================================
-// AUDIO ENGINE: four channel strips, sends, master limiter. Built on the first tap, as phone browsers require.
+// AUDIO ENGINE: channel strips (four fixed ones, then one per track), sends and a master suite.
+// Built on the first tap, as phone browsers require.
 // =====================================================================================
-const STRIP_IDS = ['music', 'veh', 'sfx', 'amb'];
+const STRIP_IDS = ['music', 'veh', 'sfx', 'amb'];   // tracks add their own after these
+const FIXED_STRIPS = 4;
 const STRIP_NAMES = { music: 'Music', veh: 'Vehicle', sfx: 'SFX and takes', amb: 'Ambience' };
 const RATIOS = [1, 1.5, 2, 3, 4, 6, 8, 12, 20];
 const ATTACKS = [1, 3, 10, 30, 100], RELEASES = [50, 100, 200, 400, 800];
+const GATT = [10, 30, 50, 100], GREL = [100, 200, 400, 800], GRATIOS = [1, 1.5, 2, 3, 4];
 const HP_LIST = [10, 20, 30, 40, 60, 80, 120, 200];
 const TIMES = [60, 90, 120, 160, 200, 250, 300, 375, 450, 500, 600, 750, 900, 1000];
 const ROOMS = [[0.5, 9], [1.0, 6], [2.2, 3.2], [4.0, 1.9]];
@@ -12,16 +15,17 @@ const ROOM_NAMES = ['Booth', 'Room', 'Hall', 'Cathedral'];
 const panText = v => v === 0 ? 'Centre' : (v < 0 ? 'L ' : 'R ') + Math.round(Math.abs(v) * 100);
 const stripDefaults = () => ({ fader: 0, pan: 0, mute: false, solo: false, trim: 0, hp: 0, low: 0, mid: 0, high: 0,
   thr: 0, ratio: 0, att: 2, rel: 2, makeup: 0, sa: 0, sb: 0 });
+const masterDefaults = () => ({ trim: 0, ceil: -2, limiter: true, eqL: 0, eqLM: 0, eqHM: 0, eqH: 0, gthr: 0, gratio: 0, gatt: 1, grel: 1, gmk: 0, width: 1 });
 const mixState = {
   strips: Object.fromEntries(STRIP_IDS.map(id => [id, stripDefaults()])),
-  master: { trim: 0, ceil: -2, limiter: true },
+  master: masterDefaults(),
   sends: { room: 2, vret: 0.5, time: 5, fb: 0.35, eret: 0.5 },
   duck: { amount: -6, attack: 30, hold: 500, release: 800, music: true, veh: false, sfx: false, amb: true, onHits: true },
   target: -18,
 };
 merge(mixState, saved.mix);
 
-// Dial definitions, shared by the strips, master, sends and ducking
+// Dial definitions, shared by the strips, master suite, sends and ducking
 const SD = {
   trim: { label: 'Trim', min: -24, max: 24, step: 1, fine: 0.1, fmt: fmtDb, def: 0 },
   hp: { label: 'Low cut', list: HP_LIST, text: ['Off', '20 Hz', '30 Hz', '40 Hz', '60 Hz', '80 Hz', '120 Hz', '200 Hz'], def: 0 },
@@ -40,6 +44,16 @@ const SD = {
 const MD = {
   trim: { label: 'Master trim', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
   ceil: { label: 'Ceiling', min: -12, max: 0, step: 0.5, fine: 0.1, fmt: fmtDb, def: -2 },
+  eqL: { label: 'Low 100 Hz', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
+  eqLM: { label: 'Low-mid 400', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
+  eqHM: { label: 'High-mid 2.5k', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
+  eqH: { label: 'High 9k', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
+  gthr: { label: 'Glue threshold', min: -30, max: 0, step: 1, fine: 0.25, fmt: v => v === 0 ? 'Off' : v + ' dB', def: 0 },
+  gratio: { label: 'Glue ratio', list: GRATIOS, text: GRATIOS.map(r => r + ':1'), def: 0 },
+  gatt: { label: 'Glue attack', list: GATT, text: GATT.map(x => x + ' ms'), def: 1 },
+  grel: { label: 'Glue release', list: GREL, text: GREL.map(x => x + ' ms'), def: 1 },
+  gmk: { label: 'Glue makeup', min: 0, max: 12, step: 0.5, fine: 0.1, fmt: v => '+' + v.toFixed(1) + ' dB', def: 0 },
+  width: { label: 'Width', min: 0, max: 2, step: 0.1, fine: 0.02, center: 1, fmt: v => v === 0 ? 'Mono' : v === 1 ? 'Normal' : round(v, 2) + 'x', def: 1 },
 };
 const XD = {
   room: { label: 'Room', list: [0, 1, 2, 3], text: ROOM_NAMES, def: 2 },
@@ -92,25 +106,43 @@ function makePanner(c) {
   set(0);
   return { input, output: mg, set };
 }
+// Stereo width as a mid/side matrix: 0 is mono, 1 leaves the signal alone, 2 doubles the sides.
+function makeWidth(c) {
+  const input = c.createGain(); input.channelCount = 2; input.channelCountMode = 'explicit'; input.channelInterpretation = 'speakers';
+  const sp = c.createChannelSplitter(2), mg = c.createChannelMerger(2), ll = c.createGain(), lr = c.createGain(), rl = c.createGain(), rr = c.createGain();
+  input.connect(sp); sp.connect(ll, 0); sp.connect(rl, 0); sp.connect(lr, 1); sp.connect(rr, 1);
+  ll.connect(mg, 0, 0); lr.connect(mg, 0, 0); rl.connect(mg, 0, 1); rr.connect(mg, 0, 1);
+  const set = (w, t = null) => {
+    const a = (1 + w) / 2, b = (1 - w) / 2;
+    for (const [n, v] of [[ll, a], [rr, a], [lr, b], [rl, b]]) t === null ? (n.gain.value = v) : n.gain.setTargetAtTime(v, t, 0.03);
+  };
+  set(1);
+  return { input, output: mg, set };
+}
 
-// Builds the whole desk in context c: live (meters on) or offline (for bouncing).
-function buildMixer(c, live) {
+// Builds the whole desk in context c: live (meters on) or offline (for bouncing). opts.noClip leaves out the last-resort hard stop.
+function buildMixer(c, live, opts = {}) {
   const g = (v = 1) => { const n = c.createGain(); n.gain.value = v; return n; };
   const bq = (type, f, q = 0.7) => { const b = c.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; };
   const M = { c, live, strips: {}, roomIdx: -1 };
   M.sum = g(); M.sum.channelCount = 2; M.sum.channelCountMode = 'explicit';
   M.trim = g();
+  M.eqL = bq('lowshelf', 100); M.eqLM = bq('peaking', 400, 0.8); M.eqHM = bq('peaking', 2500, 0.8); M.eqH = bq('highshelf', 9000);
+  M.glue = c.createDynamicsCompressor(); M.glue.knee.value = 0; M.glueMk = g();
+  M.wid = makeWidth(c);
   M.limit = c.createDynamicsCompressor(); M.limit.knee.value = 0; M.limit.attack.value = 0.001; M.limit.release.value = 0.12;
   M.post = g();
   M.clip = c.createWaveShaper(); M.clip.curve = new Float32Array([-1, 1]);   // hard stop at full scale, a last resort
-  M.sum.connect(M.trim); M.trim.connect(M.limit); M.limit.connect(M.post); M.post.connect(M.clip); M.clip.connect(c.destination);
+  M.sum.connect(M.trim); M.trim.connect(M.eqL); M.eqL.connect(M.eqLM); M.eqLM.connect(M.eqHM); M.eqHM.connect(M.eqH); M.eqH.connect(M.glue);
+  M.glue.connect(M.glueMk); M.glueMk.connect(M.wid.input); M.wid.output.connect(M.limit); M.limit.connect(M.post);
+  if (opts.noClip) M.post.connect(c.destination); else { M.post.connect(M.clip); M.clip.connect(c.destination); }
   // sends: a room and an echo, shared by every strip
   M.verb = { in: g(), conv: c.createConvolver(), ret: g(0.5) };
   M.verb.in.connect(M.verb.conv); M.verb.conv.connect(M.verb.ret); M.verb.ret.connect(M.sum);
   M.echo = { in: g(), delay: c.createDelay(1.5), fb: g(0.35), damp: bq('lowpass', 4200), ret: g(0.5) };
   M.echo.in.connect(M.echo.delay); M.echo.delay.connect(M.echo.damp); M.echo.damp.connect(M.echo.fb); M.echo.fb.connect(M.echo.delay);
   M.echo.damp.connect(M.echo.ret); M.echo.ret.connect(M.sum);
-  for (const id of STRIP_IDS) {
+  M.addStrip = id => {
     const n = M.strips[id] = {};
     n.in = g(); n.cock = bq('lowpass', 20000); n.hp = bq('highpass', 10);
     n.low = bq('lowshelf', 120); n.mid = bq('peaking', 1000, 1); n.high = bq('highshelf', 6000);
@@ -121,7 +153,15 @@ function buildMixer(c, live) {
     n.comp.connect(n.makeup); n.makeup.connect(n.duck); n.duck.connect(n.fader); n.fader.connect(n.pan.input); n.pan.output.connect(M.sum);
     n.pan.output.connect(n.sa); n.sa.connect(M.verb.in); n.pan.output.connect(n.sb); n.sb.connect(M.echo.in);
     if (live) { n.an = c.createAnalyser(); n.an.fftSize = 1024; n.pan.output.connect(n.an); }
-  }
+    return n;
+  };
+  M.removeStrip = id => {
+    const n = M.strips[id];
+    if (!n) return;
+    try { n.in.disconnect(); n.pan.output.disconnect(); if (n.an) n.an.disconnect(); } catch {}
+    delete M.strips[id];
+  };
+  for (const id of STRIP_IDS) M.addStrip(id);
   if (live) {   // metering taps, after the limiter
     M.spec = c.createAnalyser(); M.spec.fftSize = 4096; M.spec.smoothingTimeConstant = 0.6; M.clip.connect(M.spec);
     M.sp = c.createChannelSplitter(2); M.clip.connect(M.sp);
@@ -138,12 +178,17 @@ function buildMixer(c, live) {
   }
   return M;
 }
-function applyMixer(M, immediate = false, bounce = false) {
+// mode: false = as heard, true = every strip audible (a print of one source), or a list of strip ids whose mute and solo count.
+// bypassMaster: leave the master suite and limiter out (stems).
+function applyMixer(M, immediate = false, mode = false, bypassMaster = false) {
   const c = M.c, t = c.currentTime, smooth = M.live && !immediate;
   const set = (p, v, k = 0.02) => smooth ? p.setTargetAtTime(v, t, k) : (p.value = v);
-  const anySolo = STRIP_IDS.some(id => mixState.strips[id].solo);
+  const scope = Array.isArray(mode) ? mode : null;
+  const anySolo = mode !== true && (scope || STRIP_IDS).some(id => mixState.strips[id]?.solo);
   for (const id of STRIP_IDS) {
-    const n = M.strips[id], s = mixState.strips[id];
+    const s = mixState.strips[id];
+    if (!s) continue;
+    const n = M.strips[id] || M.addStrip(id);
     set(n.in.gain, dbToLin(s.trim));
     set(n.hp.frequency, HP_LIST[s.hp]);
     set(n.low.gain, s.low); set(n.mid.gain, s.mid); set(n.high.gain, s.high);
@@ -151,14 +196,21 @@ function applyMixer(M, immediate = false, bounce = false) {
     n.comp.threshold.value = thr; n.comp.ratio.value = r;
     n.comp.attack.value = ATTACKS[s.att] / 1000; n.comp.release.value = RELEASES[s.rel] / 1000;
     set(n.makeup.gain, dbToLin(s.makeup + compCancelDb(thr, r)));
-    const audible = bounce || (!s.mute && (!anySolo || s.solo));
+    const inScope = !scope || scope.includes(id);
+    const audible = mode === true || !inScope || (!s.mute && (!anySolo || s.solo));
     set(n.fader.gain, audible ? dbToLin(s.fader) : 0, 0.015);
     n.pan.set(s.pan, smooth ? t : null);
     set(n.sa.gain, s.sa); set(n.sb.gain, s.sb);
-    if (id !== 'music') set(n.cock.frequency, prefs.cockpit ? 1400 : 20000);
+    if (id === 'veh' || id === 'sfx' || id === 'amb') set(n.cock.frequency, prefs.cockpit ? 1400 : 20000);
   }
-  const m = mixState.master, thr = m.limiter ? m.ceil : 0, ratio = m.limiter ? 20 : 1;
+  const m = bypassMaster ? { ...masterDefaults(), limiter: false } : mixState.master;
+  const thr = m.limiter ? m.ceil : 0, ratio = m.limiter ? 20 : 1;
   set(M.trim.gain, dbToLin(m.trim));
+  set(M.eqL.gain, m.eqL); set(M.eqLM.gain, m.eqLM); set(M.eqHM.gain, m.eqHM); set(M.eqH.gain, m.eqH);
+  const gr = GRATIOS[m.gratio], gthr = gr === 1 ? 0 : m.gthr;
+  M.glue.threshold.value = gthr; M.glue.ratio.value = gr; M.glue.attack.value = GATT[m.gatt] / 1000; M.glue.release.value = GREL[m.grel] / 1000;
+  set(M.glueMk.gain, dbToLin(m.gmk + compCancelDb(gthr, gr)));
+  M.wid.set(m.width, smooth ? t : null);
   M.limit.threshold.value = thr; M.limit.ratio.value = ratio;
   set(M.post.gain, dbToLin(compCancelDb(thr, ratio)));
   const x = mixState.sends;
@@ -168,6 +220,7 @@ function applyMixer(M, immediate = false, bounce = false) {
   set(M.echo.fb.gain, x.fb); set(M.echo.ret.gain, x.eret);
 }
 const remix = () => { if (A) applyMixer(A); };
+function ensureLiveStrip(id) { if (A && !A.strips[id]) { A.addStrip(id); applyMixer(A, true); } }
 
 // Ducking: a short dip on chosen strips whenever a hit or marked take fires.
 function duck() {
@@ -175,7 +228,7 @@ function duck() {
   if (!ctx || !A || d.amount >= 0) return;
   const t = ctx.currentTime, lin = dbToLin(d.amount);
   for (const id of STRIP_IDS) {
-    if (!d[id]) continue;
+    if (!d[id] || !A.strips[id]) continue;
     const p = A.strips[id].duck.gain;
     if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t); else p.cancelScheduledValues(t);
     p.setTargetAtTime(lin, t, d.attack / 3000 + 0.001);
@@ -197,7 +250,7 @@ function audio() {
     ambBus = ctx.createGain(); ambBus.connect(A.strips.amb.in);
     buildRadio();
     for (const id of Object.keys(P)) applyParam(id);
-    ctx.onstatechange = () => { if (ctx.state !== 'running' && !player.paused) say('Tap Play to wake the audio.'); };
+    ctx.onstatechange = () => { if (ctx.state !== 'running' && (!player.paused || (typeof eng !== 'undefined' && eng.playing))) say('Tap Play to wake the audio.'); };
     startFrame();
   }
   if (ctx.state !== 'running') Promise.resolve(ctx.resume()).catch(() => {});

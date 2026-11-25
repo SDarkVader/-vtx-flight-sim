@@ -41,7 +41,7 @@ function drawList() {
 }
 function showNow() {
   const s = songs[current];
-  $('nowTitle').textContent = s ? title(s) : 'VTX Sound Studio';
+  $('nowTitle').textContent = s ? title(s) : 'VTX Producer';
   $('lcdTitle').textContent = s ? title(s) : (songs.length ? 'Turn the tuning dial or tap a song.' : 'Add songs or a music folder.');
   const at = shown().indexOf(current);
   $('lcdNo').textContent = s ? `SONG ${String(at + 1).padStart(2, '0')} / ${String(shown().length).padStart(2, '0')}` : 'NO SONG';
@@ -95,7 +95,7 @@ player.ontimeupdate = () => {
 $('seek').onchange = e => { if (player.duration) player.currentTime = e.target.value / 1000 * player.duration; e.target.blur(); };
 function setSession() {
   if (!('mediaSession' in navigator) || !songs[current]) return;
-  try { navigator.mediaSession.metadata = new MediaMetadata({ title: title(songs[current]), artist: 'VTX Sound Studio' }); } catch {}
+  try { navigator.mediaSession.metadata = new MediaMetadata({ title: title(songs[current]), artist: 'VTX Producer' }); } catch {}
 }
 if ('mediaSession' in navigator) {
   const on = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch {} };

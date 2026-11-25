@@ -1,5 +1,5 @@
 'use strict';
-/* VTX Sound Studio, mobile. One page, no uploads: every file stays on this device.
+/* VTX Producer. One page, no uploads: every file stays on this device.
    Mix: four channel strips, a master limiter, loudness and spectrum meters, sends, ducking and the project file.
    Music: your songs through a character rack. Vehicle: the Phantom A10-D parts, tuning of 25 Nov 2026 and the
    10 Hz flight replay, from the desktop Vehicle Designer. Scene: looping and random ambience layers.
@@ -20,6 +20,7 @@ const linToDb = x => x <= 1e-9 ? -Infinity : 20 * Math.log10(x);
 const pct = v => Math.round(v * 100) + '%';
 const dbText = (v, d = 1) => v <= -79.9 ? '−∞' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
 const fmtDb = v => dbText(v, round(v, 1) === round(v, 0) ? 0 : 1) + ' dB';
+const uid = () => Math.random().toString(36).slice(2, 8);
 const stem = name => name.replace(/\.[^.]+$/, '');
 function merge(base, over) {   // copy over onto base, only for keys base already has, same type
   if (!over || typeof over !== 'object') return base;

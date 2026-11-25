@@ -9,7 +9,7 @@ const LM = {};
 function resetMeters() {
   Object.assign(LM, { frames: [], blocks: [], windows: [], curIdx: -1, curSum: 0, curN: 0, mom: -Infinity, short: -Infinity, int: -Infinity,
     intAt: 0, peak: -Infinity, peakHold: -Infinity, peakMax: -Infinity, tp: -Infinity, tpMax: -Infinity, corr: 1, lastT: -1, clipUntil: 0,
-    gr: 0, strips: Object.fromEntries(STRIP_IDS.map(id => [id, { rms: -Infinity, peak: -Infinity, hold: -Infinity, holdT: 0, gr: 0 }])) });
+    gr: 0, strips: {} });
 }
 resetMeters();
 const scratch = { a: new Float32Array(2048), b: new Float32Array(2048), s: new Float32Array(1024), spec: new Float32Array(2048) };
@@ -84,7 +84,9 @@ function readMeters() {
   LM.gr = A.limit.reduction;
   // each strip: RMS and peak with a slow fall and a hold
   for (const id of STRIP_IDS) {
-    const n = A.strips[id], m = LM.strips[id];
+    const n = A.strips[id];
+    if (!n?.an) continue;
+    const m = LM.strips[id] ||= { rms: -Infinity, peak: -Infinity, hold: -Infinity, holdT: 0, gr: 0 };
     n.an.getFloatTimeDomainData(scratch.s);
     let sq = 0, p = 0; for (let i = 0; i < 1024; i++) { const v = scratch.s[i]; sq += v * v; if (Math.abs(v) > p) p = Math.abs(v); }
     const rms = toDb(Math.sqrt(sq / 1024)), peak = toDb(p);
