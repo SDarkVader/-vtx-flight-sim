@@ -40,10 +40,23 @@ Ray’s design rule is that the world rewards skill, exploration and experimenta
 ## Builds and verification
 
 - **Main Airport and harbour** are the earlier prototype in the main checkout. Local builds offer the Phantom A10-C, Argon R6 and Ricochet through **Choose vehicle**. The selector also lists the experimental A10-D and historical variants.
-- **Vaderland 32** is the separate [environment source snapshot](https://github.com/SDarkVader/-vtx-flight-sim/tree/codex/vaderland-v32) used for the latest field check. The A10-D took off vertically, approached Meridian and eventually struck terrain. The Shore Link drive and Islet Trial also have recorded checks.
-- **Frame pacing** is in [draft PR #67](https://github.com/SDarkVader/-vtx-flight-sim/pull/67). Three short High-quality replay views went from roughly 18 FPS to 60 FPS on the test PC. The native simulation clock fell behind during the manual flight, and sustained real-time simulation remains to be verified.
+- **Vaderland 32** is the separate [environment source snapshot](https://github.com/SDarkVader/-vtx-flight-sim/tree/codex/vaderland-v32) used for the published field check. The A10-D took off vertically, approached Meridian and eventually struck terrain. The Shore Link drive and Islet Trial also have recorded checks.
+- **Vaderland 33** is in [draft PR #70](https://github.com/SDarkVader/-vtx-flight-sim/pull/70) for testing. It is not on `main`.
+- **Frame pacing** is in [open PR #67](https://github.com/SDarkVader/-vtx-flight-sim/pull/67). Three short High-quality replay views went from roughly 18 FPS to 60 FPS on the test PC. The native simulation clock fell behind during the manual flight, and sustained real-time simulation remains to be verified.
 
 MuJoCo supplies the aircraft and contact dynamics. The browser draws the simulated state and provides cockpit, chase and map views. For the Phantom, the 400 Hz physics clock runs independently of video frame rate and telemetry delivery. Flight Records retains outcomes, including missed approaches, collisions and successful landings. The field report publishes selected findings. The primary flight telemetry, pilot inputs and crash recording stay on the test PC.
+
+## In development: Windows build, cockpit radio and vehicle sound
+
+None of this is part of the game yet. Each piece lives on its own branch.
+
+| Work | For | Where |
+| --- | --- | --- |
+| **Native Windows prototype** of the Phantom A10-D, with a cockpit radio and song knob | PC game | [Branch](https://github.com/SDarkVader/-vtx-flight-sim/tree/claude/native-cockpit-radio-20261125) · [adding the radio to a build](https://github.com/SDarkVader/-vtx-flight-sim/blob/claude/native-cockpit-radio-20261125/native/radio/README.md) |
+| **Browser cockpit radio** | Local development | [Branch](https://github.com/SDarkVader/-vtx-flight-sim/tree/claude/cockpit-radio-20261125) |
+| **Sound Studio:** vehicle sound designs replayed against a recorded flight | Local development | [Tools and guide](https://github.com/SDarkVader/-vtx-flight-sim/tree/claude/sound-studio-dev-20261125/tools/sound-studio) |
+
+The radios play your own music; none is included. Details are in the [development log](docs/VADERLAND_DEVELOPMENT_LOG.md).
 
 ## Run VTX locally
 
