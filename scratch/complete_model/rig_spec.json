@@ -1,8 +1,12 @@
 {
- "method": "Export the RC-01 articulation rig and a MuJoCo bench sweep for the complete Blender model (offline, isolated).\n\nEverything the Blender rig uses comes from the compiled MuJoCo model of Concept A with the\nrc01-real-components-v1 profile, not from hand-copied numbers:\n  * hinge points, hinge axes and joint ranges (model.body_pos / body_quat / jnt_axis / jnt_range, chained to the\n    airframe body frame, which is the GLB / VTX frame: +X forward, +Y port, +Z up);\n  * channel limits and slew rates (craft.surface_limits, i.e. the actuators' published no-load speeds);\n  * which visual GLB node rides on which physical body (hull_geometry.CONCEPT_A_AIRFRAME_NODE_SPECS), and the\n    GLB node translations are compared with the MuJoCo body origins;\n  * the command -> joint mapping the plant applies (plant._apply_actuator_controls / _profile_actuator_targets),\n    stated below and then CHECKED against what MuJoCo actually does in the sweep.\nKinematic checks per surface mesh (as exported by craft.visual_geometry()): the hinge axis distance from the\nsurface's leading edge, the trailing-edge direction for +q, and how many surface vertices end up inside the\nfixed neighbouring mesh at full travel (interference, ray-parity point-in-mesh).\nBench sweep: the craft floats at rest in the isolated harbour basin (still water, nothing live) and each command\nis stepped through its full range at the actuators' real rates; joint angles and every articulated body's pose\nrelative to the airframe are sampled at 24 fps for the Blender animation and for the Blender-vs-MuJoCo check.\nUsage: python export_rig.py <worktree> <out_dir>\n",
- "profile": "rc01-real-components-v1",
+ "method": "Export the RC-01 articulation rig and a MuJoCo bench sweep for the complete Blender model (offline, isolated).\n\nEverything the Blender rig uses comes from the compiled 19-DOF / 9-surface MuJoCo model of Concept A\n(default profile ``rc01-planing-3pt-v1`` / ``RC01-P1-R1``), not from hand-copied numbers:\n  * hinge points, hinge axes and joint ranges (model.body_pos / body_quat / jnt_axis / jnt_range, chained to the\n    airframe body frame, which is the GLB / VTX frame: +X forward, +Y port, +Z up);\n  * channel limits and slew rates (craft.surface_limits, i.e. the actuators' published no-load speeds);\n  * which visual GLB node rides on which physical body (hull_geometry.CONCEPT_A_AIRFRAME_NODE_SPECS), and the\n    GLB node translations are compared with the MuJoCo body origins;\n  * the command -> joint mapping the plant applies (plant._apply_actuator_controls / _profile_actuator_targets),\n    stated below and then CHECKED against what MuJoCo actually does in the sweep.\nKinematic checks per surface mesh (as exported by craft.visual_geometry()): the hinge axis distance from the\nsurface's leading edge, the trailing-edge direction for +q, and how many surface vertices end up inside the\nfixed neighbouring mesh at full travel (interference, ray-parity point-in-mesh).\nBench sweep: the craft floats at rest in the isolated harbour basin (still water, nothing live) and each command\nis stepped through its full range at the actuators' real rates; joint angles and every articulated body's pose\nrelative to the airframe are sampled at 24 fps for the Blender animation and for the Blender-vs-MuJoCo check.\nUsage: python docs/ricochet/complete_model/export_rig.py [worktree] [out_dir] [profile_or_revision]\n",
+ "profile": "rc01-planing-3pt-v1",
+ "model_revision": "RC01-P1-R1",
+ "model_name": "Ricochet RC-01P-1 (3-Point Planing \u00b7 Rev 1)",
+ "dof_count": 19,
+ "control_surface_count": 9,
  "frame": "VTX airframe body frame = GLB frame (+X forward, +Y port, +Z up), metres",
- "glb": "public\\assets\\ricochet-concept-a.glb",
+ "glb": "public/assets/ricochet-concept-a.glb",
  "bodies": {
   "fan_rotor_port": {
    "chain": [
@@ -628,9 +632,9 @@
     "ski_port"
    ],
    "origin_af": [
-    -0.040000000000000036,
+    0.76,
     3.8,
-    0.38
+    0.0
    ],
    "R_af": [
     [
@@ -654,9 +658,9 @@
      "name": "ski_port_incidence",
      "type": "hinge",
      "pos_af": [
-      -0.040000000000000036,
+      0.76,
       3.8,
-      0.38
+      0.0
      ],
      "axis_af": [
       0.0,
@@ -679,9 +683,9 @@
     "ski_stbd"
    ],
    "origin_af": [
-    -0.040000000000000036,
+    0.76,
     -3.8,
-    0.38
+    0.0
    ],
    "R_af": [
     [
@@ -705,9 +709,9 @@
      "name": "ski_stbd_incidence",
      "type": "hinge",
      "pos_af": [
-      -0.040000000000000036,
+      0.76,
       -3.8,
-      0.38
+      0.0
      ],
      "axis_af": [
       0.0,
@@ -718,6 +722,56 @@
      "range": [
       -3.0000000000000004,
       12.000000000000002
+     ],
+     "range_unit": "deg"
+    }
+   ],
+   "visual_nodes": []
+  },
+  "ski_aft": {
+   "chain": [
+    "ski_aft"
+   ],
+   "origin_af": [
+    -1.45,
+    0.0,
+    0.04
+   ],
+   "R_af": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "joints": [
+    {
+     "name": "ski_aft_incidence",
+     "type": "hinge",
+     "pos_af": [
+      -1.45,
+      0.0,
+      0.04
+     ],
+     "axis_af": [
+      0.0,
+      -1.0,
+      0.0
+     ],
+     "limited": true,
+     "range": [
+      -4.0,
+      10.0
      ],
      "range_unit": "deg"
     }
@@ -812,6 +866,19 @@
     12.0
    ],
    "note": "collective - differential, clipped to the joint range and the rod stroke"
+  },
+  "ski_aft_incidence": {
+   "terms": [
+    [
+     "aft_ski_incidence_deg",
+     1.0
+    ]
+   ],
+   "clip_deg": [
+    -4.0,
+    10.0
+   ],
+   "note": "aft trim ski incidence, clipped to joint range"
   }
  },
  "channel_limits": {
@@ -853,7 +920,7 @@
    "max_deg": 85.0
   },
   "ski_incidence_deg": {
-   "min": 0.0,
+   "min": -2.0,
    "max": 10.0,
    "unit": "deg",
    "rate_deg_s": 33.07529090073388
@@ -863,6 +930,18 @@
    "max": 4.0,
    "unit": "deg",
    "rate_deg_s": 33.07529090073388
+  },
+  "aft_ski_incidence_deg": {
+   "min": -3.0,
+   "max": 8.0,
+   "unit": "deg",
+   "rate_deg_s": 100.0
+  },
+  "ecu_assist": {
+   "min": 0.0,
+   "max": 1.0,
+   "unit": "fraction",
+   "rate_per_s": 4.0
   }
  },
  "actuator_envelopes": {
@@ -1121,52 +1200,117 @@
   }
  },
  "ski": {
+  "hydro_mode": "planing",
   "pivot_in_sponson_m": [
-   0.3,
+   1.1,
    0.0,
-   -0.1
+   -0.48
   ],
-  "length_m": 2.0,
-  "beam_m": 0.5,
-  "thickness_m": 0.04,
-  "hinge_from_trailing_edge_m": 1.0,
-  "bottom_below_pivot_m": 0.08,
-  "mass_kg": 10.0,
-  "mass_status": "assumed: carbon sandwich planing ski with fin and fittings",
+  "length_m": 1.9,
+  "beam_m": 0.62,
+  "thickness_m": 0.045,
+  "deadrise_deg": 4.0,
+  "hinge_from_trailing_edge_m": 1.12,
+  "bottom_below_pivot_m": 0.1,
+  "mass_kg": 11.5,
+  "mass_status": "assumed: carbon sandwich planing ski + titanium yoke + fin",
   "joint_range_deg": [
    -3.0,
    12.0
   ],
   "incidence_command_deg": [
-   0.0,
+   -2.0,
    10.0
   ],
   "differential_command_deg": [
    -4.0,
    4.0
   ],
+  "strut": {
+   "chord_m": 0.18,
+   "thickness_m": 0.036,
+   "top_above_pivot_m": 0.44,
+   "x_from_pivot_m": 0.0
+  },
   "actuator": {
    "component": "exlar_gsx30_2stack_0p2in",
    "lever_m": 0.44,
    "stroke_mm": 152.4,
-   "stroke_note": "Iteration 1: the register's 76 mm stroke on a 0.44 m lever gives only 9.9 deg of travel; collective 0-10 deg plus +/-4 deg differential within the -3..12 deg joint needs 15 deg (115 mm). 152.4 mm (6 in) is within the published 76-457 mm range and gives 20 deg.",
-   "linkage_mass_kg": 1.5,
-   "linkage_mass_status": "assumed",
-   "servo_stiffness_nm_per_rad": 115000.0,
+   "linkage_mass_kg": 1.8,
+   "servo_stiffness_nm_per_rad": 30000.0,
    "servo_damping_ratio": 1.0,
-   "reflected_armature_kg_m2": 0.5,
+   "reflected_armature_kg_m2": 2.0,
+   "joint_damping": 5.0,
+   "solreflimit": "0.005 1",
+   "solimplimit": "0.995 0.999 0.0002",
    "loop_assumed": true
   },
   "fin": {
-   "x_from_pivot_m": -0.85,
-   "span_m": 0.3,
-   "chord_m": 0.3,
+   "x_from_pivot_m": -0.92,
+   "span_m": 0.26,
+   "chord_m": 0.28,
    "cl_max_submerged": 0.9,
    "cl_max_piercing": 0.6,
-   "steer_link_from_rudder": 0.0
+   "steer_link_from_rudder": 0.2
   },
-  "hydro_model": "Savitsky planing (flat bottom, zero deadrise) with geometric wetted length; low-aspect-ratio submerged plate when the leading edge is under water, blended over half a beam of leading-edge depth; Helmbold fin lift with ventilation cap; ITTC-57 friction."
+  "hydro_model": "Savitsky 4-deg deadrise planing ski on lowered strut ahead of CG + surface-piercing strut & spray drag."
  },
+ "aft_ski": {
+  "hydro_mode": "planing",
+  "pivot_in_airframe_m": [
+   -1.45,
+   0.0,
+   0.04
+  ],
+  "length_m": 0.95,
+  "beam_m": 0.56,
+  "thickness_m": 0.035,
+  "deadrise_deg": 6.0,
+  "hinge_from_trailing_edge_m": 0.61,
+  "bottom_below_pivot_m": 0.08,
+  "mass_kg": 5.5,
+  "joint_range_deg": [
+   -4.0,
+   10.0
+  ],
+  "incidence_command_deg": [
+   -3.0,
+   8.0
+  ],
+  "strut": {
+   "chord_m": 0.16,
+   "thickness_m": 0.03,
+   "top_above_pivot_m": 0.34,
+   "anchor_z_airframe_m": 0.36,
+   "x_from_pivot_m": 0.0
+  },
+  "actuator": {
+   "component": "volz_da58d",
+   "linkage_mass_kg": 1.0,
+   "servo_stiffness_nm_per_rad": 12000.0,
+   "servo_damping_ratio": 1.0,
+   "reflected_armature_kg_m2": 0.8,
+   "joint_damping": 4.0,
+   "solreflimit": "0.005 1",
+   "solimplimit": "0.995 0.999 0.0002"
+  },
+  "fin": {
+   "x_from_pivot_m": -0.4,
+   "span_m": 0.18,
+   "chord_m": 0.22,
+   "cl_max_submerged": 0.9,
+   "cl_max_piercing": 0.6,
+   "steer_link_from_rudder": 0.3
+  }
+ },
+ "aft_ski_actuator_envelope": {
+  "rated_nm": 80.0,
+  "peak_nm": 200.0,
+  "no_load_deg_s": 100.0,
+  "rated_deg_s": 80.0,
+  "travel_deg": 90.0
+ },
+ "rudder_cove_clear": true,
  "kinematics": {
   "aileron_port": {
    "hinge_axis_to_nearest_vertex_m": 0.0185,
@@ -1247,7 +1391,7 @@
    }
   },
   "rudder": {
-   "hinge_axis_to_nearest_vertex_m": 0.0063,
+   "hinge_axis_to_nearest_vertex_m": 0.0016,
    "surface_chord_from_hinge_m": 0.1689,
    "te_motion_for_plus5deg_af_m": [
     0.0005,
@@ -1256,19 +1400,19 @@
    ],
    "interference_at_travel": {
     "-30deg": {
-     "vertices_inside_neighbour": 19,
-     "of": 416,
-     "max_radius_from_hinge_m": 0.0454
+     "vertices_inside_neighbour": 0,
+     "of": 414,
+     "max_radius_from_hinge_m": 0.0
     },
     "+0deg": {
-     "vertices_inside_neighbour": 18,
-     "of": 416,
-     "max_radius_from_hinge_m": 0.0382
+     "vertices_inside_neighbour": 0,
+     "of": 414,
+     "max_radius_from_hinge_m": 0.0
     },
     "+30deg": {
-     "vertices_inside_neighbour": 19,
-     "of": 416,
-     "max_radius_from_hinge_m": 0.0454
+     "vertices_inside_neighbour": 0,
+     "of": 414,
+     "max_radius_from_hinge_m": 0.0
     }
    }
   },

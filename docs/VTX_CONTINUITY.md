@@ -2,6 +2,26 @@
 
 # VTX continuity — working record
 
+- **25 Nov — Ricochet RC-01 sign reconciliation, runtime repin, consolidated 19-DOF / 9-surface build, diagram & PR #66 refresh (offline only in worktree `ricochet_control_surfaces`, pushed to `origin/claude/ricochet-control-surfaces-20261120`; PR #66 refreshed, NOT merged; nothing touched live).**
+  - **Reconciled `differential_thrust` sign convention across plant, ECU, and live API (owner-approved):**
+    - Unified all three layers to `plant.py:1581-1591` & `1674`: `+differential_thrust` = starboard fan > port fan (`+Mz` nose-left / port yaw, matching `+rudder_deg` and legacy Concept A `scenarios.py:127`).
+    - Fixed `src/vtx/ricochet/real_components.py` (`rc01_ecu_command` line 600: `- 0.50 * pilot_diff` so `+differential_thrust` banks inward/left into a port turn instead of fighting `+rudder_deg`).
+    - Fixed `src/vtx/ricochet/live.py` (`_SIGNED_DIR_WORDS['differential_thrust']` line 72: `port`/`left`/`yaw left` = `+1.0`, `starboard`/`stbd`/`right`/`yaw right` = `-1.0`, plus documented `differential_thrust` in `sensor_observation()['frame_labels']`).
+    - Updated `tests/test_ricochet_control_surfaces_dof.py` and added `test_differential_thrust_sign_consistency_plant_ecu_and_live()` verifying `live.py`, `real_components.py` ECU banking, and `plant.py` fan RPM / yaw sign agreement; refreshed `scratch/complete_model/closed_loop_maneuver_report.json` (`all_passed: true` on both `RC01-P1-R1` and `RC01-H1-R1`).
+    - Verified `docs/ricochet/complete_model/README.md` and `ricochet_control_surfaces_diagram.{svg,png}` already document `+ Stbd > Port -> Nose-Left Yaw`, matching the reconciled convention.
+  - **One-command consolidated 19-DOF / 9-surface build & Human/Telemetry-Only AI diagram:**
+    - `python docs/ricochet/complete_model/build_complete_model.py` (zero arguments, pure stdlib outer Python) builds ONE consolidated model set in `scratch/complete_model/` (`ricochet_rc01_complete.blend` with embedded Option 2 `Alt_rc01-hydrofoil-ski-v1` + 10 cockpit-study collections, `ricochet_rc01_blendstra_articulated.glb` with 14 bodies / 7 PBR materials / 13 baked animations including sponson Z slides, `rig_spec.json`, `sweep.json`, 3 previews) and removed duplicate `scratch/complete_model/{opt1,opt2}/` and stale `scratch/ricochet_rc01_profile_view.blend`.
+    - Added reproducible pure-stdlib diagram generator `docs/ricochet/complete_model/generate_control_surfaces_diagram.py` (`ricochet_control_surfaces_diagram.{svg,png}`) and unified `docs/ricochet/complete_model/README.md` linked from root `README.md`.
+  - **Line-ending compliance & runtime repin (owner-approved):**
+    - Verified all 160 `.gitattributes` rules (`src/vtx/ricochet/*.py` & `src/vtx/water/*.py` `crlf`, `src/vtx/harbour_*.py`, `src/vtx/live_server.py`, `inputs/flight_revisions.json` `lf`).
+    - Repinned `inputs/flight_revisions.json` `integrated_runtime_sha256` from `f0bdcf8d5040e4b1c05e8367d93634ab8ecf95816da4ef401b658b1eb405ed80` (preserved under `previous_integrated_runtimes` at commit `c03c12be8584ab4571f1ee61f8992a3b7c6b1d36`) to `f51f21e546acd4d59271d894f982e4c1d1efdab36676a42265d0261e0fc79d2f`.
+  - **Full CI-equivalent verification:**
+    - Full repository Python suite: **552/552 passed** (`PYTHONPATH=src pytest -q`), including `test_flown_revisions.py`, `test_inspection_selection.py`, `test_phantom_checkpoint_continuation.py`, `test_ricochet_real_components.py`, `test_ricochet_control_surfaces_dof.py`, `test_harbour_fleet.py`, `test_airport_harbour.py`, `test_visual_glb_parity.py`.
+    - Full Node JS suite: **86/86 passed** (`node --experimental-loader ./tests/vendor-three-loader.mjs --test tests/*.mjs`).
+    - `scripts/run_reference.py` completed with exit `0` in an isolated temp output directory.
+    - Legacy `public/assets/ricochet-concept-a.glb` verified bit-identical (`SHA-256: 00f7d9cff2092fe433c9b66a0846774724de26486e92ba592736cd2ae1647124`).
+    - PR [SDarkVader/-vtx-flight-sim#66](https://github.com/SDarkVader/-vtx-flight-sim/pull/66) title and description refreshed to reflect resolved blocker, consolidated build, reconciled sign convention, and pinned runtime hash; PR remains open (not merged). Primary checkout untouched apart from live continuity record.
+
 - **20 Nov, wrap-up of PR #66 — Ricochet RC-01 19-DOF / 9-control-surface real-component actuation, SWE reflective boundaries, 5-mode ECU, Blendstra articulated rig & dual selectable hydro-ski profiles (RC01-P1-R1 & RC01-H1-R1) (Claude; offline only; PR #66 ready).** Worktree `ricochet_control_surfaces`, branch `claude/ricochet-control-surfaces-20261120`, PR [SDarkVader/-vtx-flight-sim#66](https://github.com/SDarkVader/-vtx-flight-sim/pull/66).
   - **Authoritative User Deliverables Completed:**
     1. **Both High-Speed Ski Architectures Selectable in Simulator & UI:**

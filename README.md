@@ -88,7 +88,7 @@ Choose a world from the cockpit before starting a flight:
 
 ### Explore the harbour
 
-Choose either of two Ricochet Concept A craft, steer around the islands, and dock at Airport Landing or Lantern Marina. Save and restore keeps both boats, their controls and their berth ownership. Boats and the aircraft run together in the shared airport environment.
+Choose either of two Ricochet Concept A craft, steer around the islands, and dock at Airport Landing or Lantern Marina. Save and restore keeps both boats, their controls and their berth ownership. Boats and the aircraft run together in the shared airport environment. Opt-in 19-DOF / 9-control-surface hydro-ski profiles (`RC01-P1-R1` 3-point planing and `RC01-H1-R1` cambered hydrofoil-skis) are selectable in the Harbour helm UI; see the [Ricochet RC-01 Complete Model & Control Surfaces Guide](docs/ricochet/complete_model/README.md).
 
 | Ricochet Concept A | Lantern Marina |
 | --- | --- |
@@ -299,6 +299,8 @@ Recorded-control comparisons cover 8,700 runway and VTOL samples. Use a new outp
 ## Engineering Documentation & Design Specs
 
 * **[Design System Rules](DESIGN_SYSTEM_RULES.md):** Complete specifications for UI tokens, color palettes, typography, Three.js asset pipelines, and DOM component patterns.
+* **[Ricochet RC-01 Complete Model & Control Surfaces Guide](docs/ricochet/complete_model/README.md):** One-command consolidated `.blend` / Blendstra `.glb` build, 19-DOF / 9-control-surface architecture, maneuverability diagram, and Human + Telemetry-Only AI control contract.
+* **[Ricochet RC-01 Component Register](docs/ricochet/components/README.md):** Real off-the-shelf actuator/motor datasheets, sizing probes, and hydro-ski comparison.
 * **[Phantom A10-B Model Specification](docs/phantom/PHANTOM_A10B_MODEL.md):** Aerodynamic polars, mass breakdown, actuator travel limits, and power distribution.
 * **[Phantom FX-A A10-C Fans-Off Takeoff Study](docs/phantom/A10C_FANS_OFF_TAKEOFF.md):** PR #41 development model, turbojet/nose-strut physics, verified run results and remaining limitations.
 * **[Live Fly-By-Wire Pilot Contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md):** Strict architectural requirements for human and AI closed-loop control.

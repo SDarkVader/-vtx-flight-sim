@@ -69,7 +69,7 @@ _SIGNED_DIR_WORDS: dict[str, dict[str, float]] = {
     'rudder_deg': {'port': +1.0, 'left': +1.0, 'starboard': -1.0, 'stbd': -1.0, 'right': -1.0},
     'elevator_deg': {'up': +1.0, 'nose up': +1.0, 'pitch up': +1.0, 'pull': +1.0, 'climb': +1.0, 'down': -1.0, 'nose down': -1.0, 'pitch down': -1.0, 'push': -1.0, 'dive': -1.0},
     'aileron_deg': {'right': +1.0, 'starboard': +1.0, 'stbd': +1.0, 'bank right': +1.0, 'roll right': +1.0, 'left': -1.0, 'port': -1.0, 'bank left': -1.0, 'roll left': -1.0},
-    'differential_thrust': {'right': +1.0, 'starboard': +1.0, 'stbd': +1.0, 'left': -1.0, 'port': -1.0},
+    'differential_thrust': {'port': +1.0, 'left': +1.0, 'yaw left': +1.0, 'starboard': -1.0, 'stbd': -1.0, 'right': -1.0, 'yaw right': -1.0},
     'ski_incidence_deg': {'up': +1.0, 'ski up': +1.0, 'skis up': +1.0, 'nose up': +1.0, 'pitch up': +1.0, 'raise': +1.0, 'positive': +1.0, 'down': -1.0, 'ski down': -1.0, 'skis down': -1.0, 'nose down': -1.0, 'pitch down': -1.0, 'lower': -1.0, 'negative': -1.0},
     'ski_differential_deg': {'right': +1.0, 'starboard': +1.0, 'stbd': +1.0, 'bank right': +1.0, 'roll right': +1.0, 'ski bank right': +1.0, 'port up': +1.0, 'left': -1.0, 'port': -1.0, 'bank left': -1.0, 'roll left': -1.0, 'ski bank left': -1.0, 'stbd up': -1.0},
     'aft_ski_incidence_deg': {'up': +1.0, 'aft ski up': +1.0, 'stern ski up': +1.0, 'raise': +1.0, 'positive': +1.0, 'down': -1.0, 'aft ski down': -1.0, 'stern ski down': -1.0, 'lower': -1.0, 'negative': -1.0},
@@ -409,6 +409,7 @@ def sensor_observation(lab: Any) -> dict[str, Any]:
         command_mode='hold_until_changed',
         frame_labels=dict(
             attitude='roll right-down +, pitch nose-up +, yaw nose-left + (ENU heading)',
+            differential_thrust='fraction in [-1, +1]; + stbd > port (port / nose-left yaw), - port > stbd (starboard / nose-right yaw)',
             rudder='deg in [-30, +30]; + port / nose-left yaw, - starboard / nose-right yaw',
             elevator='deg in [-20, +20]; + TE up / nose-up pitch, - TE down / nose-down pitch',
             aileron='deg in [-25, +25]; + right roll (stbd TE up, port TE down), - left roll',

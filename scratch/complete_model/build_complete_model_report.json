@@ -1,12 +1,18 @@
 {
-  "profile": "rc01-real-components-v1",
+  "profile": "rc01-planing-3pt-v1",
+  "model_revision": "RC01-P1-R1",
+  "model_name": "Ricochet RC-01P-1 (3-Point Planing \u00b7 Rev 1)",
+  "alt_profile_embedded": "rc01-hydrofoil-ski-v1",
+  "control_surface_count": 9,
   "blend_path": "C:\\Users\\steve\\.gemini\\antigravity\\worktrees\\-vtx-flight-sim\\ricochet_control_surfaces\\scratch\\complete_model\\ricochet_rc01_complete.blend",
   "glb": {
     "glb_path": "C:\\Users\\steve\\.gemini\\antigravity\\worktrees\\-vtx-flight-sim\\ricochet_control_surfaces\\scratch\\complete_model\\ricochet_rc01_blendstra_articulated.glb",
-    "size_bytes": 1663052,
-    "bodies": 13,
-    "meshes": 29,
+    "size_bytes": 1822836,
+    "bodies": 14,
+    "meshes": 31,
     "animated_bodies": [
+      "sponson_port",
+      "sponson_stbd",
       "aileron_port",
       "aileron_stbd",
       "elevator",
@@ -16,10 +22,11 @@
       "fan_rotor_port",
       "fan_rotor_stbd",
       "ski_port",
-      "ski_stbd"
+      "ski_stbd",
+      "ski_aft"
     ],
-    "gltf_nodes": 42,
-    "gltf_meshes": 29,
+    "gltf_nodes": 45,
+    "gltf_meshes": 31,
     "gltf_materials": [
       "carbon_satin",
       "vtx_gold_paint",
@@ -29,7 +36,7 @@
       "canopy_glass",
       "cockpit_detail"
     ],
-    "gltf_animations": 10,
+    "gltf_animations": 13,
     "verified_physical_body_containers": [
       "aileron_port",
       "aileron_stbd",
@@ -40,6 +47,7 @@
       "reverse_bucket_port",
       "reverse_bucket_stbd",
       "rudder",
+      "ski_aft",
       "ski_port",
       "ski_stbd",
       "sponson_port",
@@ -47,13 +55,13 @@
     ]
   },
   "pose_parity": {
-    "source": "synthetic_rig_spec_sweep",
-    "frames_checked": 0,
+    "source": "mujoco_sweep",
+    "frames_checked": 400,
     "max_pos_err_m": 0.0,
-    "max_rot_err_deg": 0.0,
-    "worst_body": null,
-    "worst_frame": null
+    "max_rot_err_deg": 0.056,
+    "worst_body": "reverse_bucket_port",
+    "worst_frame": 248
   },
-  "cockpit_study_cases_loaded": 0,
-  "rendered_previews": false
+  "cockpit_study_cases_loaded": 10,
+  "rendered_previews": true
 }

@@ -557,6 +557,7 @@ def rc01_ecu_command(
       * pitch_deg > 0 = nose DOWN (Euler xyz about +Y port!); pitch_nose_up_deg = -pitch_deg
       * +elevator_deg = TE up -> nose-UP pitch
       * +rudder_deg = TE port -> nose-left (+Z) yaw; yaw_rate_deg_s > 0 = nose-left yaw
+      * +differential_thrust = stbd > port -> nose-left (+Z) yaw (matching +rudder_deg)
     """
     out = dict(pilot_cmd)
     u = max(0.0, float(u_mps))
@@ -596,8 +597,9 @@ def rc01_ecu_command(
     pilot_rud = float(pilot_cmd.get('rudder_deg', 0.0))
     pilot_ail = float(pilot_cmd.get('aileron_deg', 0.0))
     pilot_diff = float(pilot_cmd.get('differential_thrust', 0.0))
-    # Right turn: rudder_deg < 0 or aileron_deg > 0 or differential_thrust > 0 => target_roll_deg > 0 (lean right)
-    turn_right_norm = (-pilot_rud / 30.0) + 0.70 * (pilot_ail / 25.0) + 0.50 * pilot_diff
+    # Right turn: rudder_deg < 0 or aileron_deg > 0 or differential_thrust < 0 => target_roll_deg > 0 (lean right)
+    # (+differential_thrust spins stbd > port -> +Mz nose-left yaw, matching +rudder_deg)
+    turn_right_norm = (-pilot_rud / 30.0) + 0.70 * (pilot_ail / 25.0) - 0.50 * pilot_diff
     max_bank_deg = float(ecu_cfg.get('max_turn_bank_deg', 12.0))
     bank_gain_deg = float(ecu_cfg.get('turn_bank_gain_deg', 10.0))
     target_roll_deg = float(np.clip(turn_gate * bank_gain_deg * turn_right_norm, -max_bank_deg, max_bank_deg)) if u > 3.5 else 0.0

@@ -17,6 +17,7 @@ from vtx.harbour_fleet import HarbourFleet
 from vtx.harbour_session import _restart_boat
 from vtx.ricochet.live import RicochetAction, normalize_ricochet_action, sensor_observation
 from vtx.ricochet.plant import RicochetCraft
+from vtx.ricochet.real_components import rc01_ecu_command
 from vtx.water.datum import WaterEnvironmentConfig
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -125,7 +126,7 @@ def test_ricochet_action_normalization_and_live_observation_loop():
     assert act.observation_id == 7
     assert act.throttle == pytest.approx(0.50)
     assert act.rudder_deg == pytest.approx(30.0)
-    assert act.differential_thrust == pytest.approx(-0.25)
+    assert act.differential_thrust == pytest.approx(0.25)
     assert act.elevator_deg == pytest.approx(12.0)
     assert act.aileron_deg == pytest.approx(10.0)
     assert act.reverse_bucket == pytest.approx(0.50)
@@ -325,3 +326,73 @@ def test_harbour_live_profile_switching_both_selectable():
     np.testing.assert_allclose(pos_after_3, pos_airport_before_3, atol=1e-12)
     np.testing.assert_allclose(vel_after_3, vel_airport_before_3, atol=1e-12)
     assert 'ricochet-airport' in fleet.water.wakes
+
+
+def test_differential_thrust_sign_consistency_plant_ecu_and_live():
+    """Verify +differential_thrust == stbd > port == nose-left (+Z) yaw consistently across live.py, plant.py, and ECU."""
+    # 1. live.py text/directional parsing matches rudder_deg (+ = port / nose-left, - = starboard / nose-right)
+    for raw_val, expected in (
+        ('25% left', 0.25),
+        ('port', 0.50),
+        ('full yaw left', 1.0),
+        ('25% right', -0.25),
+        ('starboard', -0.50),
+        ('stbd', -0.50),
+        ('full yaw right', -1.0),
+    ):
+        act = RicochetAction.model_validate(normalize_ricochet_action({'diff_thrust': raw_val}))
+        assert act.differential_thrust == pytest.approx(expected), f"diff_thrust={raw_val!r} -> {act.differential_thrust}"
+
+    # 2. ECU coordinated inward bank agrees with +rudder_deg and +differential_thrust both turning left (-target_roll_deg)
+    ecu_cfg = {'enabled': True, 'default_assist': 1.0, 'max_turn_bank_deg': 12.0, 'turn_bank_gain_deg': 10.0}
+    limits = {'aileron_deg': {'min': -25.0, 'max': 25.0}, 'ski_differential_deg': {'min': -4.0, 'max': 4.0}}
+    tel_port: dict = {}
+    tel_stbd: dict = {}
+    tel_rud_port: dict = {}
+    rc01_ecu_command(
+        ecu_cfg, pilot_cmd={'differential_thrust': 0.8, 'ecu_assist': 1.0}, u_mps=15.0,
+        roll_deg=0.0, pitch_deg=0.0, roll_rate_deg_s=0.0, pitch_rate_deg_s=0.0, yaw_rate_deg_s=0.0,
+        keel_clear_m=0.18, surface_limits=limits, telemetry_out=tel_port,
+    )
+    rc01_ecu_command(
+        ecu_cfg, pilot_cmd={'differential_thrust': -0.8, 'ecu_assist': 1.0}, u_mps=15.0,
+        roll_deg=0.0, pitch_deg=0.0, roll_rate_deg_s=0.0, pitch_rate_deg_s=0.0, yaw_rate_deg_s=0.0,
+        keel_clear_m=0.18, surface_limits=limits, telemetry_out=tel_stbd,
+    )
+    rc01_ecu_command(
+        ecu_cfg, pilot_cmd={'rudder_deg': 15.0, 'ecu_assist': 1.0}, u_mps=15.0,
+        roll_deg=0.0, pitch_deg=0.0, roll_rate_deg_s=0.0, pitch_rate_deg_s=0.0, yaw_rate_deg_s=0.0,
+        keel_clear_m=0.18, surface_limits=limits, telemetry_out=tel_rud_port,
+    )
+    assert tel_port['target_roll_deg'] < -2.0, f"+differential_thrust must bank left (inward), got {tel_port}"
+    assert tel_stbd['target_roll_deg'] > 2.0, f"-differential_thrust must bank right (inward), got {tel_stbd}"
+    assert tel_port['target_roll_deg'] * tel_rud_port['target_roll_deg'] > 0.0
+
+    # 3. Plant physics: +differential_thrust spins stbd > port and produces nose-left (+yaw) rotation
+    suite = _load_maneuver_suite()
+    for diff_cmd, expect_positive_yaw in ((+0.8, True), (-0.8, False)):
+        world = suite.make_open_lake_world(half_x=400.0, half_y=200.0)
+        cfg = WaterEnvironmentConfig(water_level_m=7.0, wave_mode='still', wake_enabled=False, whirlpools_enabled=False)
+        craft = RicochetCraft(
+            world, variant='ricochet-concept-a', hull_variant='concept_a',
+            load_case='LC-01', water_config=cfg, profile='rc01-planing-3pt-v1',
+        )
+        craft.spawn(-100.0, 0.0, 7.0)
+        craft.set_command({'throttle': 0.50, 'differential_thrust': diff_cmd, 'ecu_assist': 0.0})
+        for _ in range(int(round(2.0 / craft.DT))):
+            craft.step()
+        obs = suite.TelemetryOnlyPilotHarness(craft).observe()
+        rpm_port, rpm_stbd = obs['fan_rpm']
+        yaw_deg = float(obs['attitude_xyz_deg'][2])
+        yaw_rate_deg_s = float(obs['gyro_world_deg_s'][2])
+        if expect_positive_yaw:
+            assert rpm_stbd > rpm_port > 1000.0
+            assert yaw_deg > 2.0 and yaw_rate_deg_s > 2.0, (
+                f"+differential_thrust expected nose-left (+yaw), got yaw={yaw_deg}, rate={yaw_rate_deg_s}"
+            )
+        else:
+            assert rpm_port > rpm_stbd > 1000.0
+            assert yaw_deg < -2.0 and yaw_rate_deg_s < -2.0, (
+                f"-differential_thrust expected nose-right (-yaw), got yaw={yaw_deg}, rate={yaw_rate_deg_s}"
+            )
+        assert 'differential_thrust' in obs['frame_labels']

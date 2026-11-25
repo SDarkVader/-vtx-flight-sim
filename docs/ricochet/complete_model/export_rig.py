@@ -1,7 +1,7 @@
 """Export the RC-01 articulation rig and a MuJoCo bench sweep for the complete Blender model (offline, isolated).
 
-Everything the Blender rig uses comes from the compiled MuJoCo model of Concept A with the
-rc01-real-components-v1 profile, not from hand-copied numbers:
+Everything the Blender rig uses comes from the compiled 19-DOF / 9-surface MuJoCo model of Concept A
+(default profile ``rc01-planing-3pt-v1`` / ``RC01-P1-R1``), not from hand-copied numbers:
   * hinge points, hinge axes and joint ranges (model.body_pos / body_quat / jnt_axis / jnt_range, chained to the
     airframe body frame, which is the GLB / VTX frame: +X forward, +Y port, +Z up);
   * channel limits and slew rates (craft.surface_limits, i.e. the actuators' published no-load speeds);
@@ -15,10 +15,12 @@ fixed neighbouring mesh at full travel (interference, ray-parity point-in-mesh).
 Bench sweep: the craft floats at rest in the isolated harbour basin (still water, nothing live) and each command
 is stepped through its full range at the actuators' real rates; joint angles and every articulated body's pose
 relative to the airframe are sampled at 24 fps for the Blender animation and for the Blender-vs-MuJoCo check.
-Usage: python export_rig.py <worktree> <out_dir>
+Usage: python docs/ricochet/complete_model/export_rig.py [worktree] [out_dir] [profile_or_revision]
 """
+import ctypes
 import json
 import math
+import os
 import pathlib
 import struct
 import sys
@@ -26,9 +28,9 @@ import time
 
 import numpy as np
 
-WT = pathlib.Path(sys.argv[1])
-OUT = pathlib.Path(sys.argv[2])
-PROFILE = sys.argv[3] if len(sys.argv) > 3 else 'rc01-real-components-v1'
+WT = (pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path(__file__).resolve().parents[3]).resolve()
+OUT = (pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else (WT / 'scratch' / 'complete_model')).resolve()
+RAW_PROFILE = sys.argv[3] if len(sys.argv) > 3 else 'rc01-planing-3pt-v1'
 OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(WT / 'src'))
 sys.path.insert(0, str(WT / 'tests'))
@@ -37,7 +39,23 @@ from test_harbour_fleet import harbour_world  # noqa: E402
 from vtx.harbour_fleet import HarbourFleet  # noqa: E402
 from vtx.ricochet.hull_geometry import CONCEPT_A_AIRFRAME_NODE_SPECS, CONCEPT_A_GLB  # noqa: E402
 from vtx.ricochet.plant import ARTICULATED_CHILD_SPECS, RicochetCraft  # noqa: E402
+from vtx.ricochet.real_components import resolve_profile_id  # noqa: E402
 from vtx.water.datum import WaterEnvironmentConfig  # noqa: E402
+
+PROFILE = resolve_profile_id(RAW_PROFILE)
+if PROFILE is None:
+    raise ValueError(
+        f'Profile {RAW_PROFILE!r} resolves to legacy RC01-CA-0 (profile=None, immutable '
+        f'public/assets/ricochet-concept-a.glb); no silent substitution allowed. '
+        f'Use RC01-P1-R1, RC01-H1-R1, or RC01-CA-1.'
+    )
+
+
+def _clear_hidden_attr(path: pathlib.Path) -> None:
+    if os.name == 'nt' and path.exists():
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        if attrs != -1 and (attrs & 0x2):
+            ctypes.windll.kernel32.SetFileAttributesW(str(path), attrs & ~0x2)
 
 FPS = 24
 t_wall = time.time()
@@ -345,11 +363,20 @@ for label, dur, extra in SEQ:
     print(f"{label:28s} worst end error {max(abs(v) for v in seg['end_error_deg'].values()):.3f} deg", flush=True)
 
 worst_end = max(abs(v) for s in segments for v in s['end_error_deg'].values())
+glb_resolved = pathlib.Path(CONCEPT_A_GLB).resolve()
+try:
+    glb_rel = glb_resolved.relative_to(WT).as_posix()
+except ValueError:
+    glb_rel = str(glb_resolved)
 spec = dict(
     method=__doc__,
     profile=PROFILE,
+    model_revision=getattr(c, 'model_revision', c.profile.get('model_revision', PROFILE)),
+    model_name=getattr(c, 'model_name', c.profile.get('model_name', PROFILE)),
+    dof_count=int(m.nv),
+    control_surface_count=len(COMMAND_MAP),
     frame='VTX airframe body frame = GLB frame (+X forward, +Y port, +Z up), metres',
-    glb=str(CONCEPT_A_GLB.relative_to(WT)) if str(CONCEPT_A_GLB).startswith(str(WT)) else str(CONCEPT_A_GLB),
+    glb=glb_rel,
     bodies=rig,
     glb_node_vs_mujoco_origin_max_m=round(node_err, 6),
     command_map=COMMAND_MAP,
@@ -369,10 +396,19 @@ spec = dict(
     rudder_cove_clear=bool(c.profile.get('rudder_cove_clear', False)),
     kinematics=kin,
 )
-json.dump(spec, open(OUT / 'rig_spec.json', 'w'), indent=1, default=str)
-json.dump(dict(fps=FPS, dt=dt, segments=segments, worst_end_error_deg=worst_end,
-               actuator_time_above_rated_s=c._act_above_rated_s, frames=frames),
-          open(OUT / 'sweep.json', 'w'), indent=None, default=str)
-print(json.dumps(dict(glb_node_vs_mujoco_origin_max_m=round(node_err, 6), worst_end_error_deg=worst_end,
+rig_spec_path = OUT / 'rig_spec.json'
+sweep_path = OUT / 'sweep.json'
+_clear_hidden_attr(rig_spec_path)
+_clear_hidden_attr(sweep_path)
+with open(rig_spec_path, 'w', encoding='utf-8') as f:
+    json.dump(spec, f, indent=1, default=str)
+with open(sweep_path, 'w', encoding='utf-8') as f:
+    json.dump(dict(profile=PROFILE, model_revision=spec['model_revision'], fps=FPS, dt=dt,
+                   segments=segments, worst_end_error_deg=worst_end,
+                   actuator_time_above_rated_s=c._act_above_rated_s, frames=frames),
+              f, indent=None, default=str)
+print(json.dumps(dict(profile=PROFILE, model_revision=spec['model_revision'],
+                      dof_count=spec['dof_count'], control_surface_count=spec['control_surface_count'],
+                      glb_node_vs_mujoco_origin_max_m=round(node_err, 6), worst_end_error_deg=worst_end,
                       frames=len(frames), kinematics=kin, above_rated_s=c._act_above_rated_s,
                       wall_s=round(time.time() - t_wall, 1)), indent=1))

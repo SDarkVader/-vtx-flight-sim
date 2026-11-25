@@ -1,47 +1,246 @@
-"""Headless Blender 5.2+ builder for the complete Ricochet RC-01 `.blend` and Blendstra articulated `.glb`.
+"""One-command headless builder for the consolidated Ricochet RC-01 `.blend` and Blendstra articulated `.glb`.
 
-Builds from authoritative VTX / MuJoCo sources (never touches legacy `public/assets/ricochet-concept-a.glb`):
-  1. Complete interactive `.blend` file:
-     - Canonical RC-01 Concept A meshes with cleared rudder hinge cove (0 interference at +/-30 deg);
-     - Exact MuJoCo body hierarchy & hinge empties (AXIS_ANGLE about MuJoCo axes, matching `rig_spec.json`);
-     - `RC01_Controls` empty with real actuator bounds and live drivers mapped from `rig_spec.json['command_map']`;
-     - Watertight carbon ski blades + tracking fins on ski hinges (`ski_port`, `ski_stbd`, optional `ski_aft`)
-       and Ti-6Al-4V ski struts on sponsons/airframe, matching `plant.visual_geometry()`;
-     - Optional alternate hydro-architecture collection (e.g. Option 2 hydrofoil-skis alongside Option 1 planing)
-       so both architectures can be compared directly inside Blender;
+Run with ZERO arguments from either Python (runs MuJoCo rig/sweep export + headless Blender) or directly from Blender:
+
+    python docs/ricochet/complete_model/build_complete_model.py
+    blender -b --factory-startup --python docs/ricochet/complete_model/build_complete_model.py
+
+Builds ONE consolidated model from authoritative VTX / MuJoCo sources (never touches legacy `public/assets/ricochet-concept-a.glb`):
+  1. Single complete interactive `.blend` (`scratch/complete_model/ricochet_rc01_complete.blend`):
+     - All 19 DOFs / 14 physical bodies & all 9 active control surfaces (port/stbd ailerons, elevator,
+       cleared-cove rudder with 0 interference at +/-30 deg, port/stbd reverse buckets, port/stbd main
+       hydro-skis, aft stern trim ski) + 2 passive sponson flex slides + 2 counter-rotating ducted fans;
+     - Exact MuJoCo body hierarchy & hinge empties (`AXIS_ANGLE` about MuJoCo axes, matching `rig_spec.json`);
+     - `RC01_Controls` empty with real actuator bounds and live drivers mapped from `rig_spec.json['command_map']`
+       plus slide Z drivers for `sponson_port_flex_m` and `sponson_stbd_flex_m`;
+     - Both hydro-ski architectures retained in ONE `.blend`: primary 3-point planing skis (`RC01-P1-R1` /
+       `rc01-planing-3pt-v1`) + toggleable Option 2 cambered hydrofoil-ski collection (`Alt_rc01-hydrofoil-ski-v1`,
+       also driven by `RC01_Controls`, hidden by default so you can switch directly inside Blender);
      - Real actuator mount markers (Volz DA 30-HT-D, Volz DA 58-D, Exlar GSX30) at exact VTX coordinates;
-     - Optional cockpit-study enclosure collections (from `cockpit_study.json`, hidden by default so owner picks);
-     - Baked MuJoCo bench-sweep animation (`sweep.json`, 24 fps) + automated per-frame Blender-vs-MuJoCo
-       pose-parity verification (`pose_parity_report.json`);
-     - Embedded `README` text block and optional studio preview renders.
-  2. Blendstra-ready articulated `.glb` (`export_yup=True, export_extras=True, export_animations=True`):
-     - Clean production hierarchy matching `tools/rig_blendstra_r6.py` & VTX glTF conventions:
-       container empties named after every MuJoCo physical body with `physical_body`, `blendstra_id`,
-       `ricochet_joint`, `hinge_axis_vtx`, `range_deg`, and `actuator_component` extras;
-     - Crisp PBR materials (`carbon_satin`, `vtx_gold_paint`, `titanium_strut`, `canopy_glass` BLEND,
-       `cockpit_detail`, `avionics_glow`, `fan_rotor`) and baked articulation animation tracks.
+     - All 10 cockpit-study enclosure collections (`Cockpit_Study_Options`, hidden by default so the owner picks);
+     - Baked 24 fps MuJoCo bench-sweep animation (`sweep.json`) + automated per-frame Blender-vs-MuJoCo
+       pose-parity verification (`0.0 m` position error, `< 0.1 deg` rotation error);
+     - Embedded `README_RC01_COMPLETE_MODEL` text block and studio preview renders.
+  2. Single Blendstra-ready articulated `.glb` (`scratch/complete_model/ricochet_rc01_blendstra_articulated.glb`):
+     - All 14 MuJoCo physical body containers with `physical_body`, `blendstra_id`, `ricochet_joint`,
+       `hinge_axis_vtx` / `slide_axis_vtx`, `range_deg` / `range_m`, and `actuator_component` extras;
+     - Unified 7 canonical PBR materials (`carbon_satin`, `vtx_gold_paint`, `titanium_strut`, `canopy_glass`
+       `BLEND` alpha, `cockpit_detail`, `avionics_glow`, `fan_rotor`) with vertex colors (`COLOR_0`),
+       34-deg split normals, zero `.001` duplicates, and baked articulation animation tracks.
 
-Usage (headless only, never touch an open Blender GUI window):
-  blender -b --factory-startup --python docs/ricochet/complete_model/build_complete_model.py -- \\
-      --worktree . --out scratch/complete_model --profile rc01-planing-3pt-v1 \\
-      [--alt-profile rc01-hydrofoil-ski-v1] [--rig-spec scratch/complete_model/rig_spec.json] \\
-      [--sweep scratch/complete_model/sweep.json] [--cockpit-study scratch/cockpit_study/cockpit_study.json] \\
-      [--render]
+Optional overrides (all auto-defaulted when omitted):
+  --profile RC01-P1-R1|RC01-H1-R1|rc01-planing-3pt-v1|rc01-hydrofoil-ski-v1
+  --alt-profile <profile_id|none>   --out <dir>   --skip-export   --no-render   --no-cockpit-study   --blender <exe>
 """
 from __future__ import annotations
 
 import argparse
+import ctypes
+import glob
 import importlib.util
 import json
 import math
+import os
 import pathlib
+import shutil
+import subprocess
 import sys
 import types
 from typing import Any
 
-import bpy
-import numpy as np
-from mathutils import Matrix, Quaternion, Vector
+try:
+    import bpy
+    from mathutils import Matrix, Quaternion, Vector
+    _IN_BLENDER = True
+except ImportError:
+    bpy = None  # type: ignore[assignment]
+    Matrix = Quaternion = Vector = None  # type: ignore[assignment]
+    _IN_BLENDER = False
+
+if _IN_BLENDER:
+    import numpy as np
+
+
+_DEFAULT_REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
+_DEFAULT_PROFILE = 'rc01-planing-3pt-v1'
+
+
+def _clear_hidden_attr(path: pathlib.Path) -> None:
+    """Clear Windows Hidden attribute on a file or directory so overwrites never fail with PermissionError."""
+    if os.name == 'nt' and path.exists():
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        if attrs != -1 and (attrs & 0x2):
+            ctypes.windll.kernel32.SetFileAttributesW(str(path), attrs & ~0x2)
+
+
+def _default_alt_profile(primary_profile: str) -> str | None:
+    if primary_profile == 'rc01-planing-3pt-v1':
+        return 'rc01-hydrofoil-ski-v1'
+    if primary_profile == 'rc01-hydrofoil-ski-v1':
+        return 'rc01-planing-3pt-v1'
+    return 'rc01-hydrofoil-ski-v1'
+
+
+def _find_blender_executable(explicit: str | None = None) -> str:
+    """Locate Blender 5.2+ headless executable without touching any open Blender GUI."""
+    if explicit:
+        p = pathlib.Path(explicit)
+        if p.is_file():
+            return str(p)
+        raise FileNotFoundError(f'Blender executable not found at --blender={explicit!r}')
+    env_exe = os.environ.get('BLENDER_EXE')
+    if env_exe and pathlib.Path(env_exe).is_file():
+        return env_exe
+    found = shutil.which('blender')
+    if found:
+        return found
+    candidates: list[str] = []
+    if os.name == 'nt':
+        for base in (os.environ.get('ProgramFiles', r'C:\Program Files'), r'C:\Program Files'):
+            candidates.extend(sorted(glob.glob(os.path.join(base, 'Blender Foundation', 'Blender *', 'blender.exe')), reverse=True))
+    elif sys.platform == 'darwin':
+        candidates.append('/Applications/Blender.app/Contents/MacOS/Blender')
+    else:
+        candidates.extend(['/usr/bin/blender', '/usr/local/bin/blender', '/snap/bin/blender'])
+    for cand in candidates:
+        if pathlib.Path(cand).is_file():
+            return cand
+    raise FileNotFoundError(
+        'Could not locate Blender automatically. Install Blender 5.2+ or pass --blender <path/to/blender> '
+        '(or set BLENDER_EXE).'
+    )
+
+
+def _find_mujoco_python(wt: pathlib.Path) -> str | None:
+    """Find a Python interpreter that can import mujoco (current interpreter, repo .venv, or parent repo .venv)."""
+    candidates: list[pathlib.Path] = [pathlib.Path(sys.executable)]
+    for rel in ('.venv/Scripts/python.exe', '.venv/bin/python'):
+        candidates.append(wt / rel)
+    try:
+        common = subprocess.check_output(
+            ['git', '-C', str(wt), 'rev-parse', '--git-common-dir'],
+            stderr=subprocess.DEVNULL, text=True,
+        ).strip()
+        if common:
+            common_root = (wt / common).resolve().parent
+            for rel in ('.venv/Scripts/python.exe', '.venv/bin/python'):
+                candidates.append(common_root / rel)
+    except Exception:
+        pass
+    seen: set[str] = set()
+    for cand in candidates:
+        key = str(cand.resolve()) if cand.exists() else str(cand)
+        if key in seen or not cand.is_file():
+            continue
+        seen.add(key)
+        try:
+            rc_code = subprocess.call(
+                [str(cand), '-c', 'import mujoco'],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
+            if rc_code == 0:
+                return str(cand)
+        except Exception:
+            continue
+    return None
+
+
+def _resolve_profile_alias_stdlib(wt: pathlib.Path, raw: str | None) -> str:
+    """Resolve a profile ID or model revision code using pure stdlib (zero numpy/mujoco dependency).
+
+    Refuses legacy RC01-CA-0 / empty aliases rather than silently substituting another aircraft.
+    """
+    if raw is None or not str(raw).strip():
+        raise ValueError(
+            'Empty Ricochet profile; no silent substitution allowed. '
+            'Use RC01-P1-R1, RC01-H1-R1, or RC01-CA-1.'
+        )
+    key = str(raw).strip().lower()
+    if key in ('rc01-ca-0', 'rc01-ca0', 'legacy'):
+        raise ValueError(
+            f'Profile {raw!r} resolves to legacy RC01-CA-0 (profile=None, immutable '
+            f'public/assets/ricochet-concept-a.glb); no silent substitution allowed. '
+            f'Use RC01-P1-R1, RC01-H1-R1, or RC01-CA-1.'
+        )
+    aliases: dict[str, str] = {
+        'rc01-ca-1': 'rc01-real-components-v1',
+        'rc01-ca1': 'rc01-real-components-v1',
+        'rc01-real-components-v1': 'rc01-real-components-v1',
+        'rc01-p1-r1': 'rc01-planing-3pt-v1',
+        'rc01-p1': 'rc01-planing-3pt-v1',
+        'rc01-planing-3pt-v1': 'rc01-planing-3pt-v1',
+        'rc01-h1-r1': 'rc01-hydrofoil-ski-v1',
+        'rc01-h1': 'rc01-hydrofoil-ski-v1',
+        'rc01-hydrofoil-ski-v1': 'rc01-hydrofoil-ski-v1',
+    }
+    prof_dir = wt / 'inputs' / 'ricochet_profiles'
+    if prof_dir.is_dir():
+        for pf in sorted(prof_dir.glob('*.json')):
+            try:
+                data = json.loads(pf.read_text(encoding='utf-8'))
+            except Exception:
+                continue
+            pid = data.get('profile_id')
+            if isinstance(pid, str) and pid:
+                aliases[pid.lower()] = pid
+                rev = data.get('model_revision')
+                if isinstance(rev, str) and rev:
+                    aliases[rev.lower()] = pid
+                series = data.get('revision_series')
+                if isinstance(series, str) and series:
+                    aliases.setdefault(series.lower(), pid)
+    if key in aliases:
+        return aliases[key]
+    raise ValueError(f'Unknown Ricochet profile or model revision {raw!r}; no substitution allowed')
+
+
+def _run_orchestrator(args: argparse.Namespace) -> None:
+    """One-command Python entry point: run MuJoCo export_rig.py (if available), then invoke headless Blender."""
+    wt = pathlib.Path(args.worktree).resolve()
+    out = pathlib.Path(args.out).resolve()
+    out.mkdir(parents=True, exist_ok=True)
+    _clear_hidden_attr(out)
+
+    # Pure-stdlib profile alias resolution so plain system Python (without numpy/mujoco) works directly.
+    profile = _resolve_profile_alias_stdlib(wt, args.profile)
+    if args.alt_profile is not None and str(args.alt_profile).strip().lower() not in ('', 'none', 'false'):
+        _resolve_profile_alias_stdlib(wt, args.alt_profile)
+
+    if not args.skip_export:
+        py_mj = _find_mujoco_python(wt)
+        if py_mj:
+            export_script = wt / 'docs' / 'ricochet' / 'complete_model' / 'export_rig.py'
+            print(f'[1/2] Exporting 19-DOF / 9-surface MuJoCo rig & bench sweep ({profile}) via {py_mj}...', flush=True)
+            subprocess.run([py_mj, str(export_script), str(wt), str(out), profile], check=True)
+        else:
+            print('[1/2] Warning: mujoco not found in Python environment; Blender will derive rig directly from profile JSON.', flush=True)
+
+    blender_exe = _find_blender_executable(args.blender)
+    cmd = [
+        blender_exe, '-b', '--factory-startup', '--python-exit-code', '1',
+        '--python', str(pathlib.Path(__file__).resolve()),
+        '--',
+        '--worktree', str(wt),
+        '--out', str(out),
+        '--profile', profile,
+        '--blend-name', args.blend_name,
+        '--glb-name', args.glb_name,
+    ]
+    if args.alt_profile is not None:
+        cmd.extend(['--alt-profile', args.alt_profile])
+    if args.rig_spec:
+        cmd.extend(['--rig-spec', args.rig_spec])
+    if args.sweep:
+        cmd.extend(['--sweep', args.sweep])
+    if args.cockpit_study:
+        cmd.extend(['--cockpit-study', args.cockpit_study])
+    if args.no_cockpit_study:
+        cmd.append('--no-cockpit-study')
+    if args.no_render:
+        cmd.append('--no-render')
+
+    print(f'[2/2] Building consolidated .blend & Blendstra articulated .glb via {blender_exe}...', flush=True)
+    subprocess.run(cmd, check=True)
 
 
 def _load_vtx_geometry_modules(wt: pathlib.Path):
@@ -75,23 +274,41 @@ def _load_vtx_geometry_modules(wt: pathlib.Path):
 
 
 def _parse_args() -> argparse.Namespace:
-    argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
-    p = argparse.ArgumentParser(description='Build Ricochet RC-01 complete .blend and Blendstra articulated .glb')
-    p.add_argument('--worktree', required=True, help='Repository worktree root')
-    p.add_argument('--out', required=True, help='Isolated output directory')
-    p.add_argument('--profile', default='rc01-planing-3pt-v1', help='Primary Ricochet profile ID')
-    p.add_argument('--alt-profile', default='rc01-hydrofoil-ski-v1', help='Optional alternate hydro profile for comparison collection')
-    p.add_argument('--rig-spec', default=None, help='Path to rig_spec.json (optional; derived from profile if omitted)')
-    p.add_argument('--sweep', default=None, help='Path to sweep.json (optional; synthetic full-range sweep if omitted)')
-    p.add_argument('--cockpit-study', default=None, help='Path to cockpit_study.json (optional)')
+    if _IN_BLENDER:
+        argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+    else:
+        argv = sys.argv[1:]
+    p = argparse.ArgumentParser(
+        description='One-command builder for the consolidated Ricochet RC-01 .blend and Blendstra articulated .glb',
+    )
+    p.add_argument('--worktree', default=str(_DEFAULT_REPO_ROOT), help='Repository root (default: auto-detected)')
+    p.add_argument('--out', default=None, help='Output directory (default: <worktree>/scratch/complete_model)')
+    p.add_argument('--profile', default=_DEFAULT_PROFILE, help='Primary Ricochet profile ID or revision (default: rc01-planing-3pt-v1 / RC01-P1-R1)')
+    p.add_argument('--alt-profile', default=None, help='Alternate hydro profile collection embedded in .blend (default: companion 9-surface option; pass "none" to omit)')
+    p.add_argument('--rig-spec', default=None, help='Path to rig_spec.json (default: auto-use <out>/rig_spec.json if matching profile)')
+    p.add_argument('--sweep', default=None, help='Path to sweep.json (default: auto-use <out>/sweep.json if matching profile)')
+    p.add_argument('--cockpit-study', default=None, help='Path to cockpit_study.json (default: auto-use scratch/cockpit_study/cockpit_study.json if present)')
+    p.add_argument('--no-cockpit-study', action='store_true', help='Skip embedding cockpit study enclosure collections')
     p.add_argument('--blend-name', default='ricochet_rc01_complete.blend')
     p.add_argument('--glb-name', default='ricochet_rc01_blendstra_articulated.glb')
-    p.add_argument('--render', action='store_true', help='Render studio still previews')
-    return p.parse_args(argv)
+    p.add_argument('--render', action='store_true', default=True, help='Render studio still previews (default: on)')
+    p.add_argument('--no-render', action='store_true', help='Skip rendering studio still previews')
+    p.add_argument('--skip-export', action='store_true', help='Skip running export_rig.py when launched from Python')
+    p.add_argument('--blender', default=None, help='Optional explicit path to Blender executable (when launched from Python)')
+    args = p.parse_args(argv)
+    if args.out is None:
+        args.out = str(pathlib.Path(args.worktree).resolve() / 'scratch' / 'complete_model')
+    if args.no_render:
+        args.render = False
+    return args
 
 
 def _clear_scene() -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    try:
+        bpy.context.preferences.filepaths.save_version = 0
+    except Exception:
+        pass
 
 
 def _ensure_collection(name: str, parent=None):
@@ -336,7 +553,9 @@ def _derive_rig_spec_from_profile(wt: pathlib.Path, profile_id: str) -> dict[str
         ch_limits['aft_ski_incidence_deg'] = dict(min=float(aski['incidence_command_deg'][0]), max=float(aski['incidence_command_deg'][1]))
 
     return dict(
-        profile=profile_id,
+        profile=prof['profile_id'],
+        model_revision=prof.get('model_revision', getattr(rc, 'PROFILE_REVISIONS', {}).get(prof['profile_id'], 'RC01-CA-0')),
+        model_name=prof.get('model_name', f"Ricochet {prof.get('model_revision', prof['profile_id'])}"),
         bodies=bodies,
         command_map=cmd_map,
         channel_limits=ch_limits,
@@ -381,8 +600,17 @@ def _add_slide_z_driver(slide_obj, ctrl_obj, prop_name: str, base_z: float) -> N
     drv.expression = f'{base_z:.6f} + dz'
 
 
-def _configure_controls_object(ctrl_obj, rig_spec: dict[str, Any]) -> None:
-    """Attach bounded custom properties to RC01_Controls matching exact actuator limits."""
+def _configure_controls_object(
+    ctrl_obj,
+    rig_spec: dict[str, Any],
+    alt_prof: dict[str, Any] | None = None,
+) -> None:
+    """Attach bounded custom properties to RC01_Controls matching exact actuator limits.
+
+    When an alternate hydro-ski profile is embedded in the same .blend, hard UI bounds expand
+    to the union of primary and alternate mechanical joint ranges (while soft_min/soft_max stay
+    at primary command limits and each ski's own driver clips to its own mechanical stops).
+    """
     ch_limits = rig_spec.get('channel_limits', {})
     defaults = [
         ('aileron_deg', 0.0, -25.0, 25.0, 'Aileron deflection (deg): + right roll'),
@@ -396,15 +624,30 @@ def _configure_controls_object(ctrl_obj, rig_spec: dict[str, Any]) -> None:
         ('fan_port_deg', 0.0, -360000.0, 360000.0, 'Port ducted fan rotor angle (deg)'),
         ('fan_stbd_deg', 0.0, -360000.0, 360000.0, 'Starboard ducted fan rotor angle (deg)'),
     ]
-    if rig_spec.get('aft_ski'):
+    if rig_spec.get('aft_ski') or (alt_prof and alt_prof.get('aft_ski')):
         defaults.append(('aft_ski_incidence_deg', 0.0, -8.0, 10.0, 'Aft trim ski incidence (deg)'))
+    ski_jrange = (rig_spec.get('ski') or {}).get('joint_range_deg')
+    aski_jrange = (rig_spec.get('aft_ski') or {}).get('joint_range_deg')
+    alt_ski_jrange = ((alt_prof or {}).get('skis') or {}).get('joint_range_deg')
+    alt_aski_jrange = ((alt_prof or {}).get('aft_ski') or {}).get('joint_range_deg')
     for key, val, lo_d, hi_d, desc in defaults:
         lim = ch_limits.get(key, {})
-        lo = float(lim.get('min', lo_d))
-        hi = float(lim.get('max', hi_d))
+        soft_lo = float(lim.get('min', lo_d))
+        soft_hi = float(lim.get('max', hi_d))
+        hard_lo, hard_hi = soft_lo, soft_hi
+        if key == 'ski_incidence_deg':
+            for jr in (ski_jrange, alt_ski_jrange):
+                if jr:
+                    hard_lo = min(hard_lo, float(jr[0]))
+                    hard_hi = max(hard_hi, float(jr[1]))
+        elif key == 'aft_ski_incidence_deg':
+            for jr in (aski_jrange, alt_aski_jrange):
+                if jr:
+                    hard_lo = min(hard_lo, float(jr[0]))
+                    hard_hi = max(hard_hi, float(jr[1]))
         ctrl_obj[key] = float(val)
         ui = ctrl_obj.id_properties_ui(key)
-        ui.update(min=lo, max=hi, soft_min=lo, soft_max=hi, default=float(val), description=desc)
+        ui.update(min=hard_lo, max=hard_hi, soft_min=soft_lo, soft_max=soft_hi, default=float(val), description=desc)
 
 
 def _quat_err_deg(q_a: Quaternion, q_b: Quaternion) -> float:
@@ -431,16 +674,21 @@ def _build_airframe_and_rig(
     root_af.empty_display_type = 'PLAIN_AXES'
     root_af.empty_display_size = 0.35
     root_af.location = Vector((0.0, 0.0, 0.0))
+    prof_meta = {}
+    try:
+        prof_meta = rc.load_profile(rig_spec['profile'])
+    except Exception:
+        prof_meta = {}
     root_af['physical_body'] = 'airframe'
     root_af['blendstra_id'] = 'rc01_body_airframe'
     root_af['profile_id'] = rig_spec['profile']
     root_af['model_revision'] = rig_spec.get(
         'model_revision',
-        getattr(rc, 'PROFILE_MODEL_REVISIONS', {}).get(rig_spec['profile'], 'RC01-CA-0'),
+        prof_meta.get('model_revision', getattr(rc, 'PROFILE_REVISIONS', {}).get(rig_spec['profile'], 'RC01-CA-0')),
     )
     root_af['model_name'] = rig_spec.get(
         'model_name',
-        getattr(rc, 'PROFILE_MODEL_NAMES', {}).get(rig_spec['profile'], 'Ricochet RC-01'),
+        prof_meta.get('model_name', f"Ricochet {root_af['model_revision']}"),
     )
     coll_main.objects.link(root_af)
     containers['airframe'] = root_af
@@ -652,12 +900,37 @@ def _build_airframe_and_rig(
 
     _attach_profile_skis(rig_spec['ski'], rig_spec.get('aft_ski'), coll_main, prefix='', use_containers=True)
 
-    # 4. Optional alternate hydro architecture collection (hidden by default in viewport & render)
+    # 4. Optional alternate hydro architecture collection (hidden by default in viewport & render,
+    #    driven by RC01_Controls for both incidence AND sponson flex Z so Option 2 skis stay
+    #    attached to moving sponsons if toggled on inside Blender, while staying completely
+    #    unparented from primary containers so Blendstra GLB export stays pure)
+    alt_prof: dict[str, Any] | None = None
+    alt_ski_objs: dict[str, tuple[Any, list[float]]] = {}
+    alt_slide_objs: list[tuple[Any, str, float]] = []
     if alt_profile_id and alt_profile_id != rig_spec['profile']:
         try:
             alt_prof = rc.load_profile(alt_profile_id)
             coll_alt = _ensure_collection(f'Alt_{alt_profile_id}')
             _attach_profile_skis(alt_prof['skis'], alt_prof.get('aft_ski'), coll_alt, prefix='Alt_', use_containers=False)
+            j0_alt, j1_alt = (float(v) for v in alt_prof['skis']['joint_range_deg'])
+            for side in ('Port', 'Stbd'):
+                sp_prop = f'sponson_{side.lower()}_flex_m'
+                obj = bpy.data.objects.get(f'Alt_Ricochet_Ski_{side}')
+                if obj is not None:
+                    obj.rotation_mode = 'AXIS_ANGLE'
+                    obj.rotation_axis_angle = (0.0, 0.0, -1.0, 0.0)
+                    alt_ski_objs[f'ski_{side.lower()}_incidence'] = (obj, [j0_alt, j1_alt])
+                    alt_slide_objs.append((obj, sp_prop, float(obj.location.z)))
+                st_obj = bpy.data.objects.get(f'Alt_Ricochet_Ski_Strut_{side}')
+                if st_obj is not None:
+                    alt_slide_objs.append((st_obj, sp_prop, float(st_obj.location.z)))
+            if alt_prof.get('aft_ski'):
+                j0a_alt, j1a_alt = (float(v) for v in alt_prof['aft_ski']['joint_range_deg'])
+                obj_aft = bpy.data.objects.get('Alt_Ricochet_Ski_Aft')
+                if obj_aft is not None:
+                    obj_aft.rotation_mode = 'AXIS_ANGLE'
+                    obj_aft.rotation_axis_angle = (0.0, 0.0, -1.0, 0.0)
+                    alt_ski_objs['ski_aft_incidence'] = (obj_aft, [j0a_alt, j1a_alt])
             coll_alt.hide_viewport = True
             coll_alt.hide_render = True
         except Exception as exc:
@@ -669,7 +942,7 @@ def _build_airframe_and_rig(
     ctrl_obj.empty_display_size = 0.25
     ctrl_obj.location = Vector((0.0, 0.0, 2.90))
     coll_actuators.objects.link(ctrl_obj)
-    _configure_controls_object(ctrl_obj, rig_spec)
+    _configure_controls_object(ctrl_obj, rig_spec, alt_prof)
 
     joint_to_body = {}
     for bname, binfo in rig_spec['bodies'].items():
@@ -680,6 +953,10 @@ def _build_airframe_and_rig(
         bname = joint_to_body.get(jname)
         if bname and bname in containers:
             _add_axis_angle_driver(containers[bname], ctrl_obj, jname, cmap)
+        if jname in alt_ski_objs:
+            alt_obj, alt_clip = alt_ski_objs[jname]
+            alt_spec = dict(cmap, clip_deg=alt_clip)
+            _add_axis_angle_driver(alt_obj, ctrl_obj, f'alt_{jname}', alt_spec)
     for fn, prop in (('fan_rotor_port', 'fan_port_deg'), ('fan_rotor_stbd', 'fan_stbd_deg')):
         if fn in containers:
             _add_axis_angle_driver(containers[fn], ctrl_obj, f'{fn}_hinge', dict(terms=[[prop, 1.0]]))
@@ -687,6 +964,9 @@ def _build_airframe_and_rig(
         if sp_side in containers and sp_prop in ctrl_obj:
             base_z = float(rig_spec['bodies'][sp_side]['origin_af'][2])
             _add_slide_z_driver(containers[sp_side], ctrl_obj, sp_prop, base_z)
+    for alt_obj, sp_prop, base_z in alt_slide_objs:
+        if sp_prop in ctrl_obj:
+            _add_slide_z_driver(alt_obj, ctrl_obj, sp_prop, base_z)
 
     # 6. Actuator mount markers (Volz DA 30-HT-D, Volz DA 58-D, Exlar GSX30)
     m_da30 = _marker_material('Actuator_Volz_DA30HTD', (0.15, 0.72, 0.28, 1.0))
@@ -858,8 +1138,9 @@ def _export_blendstra_articulated_glb(
     if sampled_frames[-1] != frame_end:
         sampled_frames.append(frame_end)
 
-    # Record driver-evaluated local quaternions across frames first
+    # Record driver-evaluated local quaternions and slide translations across frames first
     recorded: dict[str, list[tuple[int, Quaternion]]] = {b: [] for b in containers if b != 'airframe'}
+    recorded_loc: dict[str, list[tuple[int, Vector]]] = {b: [] for b in containers if b != 'airframe'}
     for fnum in sampled_frames:
         scene.frame_set(fnum)
         bpy.context.view_layer.update()
@@ -871,6 +1152,7 @@ def _export_blendstra_articulated_glb(
             else:
                 q = obj.rotation_quaternion.copy()
             recorded[bname].append((fnum, q))
+            recorded_loc[bname].append((fnum, obj.location.copy()))
 
     export_coll = bpy.data.collections.new('_Temp_GLB_Export')
     scene.collection.children.link(export_coll)
@@ -952,25 +1234,37 @@ def _export_blendstra_articulated_glb(
         if o.type == 'MESH':
             o.name = o.name.split('.')[0]
 
-    # Keyframe recorded quaternion sweep onto duplicate body containers for glTF animation tracks
+    # Keyframe recorded quaternion and slide-translation sweep onto duplicate body containers for glTF animation tracks
     q_ident = Quaternion((1.0, 0.0, 0.0, 0.0))
     for bname, pairs in recorded.items():
         de = dup_containers.get(bname)
         if de is None or not pairs:
             continue
+        is_animated = False
         q0 = pairs[0][1]
-        if max(_quat_err_deg(q0, q) for _, q in pairs) < 1e-3:
+        if max(_quat_err_deg(q0, q) for _, q in pairs) >= 1e-3:
+            prev_q = None
+            for fnum, q in pairs:
+                q_use = q_ident.copy() if fnum == 0 else q.copy()
+                if prev_q is not None and float(prev_q.dot(q_use)) < 0.0:
+                    q_use = -q_use
+                prev_q = q_use
+                de.rotation_quaternion = q_use
+                de.keyframe_insert(data_path='rotation_quaternion', frame=fnum)
+            is_animated = True
+        else:
             de.rotation_quaternion = q_ident.copy()
-            continue
-        prev_q = None
-        for fnum, q in pairs:
-            q_use = q_ident.copy() if fnum == 0 else q.copy()
-            if prev_q is not None and float(prev_q.dot(q_use)) < 0.0:
-                q_use = -q_use
-            prev_q = q_use
-            de.rotation_quaternion = q_use
-            de.keyframe_insert(data_path='rotation_quaternion', frame=fnum)
-        baked_empties.append(bname)
+
+        loc_pairs = recorded_loc.get(bname, [])
+        if loc_pairs:
+            p0 = loc_pairs[0][1]
+            if max(float((p - p0).length) for _, p in loc_pairs) >= 1e-4:
+                for fnum, p in loc_pairs:
+                    de.location = p.copy()
+                    de.keyframe_insert(data_path='location', frame=fnum)
+                is_animated = True
+        if is_animated:
+            baked_empties.append(bname)
 
     scene.frame_set(0)
     for de in dup_containers.values():
@@ -1124,12 +1418,24 @@ def _setup_lighting_and_render(out_dir: pathlib.Path, do_render: bool) -> None:
         scene.camera = first_cam
 
 
-def _write_readme_text(rig_spec: dict[str, Any], parity: dict[str, Any], glb_info: dict[str, Any]) -> None:
+def _write_readme_text(
+    rig_spec: dict[str, Any],
+    parity: dict[str, Any],
+    glb_info: dict[str, Any],
+    alt_profile: str | None,
+    study_loaded: int,
+) -> None:
     txt = bpy.data.texts.new('README_RC01_COMPLETE_MODEL')
     lines = [
-        'VTX RICOCHET RC-01 — COMPLETE ARTICULATED MODEL & BLENDSTRA RIG',
-        f"Profile: {rig_spec['profile']}",
+        'VTX RICOCHET RC-01 — CONSOLIDATED 19-DOF / 9-SURFACE COMPLETE MODEL & BLENDSTRA RIG',
+        f"Profile: {rig_spec['profile']} ({rig_spec.get('model_revision', rig_spec['profile'])})",
+        f"Alternate hydro-ski collection embedded: {alt_profile or 'none'} (hidden by default; toggle in Outliner)",
+        f"Cockpit-study enclosures embedded: {study_loaded} cases in Cockpit_Study_Options (hidden by default)",
         f"Rudder hinge cove cleared: {rig_spec.get('rudder_cove_clear', True)}",
+        '',
+        'ONE-COMMAND REBUILD (ZERO ARGUMENTS):',
+        '  python docs/ricochet/complete_model/build_complete_model.py',
+        '  blender -b --factory-startup --python docs/ricochet/complete_model/build_complete_model.py',
         '',
         'COORDINATE FRAME:',
         '  Blender world = VTX airframe frame (+X forward, +Y port, +Z up), metres.',
@@ -1152,18 +1458,61 @@ def _write_readme_text(rig_spec: dict[str, Any], parity: dict[str, Any], glb_inf
 
 def main() -> None:
     args = _parse_args()
+    if not _IN_BLENDER:
+        _run_orchestrator(args)
+        return
+
     wt = pathlib.Path(args.worktree).resolve()
     out = pathlib.Path(args.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
+    _clear_hidden_attr(out)
 
-    if args.rig_spec and pathlib.Path(args.rig_spec).is_file():
-        rig_spec = json.loads(pathlib.Path(args.rig_spec).read_text(encoding='utf-8'))
+    _, rc = _load_vtx_geometry_modules(wt)
+    profile_id = rc.resolve_profile_id(args.profile)
+    if profile_id is None:
+        raise ValueError(
+            f'Profile {args.profile!r} resolves to legacy RC01-CA-0 (profile=None, immutable '
+            f'public/assets/ricochet-concept-a.glb); no silent substitution allowed. '
+            f'Use RC01-P1-R1, RC01-H1-R1, or RC01-CA-1.'
+        )
+
+    if args.alt_profile is None:
+        alt_profile = _default_alt_profile(profile_id)
+    elif str(args.alt_profile).strip().lower() in ('', 'none', 'false'):
+        alt_profile = None
     else:
-        rig_spec = _derive_rig_spec_from_profile(wt, args.profile)
+        alt_profile = rc.resolve_profile_id(args.alt_profile)
+        if alt_profile is None:
+            raise ValueError(
+                f'Alt profile {args.alt_profile!r} resolves to legacy RC01-CA-0; '
+                f'pass "none" to omit or choose RC01-P1-R1 / RC01-H1-R1.'
+            )
+
+    # Auto-discover matching rig_spec.json & sweep.json in <out> when not explicitly passed
+    rig_spec_path = pathlib.Path(args.rig_spec) if args.rig_spec else (out / 'rig_spec.json')
+    sweep_path = pathlib.Path(args.sweep) if args.sweep else (out / 'sweep.json')
+    rig_spec = None
+    rig_spec_matched = False
+    if rig_spec_path.is_file():
+        cand_spec = json.loads(rig_spec_path.read_text(encoding='utf-8'))
+        if args.rig_spec or cand_spec.get('profile') == profile_id:
+            rig_spec = cand_spec
+            rig_spec_matched = True
+    if rig_spec is None:
+        rig_spec = _derive_rig_spec_from_profile(wt, profile_id)
 
     sweep_data = None
-    if args.sweep and pathlib.Path(args.sweep).is_file():
-        sweep_data = json.loads(pathlib.Path(args.sweep).read_text(encoding='utf-8'))
+    if sweep_path.is_file() and (args.sweep or rig_spec_matched):
+        cand_sweep = json.loads(sweep_path.read_text(encoding='utf-8'))
+        sw_prof = cand_sweep.get('profile')
+        if sw_prof is None or sw_prof == profile_id or args.sweep:
+            sweep_data = cand_sweep
+
+    study_path = None
+    if not args.no_cockpit_study:
+        cand_study = pathlib.Path(args.cockpit_study) if args.cockpit_study else (wt / 'scratch' / 'cockpit_study' / 'cockpit_study.json')
+        if cand_study.is_file():
+            study_path = cand_study
 
     _clear_scene()
     mats = _build_pbr_materials()
@@ -1171,30 +1520,59 @@ def main() -> None:
     coll_act = _ensure_collection('RC01_Controls_And_Actuators')
 
     containers, ctrl_obj = _build_airframe_and_rig(
-        wt, rig_spec, mats, coll_main, coll_act, args.alt_profile,
+        wt, rig_spec, mats, coll_main, coll_act, alt_profile,
     )
     parity = _bake_sweep_and_check_parity(containers, ctrl_obj, rig_spec, sweep_data)
-    glb_info = _export_blendstra_articulated_glb(out / args.glb_name, containers, rig_spec, sweep_data)
+
+    glb_path = out / args.glb_name
+    _clear_hidden_attr(glb_path)
+    glb_info = _export_blendstra_articulated_glb(glb_path, containers, rig_spec, sweep_data)
+
+    # Verify all 9 active control surfaces (14 physical bodies) when 3-point profile is active
+    if rig_spec.get('aft_ski'):
+        expected_bodies = {
+            'airframe', 'sponson_port', 'sponson_stbd',
+            'aileron_port', 'aileron_stbd', 'elevator', 'rudder',
+            'reverse_bucket_port', 'reverse_bucket_stbd',
+            'fan_rotor_port', 'fan_rotor_stbd',
+            'ski_port', 'ski_stbd', 'ski_aft',
+        }
+        got_bodies = set(glb_info['verified_physical_body_containers'])
+        missing = sorted(expected_bodies - got_bodies)
+        assert not missing, f'Missing physical bodies in exported GLB: {missing}'
+    if parity['source'] == 'mujoco_sweep':
+        assert parity['frames_checked'] > 0, 'MuJoCo sweep pose parity checked 0 frames'
+        assert parity['max_pos_err_m'] < 1e-4, f"Pose parity position error too high: {parity['max_pos_err_m']} m"
+        assert parity['max_rot_err_deg'] < 0.25, f"Pose parity rotation error too high: {parity['max_rot_err_deg']} deg"
 
     study_loaded = 0
-    if args.cockpit_study:
-        study_loaded = _import_cockpit_study(wt, pathlib.Path(args.cockpit_study), mats)
+    if study_path is not None:
+        study_loaded = _import_cockpit_study(wt, study_path, mats)
 
+    for pname in ('preview_three_quarter_front.png', 'preview_side_elevation.png', 'preview_rear_quarter_skis.png'):
+        _clear_hidden_attr(out / pname)
     _setup_lighting_and_render(out, args.render)
-    _write_readme_text(rig_spec, parity, glb_info)
+    _write_readme_text(rig_spec, parity, glb_info, alt_profile, study_loaded)
 
     blend_path = out / args.blend_name
+    _clear_hidden_attr(blend_path)
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
 
+    report_path = out / 'build_complete_model_report.json'
+    _clear_hidden_attr(report_path)
     report = dict(
         profile=rig_spec['profile'],
+        model_revision=containers['airframe']['model_revision'],
+        model_name=containers['airframe']['model_name'],
+        alt_profile_embedded=alt_profile,
+        control_surface_count=len(rig_spec.get('command_map', {})),
         blend_path=str(blend_path),
         glb=glb_info,
         pose_parity=parity,
         cockpit_study_cases_loaded=study_loaded,
         rendered_previews=bool(args.render),
     )
-    (out / 'build_complete_model_report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+    report_path.write_text(json.dumps(report, indent=2), encoding='utf-8')
     print(json.dumps(report, indent=2), flush=True)
 
 

@@ -1,0 +1,404 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1340" width="1920" height="1340">
+<defs>
+  <linearGradient id="hdrGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#111a26"/>
+    <stop offset="60%" stop-color="#162232"/>
+    <stop offset="100%" stop-color="#1a2430"/>
+  </linearGradient>
+  <linearGradient id="hullGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#222d3d"/>
+    <stop offset="55%" stop-color="#2d3c50"/>
+    <stop offset="100%" stop-color="#3a4c64"/>
+  </linearGradient>
+  <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.22"/>
+    <stop offset="100%" stop-color="#0369a1" stop-opacity="0.06"/>
+  </linearGradient>
+  <marker id="arrCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#38bdf8"/>
+  </marker>
+  <marker id="arrGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#f4b41a"/>
+  </marker>
+  <marker id="arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#22c55e"/>
+  </marker>
+  <marker id="arrOrange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#fb923c"/>
+  </marker>
+  <marker id="arrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="#f87171"/>
+  </marker>
+</defs>
+<rect x="0.0" y="0.0" width="1920.0" height="1340.0" fill="#0b1017"/>
+<rect x="0.0" y="0.0" width="1920.0" height="84.0" fill="url(#hdrGrad)"/>
+<line x1="0.0" y1="84.0" x2="1920.0" y2="84.0" stroke="#f4b41a" stroke-width="2.5"/>
+<rect x="24.0" y="18.0" width="8.0" height="48.0" rx="3" fill="#f4b41a"/>
+<text x="46.0" y="42.0" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="800" fill="#f8fafc" letter-spacing="0.5">VTX RICOCHET RC-01 — 19-DOF / 9-CONTROL-SURFACE &amp; TELEMETRY-ONLY MANEUVERABILITY</text>
+<text x="46.0" y="65.0" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" fill="#94a3b8">Human Helm UI + Telemetry-Only AI Pilot (/api/observe -&gt; /api/action)  |  5-Mode Stability &amp; Trim ECU  |  Real Volz / Exlar / EMRAX 228 Actuators  |  Option 1 (RC01-P1-R1) &amp; Option 2 (RC01-H1-R1)</text>
+<rect x="1558.0" y="16.0" width="338.0" height="52.0" rx="8" fill="#0d1520" stroke="#273549" stroke-width="1.2"/>
+<text x="1574.0" y="37.0" font-family="Consolas, monospace" font-size="11.5" font-weight="700" fill="#38bdf8">VTX BODY FRAME (+X FWD · +Y PORT · +Z UP)</text>
+<text x="1574.0" y="56.0" font-family="Consolas, monospace" font-size="11" fill="#94a3b8">400 Hz MuJoCo · 19 DOFs (nq=20, njnt=14, nu=11)</text>
+<rect x="24.0" y="98.0" width="1872.0" height="608.0" rx="12" fill="#121923" stroke="#273549" stroke-width="1.5"/>
+<text x="44.0" y="126.0" font-family="Segoe UI, Arial, sans-serif" font-size="14.5" font-weight="800" fill="#f4b41a" letter-spacing="0.4">A. PHYSICAL GEOMETRY OF ALL 9 ACTIVE CONTROL SURFACES + 2 DUCTED FANS + 2 PASSIVE SPONSON FLEX DOFs</text>
+<rect x="995.0" y="114.0" width="11.0" height="11.0" rx="2.5" fill="#38bdf8"/>
+<text x="1011.0" y="124.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.6" fill="#e2e8f0">Aero Surfaces [1-4]</text>
+<rect x="1133.0" y="114.0" width="11.0" height="11.0" rx="2.5" fill="#f87171"/>
+<text x="1149.0" y="124.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.6" fill="#e2e8f0">Reverse Buckets [5-6]</text>
+<rect x="1285.0" y="114.0" width="11.0" height="11.0" rx="2.5" fill="#fb923c"/>
+<text x="1301.0" y="124.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.6" fill="#e2e8f0">Main Skis Opt 1 / Opt 2 [7-8]</text>
+<rect x="1473.0" y="114.0" width="11.0" height="11.0" rx="2.5" fill="#22c55e"/>
+<text x="1489.0" y="124.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.6" fill="#e2e8f0">Aft Trim Ski [9]</text>
+<rect x="1593.0" y="114.0" width="11.0" height="11.0" rx="2.5" fill="#f4b41a"/>
+<text x="1609.0" y="124.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.6" fill="#e2e8f0">Twin EMRAX Fans</text>
+<rect x="1725.0" y="114.0" width="11.0" height="11.0" rx="2.5" fill="#c084fc"/>
+<text x="1741.0" y="124.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.6" fill="#e2e8f0">Passive Sponson Flex</text>
+<rect x="40.0" y="140.0" width="1004.0" height="550.0" rx="8" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<text x="56.0" y="162.0" font-family="Consolas, monospace" font-size="11.5" font-weight="700" fill="#38bdf8">TOP PLAN VIEW (TO SCALE FROM VTX GEOMETRY)  ·  +X FORWARD (RIGHT)  ·  +Y PORT (UP)</text>
+<line x1="342.0" y1="174.0" x2="342.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="391.0" y1="174.0" x2="391.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="440.0" y1="174.0" x2="440.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="489.0" y1="174.0" x2="489.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="538.0" y1="174.0" x2="538.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="587.0" y1="174.0" x2="587.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="636.0" y1="174.0" x2="636.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="685.0" y1="174.0" x2="685.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="734.0" y1="174.0" x2="734.0" y2="676.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="52.0" y1="614.0" x2="1030.0" y2="614.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="52.0" y1="516.0" x2="1030.0" y2="516.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="52.0" y1="418.0" x2="1030.0" y2="418.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="52.0" y1="320.0" x2="1030.0" y2="320.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="52.0" y1="222.0" x2="1030.0" y2="222.0" stroke="#1f2c3d" stroke-width="1" stroke-dasharray="3,4"/>
+<line x1="52.0" y1="418.0" x2="1030.0" y2="418.0" stroke="#334155" stroke-width="1.1" stroke-dasharray="8,5"/>
+<polygon points="594.4,392.5 541.9,190.6 487.5,190.6 495.4,392.5" fill="#243245" stroke="#64748b" stroke-width="1.4"/>
+<polygon points="541.9,190.6 541.9,185.7 487.5,185.7 487.5,190.6" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+<polygon points="514.5,315.1 504.1,210.2 488.2,210.2 492.3,315.1" fill="#0284c7" fill-opacity="0.65" stroke="#38bdf8" stroke-width="2"/>
+<line x1="514.5" y1="315.1" x2="504.1" y2="210.2" stroke="#e0f2fe" stroke-width="1.6" stroke-dasharray="4,2"/>
+<polygon points="587.5,238.7 602.2,231.8 587.5,224.9 457.6,221.0 457.6,242.6" fill="#1e293b" stroke="#c084fc" stroke-width="1.7"/>
+<polygon points="613.5,247.0 613.5,216.6 520.4,216.6 520.4,247.0" fill="#fb923c" fill-opacity="0.38" stroke="#fb923c" stroke-width="2"/>
+<line x1="575.2" y1="247.0" x2="575.2" y2="216.6" stroke="#ffedd5" stroke-width="1.5" stroke-dasharray="3,2"/>
+<polygon points="577.9,260.7 577.9,202.9 554.4,202.9 554.4,260.7" fill="none" stroke="#fde047" stroke-width="1.6" stroke-dasharray="5,3"/>
+<polygon points="594.4,443.5 541.9,645.4 487.5,645.4 495.4,443.5" fill="#243245" stroke="#64748b" stroke-width="1.4"/>
+<polygon points="541.9,645.4 541.9,650.3 487.5,650.3 487.5,645.4" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+<polygon points="514.5,520.9 504.1,625.8 488.2,625.8 492.3,520.9" fill="#0284c7" fill-opacity="0.65" stroke="#38bdf8" stroke-width="2"/>
+<line x1="514.5" y1="520.9" x2="504.1" y2="625.8" stroke="#e0f2fe" stroke-width="1.6" stroke-dasharray="4,2"/>
+<polygon points="587.5,597.3 602.2,604.2 587.5,611.1 457.6,615.0 457.6,593.4" fill="#1e293b" stroke="#c084fc" stroke-width="1.7"/>
+<polygon points="613.5,619.4 613.5,589.0 520.4,589.0 520.4,619.4" fill="#fb923c" fill-opacity="0.38" stroke="#fb923c" stroke-width="2"/>
+<line x1="575.2" y1="619.4" x2="575.2" y2="589.0" stroke="#ffedd5" stroke-width="1.5" stroke-dasharray="3,2"/>
+<polygon points="577.9,633.1 577.9,575.3 554.4,575.3 554.4,633.1" fill="none" stroke="#fde047" stroke-width="1.6" stroke-dasharray="5,3"/>
+<polygon points="716.9,418.0 692.4,404.3 650.7,392.5 591.9,386.6 498.8,387.6 442.4,392.5 421.4,398.4 421.4,437.6 442.4,443.5 498.8,448.4 591.9,449.4 650.7,443.5 692.4,431.7" fill="url(#hullGrad)" stroke="#94a3b8" stroke-width="1.8"/>
+<polygon points="658.0,418.0 628.6,400.4 567.4,397.4 511.1,404.3 491.4,418.0 511.1,431.7 567.4,438.6 628.6,435.6" fill="#0ea5e9" fill-opacity="0.26" stroke="#7dd3fc" stroke-width="1.2"/>
+<polygon points="483.6,431.7 483.6,404.3 437.1,404.3 437.1,431.7" fill="#22c55e" fill-opacity="0.40" stroke="#22c55e" stroke-width="2"/>
+<polygon points="471.0,435.6 471.0,400.4 454.4,400.4 454.4,435.6" fill="none" stroke="#86efac" stroke-width="1.5" stroke-dasharray="4,3"/>
+<rect x="422.9" y="357.7" width="31.9" height="44.1" rx="5" fill="#334155" stroke="#f4b41a" stroke-width="2"/>
+<rect x="407.2" y="359.2" width="18.6" height="41.2" rx="4" fill="#f87171" fill-opacity="0.48" stroke="#f87171" stroke-width="1.8"/>
+<rect x="422.9" y="434.2" width="31.9" height="44.1" rx="5" fill="#334155" stroke="#f4b41a" stroke-width="2"/>
+<rect x="407.2" y="435.6" width="18.6" height="41.2" rx="4" fill="#f87171" fill-opacity="0.48" stroke="#f87171" stroke-width="1.8"/>
+<polygon points="404.7,350.4 384.1,350.4 384.1,485.6 404.7,485.6" fill="#2b3b4e" stroke="#94a3b8" stroke-width="1.4"/>
+<polygon points="384.1,351.9 363.6,351.9 363.6,484.1 384.1,484.1" fill="#0284c7" fill-opacity="0.70" stroke="#38bdf8" stroke-width="2"/>
+<rect x="383.6" y="414.1" width="31.4" height="7.8" rx="3" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1.6"/>
+<circle cx="553.9" cy="418.0" r="6.5" fill="none" stroke="#f4b41a" stroke-width="2"/>
+<path d="M553.9,411.5 A6.5,6.5 0 0,1 560.4,418.0 L553.9,418.0 Z" fill="#f4b41a"/>
+<path d="M553.9,424.5 A6.5,6.5 0 0,1 547.4,418.0 L553.9,418.0 Z" fill="#f4b41a"/>
+<line x1="558.9" y1="412.0" x2="589.9" y2="372.0" stroke="#f4b41a" stroke-width="1.3" stroke-opacity="0.85"/>
+<text x="593.9" y="375.0" font-family="Consolas, monospace" font-size="10.2" font-weight="700" fill="#f4b41a">CG (x=0.33m, z=0.69m)</text>
+<polyline points="575.2,231.8 706.0,198.0 742.0,198.0" fill="none" stroke="#fb923c" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="575.2" cy="231.8" r="3.2" fill="#fb923c"/>
+<g><circle cx="745.0" cy="198.0" r="10.5" fill="#fb923c" stroke="#0b1017" stroke-width="2"/><text x="745.0" y="202.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">7</text></g>
+<text x="760.0" y="196.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Port Main Hydro-Ski</text>
+<text x="760.0" y="210.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Exlar GSX30 · 1,416 Nm · Coll+Diff</text>
+<polyline points="509.3,262.7 665.0,248.0 742.0,248.0" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="509.3" cy="262.7" r="3.2" fill="#38bdf8"/>
+<g><circle cx="745.0" cy="248.0" r="10.5" fill="#38bdf8" stroke="#0b1017" stroke-width="2"/><text x="745.0" y="252.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">1</text></g>
+<text x="760.0" y="246.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Port Aileron [-25, +25 deg]</text>
+<text x="760.0" y="260.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Volz DA 30-HT-D · +cmd -&gt; TE down</text>
+<polyline points="482.1,231.8 370.0,198.0 320.0,198.0" fill="none" stroke="#c084fc" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="482.1" cy="231.8" r="3.2" fill="#c084fc"/>
+<g><circle cx="317.0" cy="198.0" r="10.5" fill="#c084fc" stroke="#0b1017" stroke-width="2"/><text x="317.0" y="202.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">S</text></g>
+<text x="302.0" y="196.0" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Sponson Flex Z (+/-0.06m)</text>
+<text x="302.0" y="210.5" text-anchor="end" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">2 Passive DOFs + 6-Axis Sensors</text>
+<polyline points="416.5,379.8 378.0,266.0 320.0,266.0" fill="none" stroke="#f87171" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="416.5" cy="379.8" r="3.2" fill="#f87171"/>
+<g><circle cx="317.0" cy="266.0" r="10.5" fill="#f87171" stroke="#0b1017" stroke-width="2"/><text x="317.0" y="270.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">5</text></g>
+<text x="302.0" y="264.0" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Port Reverse Bucket [0-85 deg]</text>
+<text x="302.0" y="278.5" text-anchor="end" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Volz DA 58-D + Lock · Braking</text>
+<polyline points="374.3,361.6 348.0,326.0 320.0,326.0" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="374.3" cy="361.6" r="3.2" fill="#38bdf8"/>
+<g><circle cx="317.0" cy="326.0" r="10.5" fill="#38bdf8" stroke="#0b1017" stroke-width="2"/><text x="317.0" y="330.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">3</text></g>
+<text x="302.0" y="324.0" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">T-Tail Elevator [-20, +20 deg]</text>
+<text x="302.0" y="338.5" text-anchor="end" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Volz DA 30-HT-D · +cmd -&gt; Nose Up</text>
+<line x1="398.8" y1="418.0" x2="320.0" y2="418.0" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="398.8" cy="418.0" r="3.2" fill="#38bdf8"/>
+<g><circle cx="317.0" cy="418.0" r="10.5" fill="#38bdf8" stroke="#0b1017" stroke-width="2"/><text x="317.0" y="422.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">4</text></g>
+<text x="302.0" y="416.0" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Rudder [-30, +30 deg]</text>
+<text x="302.0" y="430.5" text-anchor="end" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Volz DA 58-D · Cove Clear · +Port</text>
+<polyline points="416.5,456.2 378.0,512.0 320.0,512.0" fill="none" stroke="#f87171" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="416.5" cy="456.2" r="3.2" fill="#f87171"/>
+<g><circle cx="317.0" cy="512.0" r="10.5" fill="#f87171" stroke="#0b1017" stroke-width="2"/><text x="317.0" y="516.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">6</text></g>
+<text x="302.0" y="510.0" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Stbd Reverse Bucket [0-85 deg]</text>
+<text x="302.0" y="524.5" text-anchor="end" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Volz DA 58-D + Lock · Braking</text>
+<polyline points="466.9,426.8 435.0,574.0 320.0,574.0" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="466.9" cy="426.8" r="3.2" fill="#22c55e"/>
+<g><circle cx="317.0" cy="574.0" r="10.5" fill="#22c55e" stroke="#0b1017" stroke-width="2"/><text x="317.0" y="578.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">9</text></g>
+<text x="302.0" y="572.0" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Aft Stern Trim Ski/Foil</text>
+<text x="302.0" y="586.5" text-anchor="end" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Volz DA 58-D · +cmd -&gt; Nose Down</text>
+<polyline points="442.5,456.2 418.0,636.0 320.0,636.0" fill="none" stroke="#f4b41a" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="442.5" cy="456.2" r="3.2" fill="#f4b41a"/>
+<g><circle cx="317.0" cy="636.0" r="10.5" fill="#f4b41a" stroke="#0b1017" stroke-width="2"/><text x="317.0" y="640.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">F</text></g>
+<text x="302.0" y="634.0" text-anchor="end" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Twin EMRAX 228 Fans</text>
+<text x="302.0" y="648.5" text-anchor="end" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Throttle [0..1] + Diff Thrust [-1..+1]</text>
+<polyline points="509.3,573.3 665.0,572.0 742.0,572.0" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="509.3" cy="573.3" r="3.2" fill="#38bdf8"/>
+<g><circle cx="745.0" cy="572.0" r="10.5" fill="#38bdf8" stroke="#0b1017" stroke-width="2"/><text x="745.0" y="576.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">2</text></g>
+<text x="760.0" y="570.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Stbd Aileron [-25, +25 deg]</text>
+<text x="760.0" y="584.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Volz DA 30-HT-D · +cmd -&gt; TE up</text>
+<polyline points="575.2,604.2 706.0,632.0 742.0,632.0" fill="none" stroke="#fb923c" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="575.2" cy="604.2" r="3.2" fill="#fb923c"/>
+<g><circle cx="745.0" cy="632.0" r="10.5" fill="#fb923c" stroke="#0b1017" stroke-width="2"/><text x="745.0" y="636.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">8</text></g>
+<text x="760.0" y="630.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Stbd Main Hydro-Ski</text>
+<text x="760.0" y="644.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Exlar GSX30 · 1,416 Nm · Coll-Diff</text>
+<line x1="845.0" y1="418.0" x2="975.0" y2="418.0" stroke="#f4b41a" stroke-width="2.2" marker-end="url(#arrGold)"/>
+<text x="910.0" y="408.0" text-anchor="middle" font-family="Consolas, monospace" font-size="11" font-weight="700" fill="#f4b41a">+X FORWARD</text>
+<rect x="1058.0" y="140.0" width="822.0" height="550.0" rx="8" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<text x="1074.0" y="162.0" font-family="Consolas, monospace" font-size="11.5" font-weight="700" fill="#38bdf8">SIDE ELEVATION (STARBOARD VIEW)  ·  +X FORWARD (RIGHT)  ·  +Z UP</text>
+<rect x="1070.0" y="463.5" width="798.0" height="144.5" fill="url(#waterGrad)"/>
+<line x1="1070.0" y1="463.5" x2="1868.0" y2="463.5" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="8,4"/>
+<text x="1080.0" y="457.5" font-family="Consolas, monospace" font-size="10.2" fill="#7dd3fc">Calm Waterline (Draft T=0.56m)</text>
+<polygon points="1800.8,458.0 1750.2,436.8 1672.0,426.7 1290.2,428.5 1246.0,434.0 1246.0,492.9 1317.8,507.6 1538.6,515.0 1667.4,509.5 1750.2,489.2" fill="url(#hullGrad)" stroke="#94a3b8" stroke-width="1.8"/>
+<polygon points="1676.6,428.5 1621.4,388.0 1534.0,367.8 1442.0,378.8 1377.6,426.7" fill="#0ea5e9" fill-opacity="0.28" stroke="#7dd3fc" stroke-width="1.3"/>
+<polygon points="1317.8,430.4 1270.0,426.7 1183.5,305.2 1230.4,299.7 1294.8,386.2" fill="#243245" stroke="#94a3b8" stroke-width="1.5"/>
+<polygon points="1266.3,426.7 1179.8,312.6 1143.0,312.6 1224.0,426.7" fill="#0284c7" fill-opacity="0.70" stroke="#38bdf8" stroke-width="1.8"/>
+<polygon points="1214.8,299.7 1176.1,299.7 1176.1,308.9 1214.8,308.9" fill="#334155" stroke="#94a3b8" stroke-width="1.2"/>
+<polygon points="1176.1,299.7 1137.5,300.6 1137.5,308.0 1176.1,308.9" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1.5"/>
+<rect x="1248.8" y="329.2" width="59.8" height="84.6" rx="6" fill="#334155" stroke="#f4b41a" stroke-width="2"/>
+<line x1="1308.6" y1="371.5" x2="1497.2" y2="371.5" stroke="#f4b41a" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#arrGold)"/>
+<text x="1482.2" y="363.5" text-anchor="middle" font-family="Consolas, monospace" font-size="10.2" fill="#f4b41a">Thrust Line (z=1.56m, 0.87m above CG)</text>
+<polygon points="1250.6,329.2 1218.4,336.5 1218.4,400.9 1250.6,406.4" fill="#f87171" fill-opacity="0.42" stroke="#f87171" stroke-width="1.8"/>
+<polygon points="1576.3,463.5 1318.7,459.8 1318.7,481.9 1544.1,481.9" fill="#1e293b" fill-opacity="0.65" stroke="#c084fc" stroke-width="1.4" stroke-dasharray="4,2"/>
+<line x1="1511.9" y1="480.0" x2="1534.9" y2="515.0" stroke="#94a3b8" stroke-width="5"/>
+<polygon points="1606.7,519.6 1431.9,520.5 1431.9,524.2 1606.7,524.2" fill="#fb923c" stroke="#ffedd5" stroke-width="1.5"/>
+<polygon points="1463.2,524.2 1437.4,524.2 1437.4,548.1 1457.6,548.1" fill="#c2410c" stroke="#fb923c" stroke-width="1.3"/>
+<line x1="1506.4" y1="480.0" x2="1529.4" y2="524.2" stroke="#fde047" stroke-width="2" stroke-dasharray="4,3"/>
+<polygon points="1540.0,526.7 1495.8,527.6 1495.8,531.6 1540.0,531.6" fill="#fde047" fill-opacity="0.35" stroke="#fde047" stroke-width="1.6" stroke-dasharray="4,2"/>
+<line x1="1331.6" y1="481.9" x2="1331.6" y2="511.3" stroke="#94a3b8" stroke-width="4"/>
+<polygon points="1362.9,515.5 1275.5,515.5 1275.5,518.7 1362.9,518.7" fill="#22c55e" stroke="#dcfce7" stroke-width="1.4"/>
+<polygon points="1304.9,518.7 1284.7,518.7 1284.7,535.2 1300.9,535.2" fill="#15803d" stroke="#22c55e" stroke-width="1.2"/>
+<polygon points="1339.2,527.1 1308.0,527.9 1308.0,530.6 1339.2,530.6" fill="#86efac" fill-opacity="0.35" stroke="#86efac" stroke-width="1.4" stroke-dasharray="4,2"/>
+<circle cx="1494.9" cy="451.2" r="6" fill="none" stroke="#f4b41a" stroke-width="2"/>
+<text x="1504.9" y="446.2" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f4b41a">CG</text>
+<polyline points="1156.8,303.4 1240.0,212.0 1300.0,212.0" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="1156.8" cy="303.4" r="3.2" fill="#38bdf8"/>
+<g><circle cx="1303.0" cy="212.0" r="10.5" fill="#38bdf8" stroke="#0b1017" stroke-width="2"/><text x="1303.0" y="216.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">3</text></g>
+<text x="1318.0" y="210.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Elevator [-20..+20 deg]</text>
+<text x="1318.0" y="224.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Pitch + WIG Attitude</text>
+<polyline points="1230.4,360.4 1305.0,268.0 1345.0,268.0" fill="none" stroke="#f87171" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="1230.4" cy="360.4" r="3.2" fill="#f87171"/>
+<g><circle cx="1348.0" cy="268.0" r="10.5" fill="#f87171" stroke="#0b1017" stroke-width="2"/><text x="1348.0" y="272.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">5</text></g>
+<text x="1363.0" y="266.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Reverse Buckets [0..85 deg]</text>
+<text x="1363.0" y="280.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Jet Deflector Braking Flare</text>
+<polyline points="1202.8,378.8 1305.0,322.0 1345.0,322.0" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="1202.8" cy="378.8" r="3.2" fill="#38bdf8"/>
+<g><circle cx="1348.0" cy="322.0" r="10.5" fill="#38bdf8" stroke="#0b1017" stroke-width="2"/><text x="1348.0" y="326.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">4</text></g>
+<text x="1363.0" y="320.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Rudder Cove Cleared [-30..+30 deg]</text>
+<text x="1363.0" y="334.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">0 Fin Interference at Full Travel</text>
+<polyline points="1544.1,526.0 1590.0,570.0 1608.0,570.0" fill="none" stroke="#fb923c" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="1544.1" cy="526.0" r="3.2" fill="#fb923c"/>
+<g><circle cx="1611.0" cy="570.0" r="10.5" fill="#fb923c" stroke="#0b1017" stroke-width="2"/><text x="1611.0" y="574.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">7</text></g>
+<text x="1626.0" y="568.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Main Skis Ahead of CG</text>
+<text x="1626.0" y="582.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Opt1 Planing / Opt2 Foil</text>
+<polyline points="1322.4,518.7 1100.0,570.0 1105.0,570.0" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-opacity="0.85"/>
+<circle cx="1322.4" cy="518.7" r="3.2" fill="#22c55e"/>
+<g><circle cx="1108.0" cy="570.0" r="10.5" fill="#22c55e" stroke="#0b1017" stroke-width="2"/><text x="1108.0" y="574.2" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#0b1017">9</text></g>
+<text x="1123.0" y="568.0" text-anchor="start" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#f1f5f9">Aft Trim Ski/Foil</text>
+<text x="1123.0" y="582.5" text-anchor="start" font-family="Consolas, Segoe UI, monospace" font-size="10.2" fill="#94a3b8">Stern Pitch Stabilizer</text>
+<rect x="1074.0" y="622.0" width="790.0" height="54.0" rx="7" fill="#0d1520" stroke="#273549" stroke-width="1.2"/>
+<rect x="1084.0" y="630.0" width="134.0" height="38.0" rx="5" fill="#334155" stroke="#475569" stroke-width="1"/>
+<text x="1151.0" y="646.0" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10.4" font-weight="800" fill="#f8fafc">6 FREE HULL</text>
+<text x="1151.0" y="661.0" text-anchor="middle" font-family="Consolas, monospace" font-size="8.9" fill="#cbd5e1">X Y Z Roll Pitch Yaw</text>
+<rect x="1224.0" y="630.0" width="140.0" height="38.0" rx="5" fill="#581c87" stroke="#475569" stroke-width="1"/>
+<text x="1294.0" y="646.0" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10.4" font-weight="800" fill="#f8fafc">2 SPONSON FLEX</text>
+<text x="1294.0" y="661.0" text-anchor="middle" font-family="Consolas, monospace" font-size="8.9" fill="#cbd5e1">+/-0.06m Z Slide</text>
+<rect x="1370.0" y="630.0" width="140.0" height="38.0" rx="5" fill="#854d0e" stroke="#475569" stroke-width="1"/>
+<text x="1440.0" y="646.0" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10.4" font-weight="800" fill="#f8fafc">2 EMRAX FANS</text>
+<text x="1440.0" y="661.0" text-anchor="middle" font-family="Consolas, monospace" font-size="8.9" fill="#cbd5e1">Port + Stbd Spin</text>
+<rect x="1516.0" y="630.0" width="338.0" height="38.0" rx="5" fill="#075985" stroke="#475569" stroke-width="1"/>
+<text x="1685.0" y="646.0" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10.4" font-weight="800" fill="#f8fafc">9 ACTIVE CONTROL SURFACES</text>
+<text x="1685.0" y="661.0" text-anchor="middle" font-family="Consolas, monospace" font-size="8.9" fill="#cbd5e1">2 Ail · 1 Elev · 1 Rud · 2 Buckets · 2 Main Skis · 1 Aft Ski</text>
+<rect x="24.0" y="722.0" width="1140.0" height="594.0" rx="12" fill="#121923" stroke="#273549" stroke-width="1.5"/>
+<text x="44.0" y="750.0" font-family="Segoe UI, Arial, sans-serif" font-size="14.5" font-weight="800" fill="#f4b41a" letter-spacing="0.4">B. DUAL-AUTHORITY CLOSED-LOOP CONTROL: HUMAN HELM UI &amp; TELEMETRY-ONLY AI PILOT</text>
+<rect x="44.0" y="770.0" width="316.0" height="178.0" rx="9" fill="#17202c" stroke="#f4b41a" stroke-width="1.8"/>
+<rect x="44.0" y="770.0" width="316.0" height="28.0" rx="9" fill="#422006"/>
+<text x="58.0" y="789.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#f4b41a">HUMAN PILOT  (public/vtx-env/harbour.js)</text>
+<text x="56.0" y="818.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" fill="#e2e8f0">• Profile Selector: RC01-P1-R1 / RC01-H1-R1 / CA-1 / CA-0</text>
+<text x="56.0" y="838.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" fill="#e2e8f0">• Primary Helm: Throttle, Rudder, Reverse Bucket, Cut</text>
+<text x="56.0" y="858.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" fill="#e2e8f0">• Surface Trim: Diff Thrust, Elevator, Ailerons</text>
+<text x="56.0" y="878.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" fill="#e2e8f0">• Hydro-Skis &amp; ECU: Collective, Diff, Aft Ski, ECU Assist</text>
+<text x="56.0" y="898.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" fill="#e2e8f0">• Live Readout: ECU mode, achieved deg, load %, [SAT]</text>
+<text x="56.0" y="918.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" fill="#e2e8f0">• Cockpit / Chase / Top 3D views (body_poses stream)</text>
+<rect x="44.0" y="968.0" width="316.0" height="240.0" rx="9" fill="#17202c" stroke="#38bdf8" stroke-width="1.8"/>
+<rect x="44.0" y="968.0" width="316.0" height="28.0" rx="9" fill="#082f49"/>
+<text x="58.0" y="987.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#38bdf8">AI PILOT — TELEMETRY ONLY  (Colin / Agent)</text>
+<text x="55.0" y="1015.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="700" fill="#f87171">STRICT CONTRACT: NO map cheating, NO truth forces</text>
+<text x="55.0" y="1034.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="700" fill="#38bdf8">1. READ  GET /api/observe  (sensor_observation):</text>
+<text x="55.0" y="1053.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="400" fill="#e2e8f0">   · gnss_xy_m, baro_m, water_clearance_m, draft_m</text>
+<text x="55.0" y="1072.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="400" fill="#e2e8f0">   · attitude_xyz_deg, heading_deg, gyro_world_deg_s</text>
+<text x="55.0" y="1091.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="400" fill="#e2e8f0">   · body_velocity_mps, airspeed_m_s, fan_rpm</text>
+<text x="55.0" y="1110.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="400" fill="#e2e8f0">   · control_surfaces (cmd/ach deg, Nm, load %, SAT)</text>
+<text x="55.0" y="1129.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="400" fill="#e2e8f0">   · ski_telemetry (regime, d_te/d_le, hinge Nm)</text>
+<text x="55.0" y="1148.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="400" fill="#e2e8f0">   · ecu_status (mode, target_roll/pitch) &amp; lamps</text>
+<text x="55.0" y="1167.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="700" fill="#38bdf8">2. WRITE POST /api/action  (schema: ricochet-1):</text>
+<text x="55.0" y="1186.0" font-family="Consolas, Segoe UI, monospace" font-size="9.6" font-weight="400" fill="#e2e8f0">   · 10 bounded channels (hold_until_changed + clamp)</text>
+<rect x="418.0" y="770.0" width="352.0" height="438.0" rx="9" fill="#17202c" stroke="#22c55e" stroke-width="1.8"/>
+<rect x="418.0" y="770.0" width="352.0" height="28.0" rx="9" fill="#052e16"/>
+<text x="432.0" y="789.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#22c55e">ACTION CONTRACT + ON-BOARD 5-MODE ECU</text>
+<rect x="432.0" y="810.0" width="324.0" height="62.0" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+<text x="442.0" y="828.0" font-family="Consolas, monospace" font-size="10.8" font-weight="700" fill="#a7f3d0">normalize_ricochet_action() -&gt; RicochetAction</text>
+<text x="442.0" y="845.0" font-family="Consolas, monospace" font-size="9.8" fill="#94a3b8">10 channels · hold_until_changed · fail-safe clamp</text>
+<text x="442.0" y="861.0" font-family="Consolas, monospace" font-size="9.8" fill="#94a3b8">Supports numeric, deg/rad/%, &amp; text clauses</text>
+<text x="432.0" y="894.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" font-weight="800" fill="#22c55e">5-MODE SPEED-SCHEDULED ECU (ecu_assist in [0..1]):</text>
+<rect x="432.0" y="904.0" width="324.0" height="41.0" rx="5" fill="#1e293b" stroke="#94a3b8" stroke-width="1.1"/>
+<text x="442.0" y="920.0" font-family="Consolas, monospace" font-size="10.8" font-weight="700" fill="#94a3b8">1. displacement</text>
+<text x="746.0" y="920.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#e2e8f0">u &lt; 3.0 m/s</text>
+<text x="442.0" y="937.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#cbd5e1">Low-speed diff thrust + rudder + bucket pivot</text>
+<rect x="432.0" y="952.0" width="324.0" height="41.0" rx="5" fill="#431407" stroke="#fb923c" stroke-width="1.1"/>
+<text x="442.0" y="968.0" font-family="Consolas, monospace" font-size="10.8" font-weight="700" fill="#fb923c">2. hump_transition</text>
+<text x="746.0" y="968.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#e2e8f0">3.0 - 11.5 m/s</text>
+<text x="442.0" y="985.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#cbd5e1">High ski coll. + elev hump bias -&gt; hull clear</text>
+<rect x="432.0" y="1000.0" width="324.0" height="41.0" rx="5" fill="#082f49" stroke="#38bdf8" stroke-width="1.1"/>
+<text x="442.0" y="1016.0" font-family="Consolas, monospace" font-size="10.8" font-weight="700" fill="#38bdf8">3. on_plane_foil</text>
+<text x="746.0" y="1016.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#e2e8f0">11.5 - 23.0 m/s</text>
+<text x="442.0" y="1033.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#cbd5e1">Ski washout + height hold + inward bank +/-12°</text>
+<rect x="432.0" y="1048.0" width="324.0" height="41.0" rx="5" fill="#2e1065" stroke="#c084fc" stroke-width="1.1"/>
+<text x="442.0" y="1064.0" font-family="Consolas, monospace" font-size="10.8" font-weight="700" fill="#c084fc">4. wig_skim</text>
+<text x="746.0" y="1064.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#e2e8f0">u &gt;= 23.0 m/s</text>
+<text x="442.0" y="1081.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#cbd5e1">Aero pitch/roll/heave stab across wing handoff</text>
+<rect x="432.0" y="1096.0" width="324.0" height="41.0" rx="5" fill="#450a0a" stroke="#f87171" stroke-width="1.1"/>
+<text x="442.0" y="1112.0" font-family="Consolas, monospace" font-size="10.8" font-weight="700" fill="#f87171">5. braking_flare</text>
+<text x="746.0" y="1112.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#e2e8f0">rev &gt; 0.08 / cut</text>
+<text x="442.0" y="1129.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#cbd5e1">Anti-dive flare (+2° ski, +4° elev, -1° aft)</text>
+<text x="432.0" y="1160.0" font-family="Consolas, monospace" font-size="9.5" fill="#86efac">Pilot Trim Override: pilot_cmd + ecu_assist * ecu_cmd</text>
+<text x="432.0" y="1178.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">Turn Bank Target: clip(turn_norm * 10°, +/-12°)</text>
+<text x="432.0" y="1196.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">Bank Lift Comp: +1.5*(1/cos(phi)-1)° to skis &amp; elev</text>
+<rect x="828.0" y="770.0" width="318.0" height="438.0" rx="9" fill="#17202c" stroke="#fb923c" stroke-width="1.8"/>
+<rect x="828.0" y="770.0" width="318.0" height="28.0" rx="9" fill="#431407"/>
+<text x="842.0" y="789.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#fb923c">400 Hz MUJOCO 19-DOF PLANT &amp; WATER</text>
+<text x="840.0" y="816.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" font-weight="800" fill="#f4b41a">REAL OFF-THE-SHELF ACTUATORS:</text>
+<text x="840.0" y="834.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• 3x Volz DA 30-HT-D (2 Ail, Elev): 36/64 Nm, 165°/s</text>
+<text x="840.0" y="853.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• 4x Volz DA 58-D (Rud, 2 Buckets, Aft): 80/200 Nm</text>
+<text x="840.0" y="872.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• 2x Exlar GSX30 (Main Skis, 0.44m): 1,416 Nm, 33°/s</text>
+<text x="840.0" y="891.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• 2x EMRAX 228 MV (Ducted Fans): 200 Nm, 68 kW</text>
+<text x="840.0" y="922.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" font-weight="800" fill="#38bdf8">HYDRO &amp; AERO PHYSICS:</text>
+<text x="840.0" y="940.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Reflective SWE Basin (0.0m rest err) + Kelvin Wake</text>
+<text x="840.0" y="959.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Opt 1 (RC01-P1-R1): Savitsky 3-Pt Planing Skis</text>
+<text x="840.0" y="978.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Opt 2 (RC01-H1-R1): NACA 4412 Hydrofoil Skis</text>
+<text x="840.0" y="997.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Raymer Mesh Aero Drag (CdA 0.545-0.550 m^2)</text>
+<text x="840.0" y="1016.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Rudder-Linked Fins (steer_link 0.20 / 0.25-0.30)</text>
+<text x="840.0" y="1047.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.8" font-weight="800" fill="#22c55e">SAFETY &amp; QUALIFICATION (PASS 4/4):</text>
+<text x="840.0" y="1065.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Load-dependent slew &amp; [SAT] saturation lamps</text>
+<text x="840.0" y="1084.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Explicit CAPSIZED &amp; IMPACT outcome latches</text>
+<text x="840.0" y="1103.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Opt 1: Clear 8.0s · 21.1 m/s · S-Turn &amp; Brake PASS</text>
+<text x="840.0" y="1122.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.2" fill="#e2e8f0">• Opt 2: Clear 3.7s · 23.4 m/s · S-Turn &amp; Brake PASS</text>
+<line x1="360.0" y1="845.0" x2="414.0" y2="845.0" stroke="#f4b41a" stroke-width="2.4" marker-end="url(#arrGold)"/>
+<text x="387.0" y="835.0" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#f4b41a">UI Cmd</text>
+<line x1="360.0" y1="1050.0" x2="414.0" y2="1050.0" stroke="#38bdf8" stroke-width="2.4" marker-end="url(#arrCyan)"/>
+<text x="387.0" y="1040.0" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#38bdf8">/action</text>
+<line x1="770.0" y1="980.0" x2="824.0" y2="980.0" stroke="#22c55e" stroke-width="2.6" marker-end="url(#arrGreen)"/>
+<text x="797.0" y="968.0" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#22c55e">11 Act.</text>
+<path d="M987,1208 L987,1282 L202,1282 L202,1212" fill="none" stroke="#38bdf8" stroke-width="2.4" marker-end="url(#arrCyan)"/>
+<rect x="430.0" y="1266.0" width="494.0" height="32.0" rx="6" fill="#082f49" stroke="#38bdf8" stroke-width="1.2"/>
+<text x="677.0" y="1286.0" text-anchor="middle" font-family="Consolas, monospace" font-size="11" font-weight="700" fill="#e0f2fe">TELEMETRY-ONLY FEEDBACK LOOP  (GET /api/observe  +  3D body_poses)</text>
+<path d="M202,1282 L34,1282 L34,885 L42,885" fill="none" stroke="#f4b41a" stroke-width="1.6" stroke-dasharray="5,3" marker-end="url(#arrGold)"/>
+<rect x="1182.0" y="722.0" width="714.0" height="594.0" rx="12" fill="#121923" stroke="#273549" stroke-width="1.5"/>
+<text x="1202.0" y="750.0" font-family="Segoe UI, Arial, sans-serif" font-size="14.5" font-weight="800" fill="#f4b41a" letter-spacing="0.4">C. MANEUVERABILITY ALLOCATION &amp; 10-CHANNEL SIGN GUIDE</text>
+<rect x="1200.0" y="766.0" width="678.0" height="24.0" rx="4" fill="#1e293b"/>
+<text x="1210.0" y="782.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#f4b41a">MANEUVER / REGIME</text>
+<text x="1365.0" y="782.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#38bdf8">ACTIVE SURFACES &amp; COMMANDS</text>
+<text x="1652.0" y="782.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#22c55e">AI TELEMETRY WATCHPOINTS</text>
+<rect x="1200.0" y="794.0" width="678.0" height="44.0" rx="4" fill="#151e2b" stroke="#1f2c3d" stroke-width="1"/>
+<text x="1210.0" y="812.0" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" fill="#f8fafc">Docking / Pivot</text>
+<text x="1210.0" y="828.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">&lt; 3 m/s (Displ.)</text>
+<text x="1365.0" y="812.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.0" font-weight="600" fill="#e2e8f0">Diff Thrust + Rudder [4] + Buckets [5,6]</text>
+<text x="1365.0" y="828.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.6" fill="#94a3b8">Low throttle + reverse pulse</text>
+<text x="1652.0" y="812.0" font-family="Consolas, monospace" font-size="9.6" fill="#86efac">gnss_xy_m, heading_deg</text>
+<text x="1652.0" y="828.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">water_clearance_m &gt; 0.2m</text>
+<rect x="1200.0" y="841.0" width="678.0" height="44.0" rx="4" fill="#111824" stroke="#1f2c3d" stroke-width="1"/>
+<text x="1210.0" y="859.0" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" fill="#f8fafc">Hump Takeoff</text>
+<text x="1210.0" y="875.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">3 - 12 m/s</text>
+<text x="1365.0" y="859.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.0" font-weight="600" fill="#e2e8f0">Throttle 1.0 + Main Skis [7,8] + Elev [3]</text>
+<text x="1365.0" y="875.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.6" fill="#94a3b8">Aft Ski [9] damps bow rise</text>
+<text x="1652.0" y="859.0" font-family="Consolas, monospace" font-size="9.6" fill="#86efac">draft_m -&gt; 0, pitch +2..4°</text>
+<text x="1652.0" y="875.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">ski hinge &lt; 1,416 Nm</text>
+<rect x="1200.0" y="888.0" width="678.0" height="44.0" rx="4" fill="#151e2b" stroke="#1f2c3d" stroke-width="1"/>
+<text x="1210.0" y="906.0" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" fill="#f8fafc">Coordinated Turn</text>
+<text x="1210.0" y="922.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">12 - 23 m/s</text>
+<text x="1365.0" y="906.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.0" font-weight="600" fill="#e2e8f0">Rudder [4] + Ski Diff [7,8] + Ailerons [1,2]</text>
+<text x="1365.0" y="922.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.6" fill="#94a3b8">Fins steer-linked; inward bank</text>
+<text x="1652.0" y="906.0" font-family="Consolas, monospace" font-size="9.6" fill="#86efac">roll &lt; 18°, yaw_rate smooth</text>
+<text x="1652.0" y="922.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">zero SERVO_SATURATED</text>
+<rect x="1200.0" y="935.0" width="678.0" height="44.0" rx="4" fill="#111824" stroke="#1f2c3d" stroke-width="1"/>
+<text x="1210.0" y="953.0" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" fill="#f8fafc">WIG Skim Cruise</text>
+<text x="1210.0" y="969.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">&gt;= 23 m/s</text>
+<text x="1365.0" y="953.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.0" font-weight="600" fill="#e2e8f0">Elev [3] + Ail [1,2] + Rud [4] + Skis [7-9]</text>
+<text x="1365.0" y="969.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.6" fill="#94a3b8">Skis wash out to -2.5..+1.5°</text>
+<text x="1652.0" y="953.0" font-family="Consolas, monospace" font-size="9.6" fill="#86efac">baro_m, airspeed_m_s</text>
+<text x="1652.0" y="969.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">pitch/roll rate damping</text>
+<rect x="1200.0" y="982.0" width="678.0" height="44.0" rx="4" fill="#151e2b" stroke="#1f2c3d" stroke-width="1"/>
+<text x="1210.0" y="1000.0" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" fill="#f8fafc">Braking Flare</text>
+<text x="1210.0" y="1016.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">Stop / Abort</text>
+<text x="1365.0" y="1000.0" font-family="Segoe UI, Arial, sans-serif" font-size="10.0" font-weight="600" fill="#e2e8f0">Reverse Buckets [5,6]=1.0 + Throttle 0.3-&gt;0</text>
+<text x="1365.0" y="1016.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.6" fill="#94a3b8">ECU flare: +2°ski +4°el -1°aft</text>
+<text x="1652.0" y="1000.0" font-family="Consolas, monospace" font-size="9.6" fill="#86efac">nose_up &gt; -6° (no dive)</text>
+<text x="1652.0" y="1016.0" font-family="Consolas, monospace" font-size="9.5" fill="#94a3b8">CAPSIZED=False, u -&gt; 0</text>
+<text x="1202.0" y="1054.0" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#38bdf8">EXACT 10-CHANNEL /api/action SCHEMA (ricochet-1) &amp; SIGN CONVENTIONS:</text>
+<rect x="1200.0" y="1066.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1200.0" y="1066.0" width="4.5" height="40.0" rx="2" fill="#f4b41a"/>
+<text x="1212.0" y="1082.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">throttle</text>
+<text x="1526.0" y="1082.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#f4b41a">[0, 1]</text>
+<text x="1212.0" y="1098.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">Twin EMRAX 228 forward thrust</text>
+<rect x="1200.0" y="1112.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1200.0" y="1112.0" width="4.5" height="40.0" rx="2" fill="#f4b41a"/>
+<text x="1212.0" y="1128.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">differential_thrust</text>
+<text x="1526.0" y="1128.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#f4b41a">[-1, +1]</text>
+<text x="1212.0" y="1144.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">+ Stbd &gt; Port -&gt; Nose-Left Yaw</text>
+<rect x="1200.0" y="1158.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1200.0" y="1158.0" width="4.5" height="40.0" rx="2" fill="#38bdf8"/>
+<text x="1212.0" y="1174.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">rudder_deg</text>
+<text x="1526.0" y="1174.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#38bdf8">[-30, +30]°</text>
+<text x="1212.0" y="1190.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">+ TE Port -&gt; Nose-Left Yaw</text>
+<rect x="1200.0" y="1204.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1200.0" y="1204.0" width="4.5" height="40.0" rx="2" fill="#38bdf8"/>
+<text x="1212.0" y="1220.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">elevator_deg</text>
+<text x="1526.0" y="1220.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#38bdf8">[-20, +20]°</text>
+<text x="1212.0" y="1236.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">+ TE Up -&gt; Nose-Up Pitch</text>
+<rect x="1200.0" y="1250.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1200.0" y="1250.0" width="4.5" height="40.0" rx="2" fill="#38bdf8"/>
+<text x="1212.0" y="1266.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">aileron_deg</text>
+<text x="1526.0" y="1266.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#38bdf8">[-25, +25]°</text>
+<text x="1212.0" y="1282.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">+ Stbd TE Up / Port Down -&gt; Right Roll</text>
+<rect x="1543.0" y="1066.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1543.0" y="1066.0" width="4.5" height="40.0" rx="2" fill="#f87171"/>
+<text x="1555.0" y="1082.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">reverse_bucket</text>
+<text x="1869.0" y="1082.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#f87171">[0, 1]</text>
+<text x="1555.0" y="1098.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">0..85° Jet Deflector -&gt; Water Brake</text>
+<rect x="1543.0" y="1112.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1543.0" y="1112.0" width="4.5" height="40.0" rx="2" fill="#fb923c"/>
+<text x="1555.0" y="1128.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">ski_incidence_deg</text>
+<text x="1869.0" y="1128.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#fb923c">[-2..10 / -4..10]°</text>
+<text x="1555.0" y="1144.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">+ Leading Edge Up -&gt; Lift / Heave</text>
+<rect x="1543.0" y="1158.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1543.0" y="1158.0" width="4.5" height="40.0" rx="2" fill="#fb923c"/>
+<text x="1555.0" y="1174.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">ski_differential_deg</text>
+<text x="1869.0" y="1174.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#fb923c">[-4, +4]°</text>
+<text x="1555.0" y="1190.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">+ Port LE Up / Stbd Down -&gt; Right Roll</text>
+<rect x="1543.0" y="1204.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1543.0" y="1204.0" width="4.5" height="40.0" rx="2" fill="#22c55e"/>
+<text x="1555.0" y="1220.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">aft_ski_incidence_deg</text>
+<text x="1869.0" y="1220.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#22c55e">[-3..8 / -6..8]°</text>
+<text x="1555.0" y="1236.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">+ Stern Lift -&gt; Nose-Down Trim</text>
+<rect x="1543.0" y="1250.0" width="335.0" height="40.0" rx="5" fill="#17202c" stroke="#273549" stroke-width="1"/>
+<rect x="1543.0" y="1250.0" width="4.5" height="40.0" rx="2" fill="#c084fc"/>
+<text x="1555.0" y="1266.0" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">ecu_assist</text>
+<text x="1869.0" y="1266.0" text-anchor="end" font-family="Consolas, monospace" font-size="9.8" fill="#c084fc">[0, 1]</text>
+<text x="1555.0" y="1282.0" font-family="Segoe UI, Arial, sans-serif" font-size="9.8" fill="#94a3b8">0 = Pure Manual · 1 = Full 5-Mode ECU</text>
+<text x="960.0" y="1332.0" text-anchor="middle" font-family="Consolas, monospace" font-size="10" fill="#64748b">Authoritative Single Source: concept_a_builder.py · inputs/ricochet_profiles/rc01_{planing_3pt,hydrofoil_ski}_v1.json · real_components.py · live.py · harbour.js</text>
+</svg>

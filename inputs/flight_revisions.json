@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "integrated_runtime_sha256": "f0bdcf8d5040e4b1c05e8367d93634ab8ecf95816da4ef401b658b1eb405ed80",
+  "integrated_runtime_sha256": "f51f21e546acd4d59271d894f982e4c1d1efdab36676a42265d0261e0fc79d2f",
   "previous_integrated_runtimes": [
     {
       "sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
@@ -39,6 +39,12 @@
       "commit": "7839f2095b1309f80a10d5bb8b498cf0f9e5361e",
       "superseded": "2026-11-20",
       "reason": "Ricochet RC-01 19-DOF / 9-control-surface real-component actuation, SWE reflective boundaries, 5-mode ECU, RicochetAction live contract, and selectable model revisions RC01-P1-R1 and RC01-H1-R1."
+    },
+    {
+      "sha256": "f0bdcf8d5040e4b1c05e8367d93634ab8ecf95816da4ef401b658b1eb405ed80",
+      "commit": "c03c12be8584ab4571f1ee61f8992a3b7c6b1d36",
+      "superseded": "2026-11-25",
+      "reason": "Reconciled Ricochet differential_thrust sign convention (+ = stbd > port -> nose-left/+Mz yaw, matching +rudder_deg) across src/vtx/ricochet/real_components.py (ECU coordinated inward bank) and src/vtx/ricochet/live.py (text/direction parser & frame_labels) to match src/vtx/ricochet/plant.py. Repin authorised by the owner on 25 Nov 2026; Phantom and legacy Concept A physics remain bit-identical."
     }
   ],
   "text_dependencies_sha256_lf": {
