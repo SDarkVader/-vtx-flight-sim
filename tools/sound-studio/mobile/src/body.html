@@ -1,0 +1,127 @@
+<header class="top gut">
+  <div class="wrap">
+    <canvas id="meter" width="112" height="56" aria-hidden="true"></canvas>
+    <div class="now">
+      <div class="t" id="nowTitle">VTX Sound Studio</div>
+      <div class="s" id="nowSub" role="status" aria-live="polite">Add songs on the Music bench</div>
+    </div>
+    <span class="clip" id="clipLed" title="Output reached full scale" aria-hidden="true"></span>
+    <div class="xport">
+      <button class="ib" id="prev" aria-label="Previous song"></button>
+      <button class="ib main" id="play" aria-label="Play"></button>
+      <button class="ib" id="next" aria-label="Next song"></button>
+    </div>
+  </div>
+</header>
+
+<main class="gut">
+  <!-- MIX -->
+  <section id="tab-mix" class="tab" role="tabpanel" aria-label="Mix">
+    <div class="wrap" id="mixWrap"></div>
+  </section>
+
+  <!-- MUSIC -->
+  <section id="tab-music" class="tab" role="tabpanel" aria-label="Music" hidden>
+    <div class="wrap">
+      <div class="seg" id="musicSeg"><button data-v="deck" aria-pressed="true">Deck</button><button data-v="rack" aria-pressed="false">Rack</button></div>
+      <div id="music-deck" class="wrap" style="padding:0">
+        <div class="lcd" aria-live="off">
+          <div class="no" id="lcdNo">NO SONG</div>
+          <div class="big" id="lcdTitle">Add songs or a music folder.</div>
+          <div class="time" id="lcdTime">0:00 / 0:00</div>
+        </div>
+        <div class="card">
+          <div class="dials row3" id="radioDials"></div>
+          <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Position in song" style="margin-top:12px">
+          <div class="bar" style="margin-top:8px">
+            <button class="chip" id="shuffle" aria-pressed="false">Shuffle</button>
+            <button class="chip" id="repeat">Repeat all</button>
+            <button class="chip" id="tuneStatic" aria-pressed="true">Tuning static</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Library</h2>
+          <div class="bar">
+            <label class="pick">Add songs<input id="songFiles" type="file" multiple accept="audio/*,.mp3,.mpeg,.m4a,.aac,.ogg,.opus,.wav,.flac"></label>
+            <label class="pick">Add music folder<input id="songFolder" type="file" webkitdirectory></label>
+            <button class="btn" id="linkMusic" hidden>Remember a folder</button>
+            <button class="btn go" id="reloadMusic" hidden>Load my music</button>
+            <button class="btn" id="forgetMusic" hidden>Forget folders</button>
+          </div>
+          <div class="bar" style="margin-top:8px"><button class="chip" id="keepSongs" aria-pressed="false">Keep songs on this phone</button></div>
+          <p class="note" id="libNote">Everything stays on this device. Nothing is uploaded.</p>
+          <input id="search" type="search" placeholder="Search songs" aria-label="Search songs" style="margin-top:8px">
+          <ul id="list"></ul>
+        </div>
+      </div>
+      <div id="music-rack" class="wrap" style="padding:0" hidden>
+        <div class="card">
+          <h2>Starting points</h2>
+          <div class="bar" id="presets"></div>
+          <div class="bar" style="margin-top:8px"><button class="chip" id="bypass" aria-pressed="false">Bypass rack (A/B)</button></div>
+          <p class="note">Presets set the dials below. Double-tap a dial to put it back. Bypass compares with the untouched song; speed is not bypassed.</p>
+        </div>
+        <div id="rackGroups" style="display:grid;gap:16px"></div>
+        <div class="card">
+          <h2>Dials</h2>
+          <div class="bar">
+            <button class="chip" id="fine" aria-pressed="false">Fine increments</button>
+            <button class="chip" id="haptics" aria-pressed="true">Dial buzz</button>
+            <button class="chip" id="clicks" aria-pressed="false">Dial clicks</button>
+            <button class="chip" id="wake" aria-pressed="false">Keep screen on</button>
+          </div>
+          <p class="note" id="rackNote"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VEHICLE -->
+  <section id="tab-vehicle" class="tab" role="tabpanel" aria-label="Vehicle" hidden>
+    <div class="wrap">
+      <div class="card">
+        <h2>Phantom A10-D in flight</h2>
+        <p class="note" style="margin:0 0 10px">Replays record 20261119T194125-4656ed in real time. Quiet gaps between steps are skipped.</p>
+        <div class="bar"><select id="procedure" aria-label="Procedure"></select><button class="btn go" id="story">Play all steps</button></div>
+        <div class="bar" id="steps" style="margin-top:8px"></div>
+        <div class="lcd" style="margin-top:10px" id="now" role="status" aria-live="off">Stand-ins work now. Add takes to hear yours.</div>
+      </div>
+      <div class="card">
+        <div class="dials" id="vehDials" style="display:flex;justify-content:center"></div>
+        <div class="bar" style="margin-top:12px">
+          <button class="chip" id="cockpit" aria-pressed="false">Heard from cockpit</button>
+          <button class="btn" id="vStop">Stop everything</button>
+          <button class="btn" id="balance">Auto balance</button>
+        </div>
+      </div>
+      <div class="card"><h2>Sound sources</h2><div class="bar" id="vehLoad"></div><p class="note" id="vehNote"></p></div>
+      <div class="card"><h2>Parts</h2><div id="parts"></div></div>
+      <div class="card">
+        <h2>Export</h2>
+        <div class="bar"><button class="btn go" id="copyTuning">Copy tuning JSON</button><button class="btn" id="bounceParts">Bounce all parts</button></div>
+        <textarea id="tuningOut" readonly hidden aria-label="Tuning JSON" style="margin-top:8px"></textarea>
+        <p class="note" id="vehExportNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE -->
+  <section id="tab-scene" class="tab" role="tabpanel" aria-label="Scene" hidden>
+    <div class="wrap" id="sceneWrap"></div>
+  </section>
+
+  <!-- TAKES -->
+  <section id="tab-takes" class="tab" role="tabpanel" aria-label="Takes" hidden>
+    <div class="wrap" id="takesWrap"></div>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Benches">
+  <div class="wrap" role="tablist">
+    <button role="tab" data-tab="mix" aria-selected="true" id="t-mix"></button>
+    <button role="tab" data-tab="music" aria-selected="false" id="t-music"></button>
+    <button role="tab" data-tab="vehicle" aria-selected="false" id="t-vehicle"></button>
+    <button role="tab" data-tab="scene" aria-selected="false" id="t-scene"></button>
+    <button role="tab" data-tab="takes" aria-selected="false" id="t-takes"></button>
+  </div>
+</nav>

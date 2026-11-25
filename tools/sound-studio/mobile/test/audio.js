@@ -1,0 +1,40 @@
+const { chromium } = require('playwright');
+const URL = process.env.STUDIO_URL || 'http://127.0.0.1:8123/studio.html';
+const path = require('path');
+const A = p => path.join(__dirname, 'assets', p);
+const ok = (name, cond, extra = '') => console.log((cond ? 'PASS ' : 'FAIL ') + name + (extra ? '  ' + extra : ''));
+(async () => {
+  const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+  const page = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
+  const errors = [];
+  page.on('console', m => { if (['error', 'warning'].includes(m.type())) errors.push(m.type() + ': ' + m.text()); });
+  page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+  await page.goto(URL);
+  await page.click('#t-music');
+  await page.setInputFiles('#songFiles', [A('Radio/Calib_997Hz_minus20.wav'), A('Radio/Song_Two_100Hz.wav'), A('Radio/Song_Three_440Hz.wav')]);
+  await page.waitForTimeout(300);
+  ok('three songs listed', (await page.locator('#list li').count()) === 3);
+  await page.click('#play');
+  await page.waitForTimeout(7000);
+  const s = await page.evaluate(() => ({ state: ctx?.state, rate: ctx?.sampleRate, t: player.currentTime, paused: player.paused, mom: LM.mom, short: LM.short, int: LM.int, peak: LM.peak, tp: LM.tp, corr: LM.corr, music: LM.strips.music.rms, gr: LM.gr, title: document.getElementById('nowTitle').textContent }));
+  console.log(JSON.stringify(s));
+  ok('audio context running', s.state === 'running');
+  ok('song advancing', s.t > 4 && !s.paused, 't=' + s.t.toFixed(2));
+  // calibration: 997 Hz at -20 dBFS in both channels is -20 LUFS; the radio volume of 80% adds -1.94 dB
+  const expect = -20 + 20 * Math.log10(0.8);
+  ok('momentary loudness ~ ' + expect.toFixed(2), Math.abs(s.mom - expect) < 0.35, 'measured ' + s.mom.toFixed(2));
+  ok('short-term loudness', Math.abs(s.short - expect) < 0.4, 'measured ' + s.short.toFixed(2));
+  ok('integrated loudness', Math.abs(s.int - expect) < 0.4, 'measured ' + s.int.toFixed(2));
+  ok('sample peak ~ ' + expect.toFixed(1), Math.abs(s.peak - expect) < 0.6, 'measured ' + s.peak.toFixed(2));
+  ok('correlation ~ +1 for identical channels', s.corr > 0.97, s.corr.toFixed(3));
+  ok('no limiter action', s.gr > -0.5, 'gr ' + s.gr.toFixed(2));
+  // the header spectrum and the Mix meters see signal
+  await page.click('#t-mix'); await page.waitForTimeout(600);
+  const px = await page.evaluate(() => { const c = document.getElementById('spec'), g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n / (d.length / 4); });
+  ok('spectrum canvas has drawn content', px > 0.05, 'filled ' + (px * 100).toFixed(1) + '%');
+  const mt = await page.evaluate(() => document.querySelector('#mixWrap .strip .meter .lv').style.clipPath);
+  ok('music strip meter moved', mt && !/inset\(0(px)? 100%/.test(mt), mt);
+  await page.screenshot({ path: 'shot-mix-playing.png' });
+  console.log('errors:', JSON.stringify(errors));
+  await browser.close();
+})();

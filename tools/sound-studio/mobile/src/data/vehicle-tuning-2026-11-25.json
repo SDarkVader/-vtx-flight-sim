@@ -1,0 +1,14 @@
+{
+ "fans": {"name":"E. Sci-fi servo","pitch":1.6,"weight":2,"edge":6,"clunk":0.35,"echo":0.45,"layer":0.7,"volume":1.05,"length":0,"source":"","rough":false},
+ "boosters": {"name":"B. Heavy hangar","pitch":1.55,"weight":7.55,"edge":3.6,"clunk":0.7,"echo":0,"layer":0.45,"volume":0.95,"length":0,"source":"","rough":false},
+ "wings": {"name":"D. Big set-piece","pitch":0.9,"weight":7,"edge":5,"clunk":1,"echo":0.6,"layer":0.8,"volume":0.55,"length":4,"source":"Firefly-A_heavy-duty_electromechanical_aircraft_wing_deployment_mechanism_operating_at_close_range_A (1).wav","rough":false},
+ "pods": {"name":"A. Grounded","pitch":0.8,"weight":0.4,"edge":5.65,"clunk":1.15,"echo":0.2,"layer":0.7,"volume":0.5,"length":2.5,"source":"Firefly_audio_A_heavy_aircraft_wheel-thruster_assembly_mechanica_variation2.wav","rough":false},
+ "legs": {"name":"A. Grounded","pitch":1.25,"weight":5.7,"edge":-1.25,"clunk":0.3,"echo":0.35,"layer":0.3,"volume":0.35,"length":2,"source":"Firefly_audio_A_precise_geared_electric_motor_whirs_with_a_smoot_variation2.wav","rough":false},
+ "flaps": {"name":"E. Sci-fi servo","pitch":1.6,"weight":2,"edge":6,"clunk":0.35,"echo":0.45,"layer":0.7,"volume":0.25,"length":1.5,"source":"Firefly_audio_A_precision_electromechanical_aircraft_flap_actuat_variation2.wav","rough":false},
+ "airbrake": {"name":"A. Grounded","pitch":1,"weight":0,"edge":0,"clunk":0.15,"echo":0,"layer":0,"volume":0.5,"length":1,"source":""},
+ "latch": {"name":"C. Fast and sharp","pitch":1.35,"weight":-3,"edge":8,"clunk":0.45,"echo":0,"layer":0,"volume":0.3,"length":0,"source":"","rough":false},
+ "touchdown": {"name":"A. Grounded","pitch":1.5,"weight":-1.55,"edge":-2,"clunk":0.9,"echo":0.55,"layer":0.25,"volume":1.45,"length":0,"source":"","rough":false},
+ "tyres": {"name":"A. Grounded","pitch":1,"weight":0,"edge":0,"clunk":0.15,"echo":0,"layer":0,"volume":0.65,"length":0,"source":""},
+ "wind": {"name":"A. Grounded","pitch":1,"weight":0,"edge":0,"clunk":0.15,"echo":0,"layer":0,"volume":0.8,"length":0,"source":""},
+ "hum": {"name":"A. Grounded","pitch":1,"weight":0,"edge":0,"clunk":0.15,"echo":0,"layer":0,"volume":0.15,"length":0,"source":""}
+}
