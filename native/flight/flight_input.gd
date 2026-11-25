@@ -18,7 +18,7 @@ const BUTTON_ACTIONS := {
 }
 const KEY_ACTIONS := {
 	KEY_ENTER: "start", KEY_P: "pause", KEY_ESCAPE: "close", KEY_C: "camera",
-	KEY_F1: "help", KEY_F2: "arm_pad", KEY_L: "legs", KEY_B: "airbrake",
+	KEY_F1: "help", KEY_F2: "arm_pad", KEY_L: "legs", KEY_B: "airbrake", KEY_O: "orbit_camera",
 	KEY_G: "deploy_wings", KEY_H: "stow_wings", KEY_1: "pods_vertical",
 	KEY_2: "pods_forward", KEY_K: "brakes", KEY_M: "manual_collective",
 }

@@ -258,6 +258,10 @@ func _ground_color(x: float, y: float, elevation: float, up: float) -> Color:
 	return Color(terrain.r * shade, terrain.g * shade, terrain.b * shade)
 
 
+func terrain_height_at(position: Vector3) -> float:
+	return _height_at(Vector2(position.x, -position.z))
+
+
 func _height_at(p: Vector2) -> float:
 	var u := clampf((p.x + _half) / _step, 0.0, float(_grid) - 1.000001)
 	var v := clampf((p.y + _half) / _step, 0.0, float(_grid) - 1.000001)

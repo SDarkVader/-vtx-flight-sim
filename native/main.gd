@@ -5,7 +5,14 @@ const WorldView = preload("res://world/meridian_world.gd")
 const AircraftView = preload("res://flight/phantom_view.gd")
 const FlightInput = preload("res://flight/flight_input.gd")
 const FlightActions = preload("res://flight/flight_actions.gd")
-const CAMERA_NAMES := ["Chase", "Forward", "Meridian"]
+const MeridianBenchmark = preload("res://benchmark/meridian_benchmark.gd")
+const CAMERA_NAMES := ["Chase", "Forward", "Meridian", "Close orbit"]
+const ORBIT_CAMERA := 3
+const ORBIT_START_DISTANCE := 20.0
+const ORBIT_MIN_DISTANCE := 12.0
+const ORBIT_MAX_DISTANCE := 60.0
+const ORBIT_PITCH_LIMIT := PI * 75.0 / 180.0
+const FLIGHT_HINTS := "A / L   Landing legs      LT / RT   Collective      LB / RB   Boosters      View / C   Camera      O   Close orbit      Y / F1   All controls"
 
 const INK := Color("#e8f0ee")
 const SUBDUED := Color("#a5bab8")
@@ -30,12 +37,19 @@ var chase_initialised := false
 var chase_run_id: Variant = null
 var chase_anchor := Vector3.ZERO
 var chase_heading := 0.0
+var orbit_initialised := false
+var orbit_azimuth := 0.0
+var orbit_elevation := 0.0
+var orbit_distance := ORBIT_START_DISTANCE
 var snapshot_usec := 0
 var start_pad_id := -1
 var rebase_after_airbrake := false
 var launched_usec := 0
 var verify_only := false
 var control_smoke := false
+var benchmark_requested := false
+var benchmark_input_path := ""
+var benchmark_receipt_path := ""
 var receipt_path := ""
 var screenshot_path := ""
 var receipt_armed := false
@@ -50,6 +64,7 @@ var pause_button: Button
 var pad_status: Label
 var configuration: Label
 var help_panel: PanelContainer
+var flight_hints: Label
 
 
 func _ready() -> void:
@@ -66,6 +81,13 @@ func _ready() -> void:
 			receipt_path = arg.trim_prefix("--receipt=")
 		elif arg.begins_with("--screenshot="):
 			screenshot_path = arg.trim_prefix("--screenshot=")
+		elif arg == "--meridian-benchmark":
+			benchmark_requested = true
+		elif arg.begins_with("--meridian-benchmark="):
+			benchmark_requested = true
+			benchmark_input_path = arg.trim_prefix("--meridian-benchmark=")
+		elif arg.begins_with("--graphics-receipt="):
+			benchmark_receipt_path = arg.trim_prefix("--graphics-receipt=")
 	add_child(world)
 	add_child(aircraft)
 	camera.fov = 48.0
@@ -76,6 +98,9 @@ func _ready() -> void:
 	camera.position = Vector3(-3830.0, 24.0, 66.0)
 	camera.look_at(Vector3(-3885.0, 3.0, 0.0), Vector3.UP)
 	create_hud()
+	if benchmark_requested:
+		start_meridian_benchmark()
+		return
 	Input.joy_connection_changed.connect(on_pad_connection)
 	get_window().focus_exited.connect(on_focus_lost)
 	add_child(bridge)
@@ -85,6 +110,22 @@ func _ready() -> void:
 	bridge.start()
 	if verify_only:
 		get_tree().create_timer(100.0).timeout.connect(on_readiness_timeout)
+
+
+func start_meridian_benchmark() -> void:
+	bridge.free()
+	if benchmark_input_path.is_empty():
+		benchmark_input_path = OS.get_executable_path().get_base_dir().path_join("benchmark-data")
+	if benchmark_receipt_path.is_empty():
+		var output_folder := OS.get_environment("LOCALAPPDATA").path_join("VTX Meridian Graphics")
+		if not output_folder.is_absolute_path():
+			output_folder = ProjectSettings.globalize_path("user://graphics")
+		DirAccess.make_dir_recursive_absolute(output_folder)
+		var stamp := Time.get_datetime_string_from_system().replace(":", "-")
+		benchmark_receipt_path = output_folder.path_join("meridian-%s-%d.json" % [stamp, OS.get_process_id()])
+	var benchmark := MeridianBenchmark.new()
+	add_child(benchmark)
+	benchmark.start.call_deferred(self, benchmark_input_path, benchmark_receipt_path)
 
 
 func create_hud() -> void:
@@ -141,14 +182,21 @@ func create_hud() -> void:
 	controls.add_child(configuration)
 	pad_status = make_label("Checking for an Xbox controller", 17, ACCENT)
 	controls.add_child(pad_status)
-	var hints := make_label("A / L   Landing legs      LT / RT   Collective      LB / RB   Boosters      View / C   Camera      Y / F1   All controls", 16, SUBDUED)
-	controls.add_child(hints)
+	flight_hints = make_label(FLIGHT_HINTS, 16, SUBDUED)
+	controls.add_child(flight_hints)
 	make_controls_panel(hud)
-	if verify_only:
-		hints.text = "Readiness check in progress"
+	if benchmark_requested or verify_only:
 		start_button.hide()
 		pause_button.hide()
 		help_button.hide()
+		if benchmark_requested:
+			status.text = "Loading the Meridian graphics replay"
+			instruments.text = "Fixed chase camera"
+			configuration.text = "Warm-up and measured repeat"
+			pad_status.hide()
+			flight_hints.hide()
+		else:
+			flight_hints.text = "Readiness check in progress"
 
 
 func make_controls_panel(hud: CanvasLayer) -> void:
@@ -181,6 +229,7 @@ func make_controls_panel(hud: CanvasLayer) -> void:
 		["ECU airbrake on / off", "Hold B for ½ second", "B"],
 		["Return to direct collective", "Right stick click", "M"],
 		["Cycle camera", "View", "C"],
+		["Close orbit", "—", "O, then right-drag / wheel"],
 		["Pause / resume", "Menu", "P"],
 		["Show / hide controls", "Y", "F1"],
 		["Close application", "—", "Esc"],
@@ -281,6 +330,8 @@ func sync_power(command: Dictionary, changed_run: bool) -> void:
 
 
 func _process(delta: float) -> void:
+	if benchmark_requested:
+		return
 	if not verify_only:
 		pilot.poll(get_window().has_focus())
 	if latest.is_empty() or closing:
@@ -317,9 +368,19 @@ func update_camera(delta: float) -> void:
 		chase_initialised = false
 		return
 	var target: Vector3 = aircraft.global_position
+	if camera_mode == ORBIT_CAMERA and orbit_initialised:
+		update_orbit_camera(target)
+		return
 	var forward: Vector3 = aircraft.global_basis.x.slide(Vector3.UP).normalized()
 	if forward.length_squared() < 0.1:
 		forward = Vector3.RIGHT
+	if camera_mode == ORBIT_CAMERA:
+		orbit_azimuth = atan2(forward.z, forward.x) + deg_to_rad(155.0)
+		orbit_elevation = deg_to_rad(16.0)
+		orbit_distance = ORBIT_START_DISTANCE
+		orbit_initialised = true
+		update_orbit_camera(target)
+		return
 	if camera_mode == 1:
 		chase_initialised = false
 		camera.position = target + forward * 2.4 + Vector3.UP * 2.1
@@ -348,6 +409,32 @@ func update_camera(delta: float) -> void:
 	var chase_right := chase_forward.cross(Vector3.UP)
 	camera.position = chase_anchor - chase_forward * 45.0 + chase_right * 10.0 + Vector3.UP * 17.0
 	camera.look_at(chase_anchor + chase_forward * 13.0 + Vector3.UP * 1.1, Vector3.UP)
+
+
+func update_orbit_camera(target: Vector3) -> void:
+	var focus := target + Vector3.UP * 0.6
+	var horizontal_distance := cos(orbit_elevation) * orbit_distance
+	var eye := focus + Vector3(
+		cos(orbit_azimuth) * horizontal_distance,
+		sin(orbit_elevation) * orbit_distance,
+		sin(orbit_azimuth) * horizontal_distance,
+	)
+	if world_ready:
+		eye.y = maxf(eye.y, world.terrain_height_at(eye) + 0.55)
+	camera.position = eye
+	camera.look_at(focus, Vector3.UP)
+
+
+func set_camera_mode(mode: int) -> void:
+	if camera_mode == mode:
+		return
+	camera_mode = mode
+	chase_initialised = false
+	orbit_initialised = false
+	if is_instance_valid(flight_hints):
+		flight_hints.text = FLIGHT_HINTS
+		if camera_mode == ORBIT_CAMERA:
+			flight_hints.text += "      Right-drag   Orbit      Wheel   Zoom"
 
 
 func update_hud() -> void:
@@ -424,7 +511,7 @@ func update_controls(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if closing or verify_only or not get_window().has_focus():
+	if closing or benchmark_requested or verify_only or not get_window().has_focus():
 		return
 	if (event is InputEventJoypadButton and event.pressed) \
 			or (event is InputEventKey and event.physical_keycode == KEY_F2 and event.pressed):
@@ -433,6 +520,24 @@ func _input(event: InputEvent) -> void:
 	if not action.is_empty():
 		get_viewport().set_input_as_handled()
 		handle_action(action)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if closing or benchmark_requested or verify_only or camera_mode != ORBIT_CAMERA or not orbit_initialised:
+		return
+	if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
+		orbit_azimuth = wrapf(orbit_azimuth - event.screen_relative.x * 0.006, -PI, PI)
+		orbit_elevation = clampf(orbit_elevation + event.screen_relative.y * 0.006, -ORBIT_PITCH_LIMIT, ORBIT_PITCH_LIMIT)
+		get_viewport().set_input_as_handled()
+	elif event is InputEventMouseButton and event.pressed:
+		var wheel_scale := pow(0.82, event.factor if event.factor > 0.0 else 1.0)
+		match event.button_index:
+			MOUSE_BUTTON_WHEEL_UP:
+				orbit_distance = maxf(ORBIT_MIN_DISTANCE, orbit_distance * wheel_scale)
+				get_viewport().set_input_as_handled()
+			MOUSE_BUTTON_WHEEL_DOWN:
+				orbit_distance = minf(ORBIT_MAX_DISTANCE, orbit_distance / wheel_scale)
+				get_viewport().set_input_as_handled()
 
 
 func handle_action(action: String) -> void:
@@ -450,8 +555,9 @@ func handle_action(action: String) -> void:
 			if flight_ready and bridge.accepts_controls():
 				pilot.arm_pad()
 		"camera":
-			camera_mode = (camera_mode + 1) % 3
-			chase_initialised = false
+			set_camera_mode((camera_mode + 1) % CAMERA_NAMES.size())
+		"orbit_camera":
+			set_camera_mode(ORBIT_CAMERA)
 		"help":
 			toggle_help()
 		"close":
@@ -567,6 +673,7 @@ func request_close(exit_code: int = 0) -> void:
 	if closing:
 		return
 	closing = true
-	bridge.quit()
+	if not benchmark_requested:
+		bridge.quit()
 	await get_tree().process_frame
 	get_tree().quit(exit_code)

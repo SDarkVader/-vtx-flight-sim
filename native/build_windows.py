@@ -114,8 +114,20 @@ def make_zip(output, archive):
     with ZipFile(archive, "x", compression=ZIP_DEFLATED, compresslevel=3) as package:
         for path in sorted(output.rglob("*")):
             if path.is_file():
-                package.write(path, Path("VTX Native Flight") / path.relative_to(output))
+                package.write(path, Path(output.name) / path.relative_to(output))
     (archive.parent / "SHA256SUMS.txt").write_text(f"{file_sha(archive)}  {archive.name}\n", encoding="utf-8")
+
+
+def stage_benchmark(output, source):
+    target = output / "benchmark-data"
+    target.mkdir()
+    fingerprints = {}
+    for filename in ("world.json", "route.json", "provenance.json"):
+        entry = target / filename
+        shutil.copy2(source / filename, entry)
+        fingerprints[filename] = file_sha(entry)
+    shutil.copy2(SOURCE / "benchmark" / "Run Meridian Graphics Test.cmd", output)
+    return fingerprints
 
 
 def main():
@@ -124,13 +136,14 @@ def main():
     parser.add_argument("--godot", type=Path, required=True, help="Godot 4.7.2 console executable")
     parser.add_argument("--template", type=Path, required=True, help="Matching verified Windows x64 release template")
     parser.add_argument("--runtime-from", type=Path, required=True, help="Verified preview runtime folder")
+    parser.add_argument("--benchmark-data", type=Path, help="Verified Meridian world and replay data directory")
     parser.add_argument("--skip-zip", action="store_true", help="Stage an unpacked build for readiness checks.")
     args = parser.parse_args()
     if sys.platform != "win32":
         parser.error("Build this prototype on Windows.")
     workspace = args.output.resolve()
     workspace.mkdir()
-    output = workspace / "VTX Native Flight"
+    output = workspace / ("VTX Meridian Graphics" if args.benchmark_data else "VTX Native Flight")
     output.mkdir()
     godot = args.godot.resolve(strict=True)
     template = args.template.resolve(strict=True)
@@ -149,9 +162,12 @@ def main():
         "windows_export_template_sha256": file_sha(template),
         "executable_sha256": file_sha(executable), "phantom_visual_sha256": MODEL_SHA256,
     }
+    if args.benchmark_data:
+        identity["meridian_benchmark_sha256"] = stage_benchmark(output, args.benchmark_data.resolve(strict=True))
     (output / "BUILD_MANIFEST.json").write_text(json.dumps(identity, indent=2) + "\n", encoding="utf-8")
     if not args.skip_zip:
-        make_zip(output, workspace / "VTX-Native-Flight-win-x64.zip")
+        archive_name = "VTX-Meridian-Graphics-win-x64.zip" if args.benchmark_data else "VTX-Native-Flight-win-x64.zip"
+        make_zip(output, workspace / archive_name)
     print(executable, flush=True)
 
 
