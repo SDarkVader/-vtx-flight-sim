@@ -22,7 +22,10 @@ var flight_ready := false
 var starting := false
 var closing := false
 var camera_mode := 0
-var camera_initialised := false
+var chase_initialised := false
+var chase_run_id: Variant = null
+var chase_anchor := Vector3.ZERO
+var chase_heading := 0.0
 var snapshot_usec := 0
 var control_elapsed := 0.0
 var collective := 0.0
@@ -205,27 +208,40 @@ func _process(delta: float) -> void:
 
 func update_camera(delta: float) -> void:
 	if not aircraft.pose_ready:
+		chase_initialised = false
 		return
 	var target: Vector3 = aircraft.global_position
 	var forward: Vector3 = aircraft.global_basis.x.slide(Vector3.UP).normalized()
 	if forward.length_squared() < 0.1:
 		forward = Vector3.RIGHT
-	var right := forward.cross(Vector3.UP).normalized()
 	if camera_mode == 1:
+		chase_initialised = false
 		camera.position = target + forward * 2.4 + Vector3.UP * 2.1
 		camera.look_at(camera.position + forward * 60.0, Vector3.UP)
 		return
 	if camera_mode == 2:
+		chase_initialised = false
 		camera.position = Vector3(1489.0, 410.0, -3166.0)
 		camera.look_at(Vector3(-120.0, 155.0, -2850.0), Vector3.UP)
 		return
-	var chase := target - forward * 45.0 + right * 10.0 + Vector3.UP * 17.0
-	if camera_initialised:
-		camera.position = camera.position.lerp(chase, 1.0 - exp(-7.0 * delta))
+
+	var run_id: Variant = latest.get("run_id")
+	var heading := atan2(forward.z, forward.x)
+	if chase_initialised and run_id == chase_run_id:
+		var blend := 1.0 - exp(-7.0 * delta)
+		chase_anchor = chase_anchor.lerp(target, blend)
+		chase_heading = lerp_angle(chase_heading, heading, blend)
 	else:
-		camera.position = chase
-		camera_initialised = true
-	camera.look_at(target + forward * 13.0 + Vector3.UP * 1.1, Vector3.UP)
+		chase_anchor = target
+		chase_heading = heading
+		chase_run_id = run_id
+		chase_initialised = true
+
+	# Anchor the eye and aim together so vertical motion cannot pitch the horizon.
+	var chase_forward := Vector3(cos(chase_heading), 0.0, sin(chase_heading))
+	var chase_right := chase_forward.cross(Vector3.UP)
+	camera.position = chase_anchor - chase_forward * 45.0 + chase_right * 10.0 + Vector3.UP * 17.0
+	camera.look_at(chase_anchor + chase_forward * 13.0 + Vector3.UP * 1.1, Vector3.UP)
 
 
 func update_hud() -> void:
@@ -304,7 +320,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			toggle_pause()
 		KEY_C:
 			camera_mode = (camera_mode + 1) % 3
-			camera_initialised = false
+			chase_initialised = false
 		KEY_G:
 			if latest.get("active", false):
 				bridge.send_controls({"wing": "deploy", "canard_fold": "deployed"})
