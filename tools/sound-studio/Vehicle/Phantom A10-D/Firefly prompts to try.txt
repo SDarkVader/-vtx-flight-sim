@@ -1,0 +1,26 @@
+Phantom A10-D: sounds your current takes don't seem to cover (going by their names)
+
+LOOPS (the game bends these with speed or thrust)
+
+Wheel fans
+Large electric ducted fan running at one steady speed, close up, constant tone and rush of air, no start or stop, dry, no music, no voices
+
+Boosters
+Small turbojet engine at steady high thrust, sharp whine over a deep exhaust roar, constant, no start or stop, dry, no music, no voices
+
+Tyres
+Rubber tyres rolling at a steady speed on smooth tarmac, low continuous rumble, no engine, dry, no music
+
+Wind in the cockpit
+Fast air rushing past an aircraft canopy heard from inside the cockpit, steady, no engine, no gusts, no music
+
+SINGLE EVENTS
+
+Air brake
+Aircraft air brake panel opening quickly, actuator push, firm stop, short burst of rushing air, one action only, close, dry
+
+Wing latch
+Heavy metal locking pin engaging in an aircraft wing mechanism, one solid clunk, close, dry
+
+Touchdown
+Heavy aircraft touching down on tarmac, one deep thump with a short tyre chirp and suspension compressing, no engine

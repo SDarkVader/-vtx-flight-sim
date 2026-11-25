@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Phantom A10-D sound audition</title>
+<style>
+  :root{color-scheme:light dark;--line:#8886}
+  body{font:15px/1.45 system-ui,sans-serif;max-width:920px;margin:0 auto;padding:16px}
+  h1{font-size:20px;margin:0 0 4px}
+  h2{font-size:16px;margin:28px 0 4px}
+  .bar,.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 0}
+  .row{border-top:1px solid var(--line)}
+  .row.playing{background:#4a90d926}
+  label{display:inline-flex;gap:6px;align-items:center}
+  button,select,input[type=text]{font:inherit;min-height:34px}
+  button{padding:4px 12px;min-width:68px}
+  input[type=text]{flex:1 1 240px;min-width:0;padding:2px 6px}
+  input[type=range]{width:130px}
+  small{opacity:.75}
+  textarea{width:100%;min-height:130px;box-sizing:border-box}
+</style>
+</head>
+<body>
+<h1>Phantom A10-D sound audition</h1>
+<small>Everything stays on this device. Nothing is uploaded, moved or renamed. Names and picks are remembered by this browser.</small>
+
+<div class="bar">
+  <label>Choose the Sounds folder <input id="folder" type="file" webkitdirectory></label>
+  <label>or pick files <input id="files" type="file" multiple accept="audio/*,.mpeg,.mp3,.wav,.m4a,.ogg,.flac"></label>
+</div>
+<div id="status" role="status"></div>
+
+<h2>Radio</h2>
+<small>Tracks over a minute long, or anything in a Radio folder.</small>
+<div class="bar">
+  <button id="prev">Previous</button>
+  <button id="playPause">Play</button>
+  <button id="next">Next</button>
+  <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Position in track">
+  <span id="clock">0:00</span>
+  <label>Volume <input id="radioVol" type="range" min="0" max="3" step="0.01" value="1"></label>
+  <label><input id="cabin" type="checkbox"> Cabin speaker tone</label>
+</div>
+<div id="tracks"></div>
+
+<h2>Sound effects</h2>
+<small>Shorter clips. Give a clip the job "Wheel fans" or "Boosters" and the sliders below bend it, roughly as flight data would.</small>
+<div class="bar">
+  <label>Fan RPM <input id="rpm" type="range" min="0.2" max="1" step="0.01" value="0.7"></label>
+  <label>Booster thrust <input id="thrust" type="range" min="0" max="1" step="0.01" value="0.7"></label>
+  <label><input id="inside" type="checkbox"> Heard from cockpit</label>
+  <button id="stopAll">Stop all</button>
+</div>
+<div id="effects"></div>
+
+<h2>Your picks</h2>
+<div class="bar">
+  <button id="show">Show picks</button>
+  <button id="save">Save picks file</button>
+</div>
+<textarea id="out" readonly aria-label="Picks"></textarea>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const JOBS = ['Not decided','Wheel fans','Boosters','Flaps','Air brake','Legs and pods','Wings','Touchdown','Latch','Tyres','Wind','Cockpit','Environment','Not using'];
+const AUDIO_FILE = /\.(mpeg|mp3|wav|m4a|aac|ogg|flac|aif|aiff)$/i;
+const FOLDERS = ['Folder not decided','Radio','Cockpit','Environment','Mechanics'];
+
+let store = {};
+try { store = JSON.parse(localStorage.getItem('vtx-audition') || '{}'); } catch {}
+const persist = () => { try { localStorage.setItem('vtx-audition', JSON.stringify(store)); } catch {} };
+const meta = key => (store[key] ||= {});
+const say = text => { $('status').textContent = text; };
+const mmss = s => Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '?';
+
+let items = [], tracks = [], effects = [];
+
+// ---------- audio graph ----------
+let ctx, radioLow, radioHigh, radioGain, fxFilter;
+function audio() {
+  if (!ctx) {
+    ctx = new AudioContext();
+    const limit = ctx.createDynamicsCompressor();
+    // A hard limiter, so the louder settings squash peaks instead of crackling.
+    limit.threshold.value = -3; limit.ratio.value = 20; limit.knee.value = 3;
+    limit.attack.value = 0.003;
+    limit.connect(ctx.destination);
+    radioLow = ctx.createBiquadFilter(); radioLow.type = 'highpass';
+    radioHigh = ctx.createBiquadFilter(); radioHigh.type = 'lowpass';
+    radioGain = ctx.createGain();
+    radioLow.connect(radioHigh).connect(radioGain).connect(limit);
+    fxFilter = ctx.createBiquadFilter(); fxFilter.type = 'lowpass';
+    fxFilter.connect(limit);
+    applyMix();
+  }
+  if (ctx.state !== 'running') ctx.resume();
+  return ctx;
+}
+function applyMix() {
+  if (!ctx) return;
+  const cabin = $('cabin').checked;
+  radioLow.frequency.value = cabin ? 180 : 10;
+  radioHigh.frequency.value = cabin ? 5500 : 20000;
+  radioGain.gain.value = +$('radioVol').value;
+  fxFilter.frequency.value = $('inside').checked ? 1060 : 20000;
+}
+const decode = async file => audio().decodeAudioData(await file.arrayBuffer());
+
+// ---------- loading ----------
+async function fingerprint(file) {
+  if (!crypto.subtle) return `${file.size}-${file.name}`;
+  const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+  return [...new Uint8Array(digest)].slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function lengthOf(file) {
+  return new Promise(resolve => {
+    const probe = new Audio(), url = URL.createObjectURL(file);
+    const done = seconds => { URL.revokeObjectURL(url); resolve(seconds); };
+    probe.preload = 'metadata';
+    probe.onloadedmetadata = () => done(probe.duration);
+    probe.onerror = () => done(NaN);
+    probe.src = url;
+  });
+}
+let loadRun = 0;
+async function load(list) {
+  const run = ++loadRun;
+  stopRadio(); stopAllEffects();
+  // Set-aside copies are read last, so a track is listed under its real file.
+  const copy = f => /(^|\/)exact copies\//i.test(f.webkitRelativePath || f.name) ? 1 : 0;
+  const files = [...list].filter(f => AUDIO_FILE.test(f.name)).sort((a, b) => copy(a) - copy(b));
+  const found = new Map();
+  for (const [n, file] of files.entries()) {
+    say(`Reading ${n + 1} of ${files.length}…`);
+    const key = await fingerprint(file);
+    const path = file.webkitRelativePath || file.name;
+    const seconds = found.has(key) ? 0 : await lengthOf(file);
+    if (run !== loadRun) return;
+    if (found.has(key)) found.get(key).paths.push(path);
+    else found.set(key, { key, file, paths: [path], seconds });
+  }
+  items = [...found.values()].sort((a, b) => a.paths[0].localeCompare(b.paths[0]));
+  const isTrack = i => i.paths.some(p => /(^|\/)radio\//i.test(p)) || !(i.seconds <= 60);
+  tracks = items.filter(isTrack);
+  effects = items.filter(i => !isTrack(i));
+  current = -1; buffer = null; offset = 0;
+  render();
+  say(`${files.length} audio files, ${items.length} different: ${tracks.length} radio tracks and ${effects.length} effects.`);
+}
+
+// ---------- radio ----------
+let current = -1, source = null, buffer = null, startedAt = 0, offset = 0, playing = false, turn = 0;
+function stopSource() {
+  if (source) { source.onended = null; source.stop(); source.disconnect(); source = null; }
+  playing = false;
+}
+function stopRadio() { turn++; stopSource(); offset = 0; markRadio(); }
+const position = () => playing ? offset + ctx.currentTime - startedAt : offset;
+async function playTrack(index, from = 0) {
+  if (!tracks.length) return;
+  const mine = ++turn;
+  const next = (index + tracks.length) % tracks.length;
+  stopSource();
+  audio();
+  if (next !== current || !buffer) {
+    current = next; buffer = null; offset = 0; markRadio();
+    say('Loading track…');
+    try {
+      const decoded = await decode(tracks[next].file);
+      if (mine !== turn) return;
+      buffer = decoded;
+    } catch { say(`Could not play ${tracks[next].paths[0]}`); return; }
+    say('');
+  }
+  source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(radioLow);
+  source.onended = () => playTrack(current + 1);
+  offset = from; startedAt = ctx.currentTime; playing = true;
+  source.start(0, from);
+  markRadio();
+}
+function pauseRadio() { offset = position(); turn++; stopSource(); markRadio(); }
+const toggleRadio = () => playing ? pauseRadio() : playTrack(Math.max(current, 0), offset);
+function markRadio() {
+  [...$('tracks').children].forEach((row, i) => {
+    const on = i === current && playing;
+    row.classList.toggle('playing', i === current);
+    row.querySelector('button').textContent = on ? 'Pause' : 'Play';
+  });
+  $('playPause').textContent = playing ? 'Pause' : 'Play';
+}
+setInterval(() => {
+  const length = buffer?.duration, at = Math.min(position(), length ?? 0);
+  $('clock').textContent = length ? `${mmss(at)} / ${mmss(length)}` : '0:00';
+  if (length && document.activeElement !== $('seek')) $('seek').value = Math.round(at / length * 1000);
+}, 250);
+
+// ---------- effects ----------
+const voices = new Map();
+function smoothLoop(input) {
+  const fade = Math.min(Math.floor(input.sampleRate * 0.12), Math.floor(input.length / 4));
+  const length = input.length - fade;
+  const out = ctx.createBuffer(input.numberOfChannels, length, input.sampleRate);
+  for (let channel = 0; channel < input.numberOfChannels; channel++) {
+    const from = input.getChannelData(channel), to = out.getChannelData(channel);
+    to.set(from.subarray(0, length));
+    for (let i = 0; i < fade; i++) {
+      const x = i / fade * Math.PI / 2;
+      to[i] = from[i] * Math.sin(x) + from[length + i] * Math.cos(x);
+    }
+  }
+  return out;
+}
+function tune(key) {
+  const voice = voices.get(key);
+  if (!voice?.source) return;
+  const m = meta(key);
+  let rate = m.pitch ?? 1, level = m.volume ?? 1;
+  if (m.job === 'Wheel fans') {
+    const r = +$('rpm').value / 0.7;
+    rate *= r; level *= r ** 1.73;
+  } else if (m.job === 'Boosters') {
+    const t = +$('thrust').value;
+    rate *= 0.8 + t * (0.2 / 0.7); level *= (t / 0.7) ** 0.8;
+  }
+  voice.source.playbackRate.setTargetAtTime(rate, ctx.currentTime, 0.1);
+  voice.gain.gain.setTargetAtTime(level, ctx.currentTime, 0.1);
+}
+function stopEffect(key) {
+  const voice = voices.get(key);
+  voices.delete(key);
+  if (voice?.source) { voice.source.onended = null; voice.source.stop(); voice.gain.disconnect(); }
+  voice?.mark(false);
+}
+function stopAllEffects() { [...voices.keys()].forEach(stopEffect); }
+async function startEffect(item, mark) {
+  const ticket = { mark };
+  voices.set(item.key, ticket);
+  mark(true);
+  try { item.decoded ||= await decode(item.file); }
+  catch { stopEffect(item.key); say(`Could not play ${item.paths[0]}`); return; }
+  if (voices.get(item.key) !== ticket) return;
+  const m = meta(item.key);
+  const src = ctx.createBufferSource(), gain = ctx.createGain();
+  src.buffer = m.loop && m.smooth ? smoothLoop(item.decoded) : item.decoded;
+  src.loop = !!m.loop;
+  gain.gain.value = 0;
+  src.connect(gain).connect(fxFilter);
+  src.onended = () => stopEffect(item.key);
+  Object.assign(ticket, { source: src, gain });
+  tune(item.key);
+  src.start();
+}
+
+// ---------- rows ----------
+function el(tag, props = {}, ...children) {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...children);
+  return node;
+}
+const tick = (key, field, label, after) => el('label', {},
+  el('input', { type: 'checkbox', checked: !!meta(key)[field],
+    onchange: e => { meta(key)[field] = e.target.checked; persist(); after?.(); } }), label);
+const slide = (key, field, label, min, max, fallback) => el('label', {}, label,
+  el('input', { type: 'range', min, max, step: 0.01, value: meta(key)[field] ?? fallback,
+    oninput: e => { meta(key)[field] = +e.target.value; persist(); tune(key); } }));
+const nameBox = item => el('input', { type: 'text', value: meta(item.key).name ?? '',
+  placeholder: item.paths[0].split('/').pop(), ariaLabel: 'Your name for ' + item.paths[0],
+  oninput: e => { meta(item.key).name = e.target.value; persist(); } });
+const note = item => el('small', { title: item.paths.join('\n') },
+  mmss(item.seconds) + (item.paths.length > 1 ? `, ${item.paths.length} identical copies` : ''));
+
+function folderBox(item) {
+  const box = el('select', { ariaLabel: 'Folder for ' + item.paths[0],
+    onchange: e => { meta(item.key).folder = e.target.value; persist(); } },
+    ...FOLDERS.map(f => el('option', { textContent: f, value: f })));
+  const here = FOLDERS.find(f => item.paths.some(p => p.toLowerCase().split('/').slice(0, -1).includes(f.toLowerCase())));
+  box.value = meta(item.key).folder ?? here ?? FOLDERS[0];
+  return box;
+}
+function trackRow(item, i) {
+  const button = el('button', { textContent: 'Play',
+    onclick: () => i === current ? toggleRadio() : playTrack(i) });
+  return el('div', { className: 'row' }, button, nameBox(item), folderBox(item), tick(item.key, 'keep', 'Keep'), note(item));
+}
+function effectRow(item) {
+  const button = el('button', { textContent: 'Play' });
+  const row = el('div', { className: 'row' });
+  const mark = on => { button.textContent = on ? 'Stop' : 'Play'; row.classList.toggle('playing', on); };
+  button.onclick = () => voices.has(item.key) ? stopEffect(item.key) : startEffect(item, mark);
+  const restart = () => { if (voices.has(item.key)) { stopEffect(item.key); startEffect(item, mark); } };
+  const job = el('select', { ariaLabel: 'Job for ' + item.paths[0],
+    onchange: e => { meta(item.key).job = e.target.value; persist(); tune(item.key); } },
+    ...JOBS.map(j => el('option', { textContent: j, value: j })));
+  job.value = meta(item.key).job ?? JOBS[0];
+  row.append(button, nameBox(item), folderBox(item), job,
+    tick(item.key, 'loop', 'Loop', restart), tick(item.key, 'smooth', 'Smooth the loop', restart),
+    slide(item.key, 'pitch', 'Pitch', 0.5, 2, 1), slide(item.key, 'volume', 'Volume', 0, 4, 1),
+    tick(item.key, 'keep', 'Keep'), note(item));
+  return row;
+}
+function render() {
+  $('tracks').replaceChildren(...tracks.map(trackRow));
+  $('effects').replaceChildren(...effects.map(effectRow));
+  markRadio();
+}
+
+// ---------- picks ----------
+function picks() {
+  return JSON.stringify(items
+    .map(i => ({ file: i.paths[0], copies: i.paths.length > 1 ? i.paths.slice(1) : undefined,
+      seconds: Math.round(i.seconds * 10) / 10, ...meta(i.key), id: i.key }))
+    .filter(p => p.keep || p.name || (p.job && p.job !== JOBS[0]) || (p.folder && p.folder !== FOLDERS[0])), null, 1);
+}
+$('show').onclick = () => { $('out').value = picks(); };
+$('save').onclick = () => {
+  const url = URL.createObjectURL(new Blob([picks()], { type: 'application/json' }));
+  el('a', { href: url, download: 'audition-picks.json' }).click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+// ---------- controls ----------
+$('folder').onchange = e => load(e.target.files);
+$('files').onchange = e => load(e.target.files);
+$('playPause').onclick = toggleRadio;
+$('prev').onclick = () => playTrack(current - 1);
+$('next').onclick = () => playTrack(current + 1);
+$('seek').onchange = e => {
+  if (!buffer) return;
+  const to = +e.target.value / 1000 * buffer.duration;
+  if (playing) playTrack(current, to); else offset = to;
+  e.target.blur();
+};
+for (const id of ['cabin', 'inside', 'radioVol']) $(id).oninput = applyMix;
+for (const id of ['rpm', 'thrust']) $(id).oninput = () => voices.forEach((_, key) => tune(key));
+$('stopAll').onclick = stopAllEffects;
+</script>
+</body>
+</html>

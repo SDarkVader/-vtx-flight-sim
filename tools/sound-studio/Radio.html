@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VTX cockpit radio</title>
+<style>
+  body{margin:0 auto;max-width:640px;padding:12px;font:15px/1.4 system-ui,sans-serif;background:#0d2129;color:#e5f5f2}
+  #deck{position:sticky;top:0;background:#0d2129;padding-bottom:8px;border-bottom:1px solid #5d8f99}
+  #station{background:#06131a;color:#ffca72;border-radius:6px;padding:10px;min-height:44px;overflow-wrap:anywhere}
+  .row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:center;margin-top:8px}
+  button,input{font:inherit}
+  button,label.pick{background:#142d36;color:inherit;border:1px solid #5d8f99;border-radius:5px;padding:7px 12px;cursor:pointer;min-height:36px}
+  button[aria-pressed=true]{background:#1d5563;border-color:#8cdce6}
+  label.pick input{display:none}
+  #knob{width:68px;height:68px;border-radius:50%;border:2px solid #8cdce6;background:#1b3a45;position:relative;touch-action:none;cursor:grab}
+  #knob::after{content:'';position:absolute;left:32px;top:5px;width:4px;height:20px;background:#ffca72;border-radius:2px}
+  input[type=range]{flex:1;min-width:140px}
+  #search{width:100%;box-sizing:border-box;margin-top:8px;padding:7px;background:#06131a;color:inherit;border:1px solid #5d8f99;border-radius:5px}
+  #list{list-style:none;margin:8px 0;padding:0}
+  #list button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #5d8f9955;border-radius:0;background:none;overflow-wrap:anywhere}
+  #list button.on{background:#1d5563;color:#ffca72}
+  #list small{opacity:.65;display:block}
+</style>
+</head>
+<body>
+<div id="deck">
+  <div id="station" role="status">Choose your music folder. Everything inside it, including subfolders, is added.</div>
+  <div class="row">
+    <button id="link" hidden>Remember a folder</button>
+    <button id="reload" hidden>Load my music</button>
+    <button id="forget" hidden>Forget folders</button>
+  </div>
+  <div class="row">
+    <label class="pick">Add a folder<input id="folder" type="file" webkitdirectory></label>
+    <label class="pick">Add songs<input id="files" type="file" multiple accept="audio/*,.mpeg"></label>
+  </div>
+  <div class="row">
+    <button id="prev">◀</button>
+    <div id="knob" role="slider" tabindex="0" aria-label="Song knob"></div>
+    <button id="next">▶</button>
+    <button id="play">Play</button>
+    <button id="shuffle" aria-pressed="false">Shuffle</button>
+    <button id="cabin" aria-pressed="false">Cabin tone</button>
+  </div>
+  <div class="row"><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Position"><span id="clock">0:00</span></div>
+  <div class="row">Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume"></div>
+  <input id="search" type="search" placeholder="Search songs" aria-label="Search songs">
+</div>
+<ul id="list"></ul>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const AUDIO = /\.(mp3|mpeg|m4a|aac|ogg|opus|wav|flac)$/i;
+const player = new Audio();
+let songs = [], current = -1, url = null, history = [], dial = 0;
+
+const title = s => s.file.name.replace(AUDIO, '').replaceAll('_', ' ');
+const mmss = s => Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
+const shown = () => {
+  const words = $('search').value.toLowerCase().split(/\s+/).filter(Boolean);
+  return songs.map((s, i) => i).filter(i => words.every(w => (songs[i].path + ' ' + title(songs[i])).toLowerCase().includes(w)));
+};
+function add(list) {
+  // Songs already listed (same name and size) are not added twice.
+  const have = new Set(songs.map(s => s.file.name + '|' + s.file.size)), playing = songs[current];
+  for (const file of list) {
+    const key = file.name + '|' + file.size;
+    if (!AUDIO.test(file.name) || have.has(key)) continue;
+    have.add(key);
+    songs.push({ file, path: file.webkitRelativePath || file.name });
+  }
+  songs.sort((a, b) => title(a).localeCompare(title(b), undefined, { numeric: true }));
+  current = playing ? songs.indexOf(playing) : -1;
+  history = [];
+  draw();
+  $('station').textContent = playing ? title(playing) : `${songs.length} songs. Pick one.`;
+}
+function draw() {
+  $('list').replaceChildren(...shown().map(i => {
+    const item = document.createElement('li'), button = document.createElement('button'), where = document.createElement('small');
+    button.textContent = title(songs[i]);
+    where.textContent = songs[i].path.split('/').slice(0, -1).join(' / ');
+    if (where.textContent) button.append(where);
+    button.classList.toggle('on', i === current);
+    button.dataset.i = i;
+    button.onclick = () => select(i);
+    item.append(button);
+    return item;
+  }));
+}
+function select(i, remember = true) {
+  if (!songs[i]) return;
+  if (remember && current >= 0) history.push(current);
+  current = i;
+  if (url) URL.revokeObjectURL(url);
+  url = URL.createObjectURL(songs[i].file);
+  player.src = url;
+  start();
+  $('station').textContent = title(songs[i]);
+  for (const button of $('list').querySelectorAll('button')) button.classList.toggle('on', +button.dataset.i === i);
+}
+function start() { player.play().catch(e => { if (e.name !== 'AbortError') $('station').textContent = 'That file would not play: ' + title(songs[current]); }); }
+// Previous, next and the knob move through whatever the search is showing.
+function step(delta) {
+  const list = shown();
+  if (!list.length) return;
+  if ($('shuffle').getAttribute('aria-pressed') === 'true') {
+    if (delta < 0 && history.length) return select(history.pop(), false);
+    const others = list.filter(i => i !== current);
+    return select(others.length ? others[Math.floor(Math.random() * others.length)] : list[0]);
+  }
+  const at = list.indexOf(current);
+  select(list[at < 0 ? 0 : ((at + delta) % list.length + list.length) % list.length]);
+}
+function turn(steps) { dial += steps * 30; $('knob').style.transform = `rotate(${dial}deg)`; step(steps); }
+
+// Cabin tone needs Web Audio; it is only set up if asked for.
+let graph = null;
+function cabin(on) {
+  if (!graph) {
+    const ctx = new AudioContext(), source = ctx.createMediaElementSource(player);
+    const low = ctx.createBiquadFilter(), high = ctx.createBiquadFilter();
+    low.type = 'highpass'; high.type = 'lowpass';
+    source.connect(low).connect(high).connect(ctx.destination);
+    graph = { ctx, low, high };
+  }
+  graph.ctx.resume();
+  graph.low.frequency.value = on ? 180 : 10;
+  graph.high.frequency.value = on ? 5500 : 20000;
+}
+
+// ---------- remembered folders ----------
+// Only a pointer to each folder is kept, not the songs, so any number of songs is fine.
+function store(mode, work) {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open('vtx-radio-folders', 1);
+    open.onupgradeneeded = () => open.result.createObjectStore('folders', { autoIncrement: true });
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const db = open.result, tx = db.transaction('folders', mode), request = work(tx.objectStore('folders'));
+      tx.oncomplete = () => { db.close(); resolve(request.result); };
+      tx.onerror = tx.onabort = () => { db.close(); reject(tx.error); };
+    };
+  });
+}
+const remembered = () => store('readonly', s => s.getAll());
+async function walk(directory, path, found) {
+  for await (const entry of directory.values()) {
+    if (entry.kind === 'directory') await walk(entry, path + entry.name + '/', found);
+    else if (AUDIO.test(entry.name)) found.push({ file: await entry.getFile(), path: path + entry.name });
+  }
+  return found;
+}
+function addFound(found) {
+  // add() reads webkitRelativePath, which these files lack, so pass the path alongside.
+  const paths = new Map(found.map(f => [f.file, f.path]));
+  add(found.map(f => f.file));
+  for (const song of songs) song.path = paths.get(song.file) ?? song.path;
+  draw();
+}
+async function loadRemembered(ask) {
+  let waiting = 0;
+  for (const handle of await remembered()) {
+    let permission = await handle.queryPermission({ mode: 'read' });
+    if (permission !== 'granted' && ask) permission = await handle.requestPermission({ mode: 'read' });
+    if (permission !== 'granted') { waiting++; continue; }
+    try { addFound(await walk(handle, handle.name + '/', [])); }
+    catch { $('station').textContent = `Could not read the folder "${handle.name}". Has it moved?`; }
+  }
+  $('reload').hidden = !waiting;
+  if (waiting && !songs.length) $('station').textContent = 'Press "Load my music" to open your remembered folders.';
+}
+async function showButtons() {
+  const any = (await remembered()).length > 0;
+  $('forget').hidden = !any;
+}
+if (window.showDirectoryPicker) {
+  $('link').hidden = false;
+  $('link').onclick = async () => {
+    let handle;
+    try { handle = await showDirectoryPicker({ id: 'vtx-music', startIn: 'music' }); } catch { return; }
+    let known = false;
+    for (const other of await remembered()) known ||= await other.isSameEntry(handle);
+    if (!known) await store('readwrite', s => s.add(handle));
+    addFound(await walk(handle, handle.name + '/', []));
+    showButtons();
+  };
+  $('reload').onclick = () => loadRemembered(true);
+  $('forget').onclick = async () => {
+    if (!confirm('Forget the remembered folders? Your music files are not touched.')) return;
+    await store('readwrite', s => s.clear());
+    $('reload').hidden = true;
+    showButtons();
+  };
+  showButtons().then(() => loadRemembered(false)).catch(() => {});
+}
+
+$('folder').onchange = e => { add([...e.target.files]); e.target.value = ''; };
+$('files').onchange = e => { add([...e.target.files]); e.target.value = ''; };
+$('prev').onclick = () => turn(-1);
+$('next').onclick = () => turn(1);
+$('play').onclick = () => current < 0 ? step(1) : player.paused ? start() : player.pause();
+player.onplay = () => $('play').textContent = 'Pause';
+player.onpause = () => $('play').textContent = 'Play';
+player.onended = () => step(1);
+player.ontimeupdate = () => {
+  $('clock').textContent = `${mmss(player.currentTime)} / ${mmss(player.duration)}`;
+  if (player.duration && document.activeElement !== $('seek')) $('seek').value = player.currentTime / player.duration * 1000;
+};
+$('seek').onchange = e => { if (player.duration) player.currentTime = e.target.value / 1000 * player.duration; e.target.blur(); };
+$('volume').oninput = e => player.volume = +e.target.value;
+player.volume = +$('volume').value;
+for (const id of ['shuffle', 'cabin']) $(id).onclick = e => {
+  const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', on);
+  if (id === 'cabin') cabin(on);
+};
+$('search').oninput = draw;
+$('knob').onkeydown = e => {
+  const d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+  if (d) { e.preventDefault(); turn(d); }
+};
+$('knob').addEventListener('wheel', e => { e.preventDefault(); turn(Math.sign(e.deltaY)); }, { passive: false });
+let drag = null;
+const angle = e => {
+  const box = $('knob').getBoundingClientRect();
+  return Math.atan2(e.clientY - box.top - box.height / 2, e.clientX - box.left - box.width / 2) * 180 / Math.PI;
+};
+$('knob').onpointerdown = e => { $('knob').setPointerCapture(e.pointerId); drag = { last: angle(e), turned: 0 }; };
+$('knob').onpointermove = e => {
+  if (!drag) return;
+  const now = angle(e);
+  drag.turned += ((now - drag.last + 540) % 360) - 180;
+  drag.last = now;
+  const steps = Math.trunc(drag.turned / 30);
+  if (steps) { drag.turned -= steps * 30; turn(steps); }
+};
+$('knob').onpointerup = $('knob').onpointercancel = () => { drag = null; };
+</script>
+</body>
+</html>
