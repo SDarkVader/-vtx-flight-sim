@@ -6,6 +6,7 @@ const AircraftView = preload("res://flight/phantom_view.gd")
 const FlightInput = preload("res://flight/flight_input.gd")
 const FlightActions = preload("res://flight/flight_actions.gd")
 const MeridianBenchmark = preload("res://benchmark/meridian_benchmark.gd")
+const CockpitRadio = preload("res://radio/cockpit_radio.gd")
 const CAMERA_NAMES := ["Chase", "Forward", "Meridian", "Close orbit"]
 const ORBIT_CAMERA := 3
 const ORBIT_START_DISTANCE := 20.0
@@ -65,6 +66,7 @@ var pad_status: Label
 var configuration: Label
 var help_panel: PanelContainer
 var flight_hints: Label
+var radio: PanelContainer
 
 
 func _ready() -> void:
@@ -184,6 +186,14 @@ func create_hud() -> void:
 	controls.add_child(pad_status)
 	flight_hints = make_label(FLIGHT_HINTS, 16, SUBDUED)
 	controls.add_child(flight_hints)
+	# Not part of the graphics or readiness checks.
+	if not (benchmark_requested or verify_only):
+		radio = CockpitRadio.new()
+		hud.add_child(radio)
+		radio.add_theme_stylebox_override("panel", tray_style())
+		radio.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT, Control.PRESET_MODE_MINSIZE, 22)
+		radio.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+		radio.grow_vertical = Control.GROW_DIRECTION_BOTH
 	make_controls_panel(hud)
 	if benchmark_requested or verify_only:
 		start_button.hide()
@@ -429,6 +439,8 @@ func set_camera_mode(mode: int) -> void:
 	if camera_mode == mode:
 		return
 	camera_mode = mode
+	if is_instance_valid(radio):
+		radio.set_camera_mode(mode)
 	chase_initialised = false
 	orbit_initialised = false
 	if is_instance_valid(flight_hints):

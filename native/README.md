@@ -40,6 +40,10 @@ After a disconnect, focus loss, pause or telemetry interruption, centre the pad 
 
 The close orbit starts 20 m from the Phantom and also works while paused. Use the wheel to adjust distance from 12 to 60 m.
 
+## Cockpit radio
+
+The Radio panel on the right plays music from your own folder; no audio ships with the game. It starts with MusicVTX AudioVehiclePhantom A10-DSoundsRadio when that exists, or use Music folder. Drag or scroll the knob to change song. Comma and full stop step through songs and slash switches the radio on and off. It is louder in the Forward view. Opening the folder chooser takes window focus, so do it before starting a flight. There are no controller bindings for the radio yet.
+
 ## Build developer notes
 
 Use Godot 4.7.2 with its matching verified Windows x64 export template and the verified CPython 3.14.3/MuJoCo 3.17.0 runtime from the VTX preview staging directory. Run build_windows.py with those paths and a new output directory. It exports and bundles an offline executable with the reviewed simulator files. For editor runs, set VTX_NATIVE_BUNDLE_ROOT to an unpacked bundle.
