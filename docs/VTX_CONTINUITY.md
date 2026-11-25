@@ -2,6 +2,19 @@
 
 # VTX continuity — working record
 
+- **25 Nov (follow-up CI & sign hardening on `claude/ricochet-control-surfaces-20261120`; PR #66 refreshed, NOT merged; offline only) — Resolved 10-minute GitHub Actions CI timeout, isolated pytest outputs, aligned reverse-bucket `differential_thrust` ECU banking, and repinned runtime.**
+  - **Resolved GitHub Actions 10-minute `mathematics` CI timeout (runs `44817509224` & `45603121798` exceeded `timeout-minutes: 10`):**
+    - Replaced 400 Hz scalar `np.cross` / `np.clip` dispatch overhead in profile ski hydrodynamics (`src/vtx/ricochet/real_components.py` `ski_hydro` & `src/vtx/ricochet/plant.py` `_ski_wrenches` / `step`) with exact inline 3-vector cross products and scalar bounds (zero impact on legacy Concept A `profile=None`; cuts ~71% of per-step Python calls).
+    - Replaced per-step `scipy.spatial.transform.Rotation` allocations in `docs/ricochet/complete_model/closed_loop_maneuver_suite.py` and `tests/test_ricochet_real_components.py` with exact extrinsic `xyz` Euler extraction, aligned test `hydro_stride=4` (100 Hz hull hydro, 400 Hz ski hydro), and isolated pytest JSON outputs to `tmp_path` so running `pytest` no longer mutates tracked `scratch/complete_model/*.json` files.
+    - Full local 552-test Python suite dropped from **598.68 s** to **440.39 s** (**552/552 passed**, saving 158 s).
+  - **Reverse-bucket `differential_thrust` ECU sign alignment & expanded sign tests:**
+    - Scaled the `pilot_diff` term in `src/vtx/ricochet/real_components.py` (`rc01_ecu_command`) by `clamp(1.0 - 1.55 * reverse_bucket, -1, 1)` matching `plant.py:1657-1658` so coordinated inward banking reverses when jet deflectors reverse differential thrust (identical `1.0` factor in forward flight).
+    - Expanded `test_differential_thrust_sign_consistency_plant_ecu_and_live()` to verify combined natural-language text clauses (`"half throttle, 50% port diff thrust, hard port rudder"`, `"starboard differential thrust"`) and full reverse-bucket ECU bank inversion.
+  - **Runtime repin & PR #66 cleanup:**
+    - Repinned `inputs/flight_revisions.json` `integrated_runtime_sha256` to `9f42eea1bea71a655bf29de1da7fa2098c267e2018374e20700372299ef14752` (preserving `f51f21e546acd4d59271d894f982e4c1d1efdab36676a42265d0261e0fc79d2f` at `2963d6b8e7b18c534fbb5f06a64c3ef0b69b5e6d` and all earlier entries under `previous_integrated_runtimes`; 0 `.gitattributes` EOL mismatches).
+    - Re-verified **552/552 Python pytest**, **86/86 Node JS tests**, `scripts/run_reference.py` (exit `0`), and bit-identical `public/assets/ricochet-concept-a.glb` (`SHA-256: 00f7d9cff2092fe433c9b66a0846774724de26486e92ba592736cd2ae1647124`).
+    - Stripped leading UTF-8 BOM from PR #66 body so `## Summary` renders cleanly as an H2 heading on GitHub; PR remains OPEN (not merged).
+
 - **25 Nov — Ricochet RC-01 sign reconciliation, runtime repin, consolidated 19-DOF / 9-surface build, diagram & PR #66 refresh (offline only in worktree `ricochet_control_surfaces`, pushed to `origin/claude/ricochet-control-surfaces-20261120`; PR #66 refreshed, NOT merged; nothing touched live).**
   - **Reconciled `differential_thrust` sign convention across plant, ECU, and live API (owner-approved):**
     - Unified all three layers to `plant.py:1581-1591` & `1674`: `+differential_thrust` = starboard fan > port fan (`+Mz` nose-left / port yaw, matching `+rudder_deg` and legacy Concept A `scenarios.py:127`).

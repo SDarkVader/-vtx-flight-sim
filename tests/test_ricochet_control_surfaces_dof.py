@@ -193,9 +193,9 @@ def test_ricochet_action_normalization_and_live_observation_loop():
         assert obs2['control_surfaces']['aft_ski']['achieved_deg'] == pytest.approx(3.0, abs=0.2)
 
 
-def test_closed_loop_maneuvers_option1_and_option2():
+def test_closed_loop_maneuvers_option1_and_option2(tmp_path):
     suite = _load_maneuver_suite()
-    out_json = ROOT / 'scratch' / 'complete_model' / 'closed_loop_maneuver_report.json'
+    out_json = tmp_path / 'closed_loop_maneuver_report.json'
     report = suite.run_qualification_suite(out_json, include_maneuver_a=False)
     assert out_json.is_file()
     assert report['all_passed'] is True
@@ -343,12 +343,26 @@ def test_differential_thrust_sign_consistency_plant_ecu_and_live():
         act = RicochetAction.model_validate(normalize_ricochet_action({'diff_thrust': raw_val}))
         assert act.differential_thrust == pytest.approx(expected), f"diff_thrust={raw_val!r} -> {act.differential_thrust}"
 
-    # 2. ECU coordinated inward bank agrees with +rudder_deg and +differential_thrust both turning left (-target_roll_deg)
+    # Combined natural-language text clauses must preserve sign convention across rudder + diff thrust
+    combo = RicochetAction.model_validate(
+        normalize_ricochet_action({'text': 'half throttle, 50% port diff thrust, hard port rudder'})
+    )
+    assert combo.throttle == pytest.approx(0.50)
+    assert combo.differential_thrust == pytest.approx(0.50)
+    assert combo.rudder_deg == pytest.approx(30.0)
+    stbd_text = RicochetAction.model_validate(
+        normalize_ricochet_action({'text': 'starboard differential thrust'})
+    )
+    assert stbd_text.differential_thrust == pytest.approx(-0.50)
+
+    # 2. ECU coordinated inward bank agrees with +rudder_deg and +differential_thrust both turning left (-target_roll_deg),
+    #    and flips differential_thrust bank direction under full reverse-bucket deflection (where 1 - 1.55*rev < 0).
     ecu_cfg = {'enabled': True, 'default_assist': 1.0, 'max_turn_bank_deg': 12.0, 'turn_bank_gain_deg': 10.0}
     limits = {'aileron_deg': {'min': -25.0, 'max': 25.0}, 'ski_differential_deg': {'min': -4.0, 'max': 4.0}}
     tel_port: dict = {}
     tel_stbd: dict = {}
     tel_rud_port: dict = {}
+    tel_port_rev: dict = {}
     rc01_ecu_command(
         ecu_cfg, pilot_cmd={'differential_thrust': 0.8, 'ecu_assist': 1.0}, u_mps=15.0,
         roll_deg=0.0, pitch_deg=0.0, roll_rate_deg_s=0.0, pitch_rate_deg_s=0.0, yaw_rate_deg_s=0.0,
@@ -364,9 +378,17 @@ def test_differential_thrust_sign_consistency_plant_ecu_and_live():
         roll_deg=0.0, pitch_deg=0.0, roll_rate_deg_s=0.0, pitch_rate_deg_s=0.0, yaw_rate_deg_s=0.0,
         keel_clear_m=0.18, surface_limits=limits, telemetry_out=tel_rud_port,
     )
+    rc01_ecu_command(
+        ecu_cfg, pilot_cmd={'differential_thrust': 0.8, 'reverse_bucket': 1.0, 'ecu_assist': 1.0}, u_mps=15.0,
+        roll_deg=0.0, pitch_deg=0.0, roll_rate_deg_s=0.0, pitch_rate_deg_s=0.0, yaw_rate_deg_s=0.0,
+        keel_clear_m=0.18, surface_limits=limits, telemetry_out=tel_port_rev,
+    )
     assert tel_port['target_roll_deg'] < -2.0, f"+differential_thrust must bank left (inward), got {tel_port}"
     assert tel_stbd['target_roll_deg'] > 2.0, f"-differential_thrust must bank right (inward), got {tel_stbd}"
     assert tel_port['target_roll_deg'] * tel_rud_port['target_roll_deg'] > 0.0
+    assert tel_port_rev['target_roll_deg'] > 1.0, (
+        f"Full reverse bucket reverses differential thrust yaw moment, so ECU must bank right, got {tel_port_rev}"
+    )
 
     # 3. Plant physics: +differential_thrust spins stbd > port and produces nose-left (+yaw) rotation
     suite = _load_maneuver_suite()
@@ -375,7 +397,7 @@ def test_differential_thrust_sign_consistency_plant_ecu_and_live():
         cfg = WaterEnvironmentConfig(water_level_m=7.0, wave_mode='still', wake_enabled=False, whirlpools_enabled=False)
         craft = RicochetCraft(
             world, variant='ricochet-concept-a', hull_variant='concept_a',
-            load_case='LC-01', water_config=cfg, profile='rc01-planing-3pt-v1',
+            load_case='LC-01', water_config=cfg, profile='rc01-planing-3pt-v1', hydro_stride=4,
         )
         craft.spawn(-100.0, 0.0, 7.0)
         craft.set_command({'throttle': 0.50, 'differential_thrust': diff_cmd, 'ecu_assist': 0.0})

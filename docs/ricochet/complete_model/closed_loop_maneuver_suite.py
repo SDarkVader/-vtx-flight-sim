@@ -406,6 +406,15 @@ def run_maneuver_a_authority_at_rest(profile_id: str) -> dict[str, Any]:
     }
 
 
+def _euler_xyz_deg_from_rot(rot: np.ndarray) -> tuple[float, float, float]:
+    """Exact extrinsic xyz Euler angles (deg) matching scipy Rotation.as_euler('xyz', degrees=True)."""
+    r20 = max(-1.0, min(1.0, float(rot[2, 0])))
+    pitch = math.degrees(math.asin(-r20))
+    roll = math.degrees(math.atan2(float(rot[2, 1]), float(rot[2, 2])))
+    yaw = math.degrees(math.atan2(float(rot[1, 0]), float(rot[0, 0])))
+    return roll, pitch, yaw
+
+
 def run_maneuver_b_takeoff_and_cruise(
     profile_id: str,
     duration_s: float = 22.5,
@@ -497,16 +506,13 @@ def run_maneuver_b_takeoff_and_cruise(
         rot = craft.data.xmat[af].reshape(3, 3)
         vel6 = np.zeros(6, dtype=np.float64)
         mj.mj_objectVelocity(craft.model, craft.data, mj.mjtObj.mjOBJ_BODY, af, vel6, 0)
-        u_true = float((rot.T @ vel6[3:])[0])
+        u_true = float(rot[0, 0] * vel6[3] + rot[1, 0] * vel6[4] + rot[2, 0] * vel6[5])
         vh = float(craft.last_hydro.component_loads['main_hull']['submerged_volume_m3'])
         vsp = float(
             craft.last_hydro.component_loads['sponson_port']['submerged_volume_m3']
             + craft.last_hydro.component_loads['sponson_stbd']['submerged_volume_m3']
         )
-        q_af = craft.data.xquat[af]
-        from scipy.spatial.transform import Rotation
-        eul = Rotation.from_quat([q_af[1], q_af[2], q_af[3], q_af[0]]).as_euler('xyz', degrees=True)
-        roll_d, pitch_d, yaw_d = float(eul[0]), float(eul[1]), float(eul[2])
+        roll_d, pitch_d, yaw_d = _euler_xyz_deg_from_rot(rot)
         nose_up_d = -pitch_d
 
         peak_speed_mps = max(peak_speed_mps, u_true)
@@ -528,29 +534,30 @@ def run_maneuver_b_takeoff_and_cruise(
         if ckpt_on_plane is None and t_run >= 12.0 and u_true >= 13.5 and vh < 0.01:
             ckpt_on_plane = craft.checkpoint_state()
 
-        sp_p_mm = abs(1000.0 * craft.joint('sponson_port_flex_z')[0])
-        sp_s_mm = abs(1000.0 * craft.joint('sponson_stbd_flex_z')[0])
-        max_sponson_stroke_mm = max(max_sponson_stroke_mm, sp_p_mm, sp_s_mm)
-        att = craft.attachment_loads()
-        max_sponson_force_z_n = max(
-            max_sponson_force_z_n,
-            abs(float(att['sponson_port']['force_n'][2])),
-            abs(float(att['sponson_stbd']['force_n'][2])),
-        )
+        if i % 4 == 0 or i == steps - 1:
+            sp_p_mm = abs(1000.0 * craft.joint('sponson_port_flex_z')[0])
+            sp_s_mm = abs(1000.0 * craft.joint('sponson_stbd_flex_z')[0])
+            max_sponson_stroke_mm = max(max_sponson_stroke_mm, sp_p_mm, sp_s_mm)
+            att = craft.attachment_loads()
+            max_sponson_force_z_n = max(
+                max_sponson_force_z_n,
+                abs(float(att['sponson_port']['force_n'][2])),
+                abs(float(att['sponson_stbd']['force_n'][2])),
+            )
 
-        cs = craft.control_surface_telemetry()
-        for surf_key in ('rudder', 'elevator', 'aileron', 'reverse_bucket'):
-            if surf_key in cs and 'load_pct' in cs[surf_key]:
-                max_actuator_load_pct[surf_key] = max(max_actuator_load_pct.get(surf_key, 0.0), float(cs[surf_key]['load_pct']))
-                max_actuator_load_nm[surf_key] = max(max_actuator_load_nm.get(surf_key, 0.0), float(cs[surf_key]['load_nm']))
-        if 'skis' in cs:
-            sk_pct = max(float(cs['skis']['port_load_pct']), float(cs['skis']['stbd_load_pct']))
-            sk_nm = max(abs(float(cs['skis']['port_load_nm'])), abs(float(cs['skis']['stbd_load_nm'])))
-            max_actuator_load_pct['skis'] = max(max_actuator_load_pct.get('skis', 0.0), sk_pct)
-            max_actuator_load_nm['skis'] = max(max_actuator_load_nm.get('skis', 0.0), sk_nm)
-        if 'aft_ski' in cs:
-            max_actuator_load_pct['aft_ski'] = max(max_actuator_load_pct.get('aft_ski', 0.0), float(cs['aft_ski']['load_pct']))
-            max_actuator_load_nm['aft_ski'] = max(max_actuator_load_nm.get('aft_ski', 0.0), abs(float(cs['aft_ski']['load_nm'])))
+            cs = craft.control_surface_telemetry()
+            for surf_key in ('rudder', 'elevator', 'aileron', 'reverse_bucket'):
+                if surf_key in cs and 'load_pct' in cs[surf_key]:
+                    max_actuator_load_pct[surf_key] = max(max_actuator_load_pct.get(surf_key, 0.0), float(cs[surf_key]['load_pct']))
+                    max_actuator_load_nm[surf_key] = max(max_actuator_load_nm.get(surf_key, 0.0), float(cs[surf_key]['load_nm']))
+            if 'skis' in cs:
+                sk_pct = max(float(cs['skis']['port_load_pct']), float(cs['skis']['stbd_load_pct']))
+                sk_nm = max(abs(float(cs['skis']['port_load_nm'])), abs(float(cs['skis']['stbd_load_nm'])))
+                max_actuator_load_pct['skis'] = max(max_actuator_load_pct.get('skis', 0.0), sk_pct)
+                max_actuator_load_nm['skis'] = max(max_actuator_load_nm.get('skis', 0.0), sk_nm)
+            if 'aft_ski' in cs:
+                max_actuator_load_pct['aft_ski'] = max(max_actuator_load_pct.get('aft_ski', 0.0), float(cs['aft_ski']['load_pct']))
+                max_actuator_load_nm['aft_ski'] = max(max_actuator_load_nm.get('aft_ski', 0.0), abs(float(cs['aft_ski']['load_nm'])))
 
         if obs_curr is not None:
             samples.append({

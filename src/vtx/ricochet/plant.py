@@ -1186,11 +1186,20 @@ class RicochetCraft:
             forces, tel = ski_hydro(spec, origin, rot, vel6[3:].copy(), vel6[:3].copy(), sample, rho, nu, G_SI,
                                     fin_steer_rad=rud)
             xi = d.xipos[bid]
-            f_tot = np.zeros(3, dtype=np.float64)
-            m_tot = np.zeros(3, dtype=np.float64)
+            xi0, xi1, xi2 = float(xi[0]), float(xi[1]), float(xi[2])
+            fx_t = fy_t = fz_t = 0.0
+            mx_t = my_t = mz_t = 0.0
             for p, f in forces:
-                f_tot += f
-                m_tot += np.cross(p - xi, f)
+                fx, fy, fz = float(f[0]), float(f[1]), float(f[2])
+                rx, ry, rz = float(p[0]) - xi0, float(p[1]) - xi1, float(p[2]) - xi2
+                fx_t += fx
+                fy_t += fy
+                fz_t += fz
+                mx_t += ry * fz - rz * fy
+                my_t += rz * fx - rx * fz
+                mz_t += rx * fy - ry * fx
+            f_tot = np.array([fx_t, fy_t, fz_t], dtype=np.float64)
+            m_tot = np.array([mx_t, my_t, mz_t], dtype=np.float64)
             # Hinge load seen by the actuator (hydro hinge moment)
             q_j, qd_j = self.joint(jname)
             self._act_load_nm[aname] = float(tel['hinge_moment_nm'])
@@ -2417,11 +2426,17 @@ class RicochetCraft:
         if ski_w:
             # Ski loads join the external wrench used for the hull's added-mass coupling (about airframe xipos)
             xi_af = d.xipos[bid_af]
+            xi0, xi1, xi2 = float(xi_af[0]), float(xi_af[1]), float(xi_af[2])
             f_ext = np.asarray(f_ap, dtype=np.float64).copy()
             m_ext = np.asarray(m_ap, dtype=np.float64).copy()
             for bid_s, f_s, m_s in ski_w:
                 f_ext += f_s
-                m_ext += m_s + np.cross(d.xipos[bid_s] - xi_af, f_s)
+                xp = d.xipos[bid_s]
+                rx, ry, rz = float(xp[0]) - xi0, float(xp[1]) - xi1, float(xp[2]) - xi2
+                fx, fy, fz = float(f_s[0]), float(f_s[1]), float(f_s[2])
+                m_ext[0] += float(m_s[0]) + (ry * fz - rz * fy)
+                m_ext[1] += float(m_s[1]) + (rz * fx - rx * fz)
+                m_ext[2] += float(m_s[2]) + (rx * fy - ry * fx)
         self._last_ext_force_m = np.asarray(f_ext, dtype=np.float64).copy()
         self._last_ext_torque_m = np.asarray(m_ext, dtype=np.float64).copy()
 

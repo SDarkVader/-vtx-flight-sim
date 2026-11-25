@@ -211,12 +211,22 @@ def ski_hydro(
     fin = ski.get('fin')
     strut = ski.get('strut')
     ex, ey, ez = rot_w[:, 0], rot_w[:, 1], rot_w[:, 2]
+    ox, oy, oz = float(origin_w[0]), float(origin_w[1]), float(origin_w[2])
+    vx0, vy0, vz0 = float(v_origin_w[0]), float(v_origin_w[1]), float(v_origin_w[2])
+    wx0, wy0, wz0 = float(omega_w[0]), float(omega_w[1]), float(omega_w[2])
 
     def to_w(p_local: tuple[float, float, float]) -> np.ndarray:
         return origin_w + rot_w @ np.asarray(p_local, dtype=np.float64)
 
     def vel_at(p_w: np.ndarray, w_vel: np.ndarray) -> np.ndarray:
-        return v_origin_w + np.cross(omega_w, p_w - origin_w) - w_vel
+        rx = float(p_w[0]) - ox
+        ry = float(p_w[1]) - oy
+        rz = float(p_w[2]) - oz
+        return np.array([
+            vx0 + (wy0 * rz - wz0 * ry) - float(w_vel[0]),
+            vy0 + (wz0 * rx - wx0 * rz) - float(w_vel[1]),
+            vz0 + (wx0 * ry - wy0 * rx) - float(w_vel[2]),
+        ], dtype=np.float64)
 
     te = to_w((-a, 0.0, -zb))
     le = to_w((L - a, 0.0, -zb))
@@ -241,7 +251,7 @@ def ski_hydro(
     d_le = float(eta[1] - le[2])
     forces: list[tuple[np.ndarray, np.ndarray]] = []
     tel: dict[str, Any] = {'d_te_m': round(d_te, 4), 'd_le_m': round(d_le, 4), 'hydro_mode': hydro_mode}
-    tau_g = math.asin(float(np.clip(ex[2], -1.0, 1.0)))  # leading edge up > 0
+    tau_g = math.asin(max(-1.0, min(1.0, float(ex[2]))))  # leading edge up > 0
     tel['trim_geom_deg'] = round(math.degrees(tau_g), 3)
 
     # ---------------- planing / hydrofoil lifting surface ----------------
@@ -330,7 +340,7 @@ def ski_hydro(
             cl_vent = 0.35 + 0.90 * _smoothstep(hc / 0.45)
             cl_stall = float(ski.get('foil_cl_stall', 1.25))
             cl_cap = min(cl_stall, cl_cav, cl_vent)
-            cl = float(np.clip(cl_lin, -cl_cap, cl_cap))
+            cl = max(-cl_cap, min(cl_cap, cl_lin))
 
             v2 = u_pos * u_pos + wn * wn
             q_flow = 0.5 * rho * v2
@@ -486,7 +496,7 @@ def ski_hydro(
             q = 0.5 * rho * (uf * uf + vf * vf)
             beta = math.atan2(vf, max(abs(uf), 0.3))
             cl_max = float(fin['cl_max_submerged'] if root_wet else fin['cl_max_piercing'])
-            cl = float(np.clip(cla * (beta + fin_steer_rad), -cl_max, cl_max))
+            cl = max(-cl_max, min(cl_max, cla * (beta + fin_steer_rad)))
             area = h_imm * chord
             fin_y = -q * area * cl
             cd = 2.0 * _ittc_cf(uf, chord, nu) + cl * cl / (math.pi * 0.8 * max(ar, 0.1))
@@ -513,8 +523,13 @@ def ski_hydro(
 
     # hinge moment about the incidence axis (joint axis = -y body): + raises the leading edge
     hm = 0.0
+    ey0, ey1, ey2 = float(ey[0]), float(ey[1]), float(ey[2])
     for p, f in forces:
-        hm += float(np.cross(p - origin_w, f) @ (-ey))
+        rx = float(p[0]) - ox
+        ry = float(p[1]) - oy
+        rz = float(p[2]) - oz
+        fx, fy, fz = float(f[0]), float(f[1]), float(f[2])
+        hm -= (ry * fz - rz * fy) * ey0 + (rz * fx - rx * fz) * ey1 + (rx * fy - ry * fx) * ey2
     tel['hinge_moment_nm'] = round(hm, 2)
     tel['normal_force_n'] = round(n_total, 1)
     return forces, tel
@@ -597,19 +612,20 @@ def rc01_ecu_command(
     pilot_rud = float(pilot_cmd.get('rudder_deg', 0.0))
     pilot_ail = float(pilot_cmd.get('aileron_deg', 0.0))
     pilot_diff = float(pilot_cmd.get('differential_thrust', 0.0))
-    # Right turn: rudder_deg < 0 or aileron_deg > 0 or differential_thrust < 0 => target_roll_deg > 0 (lean right)
-    # (+differential_thrust spins stbd > port -> +Mz nose-left yaw, matching +rudder_deg)
-    turn_right_norm = (-pilot_rud / 30.0) + 0.70 * (pilot_ail / 25.0) - 0.50 * pilot_diff
+    rev_cmd = float(pilot_cmd.get('reverse_bucket', 0.0))
+    # Right turn: rudder_deg < 0 or aileron_deg > 0 or forward differential_thrust < 0 => target_roll_deg > 0 (lean right)
+    # (+differential_thrust spins stbd > port -> +Mz nose-left yaw in forward thrust, reversing sign as 1 - 1.55*rev_bucket under reverse deflectors)
+    diff_thrust_dir = max(-1.0, min(1.0, 1.0 - 1.55 * max(0.0, min(1.0, rev_cmd))))
+    turn_right_norm = (-pilot_rud / 30.0) + 0.70 * (pilot_ail / 25.0) - 0.50 * pilot_diff * diff_thrust_dir
     max_bank_deg = float(ecu_cfg.get('max_turn_bank_deg', 12.0))
     bank_gain_deg = float(ecu_cfg.get('turn_bank_gain_deg', 10.0))
-    target_roll_deg = float(np.clip(turn_gate * bank_gain_deg * turn_right_norm, -max_bank_deg, max_bank_deg)) if u > 3.5 else 0.0
+    target_roll_deg = max(-max_bank_deg, min(max_bank_deg, turn_gate * bank_gain_deg * turn_right_norm)) if u > 3.5 else 0.0
 
     # Bank lift compensation (+deg to ski_incidence_deg and elevator_deg) so nose doesn't drop in banked turns
     cos_phi = max(math.cos(math.radians(float(roll_deg))), 0.85)
     bank_lift_comp_deg = 1.5 * (1.0 / cos_phi - 1.0)
 
     # Braking / deceleration anti-dive flare guard when reverse_bucket > 0.08 at u > 4 m/s
-    rev_cmd = float(pilot_cmd.get('reverse_bucket', 0.0))
     flare_active = (rev_cmd > 0.08 and u > 4.0)
     flare_ski_deg = 2.0 if flare_active else 0.0
     flare_elev_deg = 4.0 if flare_active else 0.0

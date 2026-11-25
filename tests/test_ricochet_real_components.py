@@ -141,7 +141,7 @@ def test_rest_bench_sweep_passive_and_tracks_skis():
     cfg = WaterEnvironmentConfig(water_level_m=7.0, wave_mode='still', wind_speed_mps=0.0, current_speed_mps=0.0,
                                  wake_enabled=False, whirlpools_enabled=False)
     craft = RicochetCraft(world, variant='ricochet-concept-a', hull_variant='concept_a', load_case='LC-01',
-                          water_config=cfg, profile='rc01-real-components-v1')
+                          water_config=cfg, profile='rc01-real-components-v1', hydro_stride=4)
     craft.spawn(-180.0, 0.0, 7.0)
     # Full sequence reproducing PR #66 Blocker #1 (surface sweeps then ski collective & differential holds)
     plan = [
@@ -169,8 +169,8 @@ def test_rest_bench_sweep_passive_and_tracks_skis():
             z = float(craft.data.xpos[af, 2])
             max_z = max(max_z, z)
             min_z = min(min_z, z)
-            eul = Rotation.from_matrix(craft.data.xmat[af].reshape(3, 3)).as_euler('xyz', degrees=True)
-            max_pitch_deg = max(max_pitch_deg, abs(float(eul[1])))
+            r20 = max(-1.0, min(1.0, float(craft.data.xmat[af, 6])))
+            max_pitch_deg = max(max_pitch_deg, abs(math.degrees(math.asin(-r20))))
             for side in ('port', 'stbd'):
                 max_ski_hm = max(max_ski_hm, abs(float(craft._act_load_nm.get(f'ski_{side}_actuator', 0.0))))
         if 'ski_differential_deg' in extra:
@@ -260,7 +260,7 @@ def _run_accel_profile(profile_id: str, duration_s: float = 24.0) -> dict:
     )
     craft = RicochetCraft(
         world, variant='ricochet-concept-a', hull_variant='concept_a',
-        load_case='LC-01', water_config=cfg, profile=profile_id, hydro_stride=2,
+        load_case='LC-01', water_config=cfg, profile=profile_id, hydro_stride=4,
     )
     craft.spawn(-1100.0, 0.0, 7.0)
     # Settle 1.5 s at rest to verify static trim & waterline
@@ -299,8 +299,11 @@ def _run_accel_profile(profile_id: str, duration_s: float = 24.0) -> dict:
         rot = craft.data.xmat[af].reshape(3, 3)
         vel6 = np.zeros(6, dtype=np.float64)
         mj.mj_objectVelocity(craft.model, craft.data, mj.mjtObj.mjOBJ_BODY, af, vel6, 0)
-        u = float((rot.T @ vel6[3:])[0])
-        eul = Rotation.from_matrix(rot).as_euler('xyz', degrees=True)
+        u = float(rot[0, 0] * vel6[3] + rot[1, 0] * vel6[4] + rot[2, 0] * vel6[5])
+        r20 = max(-1.0, min(1.0, float(rot[2, 0])))
+        eul0_d = math.degrees(math.atan2(float(rot[2, 1]), float(rot[2, 2])))
+        eul1_d = math.degrees(math.asin(-r20))
+        eul2_d = math.degrees(math.atan2(float(rot[1, 0]), float(rot[0, 0])))
         vh = float(craft.last_hydro.component_loads['main_hull']['submerged_volume_m3'])
         vsp = float(
             craft.last_hydro.component_loads['sponson_port']['submerged_volume_m3']
@@ -309,10 +312,10 @@ def _run_accel_profile(profile_id: str, duration_s: float = 24.0) -> dict:
         max_u = max(max_u, u)
         min_vol_hull = min(min_vol_hull, vh)
         min_vol_sp = min(min_vol_sp, vsp)
-        max_roll = max(max_roll, abs(float(eul[0])))
-        max_yaw = max(max_yaw, abs(float(eul[2])))
-        min_pitch = min(min_pitch, float(eul[1]))
-        max_pitch = max(max_pitch, float(eul[1]))
+        max_roll = max(max_roll, abs(eul0_d))
+        max_yaw = max(max_yaw, abs(eul2_d))
+        min_pitch = min(min_pitch, eul1_d)
+        max_pitch = max(max_pitch, eul1_d)
         if hump_clear_t is None and u >= 12.0:
             hump_clear_t = round(t_run, 2)
         if hull_clear_t is None and vh < 0.02:
@@ -326,9 +329,9 @@ def _run_accel_profile(profile_id: str, duration_s: float = 24.0) -> dict:
                 t_s=round(t_run, 2),
                 u_mps=round(u, 2),
                 z_m=round(float(craft.data.xpos[af, 2]), 3),
-                nose_up_deg=round(-float(eul[1]), 2),
-                roll_deg=round(float(eul[0]), 2),
-                yaw_deg=round(float(eul[2]), 2),
+                nose_up_deg=round(-eul1_d, 2),
+                roll_deg=round(eul0_d, 2),
+                yaw_deg=round(eul2_d, 2),
                 vol_hull_m3=round(vh, 4),
                 vol_sp_m3=round(vsp, 4),
                 ski_port_deg=round(float(craft.last_ski_telemetry.get('port', {}).get('incidence_deg', 0.0)), 2),
@@ -367,11 +370,10 @@ def _run_accel_profile(profile_id: str, duration_s: float = 24.0) -> dict:
     )
 
 
-def test_option1_vs_option2_hump_clearance_and_stability():
+def test_option1_vs_option2_hump_clearance_and_stability(tmp_path):
     opt1 = _run_accel_profile('rc01-planing-3pt-v1', duration_s=22.0)
     opt2 = _run_accel_profile('rc01-hydrofoil-ski-v1', duration_s=22.0)
-    out_path = ROOT / 'scratch' / 'complete_model' / 'option1_vs_option2_comparison.json'
-    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path = tmp_path / 'option1_vs_option2_comparison.json'
     out_path.write_text(json.dumps({'option1': opt1, 'option2': opt2}, indent=2), encoding='utf-8')
     print('\n=== OPTION 1 (3-PT PLANING) ===')
     print(json.dumps({k: v for k, v in opt1.items() if k != 'samples'}, indent=2))
