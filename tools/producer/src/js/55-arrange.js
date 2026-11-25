@@ -208,14 +208,14 @@ const eng = { playing: false, passes: [], sched: null, timer: 0, nodes: new Set(
 const LOOKAHEAD = 0.4;
 async function decodeUsed() { for (const n of new Set(arr.tracks.flatMap(t => t.clips.map(c => c.take)))) if (takes.has(n)) await rawBuffer(n); }
 function arrPos() {
-  if (!eng.playing) return arr.pos;
+  if (!eng.playing || !eng.passes.length) return arr.pos;
   const now = ctx.currentTime; let p = eng.passes[0];
   for (const q of eng.passes) if (q.t0 <= now) p = q;
   return Math.max(p.from, Math.min(p.to, p.from + now - p.t0));
 }
 async function arrPlay() {
   if (eng.playing) return;
-  audio(); eng.playing = true;   // claimed first so a second tap cannot start a second player
+  audio(); eng.playing = true; eng.passes = [];   // claimed first so a second tap cannot start a second player
   try { await decodeUsed(); } catch { eng.playing = false; say('Could not read one of the clips.'); return; }
   for (const t of arr.tracks) ensureLiveStrip(t.id);
   const loop = arr.loop.on && arr.loop.end > arr.loop.start + 0.05;

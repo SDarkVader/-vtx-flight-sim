@@ -15,8 +15,13 @@
 </header>
 
 <main class="gut">
+  <!-- TRACKS -->
+  <section id="tab-tracks" class="tab" role="tabpanel" aria-label="Tracks" hidden>
+    <div class="wrap" id="tracksWrap"></div>
+  </section>
+
   <!-- MIX -->
-  <section id="tab-mix" class="tab" role="tabpanel" aria-label="Mix">
+  <section id="tab-mix" class="tab" role="tabpanel" aria-label="Mix" hidden>
     <div class="wrap" id="mixWrap"></div>
   </section>
 
@@ -118,7 +123,8 @@
 
 <nav class="tabs" aria-label="Benches">
   <div class="wrap" role="tablist">
-    <button role="tab" data-tab="mix" aria-selected="true" id="t-mix"></button>
+    <button role="tab" data-tab="tracks" aria-selected="true" id="t-tracks"></button>
+    <button role="tab" data-tab="mix" aria-selected="false" id="t-mix"></button>
     <button role="tab" data-tab="music" aria-selected="false" id="t-music"></button>
     <button role="tab" data-tab="vehicle" aria-selected="false" id="t-vehicle"></button>
     <button role="tab" data-tab="scene" aria-selected="false" id="t-scene"></button>

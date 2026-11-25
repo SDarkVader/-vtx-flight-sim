@@ -89,17 +89,14 @@ function stripCard(id) {
   const s = mixState.strips[id];
   const mute = el('button', { className: 'ms m', textContent: 'M', ariaLabel: 'Mute ' + STRIP_NAMES[id] }), solo = el('button', { className: 'ms s', textContent: 'S', ariaLabel: 'Solo ' + STRIP_NAMES[id] });
   mute.setAttribute('aria-pressed', s.mute); solo.setAttribute('aria-pressed', s.solo);
-  mute.onclick = () => { s.mute = !s.mute; mute.setAttribute('aria-pressed', s.mute); remix(); persist(); };
-  solo.onclick = () => {
-    s.solo = !s.solo; solo.setAttribute('aria-pressed', s.solo);
-    remix(); persist();
-  };
-  me['ms-' + id] = { mute, solo };
+  mute.onclick = () => { s.mute = !s.mute; syncMS(); remix(); persist(); };
+  solo.onclick = () => { s.solo = !s.solo; syncMS(); remix(); persist(); };
+  msList.push({ id, mute, solo });
   const fv = el('div', { className: 'fv', textContent: fmtDb(s.fader) });
   const fader = makeFader({ label: STRIP_NAMES[id] + ' level', value: s.fader, onInput: v => { s.fader = v; fv.textContent = fmtDb(v); remix(); persist(); } });
   const lv = el('div', { className: 'lv' }), pk = el('div', { className: 'pk' }), meter = el('div', { className: 'meter', title: 'Level, RMS with peak hold' }, lv, pk);
   const gl = el('div', { className: 'lv' }), gr = el('div', { className: 'meter gr', title: 'Compressor gain reduction' }, gl);
-  me['lv-' + id] = { lv, pk, gl };
+  lvList.push({ id, lv, pk, gl });
   const dial = (key, size = 60) => dialFor(SD[key], s[key], v => { s[key] = v; remix(); persist(); }, size).root;
   const detail = el('details', { className: 'strip-detail' }, el('summary', { textContent: 'Tone and dynamics', style: 'min-height:40px;display:flex;align-items:center;color:var(--cyan);cursor:pointer' }));
   let built = false;
@@ -114,10 +111,17 @@ function stripCard(id) {
     el('div', { className: 'fadrow' }, fader.root, fv), meter, gr,
     el('div', { className: 'dials row3' }, dial('pan'), dial('sa'), dial('sb')), detail);
 }
+// Strip widgets can appear in more than one place (the Mix bench, a track header, the track panel): keep them all in step.
+let msList = [], lvList = [];
+function syncMS() {
+  msList = msList.filter(x => x.mute.isConnected);
+  for (const x of msList) { const s = mixState.strips[x.id]; if (s) { x.mute.setAttribute('aria-pressed', s.mute); x.solo.setAttribute('aria-pressed', s.solo); } }
+}
 function paintStrips() {
-  for (const id of STRIP_IDS) {
-    const m = LM.strips[id], e = me['lv-' + id];
-    if (!e) continue;
+  lvList = lvList.filter(x => x.lv.isConnected);
+  for (const e of lvList) {
+    const m = LM.strips[e.id];
+    if (!m || !e.lv.offsetParent) continue;
     e.lv.style.clipPath = `inset(0 ${100 - levelPct(m.rms)}% 0 0)`;
     e.pk.style.left = `calc(${levelPct(m.hold)}% - 2px)`;
     e.gl.style.clipPath = `inset(0 ${100 - clamp(-m.gr / 20) * 100}% 0 0)`;
@@ -125,15 +129,16 @@ function paintStrips() {
 }
 
 // ---------- master out, sends, ducking, project ----------
-function outCard() {
-  const m = mixState.master, card = el('div', { className: 'card' }, el('h2', { textContent: 'Master out' }));
+function suiteCard() {
+  const m = mixState.master, dial = k => dialFor(MD[k], m[k], v => { m[k] = v; remix(); persist(); }, 64).root;
   const lim = el('button', { className: 'chip', textContent: 'Limiter' }); lim.setAttribute('aria-pressed', m.limiter);
   lim.onclick = () => { m.limiter = !m.limiter; lim.setAttribute('aria-pressed', m.limiter); remix(); persist(); };
-  card.append(el('div', { className: 'dials row3' },
-    dialFor(MD.trim, m.trim, v => { m.trim = v; remix(); persist(); }, 76).root,
-    dialFor(MD.ceil, m.ceil, v => { m.ceil = v; remix(); persist(); }, 76).root, el('div', { style: 'display:grid;justify-items:center;align-content:center' }, lim)),
-    el('p', { className: 'note', textContent: 'The limiter holds peaks at the ceiling, with a hard stop at full scale behind it. Master trim pushes into it. A ceiling of −2 dB leaves room for true peaks.' }));
-  return card;
+  const part = (title, keys, ...extra) => el('div', { style: 'margin-top:10px' }, el('h3', { textContent: title }), el('div', { className: 'dials' }, ...keys.map(dial), ...extra));
+  return el('div', { className: 'card' }, el('h2', { textContent: 'Master suite' }),
+    el('p', { className: 'note', style: 'margin:0', textContent: 'Every strip and track meets here, in this order: trim, tone, glue, width, limiter.' }),
+    part('Tone', ['eqL', 'eqLM', 'eqHM', 'eqH']), part('Glue compressor', ['gthr', 'gratio', 'gatt', 'grel', 'gmk']),
+    part('Width and output', ['width', 'trim', 'ceil'], el('div', { style: 'display:grid;justify-items:center;align-content:center' }, lim)),
+    el('p', { className: 'note', textContent: 'The glue compressor is off until its ratio is above 1:1. The limiter holds peaks at the ceiling, with a hard stop at full scale behind it. A ceiling of \u22122 dB leaves room for true peaks.' }));
 }
 function sendsCard() {
   const x = mixState.sends, d = el('details', { className: 'card' }, el('summary', { textContent: 'Sends' }));
@@ -176,7 +181,7 @@ function projectCard() {
   return d;
 }
 function buildMix() {
-  $('mixWrap').replaceChildren(masterCard(), specCard(), ...STRIP_IDS.map(stripCard), outCard(), sendsCard(), duckCard(), projectCard());
+  $('mixWrap').replaceChildren(masterCard(), specCard(), ...STRIP_IDS.map(id => stripCard(id)), suiteCard(), sendsCard(), duckCard(), projectCard());
 }
 
 // ---------- the frame loop: header spectrum, meters, loudness ----------
@@ -197,11 +202,13 @@ function startFrame() { if (!frameOn) { frameOn = true; requestAnimationFrame(fr
 function frame() {
   requestAnimationFrame(frame);
   if (!A || document.hidden) return;
+  if (activeTab === 'tracks') arrFrame();
   if (!readMeters()) return;
   A.spec.getFloatFrequencyData(scratch.spec);
   drawHeader();
   $('clipLed').classList.toggle('on', performance.now() < LM.clipUntil);
   if (activeTab === 'mix') { paintMaster(); paintStrips(); drawSpectrum(); }
+  else if (activeTab === 'tracks') { paintStrips(); paintTrackMeters(); }
   else if (activeTab === 'takes' && editor.name && pads.has(editor.name)) drawWave();
 }
 buildMix();

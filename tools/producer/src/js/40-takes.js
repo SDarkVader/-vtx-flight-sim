@@ -121,7 +121,7 @@ function takeChanged(name) {
 }
 
 // ---------- loading ----------
-function addTakes(files, { splitRadio = false, keep = true } = {}) {
+function addTakes(files, { splitRadio = false, keep = true, force = false } = {}) {
   stopAllVehicle(); stopAllPads();
   const songsFound = [];
   let added = 0;
@@ -132,7 +132,7 @@ function addTakes(files, { splitRadio = false, keep = true } = {}) {
     if (splitRadio && /(^|\/)radio\//i.test(p)) { songsFound.push(file); continue; }
     if (takes.has(file.name)) continue;
     takes.set(file.name, { file }); added++;
-    if (keep && prefs.keepTakes) lib.put('take', file).catch(() => {});
+    if (keep && (prefs.keepTakes || force)) lib.put('take', file).catch(() => say('Storage is full: ' + file.name + ' is not kept.'));
   }
   autoPick();
   if (songsFound.length) addSongs(songsFound);
@@ -473,7 +473,8 @@ function renderPrompts() {
   keep.setAttribute('aria-pressed', prefs.keepTakes);
   keep.onclick = async () => {
     prefs.keepTakes = !prefs.keepTakes; keep.setAttribute('aria-pressed', prefs.keepTakes); persist();
-    if (prefs.keepTakes) { keepPersistent(); for (const t of takes.values()) lib.put('take', t.file).catch(() => {}); } else { try { await lib.clear('take'); } catch {} }
+    if (prefs.keepTakes) { keepPersistent(); for (const t of takes.values()) lib.put('take', t.file).catch(() => {}); }
+    else { try { await lib.clear('take'); const used = new Set(arr.tracks.flatMap(t => t.clips.map(c => c.take))); for (const t of takes.values()) if (used.has(t.file.name)) await lib.put('take', t.file); } catch {} }
     libUsage();
   };
   w.append(card('Sound sources', load, el('div', { className: 'bar', style: 'margin-top:8px' }, keep), note, el('p', { className: 'note', id: 'libUsage' })));
@@ -499,7 +500,7 @@ function renderPrompts() {
     el('textarea', { id: 'picksOut', readonly: true, hidden: true, ariaLabel: 'Picks JSON', style: 'margin-top:8px' }),
     el('p', { className: 'note', id: 'takeExportNote' })));
   renderTakes(); renderPrompts(); libUsage();
-  if (prefs.keepTakes) lib.all('take').then(files => files.length && addTakes(files, { keep: false })).catch(() => {});
+  lib.all('take').then(files => { if (files.length) { addTakes(files, { keep: false }); if (typeof renderTracks === 'function') renderTracks(); } }).catch(() => {});
 }
 function picksJson() {
   return JSON.stringify([...takes.keys()].map(n => ({ file: n, seconds: Number.isFinite(takes.get(n).seconds) ? round(takes.get(n).seconds, 1) : undefined, edit: edits[n], ...meta(n) }))

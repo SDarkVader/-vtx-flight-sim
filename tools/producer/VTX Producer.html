@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#0a1a20">
-<title>VTX Sound Studio</title>
+<title>VTX Producer</title>
 <style>
 /* Layout: one column. A docked transport on top, five benches on a bottom bar.
    Look: the cockpit teal and amber of the desktop studio, kept as one deliberate dark instrument panel. */
@@ -161,6 +161,44 @@ canvas.wave{height:150px;touch-action:pan-y}
 .tabs button{background:none;border:0;min-height:60px;display:grid;justify-items:center;align-content:center;gap:2px;color:var(--ink-2);font-size:11px;letter-spacing:.04em;padding:0 2px}
 .tabs button[aria-selected=true]{color:var(--amber)}
 .tabs button[aria-selected=true] svg{filter:drop-shadow(0 0 4px #ffca7266)}
+
+/* tracks bench */
+.tlcd .big{min-height:0;font-size:26px}
+.menu{position:relative}
+.menu-btn::after{content:"";display:inline-block;margin-left:6px;border:5px solid transparent;border-top-color:currentColor;transform:translateY(3px)}
+.menu-panel{position:absolute;top:calc(100% + 6px);z-index:25;min-width:230px;max-width:calc(100vw - 32px);background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 10px 30px #000a;display:grid}
+.menu-item{background:none;border:0;border-radius:8px;text-align:left;padding:10px 12px;min-height:44px}
+.menu-item:hover,.menu-item:focus-visible{background:#1d5563;color:var(--amber)}
+.menu-item[disabled]{opacity:.4}
+.menu-sep{height:1px;background:var(--line);margin:4px 6px}
+.tl{display:grid;grid-template-columns:88px minmax(0,1fr);border:1px solid var(--line);border-radius:10px;background:var(--lcd);overflow:hidden}
+.tl-heads{border-right:1px solid var(--line);background:var(--panel)}
+.tl-spacer{height:28px;border-bottom:1px solid var(--line)}
+.tl-head{height:64px;border-bottom:1px solid var(--line);padding:4px 6px;display:grid;align-content:space-between;border-left:4px solid var(--c);overflow:hidden}
+.tl-head .bar{flex-wrap:nowrap}
+.tl-head.sel{background:#1d3f4a}
+.tl-name{background:none;border:0;padding:0;text-align:left;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:20px}
+.tl-head .ms{min-width:30px;width:30px;min-height:26px;font-size:11px;border-radius:7px;padding:0}
+.meter.mini{height:4px;border-radius:2px}
+.tl-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.tl-inner{position:relative}
+.tl-ruler{display:block;position:sticky;left:0;height:28px;border-bottom:1px solid var(--line);cursor:pointer;touch-action:pan-x}
+.tl-lanes{position:relative;background-image:repeating-linear-gradient(90deg,#2b556088 0 1px,transparent 1px var(--bar)),repeating-linear-gradient(90deg,#2b556033 0 1px,transparent 1px var(--beat))}
+.tl-lane{position:relative;height:64px;border-bottom:1px solid #2b556088}
+.tl-lane.sel{background:#ffffff08}
+.tclip{position:absolute;top:4px;bottom:4px;border:1px solid var(--c);border-radius:6px;overflow:hidden;touch-action:pan-x pan-y;cursor:pointer}
+.tclip.sel{touch-action:none;box-shadow:0 0 0 2px var(--amber);cursor:grab;z-index:2}
+.tclip.muted{opacity:.4}
+.tclip canvas{position:absolute;inset:0;width:100%;height:100%}
+.tclip .nm{position:absolute;left:5px;top:2px;right:5px;font-size:10px;line-height:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.tclip .hd{position:absolute;top:0;bottom:0;width:16px;display:none}
+.tclip.sel .hd{display:block;background:#ffca7233}
+.tclip .hd.l{left:0;cursor:w-resize}.tclip .hd.r{right:0;cursor:e-resize}
+.tl-playhead{position:absolute;top:0;bottom:0;left:0;width:2px;margin-left:-1px;background:var(--hot);pointer-events:none;z-index:3}
+.tl-loop{position:absolute;top:28px;bottom:0;background:#ffca720f;border-left:1px solid #ffca7288;border-right:1px solid #ffca7288;pointer-events:none}
+.swatch{width:36px;height:36px;border-radius:50%;border:2px solid var(--line)}
+.swatch[aria-pressed=true]{border-color:var(--ink)}
+.tabs .wrap{grid-template-columns:repeat(6,1fr)}
 </style>
 </head>
 <body>
@@ -168,7 +206,7 @@ canvas.wave{height:150px;touch-action:pan-y}
   <div class="wrap">
     <canvas id="meter" width="112" height="56" aria-hidden="true"></canvas>
     <div class="now">
-      <div class="t" id="nowTitle">VTX Sound Studio</div>
+      <div class="t" id="nowTitle">VTX Producer</div>
       <div class="s" id="nowSub" role="status" aria-live="polite">Add songs on the Music bench</div>
     </div>
     <span class="clip" id="clipLed" title="Output reached full scale" aria-hidden="true"></span>
@@ -181,8 +219,13 @@ canvas.wave{height:150px;touch-action:pan-y}
 </header>
 
 <main class="gut">
+  <!-- TRACKS -->
+  <section id="tab-tracks" class="tab" role="tabpanel" aria-label="Tracks" hidden>
+    <div class="wrap" id="tracksWrap"></div>
+  </section>
+
   <!-- MIX -->
-  <section id="tab-mix" class="tab" role="tabpanel" aria-label="Mix">
+  <section id="tab-mix" class="tab" role="tabpanel" aria-label="Mix" hidden>
     <div class="wrap" id="mixWrap"></div>
   </section>
 
@@ -284,7 +327,8 @@ canvas.wave{height:150px;touch-action:pan-y}
 
 <nav class="tabs" aria-label="Benches">
   <div class="wrap" role="tablist">
-    <button role="tab" data-tab="mix" aria-selected="true" id="t-mix"></button>
+    <button role="tab" data-tab="tracks" aria-selected="true" id="t-tracks"></button>
+    <button role="tab" data-tab="mix" aria-selected="false" id="t-mix"></button>
     <button role="tab" data-tab="music" aria-selected="false" id="t-music"></button>
     <button role="tab" data-tab="vehicle" aria-selected="false" id="t-vehicle"></button>
     <button role="tab" data-tab="scene" aria-selected="false" id="t-scene"></button>
@@ -294,7 +338,7 @@ canvas.wave{height:150px;touch-action:pan-y}
 
 <script>
 'use strict';
-/* VTX Sound Studio, mobile. One page, no uploads: every file stays on this device.
+/* VTX Producer. One page, no uploads: every file stays on this device.
    Mix: four channel strips, a master limiter, loudness and spectrum meters, sends, ducking and the project file.
    Music: your songs through a character rack. Vehicle: the Phantom A10-D parts, tuning of 25 Nov 2026 and the
    10 Hz flight replay, from the desktop Vehicle Designer. Scene: looping and random ambience layers.
@@ -315,6 +359,7 @@ const linToDb = x => x <= 1e-9 ? -Infinity : 20 * Math.log10(x);
 const pct = v => Math.round(v * 100) + '%';
 const dbText = (v, d = 1) => v <= -79.9 ? '−∞' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
 const fmtDb = v => dbText(v, round(v, 1) === round(v, 0) ? 0 : 1) + ' dB';
+const uid = () => Math.random().toString(36).slice(2, 8);
 const stem = name => name.replace(/\.[^.]+$/, '');
 function merge(base, over) {   // copy over onto base, only for keys base already has, same type
   if (!over || typeof over !== 'object') return base;
@@ -334,6 +379,7 @@ const ICON = {
   jet: '<path d="M12 2.5l1.7 6.6 7.8 4.1v2.4l-7.5-1.7.9 4.6 2.4 1.5v1.5L12 20.2l-5.3 1v-1.5l2.4-1.5.9-4.6-7.5 1.7v-2.4l7.8-4.1z"/>',
   scene: '<path d="M2 15c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3v3c-2.5 0-2.5-3-5-3s-2.5 3-5 3-2.5-3-5-3-2.5 3-5 3zM2 8c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3v3c-2.5 0-2.5-3-5-3s-2.5 3-5 3-2.5-3-5-3-2.5 3-5 3z"/>',
   takes: '<path d="M3 10h2v4H3zm4-4h2v12H7zm4-3h2v18h-2zm4 4h2v10h-2zm4 2h2v6h-2z"/>',
+  tracks: '<path d="M2 5h9v4H2zm11 0h9v4h-9zM2 11h6v4H2zm8 0h12v4H10zM2 17h13v4H2zm15 0h5v4h-5z"/>',
 };
 const icon = (name, size = 24) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="currentColor" aria-hidden="true">${ICON[name]}</svg>`;
 
@@ -342,7 +388,7 @@ const KEY = 'vtx-sound-studio-2';
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch {}
 const prefs = merge({ haptics: true, clicks: false, tuneStatic: true, cockpit: false, fine: false, wake: false,
-  repeat: 'all', shuffle: false, lock: true, tab: 'music', musicView: 'deck', keepTakes: true, keepSongs: false, bypass: false, bits16: false }, saved.prefs);
+  repeat: 'all', shuffle: false, lock: true, tab: 'tracks', musicView: 'deck', keepTakes: true, keepSongs: false, bypass: false, bits16: false }, saved.prefs);
 function persist() {
   clearTimeout(persist.t);
   persist.t = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(collect())); } catch {} }, 400);
@@ -530,12 +576,15 @@ function makeFader({ label, value, onInput }) {
 }
 
 // =====================================================================================
-// AUDIO ENGINE: four channel strips, sends, master limiter. Built on the first tap, as phone browsers require.
+// AUDIO ENGINE: channel strips (four fixed ones, then one per track), sends and a master suite.
+// Built on the first tap, as phone browsers require.
 // =====================================================================================
-const STRIP_IDS = ['music', 'veh', 'sfx', 'amb'];
+const STRIP_IDS = ['music', 'veh', 'sfx', 'amb'];   // tracks add their own after these
+const FIXED_STRIPS = 4;
 const STRIP_NAMES = { music: 'Music', veh: 'Vehicle', sfx: 'SFX and takes', amb: 'Ambience' };
 const RATIOS = [1, 1.5, 2, 3, 4, 6, 8, 12, 20];
 const ATTACKS = [1, 3, 10, 30, 100], RELEASES = [50, 100, 200, 400, 800];
+const GATT = [10, 30, 50, 100], GREL = [100, 200, 400, 800], GRATIOS = [1, 1.5, 2, 3, 4];
 const HP_LIST = [10, 20, 30, 40, 60, 80, 120, 200];
 const TIMES = [60, 90, 120, 160, 200, 250, 300, 375, 450, 500, 600, 750, 900, 1000];
 const ROOMS = [[0.5, 9], [1.0, 6], [2.2, 3.2], [4.0, 1.9]];
@@ -543,16 +592,17 @@ const ROOM_NAMES = ['Booth', 'Room', 'Hall', 'Cathedral'];
 const panText = v => v === 0 ? 'Centre' : (v < 0 ? 'L ' : 'R ') + Math.round(Math.abs(v) * 100);
 const stripDefaults = () => ({ fader: 0, pan: 0, mute: false, solo: false, trim: 0, hp: 0, low: 0, mid: 0, high: 0,
   thr: 0, ratio: 0, att: 2, rel: 2, makeup: 0, sa: 0, sb: 0 });
+const masterDefaults = () => ({ trim: 0, ceil: -2, limiter: true, eqL: 0, eqLM: 0, eqHM: 0, eqH: 0, gthr: 0, gratio: 0, gatt: 1, grel: 1, gmk: 0, width: 1 });
 const mixState = {
   strips: Object.fromEntries(STRIP_IDS.map(id => [id, stripDefaults()])),
-  master: { trim: 0, ceil: -2, limiter: true },
+  master: masterDefaults(),
   sends: { room: 2, vret: 0.5, time: 5, fb: 0.35, eret: 0.5 },
   duck: { amount: -6, attack: 30, hold: 500, release: 800, music: true, veh: false, sfx: false, amb: true, onHits: true },
   target: -18,
 };
 merge(mixState, saved.mix);
 
-// Dial definitions, shared by the strips, master, sends and ducking
+// Dial definitions, shared by the strips, master suite, sends and ducking
 const SD = {
   trim: { label: 'Trim', min: -24, max: 24, step: 1, fine: 0.1, fmt: fmtDb, def: 0 },
   hp: { label: 'Low cut', list: HP_LIST, text: ['Off', '20 Hz', '30 Hz', '40 Hz', '60 Hz', '80 Hz', '120 Hz', '200 Hz'], def: 0 },
@@ -571,6 +621,16 @@ const SD = {
 const MD = {
   trim: { label: 'Master trim', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
   ceil: { label: 'Ceiling', min: -12, max: 0, step: 0.5, fine: 0.1, fmt: fmtDb, def: -2 },
+  eqL: { label: 'Low 100 Hz', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
+  eqLM: { label: 'Low-mid 400', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
+  eqHM: { label: 'High-mid 2.5k', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
+  eqH: { label: 'High 9k', min: -12, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 },
+  gthr: { label: 'Glue threshold', min: -30, max: 0, step: 1, fine: 0.25, fmt: v => v === 0 ? 'Off' : v + ' dB', def: 0 },
+  gratio: { label: 'Glue ratio', list: GRATIOS, text: GRATIOS.map(r => r + ':1'), def: 0 },
+  gatt: { label: 'Glue attack', list: GATT, text: GATT.map(x => x + ' ms'), def: 1 },
+  grel: { label: 'Glue release', list: GREL, text: GREL.map(x => x + ' ms'), def: 1 },
+  gmk: { label: 'Glue makeup', min: 0, max: 12, step: 0.5, fine: 0.1, fmt: v => '+' + v.toFixed(1) + ' dB', def: 0 },
+  width: { label: 'Width', min: 0, max: 2, step: 0.1, fine: 0.02, center: 1, fmt: v => v === 0 ? 'Mono' : v === 1 ? 'Normal' : round(v, 2) + 'x', def: 1 },
 };
 const XD = {
   room: { label: 'Room', list: [0, 1, 2, 3], text: ROOM_NAMES, def: 2 },
@@ -623,25 +683,43 @@ function makePanner(c) {
   set(0);
   return { input, output: mg, set };
 }
+// Stereo width as a mid/side matrix: 0 is mono, 1 leaves the signal alone, 2 doubles the sides.
+function makeWidth(c) {
+  const input = c.createGain(); input.channelCount = 2; input.channelCountMode = 'explicit'; input.channelInterpretation = 'speakers';
+  const sp = c.createChannelSplitter(2), mg = c.createChannelMerger(2), ll = c.createGain(), lr = c.createGain(), rl = c.createGain(), rr = c.createGain();
+  input.connect(sp); sp.connect(ll, 0); sp.connect(rl, 0); sp.connect(lr, 1); sp.connect(rr, 1);
+  ll.connect(mg, 0, 0); lr.connect(mg, 0, 0); rl.connect(mg, 0, 1); rr.connect(mg, 0, 1);
+  const set = (w, t = null) => {
+    const a = (1 + w) / 2, b = (1 - w) / 2;
+    for (const [n, v] of [[ll, a], [rr, a], [lr, b], [rl, b]]) t === null ? (n.gain.value = v) : n.gain.setTargetAtTime(v, t, 0.03);
+  };
+  set(1);
+  return { input, output: mg, set };
+}
 
-// Builds the whole desk in context c: live (meters on) or offline (for bouncing).
-function buildMixer(c, live) {
+// Builds the whole desk in context c: live (meters on) or offline (for bouncing). opts.noClip leaves out the last-resort hard stop.
+function buildMixer(c, live, opts = {}) {
   const g = (v = 1) => { const n = c.createGain(); n.gain.value = v; return n; };
   const bq = (type, f, q = 0.7) => { const b = c.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; };
   const M = { c, live, strips: {}, roomIdx: -1 };
   M.sum = g(); M.sum.channelCount = 2; M.sum.channelCountMode = 'explicit';
   M.trim = g();
+  M.eqL = bq('lowshelf', 100); M.eqLM = bq('peaking', 400, 0.8); M.eqHM = bq('peaking', 2500, 0.8); M.eqH = bq('highshelf', 9000);
+  M.glue = c.createDynamicsCompressor(); M.glue.knee.value = 0; M.glueMk = g();
+  M.wid = makeWidth(c);
   M.limit = c.createDynamicsCompressor(); M.limit.knee.value = 0; M.limit.attack.value = 0.001; M.limit.release.value = 0.12;
   M.post = g();
   M.clip = c.createWaveShaper(); M.clip.curve = new Float32Array([-1, 1]);   // hard stop at full scale, a last resort
-  M.sum.connect(M.trim); M.trim.connect(M.limit); M.limit.connect(M.post); M.post.connect(M.clip); M.clip.connect(c.destination);
+  M.sum.connect(M.trim); M.trim.connect(M.eqL); M.eqL.connect(M.eqLM); M.eqLM.connect(M.eqHM); M.eqHM.connect(M.eqH); M.eqH.connect(M.glue);
+  M.glue.connect(M.glueMk); M.glueMk.connect(M.wid.input); M.wid.output.connect(M.limit); M.limit.connect(M.post);
+  if (opts.noClip) M.post.connect(c.destination); else { M.post.connect(M.clip); M.clip.connect(c.destination); }
   // sends: a room and an echo, shared by every strip
   M.verb = { in: g(), conv: c.createConvolver(), ret: g(0.5) };
   M.verb.in.connect(M.verb.conv); M.verb.conv.connect(M.verb.ret); M.verb.ret.connect(M.sum);
   M.echo = { in: g(), delay: c.createDelay(1.5), fb: g(0.35), damp: bq('lowpass', 4200), ret: g(0.5) };
   M.echo.in.connect(M.echo.delay); M.echo.delay.connect(M.echo.damp); M.echo.damp.connect(M.echo.fb); M.echo.fb.connect(M.echo.delay);
   M.echo.damp.connect(M.echo.ret); M.echo.ret.connect(M.sum);
-  for (const id of STRIP_IDS) {
+  M.addStrip = id => {
     const n = M.strips[id] = {};
     n.in = g(); n.cock = bq('lowpass', 20000); n.hp = bq('highpass', 10);
     n.low = bq('lowshelf', 120); n.mid = bq('peaking', 1000, 1); n.high = bq('highshelf', 6000);
@@ -652,7 +730,15 @@ function buildMixer(c, live) {
     n.comp.connect(n.makeup); n.makeup.connect(n.duck); n.duck.connect(n.fader); n.fader.connect(n.pan.input); n.pan.output.connect(M.sum);
     n.pan.output.connect(n.sa); n.sa.connect(M.verb.in); n.pan.output.connect(n.sb); n.sb.connect(M.echo.in);
     if (live) { n.an = c.createAnalyser(); n.an.fftSize = 1024; n.pan.output.connect(n.an); }
-  }
+    return n;
+  };
+  M.removeStrip = id => {
+    const n = M.strips[id];
+    if (!n) return;
+    try { n.in.disconnect(); n.pan.output.disconnect(); if (n.an) n.an.disconnect(); } catch {}
+    delete M.strips[id];
+  };
+  for (const id of STRIP_IDS) M.addStrip(id);
   if (live) {   // metering taps, after the limiter
     M.spec = c.createAnalyser(); M.spec.fftSize = 4096; M.spec.smoothingTimeConstant = 0.6; M.clip.connect(M.spec);
     M.sp = c.createChannelSplitter(2); M.clip.connect(M.sp);
@@ -669,12 +755,17 @@ function buildMixer(c, live) {
   }
   return M;
 }
-function applyMixer(M, immediate = false, bounce = false) {
+// mode: false = as heard, true = every strip audible (a print of one source), or a list of strip ids whose mute and solo count.
+// bypassMaster: leave the master suite and limiter out (stems).
+function applyMixer(M, immediate = false, mode = false, bypassMaster = false) {
   const c = M.c, t = c.currentTime, smooth = M.live && !immediate;
   const set = (p, v, k = 0.02) => smooth ? p.setTargetAtTime(v, t, k) : (p.value = v);
-  const anySolo = STRIP_IDS.some(id => mixState.strips[id].solo);
+  const scope = Array.isArray(mode) ? mode : null;
+  const anySolo = mode !== true && (scope || STRIP_IDS).some(id => mixState.strips[id]?.solo);
   for (const id of STRIP_IDS) {
-    const n = M.strips[id], s = mixState.strips[id];
+    const s = mixState.strips[id];
+    if (!s) continue;
+    const n = M.strips[id] || M.addStrip(id);
     set(n.in.gain, dbToLin(s.trim));
     set(n.hp.frequency, HP_LIST[s.hp]);
     set(n.low.gain, s.low); set(n.mid.gain, s.mid); set(n.high.gain, s.high);
@@ -682,14 +773,21 @@ function applyMixer(M, immediate = false, bounce = false) {
     n.comp.threshold.value = thr; n.comp.ratio.value = r;
     n.comp.attack.value = ATTACKS[s.att] / 1000; n.comp.release.value = RELEASES[s.rel] / 1000;
     set(n.makeup.gain, dbToLin(s.makeup + compCancelDb(thr, r)));
-    const audible = bounce || (!s.mute && (!anySolo || s.solo));
+    const inScope = !scope || scope.includes(id);
+    const audible = mode === true || !inScope || (!s.mute && (!anySolo || s.solo));
     set(n.fader.gain, audible ? dbToLin(s.fader) : 0, 0.015);
     n.pan.set(s.pan, smooth ? t : null);
     set(n.sa.gain, s.sa); set(n.sb.gain, s.sb);
-    if (id !== 'music') set(n.cock.frequency, prefs.cockpit ? 1400 : 20000);
+    if (id === 'veh' || id === 'sfx' || id === 'amb') set(n.cock.frequency, prefs.cockpit ? 1400 : 20000);
   }
-  const m = mixState.master, thr = m.limiter ? m.ceil : 0, ratio = m.limiter ? 20 : 1;
+  const m = bypassMaster ? { ...masterDefaults(), limiter: false } : mixState.master;
+  const thr = m.limiter ? m.ceil : 0, ratio = m.limiter ? 20 : 1;
   set(M.trim.gain, dbToLin(m.trim));
+  set(M.eqL.gain, m.eqL); set(M.eqLM.gain, m.eqLM); set(M.eqHM.gain, m.eqHM); set(M.eqH.gain, m.eqH);
+  const gr = GRATIOS[m.gratio], gthr = gr === 1 ? 0 : m.gthr;
+  M.glue.threshold.value = gthr; M.glue.ratio.value = gr; M.glue.attack.value = GATT[m.gatt] / 1000; M.glue.release.value = GREL[m.grel] / 1000;
+  set(M.glueMk.gain, dbToLin(m.gmk + compCancelDb(gthr, gr)));
+  M.wid.set(m.width, smooth ? t : null);
   M.limit.threshold.value = thr; M.limit.ratio.value = ratio;
   set(M.post.gain, dbToLin(compCancelDb(thr, ratio)));
   const x = mixState.sends;
@@ -699,6 +797,7 @@ function applyMixer(M, immediate = false, bounce = false) {
   set(M.echo.fb.gain, x.fb); set(M.echo.ret.gain, x.eret);
 }
 const remix = () => { if (A) applyMixer(A); };
+function ensureLiveStrip(id) { if (A && !A.strips[id]) { A.addStrip(id); applyMixer(A, true); } }
 
 // Ducking: a short dip on chosen strips whenever a hit or marked take fires.
 function duck() {
@@ -706,7 +805,7 @@ function duck() {
   if (!ctx || !A || d.amount >= 0) return;
   const t = ctx.currentTime, lin = dbToLin(d.amount);
   for (const id of STRIP_IDS) {
-    if (!d[id]) continue;
+    if (!d[id] || !A.strips[id]) continue;
     const p = A.strips[id].duck.gain;
     if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t); else p.cancelScheduledValues(t);
     p.setTargetAtTime(lin, t, d.attack / 3000 + 0.001);
@@ -728,7 +827,7 @@ function audio() {
     ambBus = ctx.createGain(); ambBus.connect(A.strips.amb.in);
     buildRadio();
     for (const id of Object.keys(P)) applyParam(id);
-    ctx.onstatechange = () => { if (ctx.state !== 'running' && !player.paused) say('Tap Play to wake the audio.'); };
+    ctx.onstatechange = () => { if (ctx.state !== 'running' && (!player.paused || (typeof eng !== 'undefined' && eng.playing))) say('Tap Play to wake the audio.'); };
     startFrame();
   }
   if (ctx.state !== 'running') Promise.resolve(ctx.resume()).catch(() => {});
@@ -746,7 +845,7 @@ const LM = {};
 function resetMeters() {
   Object.assign(LM, { frames: [], blocks: [], windows: [], curIdx: -1, curSum: 0, curN: 0, mom: -Infinity, short: -Infinity, int: -Infinity,
     intAt: 0, peak: -Infinity, peakHold: -Infinity, peakMax: -Infinity, tp: -Infinity, tpMax: -Infinity, corr: 1, lastT: -1, clipUntil: 0,
-    gr: 0, strips: Object.fromEntries(STRIP_IDS.map(id => [id, { rms: -Infinity, peak: -Infinity, hold: -Infinity, holdT: 0, gr: 0 }])) });
+    gr: 0, strips: {} });
 }
 resetMeters();
 const scratch = { a: new Float32Array(2048), b: new Float32Array(2048), s: new Float32Array(1024), spec: new Float32Array(2048) };
@@ -821,7 +920,9 @@ function readMeters() {
   LM.gr = A.limit.reduction;
   // each strip: RMS and peak with a slow fall and a hold
   for (const id of STRIP_IDS) {
-    const n = A.strips[id], m = LM.strips[id];
+    const n = A.strips[id];
+    if (!n?.an) continue;
+    const m = LM.strips[id] ||= { rms: -Infinity, peak: -Infinity, hold: -Infinity, holdT: 0, gr: 0 };
     n.an.getFloatTimeDomainData(scratch.s);
     let sq = 0, p = 0; for (let i = 0; i < 1024; i++) { const v = scratch.s[i]; sq += v * v; if (Math.abs(v) > p) p = Math.abs(v); }
     const rms = toDb(Math.sqrt(sq / 1024)), peak = toDb(p);
@@ -909,7 +1010,7 @@ function drawList() {
 }
 function showNow() {
   const s = songs[current];
-  $('nowTitle').textContent = s ? title(s) : 'VTX Sound Studio';
+  $('nowTitle').textContent = s ? title(s) : 'VTX Producer';
   $('lcdTitle').textContent = s ? title(s) : (songs.length ? 'Turn the tuning dial or tap a song.' : 'Add songs or a music folder.');
   const at = shown().indexOf(current);
   $('lcdNo').textContent = s ? `SONG ${String(at + 1).padStart(2, '0')} / ${String(shown().length).padStart(2, '0')}` : 'NO SONG';
@@ -963,7 +1064,7 @@ player.ontimeupdate = () => {
 $('seek').onchange = e => { if (player.duration) player.currentTime = e.target.value / 1000 * player.duration; e.target.blur(); };
 function setSession() {
   if (!('mediaSession' in navigator) || !songs[current]) return;
-  try { navigator.mediaSession.metadata = new MediaMetadata({ title: title(songs[current]), artist: 'VTX Sound Studio' }); } catch {}
+  try { navigator.mediaSession.metadata = new MediaMetadata({ title: title(songs[current]), artist: 'VTX Producer' }); } catch {}
 }
 if ('mediaSession' in navigator) {
   const on = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch {} };
@@ -1395,7 +1496,7 @@ function takeChanged(name) {
 }
 
 // ---------- loading ----------
-function addTakes(files, { splitRadio = false, keep = true } = {}) {
+function addTakes(files, { splitRadio = false, keep = true, force = false } = {}) {
   stopAllVehicle(); stopAllPads();
   const songsFound = [];
   let added = 0;
@@ -1406,7 +1507,7 @@ function addTakes(files, { splitRadio = false, keep = true } = {}) {
     if (splitRadio && /(^|\/)radio\//i.test(p)) { songsFound.push(file); continue; }
     if (takes.has(file.name)) continue;
     takes.set(file.name, { file }); added++;
-    if (keep && prefs.keepTakes) lib.put('take', file).catch(() => {});
+    if (keep && (prefs.keepTakes || force)) lib.put('take', file).catch(() => say('Storage is full: ' + file.name + ' is not kept.'));
   }
   autoPick();
   if (songsFound.length) addSongs(songsFound);
@@ -1747,7 +1848,8 @@ function renderPrompts() {
   keep.setAttribute('aria-pressed', prefs.keepTakes);
   keep.onclick = async () => {
     prefs.keepTakes = !prefs.keepTakes; keep.setAttribute('aria-pressed', prefs.keepTakes); persist();
-    if (prefs.keepTakes) { keepPersistent(); for (const t of takes.values()) lib.put('take', t.file).catch(() => {}); } else { try { await lib.clear('take'); } catch {} }
+    if (prefs.keepTakes) { keepPersistent(); for (const t of takes.values()) lib.put('take', t.file).catch(() => {}); }
+    else { try { await lib.clear('take'); const used = new Set(arr.tracks.flatMap(t => t.clips.map(c => c.take))); for (const t of takes.values()) if (used.has(t.file.name)) await lib.put('take', t.file); } catch {} }
     libUsage();
   };
   w.append(card('Sound sources', load, el('div', { className: 'bar', style: 'margin-top:8px' }, keep), note, el('p', { className: 'note', id: 'libUsage' })));
@@ -1773,7 +1875,7 @@ function renderPrompts() {
     el('textarea', { id: 'picksOut', readonly: true, hidden: true, ariaLabel: 'Picks JSON', style: 'margin-top:8px' }),
     el('p', { className: 'note', id: 'takeExportNote' })));
   renderTakes(); renderPrompts(); libUsage();
-  if (prefs.keepTakes) lib.all('take').then(files => files.length && addTakes(files, { keep: false })).catch(() => {});
+  lib.all('take').then(files => { if (files.length) { addTakes(files, { keep: false }); if (typeof renderTracks === 'function') renderTracks(); } }).catch(() => {});
 }
 function picksJson() {
   return JSON.stringify([...takes.keys()].map(n => ({ file: n, seconds: Number.isFinite(takes.get(n).seconds) ? round(takes.get(n).seconds, 1) : undefined, edit: edits[n], ...meta(n) }))
@@ -2138,9 +2240,614 @@ function renderParts() {
 }
 
 // =====================================================================================
+// TRACKS ENGINE: tracks, clips, tempo grid, transport, undo. Each track is a channel strip on the same desk
+// as everything else, so the Mix bench, the master suite and the meters all see it.
+// =====================================================================================
+const SNAPS = [['Off', 0], ['Bar', -1], ['Beat', 1], ['1/2 beat', 0.5], ['1/4 beat', 0.25]];
+const ZOOMS = [10, 20, 40, 60, 90, 140, 220, 340];
+const TRACK_COLORS = ['#8cdce6', '#ffca72', '#ff9f6b', '#4fd18b', '#c9a3ff', '#ff8fb1'];
+const num = (v, d = 0) => Number.isFinite(+v) ? +v : d;
+function sanitizeArr(a) {
+  const o = { name: 'Song', bpm: 120, beats: 4, snap: 2, zoom: 3, pos: 0, metro: false, follow: true, loop: { on: false, start: 0, end: 8 }, tracks: [] };
+  if (!a || typeof a !== 'object') return o;
+  if (typeof a.name === 'string' && a.name.trim()) o.name = a.name.slice(0, 40);
+  o.bpm = clamp(num(a.bpm, 120), 40, 240); o.beats = clamp(Math.round(num(a.beats, 4)), 1, 12);
+  o.snap = clamp(Math.round(num(a.snap, 2)), 0, SNAPS.length - 1); o.zoom = clamp(Math.round(num(a.zoom, 3)), 0, ZOOMS.length - 1); o.pos = Math.max(0, num(a.pos));
+  o.metro = !!a.metro; o.follow = a.follow !== false;
+  if (a.loop) { o.loop.on = !!a.loop.on; o.loop.start = Math.max(0, num(a.loop.start)); o.loop.end = Math.max(o.loop.start + 0.1, num(a.loop.end, 8)); }
+  o.tracks = (Array.isArray(a.tracks) ? a.tracks : []).map((t, i) => ({
+    id: String(t.id || 'tr' + uid()), name: String(t.name || 'Track ' + (i + 1)).slice(0, 30), color: String(t.color || TRACK_COLORS[i % TRACK_COLORS.length]),
+    clips: (Array.isArray(t.clips) ? t.clips : []).map(c => ({
+      id: String(c.id || uid()), take: String(c.take || ''), start: Math.max(0, num(c.start)), offset: Math.max(0, num(c.offset)), dur: Math.max(0.02, num(c.dur, 1)),
+      gain: clamp(num(c.gain), -48, 24), fadeIn: Math.max(0, num(c.fadeIn)), fadeOut: Math.max(0, num(c.fadeOut)), semi: clamp(num(c.semi), -24, 24), rev: !!c.rev, mute: !!c.mute })),
+  }));
+  return o;
+}
+const arr = sanitizeArr(saved.arr);
+const sel = { track: arr.tracks[0]?.id ?? null, clip: null };
+let mixDirty = false;
+
+function registerStrip(t, state) {
+  if (!STRIP_IDS.includes(t.id)) STRIP_IDS.push(t.id);
+  STRIP_NAMES[t.id] = t.name;
+  mixState.strips[t.id] = merge(stripDefaults(), state || saved.mix?.strips?.[t.id] || {});
+}
+function dropStrip(id) {
+  const i = STRIP_IDS.indexOf(id);
+  if (i >= FIXED_STRIPS) STRIP_IDS.splice(i, 1);
+  delete mixState.strips[id]; delete STRIP_NAMES[id]; delete LM.strips[id];
+  if (A?.strips[id]) A.removeStrip(id);
+}
+for (const t of arr.tracks) registerStrip(t);
+
+const trackOf = id => arr.tracks.find(t => t.id === id);
+const clipOf = id => { for (const t of arr.tracks) { const c = t.clips.find(c => c.id === id); if (c) return { clip: c, track: t }; } return null; };
+const spb = () => 60 / arr.bpm, barLen = () => spb() * arr.beats;
+const rateOf = c => 2 ** (c.semi / 12);
+const songEnd = () => arr.tracks.reduce((m, t) => t.clips.reduce((mm, c) => c.mute ? mm : Math.max(mm, c.start + c.dur), m), 0);
+function snapT(t, off = false) {
+  const s = SNAPS[arr.snap][1];
+  if (off || !s) return Math.max(0, t);
+  const unit = (s < 0 ? arr.beats : s) * spb();
+  return Math.max(0, Math.round(t / unit) * unit);
+}
+const posText = t => {
+  const bl = barLen(), bar = Math.floor(t / bl) + 1, beat = Math.floor((t % bl) / spb()) + 1;
+  return `${String(bar).padStart(3, '0')}.${beat}`;
+};
+const clockText = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
+
+// ---------- history: every edit can be undone, and nothing is lost ----------
+const hist = { undo: [], redo: [], key: '', at: 0 };
+const snapshot = () => JSON.stringify({ arr, strips: Object.fromEntries(arr.tracks.map(t => [t.id, mixState.strips[t.id]])) });
+function checkpoint(key = '') {   // call before an edit; edits with the same key within 1.5 s share one step
+  const now = Date.now();
+  if (key && key === hist.key && now - hist.at < 1500) { hist.at = now; return; }
+  hist.undo.push(snapshot()); if (hist.undo.length > 80) hist.undo.shift();
+  hist.redo.length = 0; hist.key = key; hist.at = now; syncUndo();
+}
+function restore(json) {
+  const s = JSON.parse(json), next = sanitizeArr(s.arr);
+  arrStop(false);
+  for (const t of arr.tracks) if (!next.tracks.some(n => n.id === t.id)) dropStrip(t.id);
+  for (const k of Object.keys(next)) arr[k] = next[k];
+  for (const t of arr.tracks) { registerStrip(t, s.strips?.[t.id]); ensureLiveStrip(t.id); }
+  if (!trackOf(sel.track)) sel.track = arr.tracks[0]?.id ?? null;
+  if (!clipOf(sel.clip)) sel.clip = null;
+  remix(); changed();
+}
+function undo() { if (!hist.undo.length) return; hist.redo.push(snapshot()); restore(hist.undo.pop()); syncUndo(); }
+function redo() { if (!hist.redo.length) return; hist.undo.push(snapshot()); restore(hist.redo.pop()); syncUndo(); }
+function changed() { mixDirty = true; persist(); if (typeof renderTracks === 'function') renderTracks(); syncUndo(); }
+
+// ---------- tracks ----------
+function newTrack(name) {
+  checkpoint();
+  const i = arr.tracks.length, t = { id: 'tr' + uid(), name: name || 'Track ' + (i + 1), color: TRACK_COLORS[i % TRACK_COLORS.length], clips: [] };
+  arr.tracks.push(t); registerStrip(t, {}); ensureLiveStrip(t.id);
+  sel.track = t.id; sel.clip = null; changed(); return t;
+}
+function deleteTrack(id) {
+  const t = trackOf(id); if (!t) return;
+  savePoint('Before deleting ' + t.name, true);
+  checkpoint(); arr.tracks.splice(arr.tracks.indexOf(t), 1); dropStrip(id);
+  if (sel.track === id) sel.track = arr.tracks[0]?.id ?? null;
+  sel.clip = null; changed();
+}
+function moveTrack(id, dir) {
+  const i = arr.tracks.findIndex(t => t.id === id), j = i + dir;
+  if (i < 0 || j < 0 || j >= arr.tracks.length) return;
+  checkpoint(); [arr.tracks[i], arr.tracks[j]] = [arr.tracks[j], arr.tracks[i]]; changed();
+}
+function duplicateTrack(id) {
+  const t = trackOf(id); if (!t) return;
+  checkpoint();
+  const n = { id: 'tr' + uid(), name: t.name + ' copy', color: t.color, clips: t.clips.map(c => ({ ...c, id: uid() })) };
+  arr.tracks.splice(arr.tracks.indexOf(t) + 1, 0, n); registerStrip(n, { ...mixState.strips[t.id], solo: false }); ensureLiveStrip(n.id);
+  sel.track = n.id; sel.clip = null; changed();
+}
+function renameTrack(id, name) { const t = trackOf(id); if (!t) return; t.name = name || 'Track'; STRIP_NAMES[id] = t.name; mixDirty = true; persist(); }
+
+// ---------- clips ----------
+function clipFromTake(name, start) {
+  const t = takes.get(name), raw = t.raw;
+  let offset = 0, dur = raw.duration, gain = 0, fadeIn = 0, fadeOut = 0;
+  if (isEdited(name)) {   // start from the take's edit: its trim, fades and level
+    const e = fullEdit(name); offset = e.in ?? 0; dur = (e.out ?? raw.duration) - offset; fadeIn = e.fadeIn; fadeOut = e.fadeOut;
+    let peak = 0; for (let ch = 0; ch < raw.numberOfChannels; ch++) { const d = raw.getChannelData(ch); for (let i = Math.floor(offset * raw.sampleRate), n = Math.min(d.length, Math.floor((offset + dur) * raw.sampleRate)); i < n; i++) { const v = Math.abs(d[i]); if (v > peak) peak = v; } }
+    const target = NORM[e.norm]; gain = linToDb((target == null ? 1 : Math.min(6, dbToLin(target) / Math.max(peak, 1e-4))) * dbToLin(e.gain));
+  } else if (raw.duration < 20) { const b = body(raw); offset = b.from; dur = Math.max(0.05, b.to - b.from); }   // short one-shots: trim the silence
+  return { id: uid(), take: name, start, offset, dur: Math.max(0.05, dur), gain: round(gain, 1), fadeIn, fadeOut, semi: 0, rev: false, mute: false };
+}
+function addClip(trackId, name, start) {
+  const t = trackOf(trackId); if (!t || !takes.get(name)?.raw) return null;
+  const c = clipFromTake(name, start); t.clips.push(c); sel.clip = c.id; sel.track = t.id; return c;
+}
+async function importFiles(files, { stems = false } = {}) {
+  audio();
+  const list = [...files].filter(f => AUDIO.test(f.name));
+  if (!list.length) { say('No audio files in that selection.'); return; }
+  addTakes(list, { force: true });
+  checkpoint();
+  let at = snapT(arrPos()), last = null, added = 0;
+  say(`Reading ${list.length} file${list.length > 1 ? 's' : ''}…`, 30000);
+  for (const f of list) {
+    try { await rawBuffer(f.name); } catch { say(`Could not read ${f.name}. It may be too large to decode on this device.`); continue; }
+    let target;
+    if (stems) { target = newTrackQuiet(stem(f.name).replace(/_/g, ' ')); at = 0; }
+    else { target = trackOf(sel.track) || newTrackQuiet('Track ' + (arr.tracks.length + 1)); if (last && last.track === target.id) at = last.end; }
+    const c = addClip(target.id, f.name, at); if (!c) continue;
+    last = { track: target.id, end: c.start + c.dur }; added++;
+  }
+  changed(); say(added ? `${added} clip${added > 1 ? 's' : ''} added.` : 'Nothing was added.');
+}
+function newTrackQuiet(name) {   // inside one history step
+  const i = arr.tracks.length, t = { id: 'tr' + uid(), name: name || 'Track ' + (i + 1), color: TRACK_COLORS[i % TRACK_COLORS.length], clips: [] };
+  arr.tracks.push(t); registerStrip(t, {}); ensureLiveStrip(t.id); sel.track = t.id; return t;
+}
+function editClip(id, patch, key) { const f = clipOf(id); if (!f) return; checkpoint(key); Object.assign(f.clip, patch); persist(); }
+function splitClip(id, at) {
+  const f = clipOf(id); if (!f) return false;
+  const c = f.clip, r = rateOf(c), cut = at - c.start;
+  if (cut < 0.03 || cut > c.dur - 0.03) return false;
+  checkpoint();
+  const b = { ...c, id: uid(), start: at, dur: c.dur - cut, fadeIn: 0 }, a = c;
+  if (c.rev) { b.offset = c.offset; a.offset = c.offset + (c.dur - cut) * r; }
+  else b.offset = c.offset + cut * r;
+  a.dur = cut; a.fadeOut = 0;
+  f.track.clips.push(b); sel.clip = b.id; changed(); return true;
+}
+function duplicateClip(id, times = 1) {
+  const f = clipOf(id); if (!f) return;
+  checkpoint(); let at = f.clip.start + f.clip.dur, last = null;
+  for (let i = 0; i < times; i++) { last = { ...f.clip, id: uid(), start: at }; f.track.clips.push(last); at += f.clip.dur; }
+  if (last) sel.clip = last.id; changed();
+}
+function chopClip(id, n) {
+  const f = clipOf(id); if (!f || n < 2) return;
+  checkpoint(); const c = f.clip, r = rateOf(c), part = c.dur / n, out = [];
+  for (let i = 0; i < n; i++) {
+    const p = { ...c, id: i ? uid() : c.id, start: c.start + i * part, dur: part, fadeIn: i ? 0 : c.fadeIn, fadeOut: i < n - 1 ? 0 : c.fadeOut };
+    p.offset = c.rev ? c.offset + (n - 1 - i) * part * r : c.offset + i * part * r; out.push(p);
+  }
+  f.track.clips.splice(f.track.clips.indexOf(c), 1, ...out); sel.clip = out[0].id; changed();
+}
+function deleteClip(id) { const f = clipOf(id); if (!f) return; checkpoint(); f.track.clips.splice(f.track.clips.indexOf(f.clip), 1); if (sel.clip === id) sel.clip = null; changed(); }
+function moveClipToTrack(id, trackId) { const f = clipOf(id), t = trackOf(trackId); if (!f || !t || f.track === t) return; checkpoint(); f.track.clips.splice(f.track.clips.indexOf(f.clip), 1); t.clips.push(f.clip); sel.track = t.id; changed(); }
+
+// ---------- playing a clip, live or offline ----------
+const reversedOf = t => {
+  if (!t.rev) {
+    const b = t.raw, r = ctx.createBuffer(b.numberOfChannels, b.length, b.sampleRate);
+    for (let c = 0; c < b.numberOfChannels; c++) { const s = b.getChannelData(c), d = r.getChannelData(c); for (let i = 0, n = s.length; i < n; i++) d[i] = s[n - 1 - i]; }
+    t.rev = r;
+  }
+  return t.rev;
+};
+// Plays `clip` from its own time `skip` seconds in, starting at context time `when`, never past `cap` seconds of clip time.
+function playClip(c, dest, clip, when, skip = 0, cap = Infinity) {
+  const t = takes.get(clip.take), raw = t?.raw;
+  if (!raw) return null;
+  const rate = rateOf(clip), D = raw.duration, dur = Math.min(clip.dur, cap) - skip;
+  if (dur <= 0.002) return null;
+  let buf = raw, off = clip.offset + skip * rate;
+  if (clip.rev) { buf = reversedOf(t); off = D - (clip.offset + clip.dur * rate) + skip * rate; }
+  if (off >= D || off < 0) return null;
+  const src = c.createBufferSource(), g = c.createGain(), gain = dbToLin(clip.gain), fi = clip.fadeIn / 1000, fo = Math.min(clip.fadeOut / 1000, clip.dur);
+  src.buffer = buf; src.playbackRate.value = rate;
+  const inFade = fi > 0 && skip < fi;
+  g.gain.setValueAtTime(inFade ? gain * skip / fi : gain, when);
+  if (inFade) g.gain.linearRampToValueAtTime(gain, when + (fi - skip));
+  const end = when + dur;
+  if (fo > 0 && Math.min(clip.dur, cap) >= clip.dur - 1e-6) { g.gain.setValueAtTime(gain, Math.max(when + (inFade ? fi - skip : 0), end - fo)); g.gain.linearRampToValueAtTime(0, end); }
+  src.connect(g); g.connect(dest); src.start(when, off, dur * rate);
+  return { src, g };
+}
+
+// ---------- transport: a scheduler that stays a little ahead of the audio clock ----------
+const eng = { playing: false, passes: [], sched: null, timer: 0, nodes: new Set() };
+const LOOKAHEAD = 0.4;
+async function decodeUsed() { for (const n of new Set(arr.tracks.flatMap(t => t.clips.map(c => c.take)))) if (takes.has(n)) await rawBuffer(n); }
+function arrPos() {
+  if (!eng.playing || !eng.passes.length) return arr.pos;
+  const now = ctx.currentTime; let p = eng.passes[0];
+  for (const q of eng.passes) if (q.t0 <= now) p = q;
+  return Math.max(p.from, Math.min(p.to, p.from + now - p.t0));
+}
+async function arrPlay() {
+  if (eng.playing) return;
+  audio(); eng.playing = true; eng.passes = [];   // claimed first so a second tap cannot start a second player
+  try { await decodeUsed(); } catch { eng.playing = false; say('Could not read one of the clips.'); return; }
+  for (const t of arr.tracks) ensureLiveStrip(t.id);
+  const loop = arr.loop.on && arr.loop.end > arr.loop.start + 0.05;
+  let from = arr.pos; if (loop && (from < arr.loop.start || from >= arr.loop.end)) from = arr.loop.start;
+  const p = { from, to: loop ? arr.loop.end : Infinity, t0: ctx.currentTime + 0.08 };
+  eng.passes = [p]; eng.sched = { pass: p, cursor: from, first: true };
+  eng.timer = setInterval(arrTick, 50); arrTick(); syncTransport();
+}
+function stopNodes() {
+  const now = ctx.currentTime;
+  for (const n of eng.nodes) { try { n.g.gain.cancelScheduledValues(now); n.g.gain.setTargetAtTime(0, now, 0.008); n.src.stop(now + 0.05); } catch {} }
+  eng.nodes.clear();
+}
+function arrPause() {
+  if (!eng.playing) return;
+  arr.pos = arrPos(); clearInterval(eng.timer); eng.playing = false; stopNodes(); persist(); syncTransport();
+}
+function arrStop(rewind = true) {
+  if (eng.playing) { clearInterval(eng.timer); eng.playing = false; stopNodes(); }
+  if (rewind) arr.pos = arr.loop.on ? arr.loop.start : 0;
+  persist(); syncTransport();
+}
+function arrSeek(t) {
+  t = Math.max(0, t);
+  if (eng.playing) { clearInterval(eng.timer); eng.playing = false; stopNodes(); arr.pos = t; arrPlay(); }
+  else { arr.pos = t; persist(); syncTransport(); }
+}
+const arrToggle = () => eng.playing ? arrPause() : arrPlay();
+function arrTick() {
+  if (!eng.playing || !ctx) return;
+  const now = ctx.currentTime, ahead = now + LOOKAHEAD, s = eng.sched;
+  for (let guard = 0; guard < 8; guard++) {
+    const p = s.pass, endCtx = p.to === Infinity ? Infinity : p.t0 + (p.to - p.from);
+    const untilTl = p.from + (Math.min(ahead, endCtx) - p.t0);
+    if (untilTl > s.cursor || s.first) { scheduleWindow(p, s.cursor, untilTl, s.first); s.first = false; s.cursor = Math.max(s.cursor, untilTl); }
+    if (p.to !== Infinity && ahead >= endCtx) {   // loop: the next pass starts exactly where this one ends
+      const np = { from: arr.loop.start, to: arr.loop.end, t0: endCtx };
+      eng.passes.push(np); s.pass = np; s.cursor = np.from; s.first = true; continue;
+    }
+    break;
+  }
+  while (eng.passes.length > 1 && eng.passes[1].t0 <= now - 0.5) eng.passes.shift();
+  if (s.pass.to === Infinity && arrPos() > songEnd() + 1.5) { arrStop(true); say('End of the song.'); }
+}
+function scheduleWindow(p, a, b, first) {
+  const strips = A.strips;
+  for (const t of arr.tracks) {
+    const dest = strips[t.id]?.in; if (!dest) continue;
+    for (const c of t.clips) {
+      if (c.mute) continue;
+      const cs = c.start, ce = cs + c.dur;
+      let when, skip = 0;
+      if (cs >= a && cs < b && cs < p.to) when = p.t0 + (cs - p.from);
+      else if (first && cs < a && ce > a) { skip = a - cs; when = p.t0 + (a - p.from); }
+      else continue;
+      const n = playClip(ctx, dest, c, Math.max(when, ctx.currentTime), skip + Math.max(0, ctx.currentTime - when), p.to - cs);
+      if (n) { eng.nodes.add(n); n.src.onended = () => { eng.nodes.delete(n); try { n.g.disconnect(); } catch {} }; }
+    }
+  }
+  if (arr.metro) {
+    const sp = spb();
+    for (let k = Math.ceil(a / sp - 1e-9); k * sp < b; k++) { const when = p.t0 + (k * sp - p.from); if (when >= ctx.currentTime - 0.005) click(when, k % arr.beats === 0); }
+  }
+}
+function click(when, accent) {
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.frequency.value = accent ? 1500 : 1000;
+  g.gain.setValueAtTime(0.0001, when); g.gain.exponentialRampToValueAtTime(accent ? 0.3 : 0.18, when + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, when + 0.05);
+  o.connect(g).connect(ctx.destination); o.start(when); o.stop(when + 0.06);   // straight to the output, so it never reaches the meters or a bounce
+}
+
+// =====================================================================================
+// TRACKS BENCH: transport, drop-down menus, timeline, clip and track inspector, bounces, save points
+// =====================================================================================
+const TR = {};
+const zoomPx = () => ZOOMS[arr.zoom];
+const LANE = 64;
+const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+
+// ---------- a small drop-down menu ----------
+let openMenu = null;
+function closeMenus() { if (openMenu) { openMenu.panel.hidden = true; openMenu.btn.setAttribute('aria-expanded', 'false'); openMenu = null; } }
+document.addEventListener('pointerdown', e => { if (openMenu && !openMenu.wrap.contains(e.target)) closeMenus(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(); });
+function menu(label, items) {
+  const wrap = el('div', { className: 'menu' }), btn = el('button', { className: 'chip menu-btn', textContent: label });
+  const panel = el('div', { className: 'menu-panel', hidden: true }); panel.setAttribute('role', 'menu');
+  btn.setAttribute('aria-haspopup', 'menu'); btn.setAttribute('aria-expanded', 'false');
+  btn.onclick = () => {
+    const was = openMenu?.wrap === wrap; closeMenus(); if (was) return;
+    panel.replaceChildren(...items().map(it => {
+      if (it === '-') return el('div', { className: 'menu-sep' });
+      const b = el('button', { className: 'menu-item', textContent: it.label, disabled: !!it.off }); b.setAttribute('role', 'menuitem');
+      b.onclick = () => { closeMenus(); it.run(); }; return b;
+    }));
+    const r = btn.getBoundingClientRect(); panel.style.left = r.left > innerWidth / 2 ? 'auto' : '0'; panel.style.right = r.left > innerWidth / 2 ? '0' : 'auto';
+    panel.hidden = false; btn.setAttribute('aria-expanded', 'true'); openMenu = { wrap, panel, btn };
+  };
+  wrap.append(btn, panel); return wrap;
+}
+
+// ---------- build ----------
+function buildTracks() {
+  const w = $('tracksWrap'), card = (...k) => el('div', { className: 'card' }, ...k);
+  const fileIn = (stems) => { const i = el('input', { type: 'file', multiple: true, accept: 'audio/*,.mp3,.m4a,.wav,.ogg,.flac,.aac', hidden: true }); i.onchange = () => { importFiles([...i.files], { stems }); i.value = ''; }; return i; };
+  TR.imp = fileIn(false); TR.stems = fileIn(true);
+  // transport
+  TR.lcd = el('div', { className: 'lcd tlcd' }, el('div', { className: 'no', id: 'tPos' }), el('div', { className: 'big', id: 'tClock' }));
+  const ib = (id, label, glyph, fn) => { const b = el('button', { className: 'ib', id, ariaLabel: label }); b.innerHTML = icon(glyph); b.onclick = fn; return b; };
+  TR.play = ib('tPlay', 'Play', 'play', arrToggle);
+  const stop = el('button', { className: 'ib', id: 'tStop', ariaLabel: 'Stop and return' }); stop.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>'; stop.onclick = () => arrStop(true);
+  const chip = (label, get, set) => { const c = el('button', { className: 'chip', textContent: label }); c.setAttribute('aria-pressed', get()); c.onclick = () => { set(!get()); c.setAttribute('aria-pressed', get()); persist(); syncTransport(); }; return c; };
+  TR.loopChip = chip('Loop', () => arr.loop.on, v => { arr.loop.on = v; if (eng.playing) { arrPause(); arrPlay(); } });
+  const dials = el('div', { className: 'dials row3' },
+    dialFor({ label: 'Tempo', min: 40, max: 240, step: 1, fine: 0.1, fmt: v => round(v, 1) + ' bpm', def: 120 }, arr.bpm, v => { checkpoint('bpm'); arr.bpm = v; persist(); renderTimeline(); }, 64).root,
+    dialFor({ label: 'Snap', list: SNAPS.map(s => s[1]), text: SNAPS.map(s => s[0]), def: 2 }, arr.snap, v => { arr.snap = v; persist(); }, 64).root,
+    dialFor({ label: 'Zoom', list: ZOOMS, text: ZOOMS.map(z => z + ' px/s'), def: 3 }, arr.zoom, v => { const mid = (TR.scroll.scrollLeft + TR.scroll.clientWidth / 2) / zoomPx(); arr.zoom = v; persist(); renderTimeline(); TR.scroll.scrollLeft = mid * zoomPx() - TR.scroll.clientWidth / 2; }, 64).root);
+  TR.undoB = el('button', { className: 'chip', textContent: 'Undo', onclick: undo }); TR.redoB = el('button', { className: 'chip', textContent: 'Redo', onclick: redo });
+  const hasClip = () => !!clipOf(sel.clip), hasTrack = () => !!trackOf(sel.track);
+  const menus = el('div', { className: 'bar' },
+    menu('Add', () => [{ label: 'Import clips onto the selected track', run: () => TR.imp.click() }, { label: 'Import stems, one track each', run: () => TR.stems.click() }, '-', { label: 'New track', run: () => newTrack() }]),
+    menu('Clip', () => [
+      { label: 'Split at the playhead', off: !hasClip(), run: () => { if (!splitClip(sel.clip, arrPos())) say('Put the playhead inside the clip first.'); } },
+      { label: 'Duplicate', off: !hasClip(), run: () => duplicateClip(sel.clip) }, { label: 'Repeat four times', off: !hasClip(), run: () => duplicateClip(sel.clip, 4) },
+      { label: 'Chop into 4', off: !hasClip(), run: () => chopClip(sel.clip, 4) }, { label: 'Chop into 8', off: !hasClip(), run: () => chopClip(sel.clip, 8) },
+      { label: 'Reverse', off: !hasClip(), run: () => { const c = clipOf(sel.clip).clip; editClip(c.id, { rev: !c.rev }); changed(); } },
+      { label: 'Loop around this clip', off: !hasClip(), run: () => { const c = clipOf(sel.clip).clip; arr.loop = { on: true, start: c.start, end: c.start + c.dur }; changed(); syncTransport(); } },
+      '-', { label: 'Delete clip', off: !hasClip(), run: () => deleteClip(sel.clip) }]),
+    menu('Track', () => [{ label: 'New track', run: () => newTrack() }, { label: 'Duplicate track', off: !hasTrack(), run: () => duplicateTrack(sel.track) },
+      { label: 'Move up', off: !hasTrack(), run: () => moveTrack(sel.track, -1) }, { label: 'Move down', off: !hasTrack(), run: () => moveTrack(sel.track, 1) },
+      '-', { label: 'Delete track', off: !hasTrack(), run: () => deleteTrack(sel.track) }]),
+    menu('Bounce', () => [{ label: 'Song through the master (WAV)', off: !songEnd(), run: () => bounceSong() }, { label: 'Stems, one per track (zip)', off: !songEnd(), run: () => bounceStems() },
+      { label: 'Seamless loop of the loop range', off: !(arr.loop.end > arr.loop.start), run: () => bounceLoop() }]),
+    menu('Save', () => [{ label: 'Save a save point now', run: () => savePoint('Save point') }, ...savePoints().slice(0, 8).map(p => ({ label: 'Restore: ' + p.name + ' · ' + new Date(p.t).toLocaleTimeString(), run: () => restorePoint(p) }))]),
+    TR.undoB, TR.redoB);
+  w.append(card(TR.lcd, el('div', { className: 'bar', style: 'margin-top:10px' }, ib('tHome', 'Back to the start', 'prev', () => arrSeek(arr.loop.on ? arr.loop.start : 0)), TR.play, stop, TR.loopChip,
+    chip('Click', () => arr.metro, v => arr.metro = v), chip('Follow', () => arr.follow, v => arr.follow = v)), el('div', { style: 'margin-top:12px' }, dials), el('div', { style: 'margin-top:12px' }, menus), TR.imp, TR.stems));
+  // timeline
+  TR.heads = el('div', { className: 'tl-heads' });
+  TR.ruler = el('canvas', { className: 'tl-ruler' });
+  TR.lanes = el('div', { className: 'tl-lanes' });
+  TR.playhead = el('div', { className: 'tl-playhead' });
+  TR.loopBox = el('div', { className: 'tl-loop' });
+  TR.inner = el('div', { className: 'tl-inner' }, TR.ruler, TR.lanes, TR.loopBox, TR.playhead);
+  TR.scroll = el('div', { className: 'tl-scroll' }, TR.inner);
+  TR.scroll.addEventListener('scroll', drawRuler, { passive: true });
+  TR.empty = el('p', { className: 'note', textContent: 'No tracks yet. Use Add to import clips; each file lands on the selected track at the playhead. Tap a clip to select it, then drag it to move, or drag its edges to trim.' });
+  const lib = el('select', { ariaLabel: 'Take from the library' }); TR.libSel = lib;
+  const addLib = el('button', { className: 'btn', textContent: 'Add to track', onclick: async () => { if (!lib.value) return; audio(); await rawBuffer(lib.value); const t = trackOf(sel.track) || newTrackQuiet(); checkpoint(); addClip(t.id, lib.value, snapT(arrPos())); changed(); } });
+  w.append(card(el('div', { className: 'tl' }, TR.heads, TR.scroll), TR.empty, el('div', { className: 'bar', style: 'margin-top:10px' }, lib, addLib),
+    el('p', { className: 'note', id: 'tMaster' })));
+  // inspector
+  TR.seg = el('div', { className: 'seg' }, ...['clip', 'track'].map(v => { const b = el('button', { textContent: v === 'clip' ? 'Clip' : 'Track', onclick: () => { TR.view = v; renderInspector(); } }); b.dataset.v = v; return b; }));
+  TR.insp = el('div', { style: 'margin-top:12px' });
+  w.append(card(TR.seg, TR.insp));
+  attachTimeline();
+  renderTracks();
+}
+
+// ---------- render ----------
+function renderTracks() {
+  if (!TR.lanes) return;
+  renderHeads(); renderTimeline(); renderInspector(); syncTransport(); syncUndo();
+  TR.empty.hidden = arr.tracks.length > 0;
+  const names = [...takes.keys()].sort();
+  TR.libSel.replaceChildren(el('option', { value: '', textContent: names.length ? 'Choose a take from the library' : 'The library is empty' }), ...names.map(n => el('option', { value: n, textContent: takeLabel(n) })));
+}
+function renderHeads() {
+  TR.heads.replaceChildren(el('div', { className: 'tl-spacer' }), ...arr.tracks.map(t => {
+    const s = mixState.strips[t.id], h = el('div', { className: 'tl-head' + (sel.track === t.id ? ' sel' : '') });
+    h.style.setProperty('--c', t.color);
+    const name = el('button', { className: 'tl-name', textContent: t.name, onclick: () => { sel.track = t.id; sel.clip = null; TR.view = 'track'; renderTracks(); } });
+    const m = el('button', { className: 'ms m', textContent: 'M', ariaLabel: 'Mute ' + t.name }), so = el('button', { className: 'ms s', textContent: 'S', ariaLabel: 'Solo ' + t.name });
+    m.onclick = () => { s.mute = !s.mute; syncMS(); remix(); persist(); }; so.onclick = () => { s.solo = !s.solo; syncMS(); remix(); persist(); };
+    msList.push({ id: t.id, mute: m, solo: so });
+    const lv = el('div', { className: 'lv' }), meter = el('div', { className: 'meter mini' }, lv, el('div', { className: 'pk' }));
+    lvList.push({ id: t.id, lv, pk: meter.lastChild, gl: el('div') });
+    h.append(name, el('div', { className: 'bar', style: 'gap:4px' }, m, so), meter); return h;
+  }));
+  syncMS();
+}
+function renderTimeline() {
+  if (!TR.lanes) return;
+  const W = Math.max(TR.scroll.clientWidth || 300, Math.ceil((Math.max(songEnd(), arr.loop.on ? arr.loop.end : 0) + 20) * zoomPx()));
+  TR.inner.style.width = W + 'px';
+  const beatPx = spb() * zoomPx();
+  TR.lanes.style.setProperty('--beat', beatPx + 'px'); TR.lanes.style.setProperty('--bar', beatPx * arr.beats + 'px');
+  TR.lanes.style.height = arr.tracks.length * LANE + 'px';
+  TR.lanes.replaceChildren(...arr.tracks.map(t => {
+    const lane = el('div', { className: 'tl-lane' + (sel.track === t.id ? ' sel' : '') }); lane.dataset.id = t.id;
+    for (const c of t.clips) lane.append(clipEl(c, t)); return lane;
+  }));
+  TR.loopBox.hidden = !arr.loop.on;
+  TR.loopBox.style.left = arr.loop.start * zoomPx() + 'px'; TR.loopBox.style.width = (arr.loop.end - arr.loop.start) * zoomPx() + 'px';
+  drawRuler(); arrFrame(true);
+}
+function clipEl(c, t) {
+  const d = el('div', { className: 'tclip' + (sel.clip === c.id ? ' sel' : '') + (c.mute ? ' muted' : '') });
+  d.dataset.id = c.id; d.style.setProperty('--c', t.color); d.style.background = hexA(t.color, 0.18);
+  placeClip(d, c);
+  const cv = el('canvas');
+  d.append(cv, el('div', { className: 'nm', textContent: (c.rev ? '⇄ ' : '') + takeLabel(c.take) }), el('div', { className: 'hd l' }), el('div', { className: 'hd r' }));
+  requestAnimationFrame(() => drawClipWave(cv, c, t.color));
+  return d;
+}
+function placeClip(d, c) { d.style.left = c.start * zoomPx() + 'px'; d.style.width = Math.max(6, c.dur * zoomPx()) + 'px'; }
+function drawClipWave(cv, c, color) {
+  const t = takes.get(c.take), W = Math.min(1600, cv.clientWidth), H = cv.clientHeight;
+  if (!t?.peaks || !W || !H) return;
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d'), bins = t.peaks.length / 2, D = t.raw.duration, r = rateOf(c), mid = H / 2 + 6;
+  g.fillStyle = hexA(color, 0.75);
+  for (let x = 0; x < W; x++) {
+    let s = c.offset + (x / W) * c.dur * r; if (c.rev) s = c.offset + c.dur * r - (x / W) * c.dur * r;
+    if (s < 0 || s >= D) continue;
+    const k = Math.min(bins - 1, Math.floor(s / D * bins)), lo = t.peaks[k * 2], hi = t.peaks[k * 2 + 1], amp = (H - 16) / 2 * dbToLin(Math.min(6, c.gain));
+    g.fillRect(x, mid - hi * amp, 1, Math.max(1, (hi - lo) * amp));
+  }
+}
+function drawRuler() {
+  const cv = TR.ruler, W = TR.scroll.clientWidth, H = 28, dpr = Math.min(2, devicePixelRatio || 1);
+  if (!W) return;
+  cv.style.width = W + 'px'; if (cv.width !== W * dpr) { cv.width = W * dpr; cv.height = H * dpr; }
+  const g = cv.getContext('2d'), x0 = TR.scroll.scrollLeft, px = zoomPx(), bl = barLen();
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  if (arr.loop.on) { g.fillStyle = 'rgba(255,202,114,.25)'; g.fillRect(arr.loop.start * px - x0, 0, (arr.loop.end - arr.loop.start) * px, H); }
+  g.font = '10px ui-monospace,Menlo,monospace'; g.fillStyle = '#93b6bc'; g.strokeStyle = '#2b5560';
+  const every = bl * px < 40 ? Math.ceil(40 / (bl * px)) : 1;
+  for (let b = Math.floor(x0 / px / bl); b * bl * px < x0 + W; b++) {
+    const x = Math.round(b * bl * px - x0) + 0.5;
+    g.beginPath(); g.moveTo(x, b % every ? 18 : 10); g.lineTo(x, H); g.stroke();
+    if (b % every === 0) g.fillText(String(b + 1), x + 3, 12);
+    if (spb() * px > 12) for (let k = 1; k < arr.beats; k++) { const bx = Math.round((b * bl + k * spb()) * px - x0) + 0.5; g.beginPath(); g.moveTo(bx, 22); g.lineTo(bx, H); g.stroke(); }
+  }
+}
+function arrFrame(force) {
+  if (!TR.lanes || (!eng.playing && !force)) return;
+  const pos = arrPos(), x = pos * zoomPx();
+  TR.playhead.style.transform = `translateX(${x}px)`;
+  $('tPos').textContent = `BAR ${posText(pos)}  ·  ${round(arr.bpm, 1)} BPM  ·  ${arr.beats}/4`;
+  $('tClock').textContent = clockText(pos);
+  if (eng.playing && arr.follow) { const s = TR.scroll; if (x > s.scrollLeft + s.clientWidth * 0.85 || x < s.scrollLeft) s.scrollLeft = x - s.clientWidth * 0.15; }
+  if (activeTab === 'tracks' && Date.now() > say.until) { $('nowTitle').textContent = arr.name; $('nowSub').textContent = `${posText(pos)}  ${clockText(pos)}`; }
+}
+function paintTrackMeters() { const n = $('tMaster'); if (n) n.textContent = `Master: ${lufsText(LM.mom)} LUFS momentary, ${lufsText(LM.int)} integrated (target ${mixState.target}), peak ${lufsText(LM.peakMax)} dBFS.`; }
+function syncTransport() {
+  if (!TR.play) return;
+  TR.play.innerHTML = icon(eng.playing ? 'pause' : 'play'); TR.play.setAttribute('aria-label', eng.playing ? 'Pause' : 'Play');
+  TR.loopChip.setAttribute('aria-pressed', arr.loop.on);
+  if (activeTab === 'tracks') { $('play').innerHTML = icon(eng.playing ? 'pause' : 'play'); }
+  arrFrame(true);
+}
+function syncUndo() { if (TR.undoB) { TR.undoB.disabled = !hist.undo.length; TR.redoB.disabled = !hist.redo.length; } }
+
+// ---------- inspector ----------
+function renderInspector() {
+  const f = clipOf(sel.clip), t = trackOf(sel.track);
+  if (TR.view !== 'clip' && TR.view !== 'track') TR.view = f ? 'clip' : 'track';
+  for (const b of TR.seg.children) b.setAttribute('aria-pressed', b.dataset.v === TR.view);
+  if (TR.view === 'clip') {
+    if (!f) { TR.insp.replaceChildren(el('p', { className: 'note', textContent: 'Tap a clip on the timeline to edit it here.' })); return; }
+    const c = f.clip, set = (k, key) => v => { editClip(c.id, { [k]: v }, key || k); renderTimeline(); };
+    const D = takes.get(c.take)?.raw?.duration ?? 60;
+    const dials = el('div', { className: 'dials' },
+      dialFor({ label: 'Gain', min: -24, max: 12, step: 0.5, fine: 0.1, fmt: fmtDb, def: 0 }, c.gain, set('gain'), 64).root,
+      dialFor({ label: 'Pitch', min: -24, max: 24, step: 1, fine: 0.1, fmt: v => (v > 0 ? '+' : '') + round(v, 1) + ' st', def: 0 }, c.semi, set('semi'), 64).root,
+      dialFor({ label: 'Fade in', min: 0, max: 4000, step: 50, fine: 5, fmt: v => v + ' ms', def: 0 }, c.fadeIn, set('fadeIn'), 64).root,
+      dialFor({ label: 'Fade out', min: 0, max: 4000, step: 50, fine: 5, fmt: v => v + ' ms', def: 0 }, c.fadeOut, set('fadeOut'), 64).root,
+      dialFor({ label: 'Start', min: 0, max: Math.max(600, c.start + 60), step: 0.05, fine: 0.005, fmt: v => v.toFixed(2) + ' s', def: 0 }, c.start, set('start'), 64).root,
+      dialFor({ label: 'Length', min: 0.05, max: Math.max(0.1, D / rateOf(c)), step: 0.05, fine: 0.005, fmt: v => v.toFixed(2) + ' s', def: c.dur }, c.dur, set('dur'), 64).root,
+      dialFor({ label: 'Clip in', min: 0, max: Math.max(0.01, D - 0.01), step: 0.05, fine: 0.005, fmt: v => v.toFixed(2) + ' s', def: 0 }, c.offset, set('offset'), 64).root);
+    const mute = el('button', { className: 'chip', textContent: 'Mute clip' }); mute.setAttribute('aria-pressed', c.mute);
+    mute.onclick = () => { editClip(c.id, { mute: !c.mute }); changed(); };
+    const move = el('select', { ariaLabel: 'Track' }, ...arr.tracks.map(x => el('option', { value: x.id, textContent: 'On ' + x.name })));
+    move.value = f.track.id; move.onchange = () => moveClipToTrack(c.id, move.value);
+    TR.insp.replaceChildren(el('h3', { textContent: takeLabel(c.take) }), el('p', { className: 'note', style: 'margin:0 0 8px', textContent: `Starts at bar ${posText(c.start)}, ${c.dur.toFixed(2)} s long. Pitch changes speed too, like tape.` }), dials,
+      el('div', { className: 'bar', style: 'margin-top:12px' }, mute, move));
+    return;
+  }
+  if (!t) { TR.insp.replaceChildren(el('p', { className: 'note', textContent: 'Make a track with Add, then select it to set its level, pan and tone.' })); return; }
+  const name = el('input', { type: 'text', value: t.name, ariaLabel: 'Track name', maxLength: 30 });
+  name.oninput = () => { renameTrack(t.id, name.value.trim()); renderHeads(); };
+  const colours = el('div', { className: 'bar' }, ...TRACK_COLORS.map(col => { const b = el('button', { className: 'swatch', ariaLabel: 'Colour' }); b.style.background = col; b.setAttribute('aria-pressed', t.color === col); b.onclick = () => { t.color = col; changed(); }; return b; }));
+  TR.insp.replaceChildren(el('div', { style: 'display:grid;gap:8px' }, name, colours), el('div', { style: 'margin-top:12px' }, stripCard(t.id)));
+}
+
+// ---------- timeline gestures: tap selects, drag moves the selected clip, its edges trim ----------
+function attachTimeline() {
+  let g = null;
+  const timeAt = e => (e.clientX - TR.inner.getBoundingClientRect().left) / zoomPx();
+  TR.ruler.addEventListener('pointerdown', e => { arrSeek(snapT(timeAt(e))); });
+  TR.lanes.addEventListener('pointerdown', e => {
+    const d = e.target.closest('.tclip'), lane = e.target.closest('.tl-lane');
+    if (!lane) return;
+    g = { x: e.clientX, y: e.clientY, d, lane, moved: false, pointer: e.pointerId };
+    if (d && d.classList.contains('sel')) {
+      const c = clipOf(d.dataset.id).clip;
+      g.mode = e.target.classList.contains('l') ? 'l' : e.target.classList.contains('r') ? 'r' : 'move';
+      g.c = c; g.start = c.start; g.dur = c.dur; g.off = c.offset; g.track = clipOf(c.id).track.id;
+      try { d.setPointerCapture(e.pointerId); } catch {}
+    }
+  });
+  TR.lanes.addEventListener('pointermove', e => {
+    if (!g || !g.mode) return;
+    const dx = e.clientX - g.x;
+    if (!g.moved && Math.abs(dx) < 4 && Math.abs(e.clientY - g.y) < 8) return;
+    if (!g.moved) { checkpoint(); g.moved = true; }
+    const c = g.c, r = rateOf(c), D = takes.get(c.take)?.raw?.duration ?? Infinity, dt = dx / zoomPx();
+    if (g.mode === 'move') {
+      c.start = snapT(g.start + dt);
+      const i = clamp(Math.floor((e.clientY - TR.lanes.getBoundingClientRect().top) / LANE), 0, arr.tracks.length - 1), to = arr.tracks[i];
+      const from = clipOf(c.id).track;
+      if (to && to !== from) { from.clips.splice(from.clips.indexOf(c), 1); to.clips.push(c); sel.track = to.id; to.id && g.lane !== null && TR.lanes.children[i].append(g.d); }
+    } else if (g.mode === 'l') {
+      let ns = snapT(g.start + dt); ns = Math.min(ns, g.start + g.dur - 0.05);
+      const delta = ns - g.start;
+      if (!c.rev) { if (g.off + delta * r < 0) { ns = g.start - g.off / r; } c.offset = g.off + (ns - g.start) * r; }
+      c.start = ns; c.dur = g.dur - (ns - g.start);
+    } else {
+      let end = snapT(g.start + g.dur + dt); end = Math.max(end, g.start + 0.05);
+      const maxEnd = g.start + (D - g.off) / r; if (!c.rev) end = Math.min(end, maxEnd);
+      c.dur = end - g.start; if (c.rev) c.offset = Math.max(0, g.off + (g.dur - c.dur) * r);
+    }
+    placeClip(g.d, c);
+    const sc = TR.scroll, rr = sc.getBoundingClientRect();
+    if (e.clientX > rr.right - 24) sc.scrollLeft += 12; else if (e.clientX < rr.left + 24) sc.scrollLeft -= 12;
+  });
+  const end = e => {
+    if (!g) return;
+    const tap = !g.moved && Math.abs(e.clientX - g.x) < 6 && Math.abs(e.clientY - g.y) < 8;
+    if (g.mode && g.moved) { persist(); renderTimeline(); renderInspector(); }
+    else if (tap) {
+      if (g.d) { sel.clip = g.d.dataset.id; sel.track = clipOf(sel.clip).track.id; TR.view = 'clip'; }
+      else { sel.track = g.lane.dataset.id; sel.clip = null; arrSeek(snapT(timeAt(e))); }
+      renderTracks();
+    }
+    g = null;
+  };
+  TR.lanes.addEventListener('pointerup', end); TR.lanes.addEventListener('pointercancel', () => { if (g?.mode && g.moved) { persist(); renderTimeline(); } g = null; });
+}
+
+// ---------- save points: snapshots of the whole project in this browser ----------
+const PKEY = 'vtx-producer-points';
+const savePoints = () => { try { return JSON.parse(localStorage.getItem(PKEY) || '[]'); } catch { return []; } };
+function savePoint(name, auto = false) {
+  try {
+    const list = savePoints(); list.unshift({ name, auto, t: Date.now(), json: projectJson() });
+    const keep = list.filter(p => !p.auto).slice(0, 20).concat(list.filter(p => p.auto).slice(0, 8)).sort((a, b) => b.t - a.t);
+    localStorage.setItem(PKEY, JSON.stringify(keep)); if (!auto) say('Save point stored: ' + name);
+  } catch { say('This browser is full; the save point was not stored. Save the project file instead (Mix, Project).'); }
+}
+function restorePoint(p) { savePoint('Before restoring ' + p.name, true); applyProject(p.json); }
+
+// ---------- bounces ----------
+async function renderArr({ from = 0, to = songEnd(), tail = 0, only = null, master = true } = {}) {
+  audio(); await decodeUsed();
+  const sr = 48000, off = new OAC(2, Math.max(1, Math.ceil(sr * (to - from + tail))), sr);
+  const M = buildMixer(off, false, { noClip: !master }); applyMixer(M, true, only ? [only] : arr.tracks.map(t => t.id), !master);
+  for (const t of arr.tracks) {
+    if (only && t.id !== only) continue;
+    for (const c of t.clips) {
+      if (c.mute || c.start >= to || c.start + c.dur <= from) continue;
+      const skip = Math.max(0, from - c.start);
+      playClip(off, M.strips[t.id].in, c, Math.max(0, c.start - from), skip);
+    }
+  }
+  return off.startRendering();
+}
+const fileBase = () => safe(arr.name) + '_' + Math.round(arr.bpm) + 'bpm';
+const bounceSong = () => busy(null, '', async () => { say('Bouncing…', 60000); await deliver([{ name: fileBase() + '.wav', blob: encodeWav(await renderArr({ tail: 2 }), wavBits()) }], fileBase() + '.zip'); });
+const bounceStems = () => busy(null, '', async () => {
+  say('Bouncing stems…', 120000); const files = [];
+  for (const [i, t] of arr.tracks.entries()) {
+    if (mixState.strips[t.id]?.mute || !t.clips.length) continue;
+    const b = await renderArr({ tail: 2, only: t.id, master: false });
+    let peak = 0; for (let c = 0; c < 2; c++) for (const v of b.getChannelData(c)) if (Math.abs(v) > peak) peak = Math.abs(v);
+    files.push({ name: `${fileBase()}_${String(i + 1).padStart(2, '0')}_${safe(t.name)}.wav`, blob: encodeWav(b, peak > 1 ? 32 : wavBits()) });
+  }
+  await deliver(files, fileBase() + '_stems.zip');
+});
+const bounceLoop = () => busy(null, '', async () => {
+  say('Bouncing the loop…', 60000);
+  const len = arr.loop.end - arr.loop.start, tail = Math.min(6, barLen() * 2), b = await renderArr({ from: arr.loop.start, to: arr.loop.end, tail });
+  const n = Math.round(len * b.sampleRate), out = ctx.createBuffer(2, n, b.sampleRate);
+  for (let c = 0; c < 2; c++) { const s = b.getChannelData(c), d = out.getChannelData(c); d.set(s.subarray(0, n)); for (let i = n; i < s.length && i - n < n; i++) d[i - n] += s[i]; }   // the tail folds onto the start
+  await deliver([{ name: `${fileBase()}_loop_${round(len / barLen(), 2)}bars.wav`, blob: encodeWav(out, wavBits()) }], fileBase() + '_loop.zip');
+});
+
+// =====================================================================================
 // SCENE BENCH: ambience as looping beds and random one-shots, with crossfades between scenes
 // =====================================================================================
-const uid = () => Math.random().toString(36).slice(2, 8);
 const GAPS = [0.5, 1, 2, 3, 4, 6, 8, 12, 20, 30, 60];
 const FADES = [0.25, 0.5, 1, 2, 3, 5, 8, 12];
 const SCENE_LENS = [10, 20, 30, 60, 90, 120];
@@ -2415,17 +3122,14 @@ function stripCard(id) {
   const s = mixState.strips[id];
   const mute = el('button', { className: 'ms m', textContent: 'M', ariaLabel: 'Mute ' + STRIP_NAMES[id] }), solo = el('button', { className: 'ms s', textContent: 'S', ariaLabel: 'Solo ' + STRIP_NAMES[id] });
   mute.setAttribute('aria-pressed', s.mute); solo.setAttribute('aria-pressed', s.solo);
-  mute.onclick = () => { s.mute = !s.mute; mute.setAttribute('aria-pressed', s.mute); remix(); persist(); };
-  solo.onclick = () => {
-    s.solo = !s.solo; solo.setAttribute('aria-pressed', s.solo);
-    remix(); persist();
-  };
-  me['ms-' + id] = { mute, solo };
+  mute.onclick = () => { s.mute = !s.mute; syncMS(); remix(); persist(); };
+  solo.onclick = () => { s.solo = !s.solo; syncMS(); remix(); persist(); };
+  msList.push({ id, mute, solo });
   const fv = el('div', { className: 'fv', textContent: fmtDb(s.fader) });
   const fader = makeFader({ label: STRIP_NAMES[id] + ' level', value: s.fader, onInput: v => { s.fader = v; fv.textContent = fmtDb(v); remix(); persist(); } });
   const lv = el('div', { className: 'lv' }), pk = el('div', { className: 'pk' }), meter = el('div', { className: 'meter', title: 'Level, RMS with peak hold' }, lv, pk);
   const gl = el('div', { className: 'lv' }), gr = el('div', { className: 'meter gr', title: 'Compressor gain reduction' }, gl);
-  me['lv-' + id] = { lv, pk, gl };
+  lvList.push({ id, lv, pk, gl });
   const dial = (key, size = 60) => dialFor(SD[key], s[key], v => { s[key] = v; remix(); persist(); }, size).root;
   const detail = el('details', { className: 'strip-detail' }, el('summary', { textContent: 'Tone and dynamics', style: 'min-height:40px;display:flex;align-items:center;color:var(--cyan);cursor:pointer' }));
   let built = false;
@@ -2440,10 +3144,17 @@ function stripCard(id) {
     el('div', { className: 'fadrow' }, fader.root, fv), meter, gr,
     el('div', { className: 'dials row3' }, dial('pan'), dial('sa'), dial('sb')), detail);
 }
+// Strip widgets can appear in more than one place (the Mix bench, a track header, the track panel): keep them all in step.
+let msList = [], lvList = [];
+function syncMS() {
+  msList = msList.filter(x => x.mute.isConnected);
+  for (const x of msList) { const s = mixState.strips[x.id]; if (s) { x.mute.setAttribute('aria-pressed', s.mute); x.solo.setAttribute('aria-pressed', s.solo); } }
+}
 function paintStrips() {
-  for (const id of STRIP_IDS) {
-    const m = LM.strips[id], e = me['lv-' + id];
-    if (!e) continue;
+  lvList = lvList.filter(x => x.lv.isConnected);
+  for (const e of lvList) {
+    const m = LM.strips[e.id];
+    if (!m || !e.lv.offsetParent) continue;
     e.lv.style.clipPath = `inset(0 ${100 - levelPct(m.rms)}% 0 0)`;
     e.pk.style.left = `calc(${levelPct(m.hold)}% - 2px)`;
     e.gl.style.clipPath = `inset(0 ${100 - clamp(-m.gr / 20) * 100}% 0 0)`;
@@ -2451,15 +3162,16 @@ function paintStrips() {
 }
 
 // ---------- master out, sends, ducking, project ----------
-function outCard() {
-  const m = mixState.master, card = el('div', { className: 'card' }, el('h2', { textContent: 'Master out' }));
+function suiteCard() {
+  const m = mixState.master, dial = k => dialFor(MD[k], m[k], v => { m[k] = v; remix(); persist(); }, 64).root;
   const lim = el('button', { className: 'chip', textContent: 'Limiter' }); lim.setAttribute('aria-pressed', m.limiter);
   lim.onclick = () => { m.limiter = !m.limiter; lim.setAttribute('aria-pressed', m.limiter); remix(); persist(); };
-  card.append(el('div', { className: 'dials row3' },
-    dialFor(MD.trim, m.trim, v => { m.trim = v; remix(); persist(); }, 76).root,
-    dialFor(MD.ceil, m.ceil, v => { m.ceil = v; remix(); persist(); }, 76).root, el('div', { style: 'display:grid;justify-items:center;align-content:center' }, lim)),
-    el('p', { className: 'note', textContent: 'The limiter holds peaks at the ceiling, with a hard stop at full scale behind it. Master trim pushes into it. A ceiling of −2 dB leaves room for true peaks.' }));
-  return card;
+  const part = (title, keys, ...extra) => el('div', { style: 'margin-top:10px' }, el('h3', { textContent: title }), el('div', { className: 'dials' }, ...keys.map(dial), ...extra));
+  return el('div', { className: 'card' }, el('h2', { textContent: 'Master suite' }),
+    el('p', { className: 'note', style: 'margin:0', textContent: 'Every strip and track meets here, in this order: trim, tone, glue, width, limiter.' }),
+    part('Tone', ['eqL', 'eqLM', 'eqHM', 'eqH']), part('Glue compressor', ['gthr', 'gratio', 'gatt', 'grel', 'gmk']),
+    part('Width and output', ['width', 'trim', 'ceil'], el('div', { style: 'display:grid;justify-items:center;align-content:center' }, lim)),
+    el('p', { className: 'note', textContent: 'The glue compressor is off until its ratio is above 1:1. The limiter holds peaks at the ceiling, with a hard stop at full scale behind it. A ceiling of \u22122 dB leaves room for true peaks.' }));
 }
 function sendsCard() {
   const x = mixState.sends, d = el('details', { className: 'card' }, el('summary', { textContent: 'Sends' }));
@@ -2502,7 +3214,7 @@ function projectCard() {
   return d;
 }
 function buildMix() {
-  $('mixWrap').replaceChildren(masterCard(), specCard(), ...STRIP_IDS.map(stripCard), outCard(), sendsCard(), duckCard(), projectCard());
+  $('mixWrap').replaceChildren(masterCard(), specCard(), ...STRIP_IDS.map(id => stripCard(id)), suiteCard(), sendsCard(), duckCard(), projectCard());
 }
 
 // ---------- the frame loop: header spectrum, meters, loudness ----------
@@ -2523,11 +3235,13 @@ function startFrame() { if (!frameOn) { frameOn = true; requestAnimationFrame(fr
 function frame() {
   requestAnimationFrame(frame);
   if (!A || document.hidden) return;
+  if (activeTab === 'tracks') arrFrame();
   if (!readMeters()) return;
   A.spec.getFloatFrequencyData(scratch.spec);
   drawHeader();
   $('clipLed').classList.toggle('on', performance.now() < LM.clipUntil);
   if (activeTab === 'mix') { paintMaster(); paintStrips(); drawSpectrum(); }
+  else if (activeTab === 'tracks') { paintStrips(); paintTrackMeters(); }
   else if (activeTab === 'takes' && editor.name && pads.has(editor.name)) drawWave();
 }
 buildMix();
@@ -2684,15 +3398,16 @@ async function copyText(text, area) {
   catch { area.focus(); area.select(); say('Select the text shown and copy it.'); }
 }
 function collect() {
-  return { v: 2, prefs, rack, mix: mixState, veh: plainVeh(), macro, takeMeta, edits, scenes, sceneIdx, notebook };
+  return { v: 3, prefs, rack, mix: mixState, veh: plainVeh(), macro, takeMeta, edits, scenes, sceneIdx, notebook, arr };
 }
-const projectJson = () => JSON.stringify({ app: 'VTX Sound Studio', schema: 1, saved: new Date().toISOString(), ...collect() }, null, 1);
-const saveProject = btn => busy(btn, 'Saving…', () => deliver([{ name: 'vtx-sound-studio-project.json', blob: new Blob([projectJson()], { type: 'application/json' }) }], 'vtx-sound-studio-project.zip'));
+const projectJson = () => JSON.stringify({ app: 'VTX Producer', schema: 1, saved: new Date().toISOString(), ...collect() }, null, 1);
+const saveProject = btn => busy(btn, 'Saving…', () => deliver([{ name: 'vtx-producer-project.json', blob: new Blob([projectJson()], { type: 'application/json' }) }], 'vtx-producer-project.zip'));
 function applyProject(text) {
-  const note = $('projectNote');
+  const note = $('projectNote') || { set textContent(v) { say(v); } };
   let obj;
   try { obj = JSON.parse(text); } catch { note.textContent = 'That is not valid JSON.'; return; }
-  if (!obj || obj.app !== 'VTX Sound Studio') { note.textContent = 'That is not a VTX Sound Studio project.'; return; }
+  const note2 = note || { set textContent(v) { say(v); } };
+  if (!obj || !['VTX Producer', 'VTX Sound Studio'].includes(obj.app)) { (note || note2).textContent = 'That is not a VTX Producer project.'; return; }
   try { const { app, schema, saved: when, ...state } = obj; localStorage.setItem(KEY, JSON.stringify(state)); }
   catch { note.textContent = 'This browser will not let the studio keep settings, so the project cannot be applied here.'; return; }
   note.textContent = 'Applied. Reloading…'; setTimeout(() => location.reload(), 300);
@@ -2705,10 +3420,11 @@ function resetStudio() {
 // =====================================================================================
 // TABS AND START
 // =====================================================================================
-const TABS = { mix: ['Mix', 'mix'], music: ['Music', 'music'], vehicle: ['Vehicle', 'jet'], scene: ['Scene', 'scene'], takes: ['Takes', 'takes'] };
+const TABS = { tracks: ['Tracks', 'tracks'], mix: ['Mix', 'mix'], music: ['Music', 'music'], vehicle: ['Vehicle', 'jet'], scene: ['Scene', 'scene'], takes: ['Takes', 'takes'] };
 for (const [id, [label, glyph]] of Object.entries(TABS)) $('t-' + id).innerHTML = icon(glyph) + `<span>${label}</span>`;
 function showTab(id) {
-  if (!TABS[id]) id = 'mix';
+  if (!TABS[id]) id = 'tracks';
+  if (id === 'mix' && mixDirty) { buildMix(); mixDirty = false; }
   for (const name of Object.keys(TABS)) {
     $('tab-' + name).hidden = name !== id;
     $('t-' + name).setAttribute('aria-selected', name === id);
@@ -2716,9 +3432,15 @@ function showTab(id) {
   activeTab = id; prefs.tab = id; persist();
   window.scrollTo(0, 0);
   if (id === 'takes') requestAnimationFrame(drawWave);
+  if (id === 'tracks') { renderTracks(); } else { $('play').innerHTML = icon(player.paused ? 'play' : 'pause'); showNow(); }
 }
 for (const b of document.querySelectorAll('[data-tab]')) b.onclick = () => showTab(b.dataset.tab);
 $('prev').innerHTML = icon('prev'); $('play').innerHTML = icon('play'); $('next').innerHTML = icon('next');
+// The header transport follows the bench: the timeline on Tracks, the radio everywhere else.
+$('play').onclick = () => activeTab === 'tracks' ? arrToggle() : toggle();
+$('prev').onclick = () => activeTab === 'tracks' ? arrSeek(arr.loop.on ? arr.loop.start : 0) : step(-1, true);
+$('next').onclick = () => activeTab === 'tracks' ? arrSeek(snapT(songEnd())) : step(1, true);
+buildTracks();
 applySpeed(); showMusic(prefs.musicView); showTab(prefs.tab);
 
 </script>

@@ -20,7 +20,7 @@ server.listen(0, '127.0.0.1', async () => {
   const url = `http://127.0.0.1:${server.address().port}/VTX%20Producer.html`;
   if (!fs.existsSync(path.join(__dirname, 'assets'))) spawnSync('node', [path.join(__dirname, 'gen.js')], { stdio: 'inherit' });
   let pass = 0, fail = 0;
-  for (const suite of ['dsp', 'smoke', 'audio', 'ui', 'takes', 'vehicle', 'scene', 'persist', 'overflow', 'touch']) {
+  for (const suite of ['dsp', 'smoke', 'audio', 'ui', 'takes', 'vehicle', 'scene', 'persist', 'overflow', 'touch', 'tracks']) {
     const r = await run(path.join(__dirname, suite + '.js'), { ...process.env, STUDIO_URL: url });
     const lines = r.stdout.split('\n');
     const p = lines.filter(l => l.startsWith('PASS ')).length, f = lines.filter(l => l.startsWith('FAIL ')).length + (r.code ? 1 : 0);

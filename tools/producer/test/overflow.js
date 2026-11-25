@@ -16,10 +16,10 @@ const SOUNDS = fs.readdirSync(A('Sounds')).map(f => A('Sounds/' + f));
     await page.click('#t-takes'); await page.locator('#takeList .take', { hasText: 'wing_deployment' }).locator('.pick-take').click(); await page.waitForTimeout(600);
     await page.click('#editorBody >> text=Loop points');
     const bad = [];
-    for (const tab of ['mix', 'music', 'vehicle', 'scene', 'takes']) {
+    for (const tab of ['tracks', 'mix', 'music', 'vehicle', 'scene', 'takes']) {
       await page.click('#t-' + tab); await page.waitForTimeout(200);
       if (tab === 'music') { for (const v of ['deck', 'rack']) { await page.click(`#musicSeg button[data-v=${v}]`); await page.waitForTimeout(100); const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]); if (w[0] > w[1]) bad.push(`music/${v} ${w}`); } }
-      const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth, [...document.querySelectorAll('.tab:not([hidden]) *')].filter(e => e.getBoundingClientRect().right > innerWidth + 1).slice(0, 3).map(e => e.tagName + '.' + e.className)]);
+      const w = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth, [...document.querySelectorAll('.tab:not([hidden]) *')].filter(e => !e.closest('.tl-scroll') && e.getBoundingClientRect().right > innerWidth + 1).slice(0, 3).map(e => e.tagName + '.' + e.className)]);
       if (w[0] > w[1] || w[2].length) bad.push(`${tab} scrollWidth ${w[0]} vs ${w[1]} ${w[2]}`);
     }
     console.log((bad.length ? 'FAIL ' : 'PASS ') + `no sideways scroll on any bench at ${width}px wide` + (bad.length ? '  ' + bad.join(' | ') : ''));

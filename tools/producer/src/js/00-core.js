@@ -40,6 +40,7 @@ const ICON = {
   jet: '<path d="M12 2.5l1.7 6.6 7.8 4.1v2.4l-7.5-1.7.9 4.6 2.4 1.5v1.5L12 20.2l-5.3 1v-1.5l2.4-1.5.9-4.6-7.5 1.7v-2.4l7.8-4.1z"/>',
   scene: '<path d="M2 15c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3v3c-2.5 0-2.5-3-5-3s-2.5 3-5 3-2.5-3-5-3-2.5 3-5 3zM2 8c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3v3c-2.5 0-2.5-3-5-3s-2.5 3-5 3-2.5-3-5-3-2.5 3-5 3z"/>',
   takes: '<path d="M3 10h2v4H3zm4-4h2v12H7zm4-3h2v18h-2zm4 4h2v10h-2zm4 2h2v6h-2z"/>',
+  tracks: '<path d="M2 5h9v4H2zm11 0h9v4h-9zM2 11h6v4H2zm8 0h12v4H10zM2 17h13v4H2zm15 0h5v4h-5z"/>',
 };
 const icon = (name, size = 24) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="currentColor" aria-hidden="true">${ICON[name]}</svg>`;
 
@@ -48,7 +49,7 @@ const KEY = 'vtx-sound-studio-2';
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch {}
 const prefs = merge({ haptics: true, clicks: false, tuneStatic: true, cockpit: false, fine: false, wake: false,
-  repeat: 'all', shuffle: false, lock: true, tab: 'music', musicView: 'deck', keepTakes: true, keepSongs: false, bypass: false, bits16: false }, saved.prefs);
+  repeat: 'all', shuffle: false, lock: true, tab: 'tracks', musicView: 'deck', keepTakes: true, keepSongs: false, bypass: false, bits16: false }, saved.prefs);
 function persist() {
   clearTimeout(persist.t);
   persist.t = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(collect())); } catch {} }, 400);

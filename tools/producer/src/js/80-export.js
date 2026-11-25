@@ -150,15 +150,16 @@ async function copyText(text, area) {
   catch { area.focus(); area.select(); say('Select the text shown and copy it.'); }
 }
 function collect() {
-  return { v: 2, prefs, rack, mix: mixState, veh: plainVeh(), macro, takeMeta, edits, scenes, sceneIdx, notebook };
+  return { v: 3, prefs, rack, mix: mixState, veh: plainVeh(), macro, takeMeta, edits, scenes, sceneIdx, notebook, arr };
 }
-const projectJson = () => JSON.stringify({ app: 'VTX Sound Studio', schema: 1, saved: new Date().toISOString(), ...collect() }, null, 1);
-const saveProject = btn => busy(btn, 'Saving…', () => deliver([{ name: 'vtx-sound-studio-project.json', blob: new Blob([projectJson()], { type: 'application/json' }) }], 'vtx-sound-studio-project.zip'));
+const projectJson = () => JSON.stringify({ app: 'VTX Producer', schema: 1, saved: new Date().toISOString(), ...collect() }, null, 1);
+const saveProject = btn => busy(btn, 'Saving…', () => deliver([{ name: 'vtx-producer-project.json', blob: new Blob([projectJson()], { type: 'application/json' }) }], 'vtx-producer-project.zip'));
 function applyProject(text) {
-  const note = $('projectNote');
+  const note = $('projectNote') || { set textContent(v) { say(v); } };
   let obj;
   try { obj = JSON.parse(text); } catch { note.textContent = 'That is not valid JSON.'; return; }
-  if (!obj || obj.app !== 'VTX Sound Studio') { note.textContent = 'That is not a VTX Sound Studio project.'; return; }
+  const note2 = note || { set textContent(v) { say(v); } };
+  if (!obj || !['VTX Producer', 'VTX Sound Studio'].includes(obj.app)) { (note || note2).textContent = 'That is not a VTX Producer project.'; return; }
   try { const { app, schema, saved: when, ...state } = obj; localStorage.setItem(KEY, JSON.stringify(state)); }
   catch { note.textContent = 'This browser will not let the studio keep settings, so the project cannot be applied here.'; return; }
   note.textContent = 'Applied. Reloading…'; setTimeout(() => location.reload(), 300);
