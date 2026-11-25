@@ -12,6 +12,8 @@ const WORLD_HASH := "3333e153ac809f473db60750c57f181207e0378e99e078a872a9a3d8543
 const START_TIMEOUT_MSEC := 60_000
 const SNAPSHOT_TIMEOUT_MSEC := 12_000
 const INPUT_INTERVAL_MSEC := 100
+const CONTROL_FRESHNESS_MSEC := 2000
+const FlightActions = preload("res://flight/flight_actions.gd")
 
 var last_view: Dictionary = {}
 var runtime_identity: Dictionary = {}
@@ -32,6 +34,9 @@ var _socket: WebSocketPeer
 var _command_request: HTTPRequest
 var _command_path := ""
 var _pending_controls: Dictionary = {}
+var _submitted_controls: Dictionary = {}
+var _submitted_run: Variant = null
+var _field_apply_times: Dictionary = {}
 var _pending_pause: Variant = null
 
 
@@ -93,13 +98,28 @@ func start_flight() -> void:
 
 
 func send_controls(patch: Dictionary) -> void:
-	if not _ready or _closing or _failed or not bool(last_view.get("active", false)):
+	if not accepts_controls():
 		return
 	_pending_controls.merge(patch, true)
 
 
+func accepts_controls() -> bool:
+	return _ready and not _closing and not _failed and FlightActions.manual_flight(last_view) \
+		and Time.get_ticks_msec() - _last_snapshot_msec <= CONTROL_FRESHNESS_MSEC
+
+
+func field_in_transit(field: String) -> bool:
+	if _pending_controls.has(field) or _submitted_controls.has(field):
+		return true
+	# The HTTP reply acknowledges queuing. The held command changes on a later solver step.
+	var sim_time := float(last_view.get("rendering_truth", {}).get("t_s", -1.0))
+	return _field_apply_times.has(field) and sim_time <= float(_field_apply_times[field])
+
+
 func pause(paused: bool) -> void:
-	if _ready and not _closing and not _failed and bool(last_view.get("active", false)):
+	if _ready and not _closing and not _failed and bool(last_view.get("active", false)) \
+			and last_view.get("authority") == "manual" and last_view.get("mode") == "live" \
+			and Time.get_ticks_msec() - _last_snapshot_msec <= CONTROL_FRESHNESS_MSEC:
 		_pending_pause = paused
 
 
@@ -133,7 +153,13 @@ func _process(_delta: float) -> void:
 		if now >= _next_connect_msec:
 			_readiness_check()
 		return
+	# A view queued during a render stall must not revive pre-stall pilot inputs.
+	if now - _last_snapshot_msec > CONTROL_FRESHNESS_MSEC:
+		_pending_controls.clear()
+		_pending_pause = null
 	_poll_views(now)
+	if not accepts_controls():
+		_pending_controls.clear()
 	if _ready and now - _last_snapshot_msec >= SNAPSHOT_TIMEOUT_MSEC:
 		_fail("The VTX simulator stopped sending cockpit snapshots.")
 		return
@@ -145,12 +171,14 @@ func _process(_delta: float) -> void:
 		_send("/api/operator", request)
 		return
 	if now >= _next_input_msec and not _pending_controls.is_empty():
-		if bool(last_view.get("active", false)) and last_view.get("run_id") is String:
+		if accepts_controls():
 			var patch := _pending_controls.duplicate()
+			_submitted_controls = patch.duplicate()
+			_submitted_run = last_view["run_id"]
 			patch["schema"] = "phantom-fbw-1"
 			patch["authority"] = "manual"
 			patch["expected_run_id"] = last_view["run_id"]
-			patch["reason"] = "Native Phantom keyboard controls"
+			patch["reason"] = "Native Phantom manual controls"
 			_next_input_msec = now + INPUT_INTERVAL_MSEC
 			_send("/api/action", patch)
 		_pending_controls.clear()
@@ -216,6 +244,11 @@ func _poll_views(now: int) -> void:
 	if value.get("run_id") != last_view.get("run_id"):
 		_pending_controls.clear()
 		_pending_pause = null
+		_submitted_controls.clear()
+		_submitted_run = null
+		_field_apply_times.clear()
+	if value.get("authority") != "manual" or value.get("mode") != "live":
+		_pending_pause = null
 	last_view = value
 	if not _ready:
 		_ready = true
@@ -237,13 +270,19 @@ func _on_command(result: int, code: int, _headers_received: PackedStringArray, b
 	_command_path = ""
 	if _closing or _failed:
 		return
+	var value: Variant = JSON.parse_string(body.get_string_from_utf8())
+	if path == "/api/action":
+		if result == HTTPRequest.RESULT_SUCCESS and code == 200 and value is Dictionary \
+				and value.get("accepted") and value.has("apply_t_s") and _submitted_run == last_view.get("run_id"):
+			for field in _submitted_controls:
+				_field_apply_times[field] = value["apply_t_s"]
+		_submitted_controls.clear()
 	if result == HTTPRequest.RESULT_SUCCESS and code >= 200 and code < 300:
 		return
-	# An already ended sortie may reject a final keyboard event still in flight.
+	# A sortie or authority change can reject an action already in flight.
 	if path == "/api/action" and code == 409:
 		_pending_controls.clear()
 		return
-	var value: Variant = JSON.parse_string(body.get_string_from_utf8())
 	var detail := ""
 	if value is Dictionary:
 		detail = str(value.get("detail", ""))

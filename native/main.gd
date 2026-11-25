@@ -3,6 +3,9 @@ extends Node3D
 const BackendBridge = preload("res://runtime/bridge.gd")
 const WorldView = preload("res://world/meridian_world.gd")
 const AircraftView = preload("res://flight/phantom_view.gd")
+const FlightInput = preload("res://flight/flight_input.gd")
+const FlightActions = preload("res://flight/flight_actions.gd")
+const CAMERA_NAMES := ["Chase", "Forward", "Meridian"]
 
 const INK := Color("#e8f0ee")
 const SUBDUED := Color("#a5bab8")
@@ -14,6 +17,7 @@ const AIRCRAFT_CONFIG := "58d12857e3d38b50deeefa982974f4e54bd37f72823218a3e5c31b
 var bridge = BackendBridge.new()
 var world = WorldView.new()
 var aircraft = AircraftView.new()
+var pilot := FlightInput.new()
 var camera := Camera3D.new()
 var latest: Dictionary = {}
 var world_data: Dictionary = {}
@@ -27,10 +31,8 @@ var chase_run_id: Variant = null
 var chase_anchor := Vector3.ZERO
 var chase_heading := 0.0
 var snapshot_usec := 0
-var control_elapsed := 0.0
-var collective := 0.0
-var booster := 0.0
-var last_control: Dictionary = {}
+var start_pad_id := -1
+var rebase_after_airbrake := false
 var launched_usec := 0
 var verify_only := false
 var control_smoke := false
@@ -45,6 +47,9 @@ var status: Label
 var instruments: Label
 var start_button: Button
 var pause_button: Button
+var pad_status: Label
+var configuration: Label
+var help_panel: PanelContainer
 
 
 func _ready() -> void:
@@ -71,6 +76,8 @@ func _ready() -> void:
 	camera.position = Vector3(-3830.0, 24.0, 66.0)
 	camera.look_at(Vector3(-3885.0, 3.0, 0.0), Vector3.UP)
 	create_hud()
+	Input.joy_connection_changed.connect(on_pad_connection)
+	get_window().focus_exited.connect(on_focus_lost)
 	add_child(bridge)
 	bridge.ready_to_fly.connect(on_world)
 	bridge.view_received.connect(on_view)
@@ -100,22 +107,29 @@ func create_hud() -> void:
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_row.add_child(status)
 	start_button = Button.new()
+	start_button.focus_mode = Control.FOCUS_NONE
 	start_button.text = "Start flight"
 	start_button.disabled = true
 	start_button.pressed.connect(start_flight)
 	header_row.add_child(start_button)
 	pause_button = Button.new()
+	pause_button.focus_mode = Control.FOCUS_NONE
 	pause_button.text = "Pause"
 	pause_button.disabled = true
 	pause_button.pressed.connect(toggle_pause)
 	header_row.add_child(pause_button)
+	var help_button := Button.new()
+	help_button.focus_mode = Control.FOCUS_NONE
+	help_button.text = "Controls   Y / F1"
+	help_button.pressed.connect(toggle_help)
+	header_row.add_child(help_button)
 
 	var footer := PanelContainer.new()
 	hud.add_child(footer)
 	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	footer.offset_left = 22
 	footer.offset_right = -22
-	footer.offset_top = -124
+	footer.offset_top = -150
 	footer.offset_bottom = -21
 	footer.add_theme_stylebox_override("panel", tray_style())
 	var controls := VBoxContainer.new()
@@ -123,12 +137,62 @@ func create_hud() -> void:
 	footer.add_child(controls)
 	instruments = make_label("ALT  —     AIRSPEED  —     V/S  —", 22, INK)
 	controls.add_child(instruments)
-	var hints := make_label("Enter  Start flight     R/F  Collective     W/S  Pitch     A/D  Roll     Q/E  Yaw     G  Deploy wings     1/2  Pod angle     T/Y  Boosters     C  Camera", 16, SUBDUED)
+	configuration = make_label("Landing legs   —", 19, INK)
+	controls.add_child(configuration)
+	pad_status = make_label("Checking for an Xbox controller", 17, ACCENT)
+	controls.add_child(pad_status)
+	var hints := make_label("A / L   Landing legs      LT / RT   Collective      LB / RB   Boosters      View / C   Camera      Y / F1   All controls", 16, SUBDUED)
 	controls.add_child(hints)
+	make_controls_panel(hud)
 	if verify_only:
 		hints.text = "Readiness check in progress"
 		start_button.hide()
 		pause_button.hide()
+		help_button.hide()
+
+
+func make_controls_panel(hud: CanvasLayer) -> void:
+	help_panel = PanelContainer.new()
+	hud.add_child(help_panel)
+	help_panel.position = Vector2(22, 96)
+	help_panel.add_theme_stylebox_override("panel", tray_style())
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", 8)
+	help_panel.add_child(rows)
+	rows.add_child(make_label("Flight controls", 24, ACCENT))
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 28)
+	grid.add_theme_constant_override("v_separation", 3)
+	rows.add_child(grid)
+	for row in [
+		["Action", "Xbox One", "Keyboard"],
+		["Start flight", "Menu (arms a centred pad)", "Enter"],
+		["Arm pad during flight", "Left stick click", "F2"],
+		["Pitch up / down", "Left stick back / forward", "W / S"],
+		["Roll left / right", "Left stick left / right", "A / D"],
+		["Yaw left / right", "Right stick left / right", "Q / E"],
+		["Collective ↑ / ↓", "RT / LT", "R / F"],
+		["Paired boosters ↑ / ↓", "RB / LB", "T / Y"],
+		["Retract / extend landing legs", "A", "L"],
+		["Deploy / stow wings and canards", "X / D-pad left", "G / H"],
+		["Pods vertical / forward", "D-pad up / down", "1 / 2"],
+		["Wheel brakes on / off", "D-pad right", "K"],
+		["ECU airbrake on / off", "Hold B for ½ second", "B"],
+		["Return to direct collective", "Right stick click", "M"],
+		["Cycle camera", "View", "C"],
+		["Pause / resume", "Menu", "P"],
+		["Show / hide controls", "Y", "F1"],
+		["Close application", "—", "Esc"],
+	]:
+		for cell in row:
+			grid.add_child(make_label(cell, 17, ACCENT if row[0] == "Action" else INK))
+	rows.add_child(make_label("Release thrust controls to keep their setting. Centre the pad before arming.", 15, SUBDUED))
+	help_panel.hide()
+
+
+func toggle_help() -> void:
+	help_panel.visible = not help_panel.visible
 
 
 func tray_style() -> StyleBoxFlat:
@@ -170,9 +234,29 @@ func build_world() -> void:
 
 
 func on_view(view: Dictionary) -> void:
+	var changed_run: bool = latest.get("run_id") != view.get("run_id")
+	var changed_authority: bool = latest.get("authority") != view.get("authority")
+	if snapshot_usec and Time.get_ticks_usec() - snapshot_usec > BackendBridge.CONTROL_FRESHNESS_MSEC * 1000:
+		start_pad_id = -1
+		pilot.disarm_pad()
+		pilot.resample_owned_axes()
 	latest = view
 	snapshot_usec = Time.get_ticks_usec()
 	var is_active: bool = latest.get("active", false)
+	var command: Dictionary = latest.get("rendering_truth", {}).get("command", {})
+	if changed_run or changed_authority:
+		pilot.reset_demands()
+		rebase_after_airbrake = false
+		if not (starting and start_pad_id == pilot.pad_id and start_pad_id >= 0 \
+				and get_window().has_focus() and FlightActions.manual_flight(view) and pilot.arm_pad()):
+			pilot.disarm_pad()
+		start_pad_id = -1
+	if FlightActions.manual_flight(view):
+		sync_power(command, changed_run or changed_authority)
+	elif pilot.pad_armed and (is_active or not starting):
+		pilot.disarm_pad()
+	if view.get("paused", false):
+		pilot.resample_owned_axes()
 	if is_active:
 		starting = false
 	if flight_ready and not verify_only:
@@ -181,7 +265,24 @@ func on_view(view: Dictionary) -> void:
 		pause_button.text = "Resume" if latest.get("paused", false) else "Pause"
 
 
+func sync_power(command: Dictionary, changed_run: bool) -> void:
+	var pair: Array = command.get("booster_throttle", [])
+	if pair.size() != 2 or not command.has("collective"):
+		return
+	if changed_run or (rebase_after_airbrake and not bridge.field_in_transit("airbrake")):
+		pilot.set_power_targets(float(command.collective), (float(pair[0]) + float(pair[1])) * 0.5)
+		rebase_after_airbrake = false
+	elif not rebase_after_airbrake:
+		var settled := {}
+		for field in ["collective", "booster_throttle"]:
+			if not bridge.field_in_transit(field):
+				settled[field] = command[field]
+		pilot.sync_demands(settled)
+
+
 func _process(delta: float) -> void:
+	if not verify_only:
+		pilot.poll(get_window().has_focus())
 	if latest.is_empty() or closing:
 		return
 	aircraft.update_from_view(latest, delta)
@@ -202,8 +303,13 @@ func _process(delta: float) -> void:
 			camera_mode = 2
 		if ready_frame_count >= 22:
 			readiness_test()
-	if flight_ready and not verify_only and latest.get("active", false) and not latest.get("paused", false):
-		update_controls(delta)
+	if flight_ready and not verify_only:
+		if bridge.accepts_controls():
+			update_controls(delta)
+		elif latest.get("active", false) and latest.get("authority") == "manual":
+			if pilot.pad_armed:
+				pilot.disarm_pad()
+			pilot.resample_owned_axes()
 
 
 func update_camera(delta: float) -> void:
@@ -252,9 +358,32 @@ func update_hud() -> void:
 	var alt: float = obs.get("baro_m", 0.0)
 	var speed: float = obs.get("airspeed_m_s", 0.0)
 	var vertical: float = float(velocity[2]) if velocity.size() > 2 else 0.0
+	var truth: Dictionary = latest.get("rendering_truth", {})
+	var command: Dictionary = truth.get("command", {})
+	var pair: Array = command.get("booster_throttle", [0.0, 0.0])
 	instruments.text = "ALT  %.1f m     AIRSPEED  %.1f m/s     V/S  %+.1f m/s     COLLECTIVE  %.0f%%     BOOSTERS  %.0f%%" % [
-		alt, speed, vertical, collective * 100.0, booster * 100.0
+		alt, speed, vertical, float(command.get("collective", 0.0)) * 100.0, (float(pair[0]) + float(pair[1])) * 50.0
 	]
+	var leg_demand: Array = command.get("leg_extension_m", [])
+	var leg_actual: Array = obs.get("leg_extension_m", [])
+	var gear_text := "Landing legs   —"
+	if leg_demand.size() == 4 and leg_actual.size() == 4:
+		var target := "DOWN" if float(leg_demand.min()) >= 0.519 else ("UP" if float(leg_demand.max()) <= 0.001 else "PARTIAL")
+		gear_text = "Legs requested %s     FL %.2f   FR %.2f   RL %.2f   RR %.2f m" % [
+			target, leg_actual[0], leg_actual[1], leg_actual[2], leg_actual[3]]
+	var wings: Dictionary = obs.get("wing_state", {})
+	var ecu: Dictionary = truth.get("phantom", {}).get("transition_ecu", {})
+	configuration.text = "%s      Wings  %s / %s      Airbrake  %s      Mode  %s      Camera  %s" % [
+		gear_text, wings.get("left", "—"), wings.get("right", "—"), ecu.get("airbrake", "—"),
+		command.get("stability_mode", "—"), CAMERA_NAMES[camera_mode]]
+	if pilot.pad_id < 0:
+		pad_status.text = "Keyboard ready   ·   Xbox pad disconnected"
+	elif pilot.pad_armed:
+		pad_status.text = "%s   ·   Armed" % pilot.pad_name
+	elif latest.get("active", false):
+		pad_status.text = "%s   ·   Centre sticks, release controls, then click left stick to arm" % pilot.pad_name
+	else:
+		pad_status.text = "%s   ·   Centre sticks and press Menu to start" % pilot.pad_name
 	if not flight_ready:
 		return
 	var age_ms := (Time.get_ticks_usec() - snapshot_usec) / 1000.0
@@ -265,17 +394,15 @@ func update_hud() -> void:
 		status.text = "PAUSED" if latest.get("paused", false) else "LIVE  ·  %.2f s" % float(obs.get("t_s", 0.0))
 		status.modulate = INK
 	else:
-		status.text = "Ready  ·  Enter to start"
+		status.text = "Ready  ·  Menu / Enter to start"
 		status.modulate = ACCENT
 
 
-func start_flight() -> void:
+func start_flight(from_pad := false) -> void:
 	if not flight_ready or starting or latest.get("active", false):
 		return
 	starting = true
-	collective = 0.0
-	booster = 0.0
-	last_control.clear()
+	start_pad_id = pilot.pad_id if from_pad and pilot.arm_pad() else -1
 	start_button.disabled = true
 	bridge.start_flight()
 
@@ -285,51 +412,76 @@ func toggle_pause() -> void:
 		bridge.pause(not latest.get("paused", false))
 
 
-func axis(positive: Key, negative: Key) -> float:
-	if not get_window().has_focus():
-		return 0.0
-	return float(Input.is_key_pressed(positive)) - float(Input.is_key_pressed(negative))
-
-
 func update_controls(delta: float) -> void:
-	collective = clampf(collective + axis(KEY_R, KEY_F) * 0.42 * delta, 0.0, 1.0)
-	booster = clampf(booster + axis(KEY_T, KEY_Y) * 0.4 * delta, 0.0, 1.0)
-	control_elapsed += delta
-	if control_elapsed < 0.08:
-		return
-	control_elapsed = 0.0
-	var patch := {
-		"pitch": axis(KEY_W, KEY_S) * 0.34,
-		"roll": axis(KEY_D, KEY_A) * 0.46,
-		"yaw": axis(KEY_E, KEY_Q) * 0.40,
-		"collective": snappedf(collective, 0.01),
-		"booster_throttle": [snappedf(booster, 0.01), snappedf(booster, 0.01)],
-	}
-	if patch != last_control:
+	var patch := pilot.get_axis_patch(delta)
+	if rebase_after_airbrake:
+		patch.erase("collective")
+		patch.erase("booster_throttle")
+	if not patch.is_empty():
 		bridge.send_controls(patch)
-		last_control = patch
+	if pilot.drain_hold_action(delta) == "airbrake":
+		handle_action("airbrake")
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
-	if closing or verify_only or not (event is InputEventKey) or not event.pressed or event.echo:
+func _input(event: InputEvent) -> void:
+	if closing or verify_only or not get_window().has_focus():
 		return
-	match event.physical_keycode:
-		KEY_ENTER:
+	if (event is InputEventJoypadButton and event.pressed) \
+			or (event is InputEventKey and event.physical_keycode == KEY_F2 and event.pressed):
+		pilot.poll(true)
+	var action := pilot.action_for_event(event)
+	if not action.is_empty():
+		get_viewport().set_input_as_handled()
+		handle_action(action)
+
+
+func handle_action(action: String) -> void:
+	match action:
+		"start_or_pause":
+			if latest.get("active", false):
+				toggle_pause()
+			else:
+				start_flight(true)
+		"start":
 			start_flight()
-		KEY_P:
+		"pause":
 			toggle_pause()
-		KEY_C:
+		"arm_pad":
+			if flight_ready and bridge.accepts_controls():
+				pilot.arm_pad()
+		"camera":
 			camera_mode = (camera_mode + 1) % 3
 			chase_initialised = false
-		KEY_G:
-			if latest.get("active", false):
-				bridge.send_controls({"wing": "deploy", "canard_fold": "deployed"})
-		KEY_1, KEY_2:
-			if latest.get("active", false):
-				var degrees := 90.0 if event.physical_keycode == KEY_1 else 0.0
-				bridge.send_controls({"pod_tilt_deg": [degrees, degrees, degrees, degrees]})
-		KEY_ESCAPE:
+		"help":
+			toggle_help()
+		"close":
 			request_close()
+		_:
+			if not flight_ready or not bridge.accepts_controls():
+				return
+			var patch := FlightActions.configuration_patch(action, latest)
+			if patch.is_empty():
+				return
+			# Read the authoritative toggle state again after the previous press is applied.
+			for field in ["leg_extension_m", "brake", "airbrake"]:
+				if patch.has(field) and bridge.field_in_transit(field):
+					return
+			bridge.send_controls(patch)
+			if patch.get("airbrake") == "on":
+				rebase_after_airbrake = true
+
+
+func on_pad_connection(device: int, connected: bool) -> void:
+	pilot.notify_disconnect(device, connected)
+	if not connected and device == start_pad_id:
+		start_pad_id = -1
+
+
+func on_focus_lost() -> void:
+	start_pad_id = -1
+	pilot.poll(false)
+	if not verify_only and flight_ready and bridge.accepts_controls():
+		update_controls(0.0)
 
 
 func readiness_test() -> void:

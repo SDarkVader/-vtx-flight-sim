@@ -2,23 +2,34 @@
 
 Local Windows x64 G1 development prototype. Extract the complete folder, then run VTX Native Flight.exe. The game starts its own bundled Python/MuJoCo simulator on a private loopback port. It saves into a fresh session under the VTX Native Prototype app data folder. The packaged runtime and game folders stay beside the executable.
 
-## Flight controls
+## Fly with an Xbox One Bluetooth controller
 
-| Key | Control |
-| --- | --- |
-| Enter | Start the Phantom A10-D in VTOL configuration |
-| R / F | Increase / decrease collective |
-| W / S | Pitch |
-| A / D | Roll |
-| Q / E | Yaw |
-| G | Deploy wings and canards |
-| 1 / 2 | Pod angle 90° / 0° |
-| T / Y | Increase / decrease boosters |
-| C | Chase, forward view and Meridian overview |
-| P | Pause / resume |
-| Esc | Close the app and its local simulator |
+Connect the controller to Windows and bring the game window into focus. At **Ready**, look for the pad name in the footer, centre both sticks, release the triggers and press **Menu**. This starts the Phantom A10-D in VTOL configuration and arms that pad. If you start with Enter or the mouse, click the left stick to arm. **Y** opens the control card. It stays available in flight.
 
-Allow the cockpit to report Ready before starting flight. Increase collective gradually and use the vertical speed instrument when lifting from the runway. The solver uses the reviewed Phantom A10-D and Vaderland 33.1 source. The native renderer reconstructs surveyed terrain, structures and streets and supplies a dusk presentation. The build is a prototype for native readiness and flight tests. The full visual port and performance certification are later milestones.
+| Action | Xbox One | Keyboard |
+| --- | --- | --- |
+| Pitch nose up / down | Left stick back / forward | W / S |
+| Roll left / right | Left stick left / right | A / D |
+| Yaw left / right | Right stick left / right | Q / E |
+| Increase / decrease collective | RT / LT, proportional to squeeze | R / F |
+| Increase / decrease both boosters | Hold RB / LB | Hold T / Y |
+| Retract / extend all four landing legs | A | L |
+| Deploy / stow wings and canards | X / D-pad left | G / H |
+| Set pods vertical (90°) / forward (0°) | D-pad up / down | 1 / 2 |
+| Apply / release all four wheel brakes | D-pad right | K |
+| Engage / release ECU airbrake | Hold B for half a second | B |
+| Return to attitude mode with direct collective | Right stick click | M |
+| Cycle chase, forward and Meridian cameras | View | C |
+| Start / pause or resume | Menu | Enter to start, P to pause or resume |
+| Arm a centred pad during a manual flight | Left stick click | F2 |
+| Show / hide controls | Y | F1 |
+| Close the app | Window close button | Esc |
+
+Pitch, roll and yaw can be combined with collective and paired boosters. Each stick axis has a 15% centre dead zone and scales to full command beyond it. Triggers have a 5% dead zone. At full input the collective changes by 42 percentage points per second and the boosters by 40. Releasing the controls holds the last power demands. Keyboard pitch, roll and yaw retain their original limits.
+
+The landing-leg readout shows the requested position and each measured extension in metres, front left through rear right. Fully extended is 0.52 m. A mixed leg setting goes to full extension on the next press. Wing and pod actions go through the aircraft’s existing control system. The airbrake engages vertical-speed mode, points the pods down and idles the boosters. Click the right stick or press M to return to direct collective.
+
+After a disconnect, focus loss, pause or telemetry interruption, centre the pad and click the left stick to re-arm. The keyboard remains available. The game reads one mapped Xbox or XInput device and shows its name in the footer.
 
 ## Build developer notes
 
