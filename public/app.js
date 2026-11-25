@@ -143,6 +143,7 @@ const frameCapMs=(n=>Number.isFinite(n)&&n>0?1000/n:null)(Number(new URLSearchPa
 import {resolveQuality} from './vtx-env/quality.js?v=20261121-frame-pacing';import {createGround} from './vtx-env/ground.js?v=gfx-20261103-1';import {createLightPool} from './vtx-env/light-pool.js?v=gfx-20261103-1';import {dressWorld} from './vtx-env/world-dressing.js?v=gfx-20261103-1';
 import {createPost} from './vtx-env/post.js?v=2';import {createTimeOfDay} from './vtx-env/time-of-day.js?v=2';import {buildAirfieldKit} from './vtx-env/airfield-kit.js?v=1';
 import {createGameAudio} from './vtx-env/game-audio.js';
+import {createCockpitRadio} from './vtx-env/cockpit-radio.js';
 const quality=resolveQuality({mobile,search:location.search});scene.userData.quality=quality.name;
 const drawDue=createFrameGate(lightweightView?1000/15:frameCapMs??quality.frameMs??0);
 // On phones keep retained-flight actions and indicator bar directly below the flight view.
@@ -186,6 +187,8 @@ function audioControl(id,label,title){
 const audioButton=audioControl('game-audio','Audio off','Toggle vehicles and environment sounds');
 const musicButton=audioControl('game-music','Music off','Toggle the adaptive race soundtrack');
 const gameAudio=createGameAudio(audioButton,musicButton,error=>toast(error.message));
+const radioButton=audioControl('game-radio','Radio','Show or hide the cockpit radio');
+const cockpitRadio=createCockpitRadio({host:document.getElementById('viewport'),toggle:radioButton,reportError:error=>toast(error.message)});
 const listenerRight=new THREE.Vector3();
 let lightingChoice=new URLSearchParams(location.search).get('time');
 function updateLightingButton(){
@@ -217,7 +220,7 @@ const trafficPreviewEnabled=true;
   nightButton.id='time-of-day';nightButton.type='button';nightButton.textContent='Night';
   nightButton.title='Switch the scene between day and night lighting (visual only)';
   nightButton.onclick=()=>{lightingChoice=timeOfDay.toggle();updateLightingButton();};
-  cameraTools.append(nightButton,audioButton,musicButton);
+  cameraTools.append(nightButton,audioButton,musicButton,radioButton);
   if(lightingChoice==='night'){timeOfDay.set('night');updateLightingButton();}
   function recenterPhysicalVehicle(){
    if(boatViewId){
@@ -1729,6 +1732,7 @@ function animate(){
  const sceneryTime=boatViewId?harbourControls.state?.t_s:(!last?.active&&!replayFrames?last?.scenery_time_s:undefined)??truth?.t_s;
  const cityTime=world?.vaderland?.quarter&&!boatViewId&&!replayFrames?cityClock.at(now,sceneryTime):sceneryTime;
  sky.update(camera,now/1000);environment.vaderland?.update(camera,now/1000,timeOfDay.mode,cityTime??0,doorState,last?.course_timing,last?.active?last.observation?.gnss_xy_m:null);environment.buildings?.update(now/1000);environment.volcano?.update(now/1000);environment.serviceRoads?.update(now/1000,last?.observation?.gnss_xy_m);
+ cockpitRadio.update({cockpit:cameraMode==='cockpit'});
  gameAudio.update({clock:now,world,listener:camera.position,
   right:listenerRight.setFromMatrixColumn(camera.matrixWorld,0),
   cockpit:cameraMode==='cockpit',water:!!boatViewId,truth:requestedAsset?truth:null,
