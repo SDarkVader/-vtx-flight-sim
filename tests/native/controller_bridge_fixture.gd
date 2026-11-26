@@ -9,10 +9,13 @@ class BenchBridge extends "res://runtime/bridge.gd":
 	var sample_to_post_ms: Array[float] = []
 	var supply_snapshots := true
 
-	func use_receiver(port: int, token: String, run_id: String) -> void:
+	func use_receiver(port: int, token: String, run_id: String) -> bool:
+		# The shipping liveness check requires a child process on Unix.
+		_pid = OS.create_process(OS.get_environment("BENCH_PYTHON"), ["-c", "import time; time.sleep(60)"])
+		if _pid == -1:
+			return false
 		_port = port
 		_token = token
-		_pid = OS.get_process_id()
 		_ready = true
 		_world = {"id": "vaderland-33"}
 		last_view = {"active": true, "paused": false, "authority": "manual", "mode": "live", "run_id": run_id}
@@ -20,6 +23,13 @@ class BenchBridge extends "res://runtime/bridge.gd":
 		_command_request = _new_request()
 		_command_request.request_completed.connect(_on_command)
 		_command_request.request_completed.connect(receive_truth)
+		return true
+
+	func _exit_tree() -> void:
+		super._exit_tree()
+		if _pid != -1 and OS.is_process_running(_pid):
+			OS.kill(_pid)
+			_pid = -1
 
 	func _poll_views(now: int) -> void:
 		if supply_snapshots:
@@ -44,7 +54,9 @@ func _initialize() -> void:
 
 func run() -> void:
 	root.add_child(bridge)
-	bridge.use_receiver(int(OS.get_environment("BENCH_PORT")), OS.get_environment("BENCH_TOKEN"), OS.get_environment("BENCH_RUN"))
+	if not bridge.use_receiver(int(OS.get_environment("BENCH_PORT")), OS.get_environment("BENCH_TOKEN"), OS.get_environment("BENCH_RUN")):
+		fail("Could not start the fixture liveness process")
+		return
 	# Leave main detached. Its UI and input methods can run without invoking _ready/startup.
 	main.bridge.free()
 	main.bridge = bridge

@@ -157,7 +157,8 @@ def main():
         with receiver(lab, token, records) as port:
             result = subprocess.run(
                 [*command, "--log-file", str(output / "godot.log"), "--script", str(fixture)],
-                env=dict(godot_env, BENCH_PORT=str(port), BENCH_RUN=lab.run_id, BENCH_TOKEN=token),
+                env=dict(godot_env, BENCH_PORT=str(port), BENCH_RUN=lab.run_id, BENCH_TOKEN=token,
+                         BENCH_PYTHON=sys.executable),
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=60,
             )
         (output / "controller.log").write_text(result.stdout, encoding="utf-8")
