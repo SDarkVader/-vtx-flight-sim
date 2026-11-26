@@ -292,6 +292,9 @@ class PhantomAircraft:
         self.targets = {}; self.wing_state = {s: 'stowed' for s in WING_SIDES}; self.wing_timer = {s: 0.0 for s in WING_SIDES}
         self.flap_interlock = None
         self.faults = []; self.events = []; self.flags = set(); self.crashed = False; self.max_alt = 0.0; self.max_impact_n = 0.0
+        self.max_gear_load_n = 0.0
+        self.max_nongear_impact_n = 0.0
+        self.contact_load_peaks_complete = True
         self.step_count = 0; self.last_mass_update = 0.0
         self.fan_omega_cmd = [0.0] * 4; self.fan_state = [{} for _ in PODS]; self.booster_state = [{}, {}]
         self.motor_torque = np.zeros(4); self.booster_torque = np.zeros(2); self.prop_scale = 1.0
@@ -866,9 +869,11 @@ class PhantomAircraft:
         return v6[3:] + cross3(v6[:3], p - self.data.xpos[b])
 
     # ------------------------------------------------------------ contacts
-    def contact_samples(self):
+    def _contact_forces(self):
         d, m = self.data, self.model
-        samples = []; f6 = np.zeros(6)
+        if not d.ncon:
+            return
+        f6 = np.zeros(6)
         for i in range(d.ncon):
             con = d.contact[i]
             g1, g2 = con.geom1, con.geom2
@@ -877,10 +882,20 @@ class PhantomAircraft:
                 continue
             mj.mj_contactForce(m, d, i, f6)
             other = g2 if veh == g1 else g1
-            samples.append(dict(vehicle_geom=m.geom(veh).name, other_geom=m.geom(other).name,
-                                normal_force_n=float(abs(f6[0])),
-                                position_world_m=np.asarray(con.pos).tolist(), separation_m=float(con.dist)))
-        return samples
+            yield m.geom(veh).name, other, float(abs(f6[0])), con
+
+    def contact_samples(self):
+        return [dict(vehicle_geom=name, other_geom=self.model.geom(other).name,
+                     normal_force_n=force, position_world_m=contact.pos.tolist(),
+                     separation_m=float(contact.dist))
+                for name, other, force, contact in self._contact_forces()]
+
+    def _track_contact_load(self, force, gear):
+        self.max_impact_n = max(self.max_impact_n, force)
+        if gear:
+            self.max_gear_load_n = max(self.max_gear_load_n, force)
+        else:
+            self.max_nongear_impact_n = max(self.max_nongear_impact_n, force)
 
     def check_contacts(self):
         d = self.data
@@ -891,8 +906,9 @@ class PhantomAircraft:
         self._restored_contact_samples = None
         for sample in samples:
             fn = sample['normal_force_n']; name = sample['vehicle_geom']
-            self.max_impact_n = max(self.max_impact_n, fn)
-            if name.startswith(('foot_', 'tyre_')):
+            gear = name.startswith(('foot_', 'tyre_'))
+            self._track_contact_load(fn, gear)
+            if gear:
                 sup.add(name); sup_force += fn
             else:
                 if fn > hard:hard = fn;hard_contact = sample
@@ -923,6 +939,9 @@ class PhantomAircraft:
         self.apply_forces()
         if self.scenery:self.scenery.apply(self.data)
         mj.mj_step(self.model, self.data)
+        # Sample every solver step. Support and collision decisions keep their existing control cadence.
+        for name, _, force, _ in self._contact_forces():
+            self._track_contact_load(force, name.startswith(('foot_', 'tyre_')))
         self.step_count += 1
         if not np.all(np.isfinite(self.data.qpos)):
             raise FloatingPointError('Phantom physics produced non-finite state')
@@ -971,6 +990,8 @@ class PhantomAircraft:
                         f'ail_{s}': math.degrees(self.joint(f'aileron_{s}')[0]), f'canard_{s}': math.degrees(self.joint(f'canard_{s}')[0]), f'wingstate_{s}': self.wing_state[s]})
         F = self.aero_out['force_body']; M = self.aero_out['moment_body']
         row.update(aero_Fx=F[0], aero_Fy=F[1], aero_Fz=F[2], aero_Mx=M[0], aero_My=M[1], aero_Mz=M[2])
+        row.update(max_gear_load_n=self.max_gear_load_n, max_nongear_impact_n=self.max_nongear_impact_n,
+                   contact_load_peaks_complete=self.contact_load_peaks_complete)
         return row
 
     def write_step_row(self):
@@ -1023,6 +1044,8 @@ class PhantomAircraft:
                               surfaces=self.aero_out['surfaces'], hinge_moments=self.aero_out['hinge_moments']),
                     energy=dict(b, totals=self.bus.energy), fcc=self.fcc.last, command=self.fcc.cmd, targets=self.targets,
                     fuel_kg=self.fuel.tolist(), contact=dict(support=getattr(self, 'support', []), max_contact_force_n=self.max_impact_n,
+                        max_gear_load_n=self.max_gear_load_n, max_nongear_impact_n=self.max_nongear_impact_n,
+                        contact_load_peaks_complete=self.contact_load_peaks_complete,
                         samples=(self.contact_samples() if getattr(self, '_restored_contact_samples', None) is None else self._restored_contact_samples)),
                     faults=self.faults, flags=sorted(self.flags), crashed=self.crashed,
                     mechanical_energy_j=float(d.energy[0] + d.energy[1]))
@@ -1108,7 +1131,10 @@ class PhantomAircraft:
                     qpos=d.qpos.tolist(), qvel=d.qvel.tolist(), act=d.act.tolist(), ctrl=d.ctrl.tolist(), qacc_warmstart=d.qacc_warmstart.tolist(), time=float(d.time),
                     eq_active=d.eq_active.tolist(), cmd=self.fcc.cmd, vs_int=self.fcc.vs_int, targets=self.targets, wing_state=self.wing_state, fuel=self.fuel.tolist(),
                     bus=self.bus.state(), flags=sorted(self.flags), faults=self.faults, events=self.events[-200:], crashed=self.crashed, max_alt=self.max_alt,
-                    max_impact_n=self.max_impact_n, step_count=self.step_count, airborne=self.airborne, spawn_z=getattr(self, 'spawn_z', 0.0),
+                    max_impact_n=self.max_impact_n, max_gear_load_n=self.max_gear_load_n,
+                    max_nongear_impact_n=self.max_nongear_impact_n,
+                    contact_load_peaks_complete=self.contact_load_peaks_complete,
+                    step_count=self.step_count, airborne=self.airborne, spawn_z=getattr(self, 'spawn_z', 0.0),
                     stab_te_up=self.stab_te_up, jet_spool=list(self.jet_spool)))
 
     def restore_state(self, s):
@@ -1127,6 +1153,14 @@ class PhantomAircraft:
         versions = dict(python='.'.join(map(str, sys.version_info[:3])), numpy=np.__version__, mujoco=mj.__version__)
         if s.get('dependency_versions') != versions:
             raise ValueError('Checkpoint Python, NumPy or MuJoCo version differs from this runtime')
+        gear_peak = s.get('max_gear_load_n', 0.0)
+        nongear_peak = s.get('max_nongear_impact_n', 0.0)
+        peaks_complete = s.get('contact_load_peaks_complete', False)
+        if (type(peaks_complete) is not bool or
+                any(type(peak) not in (float, int) or not math.isfinite(peak) or
+                    not 0.0 <= peak <= s['max_impact_n'] for peak in (gear_peak, nongear_peak)) or
+                (peaks_complete and max(gear_peak, nongear_peak) != s['max_impact_n'])):
+            raise ValueError('Invalid checkpoint Phantom contact load peaks')
         d = self.data; m = self.model
         spec = mj.mjtState.mjSTATE_INTEGRATION
         if s.get('integration_spec') != int(spec):
@@ -1166,6 +1200,9 @@ class PhantomAircraft:
         self.fcc.cmd = s['cmd']; self.fcc.vs_int = s['vs_int']; self.targets = s['targets']; self.wing_state = s['wing_state']
         self.fuel = np.array(s['fuel']); self.bus.restore(s['bus']); self.flags = set(s['flags']); self.faults = s['faults']; self.events = s['events']
         self.crashed = s['crashed']; self.max_alt = s['max_alt']; self.max_impact_n = s['max_impact_n']; self.step_count = s['step_count']
+        self.max_gear_load_n = gear_peak
+        self.max_nongear_impact_n = nongear_peak
+        self.contact_load_peaks_complete = peaks_complete
         self._restored_contact_samples = s['contact_samples'] if self.step_count % 4 == 0 else None
         self.airborne = s['airborne']; self.spawn_z = s['spawn_z']
         self.radar_ground_reference_m = radar_reference

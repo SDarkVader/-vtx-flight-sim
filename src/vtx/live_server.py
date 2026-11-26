@@ -1328,7 +1328,9 @@ class Laboratory:
                      max_gear_load_n=getattr(p,'max_gear_load_n',None),max_nongear_impact_n=getattr(p,'max_nongear_impact_n',None),
                      final=p.physical_snapshot(),mission=self.mission,landing_assessment=self.last_landing,
                      claim='Conditional experimental model; not validated VTX performance')
-        if getattr(p,'is_phantom',False):summary['phantom']=phantom_live.summary_extras(self)
+        if getattr(p,'is_phantom',False):
+            summary['contact_load_peaks_complete']=p.contact_load_peaks_complete
+            summary['phantom']=phantom_live.summary_extras(self)
         publish_new_evidence(self.log_path/'summary.json',json.dumps(summary,indent=2,default=float).encode('utf-8'))
         self.log('sortie_end',summary)
         self.audit_file.close();self.audit_file=None
