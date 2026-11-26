@@ -1,5 +1,11 @@
 > Historical repository snapshot from 15 November 2026. The live continuity record is maintained in the owner's primary checkout.
 
+## 26 November 2026 · Phase II integration receipt
+
+The isolated Phase II source descends from the V33 rollback pin `7606985` through G0 `274d125`. It merges the native Windows/Godot and browser radio sources, the connected R6 display and flight records, Phantom contact peaks, and Ricochet capsize and harbour journaling. The Linux source qualification at `4402241` passed 637 Python and 123 JavaScript checks. The Chromium fixture verifies the physical wheel axle convention. The retained runway and VTOL configurations matched V33 across 3,602 integration states, and the frozen and current R6 plants matched through 65,441 steps.
+
+The Phase II candidate requires Windows package, desktop and operator acceptance before release. PR 66 remains an independent RC-01 profile review pending recovery of the tested V33.1 reconciled source `433c3219`. The original release refs and checkpoints retain their producing runtime identities. The Phase II engineering folder is [VTX Engineering](https://drive.google.com/drive/folders/1XWy5QfBoXfnAz3RB2xCk2DU9NiPifxGg).
+
 # VTX continuity — working record
 
 Updated: 2026-11-15. This is the single working handoff; reconcile it with the filesystem and running processes at the start of every session. The owner’s detailed brief is at `Pasted text.txt`. Owner authorizes bounded, reversible isolated development and offline tests; restarting, pausing, resetting or replacing the live simulator, changing its aircraft, creating another live cockpit, merging, pushing or deploying require explicit approval. Promotion is the owner’s decision. Preserve 400 Hz physics and existing dashboard, control, instrument and environment work.

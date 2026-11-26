@@ -16,7 +16,13 @@ try {
  updatePhantom(rig,truth,false,[.5,.5,.5,.5]);
  gltf.scene.position.x=.2; truth.t_s=1.1;updatePhantom(rig,truth,false,[.5,.5,.5,.5]);
  const checks={wheels:rig.wheels.length,pods:rig.podJets.length,boosters:Object.keys(rig.boosters).length,
- rotating:rig.wheels.every(w=>Math.abs(w.node.quaternion.z)>0.4), podGlow:rig.podJets.every(x=>x.glow.visible&&x.core.visible),boosterGlow:Object.values(rig.boosters).every(x=>x.plume.visible&&x.core.visible),movingParts:rig.wheels.every(w=>w.node.children.length>=3),trails:rig.trails.length===6&&rig.trails.every(x=>x.samples.length===2&&x.line.visible)};
+ // The fixture supplies one radian of rotation and half a radian of render offset.
+ // Left and right pods use opposite physical axle axes in the model frame.
+ rotating:rig.wheels.every(({idx,node:{quaternion:q}})=>{
+   const sign=idx%2===0?1:-1;
+   return Math.abs(q.x)<1e-12&&Math.abs(q.z)<1e-12
+     &&Math.abs(q.y-sign*Math.sin(.75))<1e-12&&Math.abs(q.w-Math.cos(.75))<1e-12;
+ }), podGlow:rig.podJets.every(x=>x.glow.visible&&x.core.visible),boosterGlow:Object.values(rig.boosters).every(x=>x.plume.visible&&x.core.visible),movingParts:rig.wheels.every(w=>w.node.children.length>=3),trails:rig.trails.length===6&&rig.trails.every(x=>x.samples.length===2&&x.line.visible)};
  renderer.render(scene,camera);
  truth.propulsors.forEach(f=>f.thrust_n=0);truth.boosters.forEach(f=>f.thrust_n=0);updatePhantom(rig,truth);
  checks.zeroHidden=rig.podJets.every(x=>!x.glow.visible&&!x.core.visible)&&Object.values(rig.boosters).every(x=>!x.plume.visible&&!x.core.visible);
