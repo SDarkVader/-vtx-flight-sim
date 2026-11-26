@@ -3,6 +3,7 @@
 # or repin runtime identities merely to make a checkout pass.
 # Mixed-ending files, if any, are explicitly kept byte-for-byte.
 
+evidence/source/airframe_ledger_r6.json text eol=crlf
 inputs/aircraft_identity.json text eol=crlf
 inputs/flight_revisions.json text eol=lf
 inputs/live_mechanism.json text eol=crlf
