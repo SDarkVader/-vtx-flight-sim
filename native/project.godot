@@ -1,0 +1,20 @@
+; Native VTX flight client
+config_version=5
+
+[application]
+config/name="VTX Native Flight"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7", "Mobile")
+config/use_custom_user_dir=true
+config/custom_user_dir_name="VTX Native Prototype"
+boot_splash/show_image=false
+
+[display]
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1920
+window/size/window_height_override=1080
+window/stretch/mode="canvas_items"
+
+[rendering]
+renderer/rendering_method="mobile"
