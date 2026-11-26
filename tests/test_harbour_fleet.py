@@ -2,8 +2,11 @@
 
 from copy import deepcopy
 import gzip
+import hashlib
 import json
+import time
 from types import SimpleNamespace
+import mujoco
 import numpy as np
 import pytest
 from vtx.harbour_fleet import HarbourFleet, DT
@@ -44,6 +47,7 @@ def test_harbour_checkpoint_retry_preserves_atomic_replacement(tmp_path, monkeyp
 @pytest.mark.parametrize("pin", [
     "PREVIOUS_FLEET_DEPENDENCIES", "SINGLE_PASS_FLEET_DEPENDENCIES",
     "ARRAY_CAPTURE_FLEET_DEPENDENCIES", "SAMPLE_REUSE_FLEET_DEPENDENCIES",
+    "SHARED_WATER_FLEET_DEPENDENCIES",
 ])
 def test_worker_restores_only_the_known_equivalent_checkpoint(monkeypatch, pin):
     from vtx import harbour_session
@@ -53,16 +57,82 @@ def test_worker_restores_only_the_known_equivalent_checkpoint(monkeypatch, pin):
     fleet = HarbourFleet(world)
     state = fleet.serialize()
     current = dependency_fingerprint()
-    assert harbour_session.SHARED_WATER_FLEET_DEPENDENCIES == current
+    assert harbour_session.CAPSIZE_FLEET_DEPENDENCIES == current
     state["dependencies_sha256"] = previous = getattr(harbour_session, pin)
     restored = harbour_session._restore_worker_fleet(world, state)
     assert state["dependencies_sha256"] == previous
     assert restored.dependencies_sha256 == current
     np.testing.assert_array_equal(restored._integration_state(), fleet._integration_state())
 
-    monkeypatch.setattr(harbour_session, "SHARED_WATER_FLEET_DEPENDENCIES", "0" * 64)
+    monkeypatch.setattr(harbour_session, "CAPSIZE_FLEET_DEPENDENCIES", "0" * 64)
     with pytest.raises(ValueError, match="physics/assets differ"):
         harbour_session._restore_worker_fleet(world, state)
+
+
+def test_capsize_latches_in_solver_state_and_harbour_report():
+    fleet = HarbourFleet(harbour_world())
+    boat_id = next(iter(fleet.crafts))
+    boat = fleet.crafts[boat_id]
+    free_position = next(shared for native, shared, width, *_ in fleet.mappings[boat_id]["joints"]
+                         if native == 0 and width == 7)
+    orientation = fleet.data.qpos[free_position + 3:free_position + 7]
+    assert not boat.capsized
+    orientation[:] = [0.0, 1.0, 0.0, 0.0]
+    mujoco.mj_forward(fleet.model, fleet.data)
+    fleet.step()
+    assert boat.capsized
+    assert not boat.crashed
+    assert boat.physical_snapshot()["capsized"]
+    assert next(b for b in fleet.public()["boats"] if b["id"] == boat_id)["capsized"]
+
+    orientation[:] = [1.0, 0.0, 0.0, 0.0]
+    mujoco.mj_forward(fleet.model, fleet.data)
+    fleet.step()
+    restored = HarbourFleet.restore(harbour_world(), fleet.serialize())
+    assert restored.crafts[boat_id].capsized
+    assert "CAPSIZED" in restored.crafts[boat_id].flags
+    events = [event for event in restored.events if event["event"] == "capsize"]
+    assert len(events) == 1
+    assert events[0]["craft_id"] == boat_id and events[0]["body_up_z"] < 0.0
+
+
+def test_worker_journal_runs_without_polling_and_preserves_previous_segment(tmp_path):
+    from vtx.harbour_session import HarbourSession
+    from vtx.world import make_world
+
+    world = make_world("airport")
+    session = HarbourSession(tmp_path)
+    directory = session.directory / "harbour-journal"
+    try:
+        session.act(world, "activate", {})
+        original, = directory.glob("*.jsonl")
+        session.set_rate(4.0)
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline:
+            prefix = original.read_bytes()
+            rows = [json.loads(line) for line in prefix.splitlines() if line]
+            if any(row["kind"] == "sample" and row["t_s"] >= 1.0 for row in rows):
+                break
+            time.sleep(0.02)
+        else:
+            pytest.fail("No scheduled journal sample appeared without a status call")
+        session.set_rate(0.0)
+        session.act(world, "save", {})
+        restored_hash = hashlib.sha256(session.saved.read_bytes()).hexdigest()
+        session.act(world, "restore", {})
+        restored, = set(directory.glob("*.jsonl")) - {original}
+        assert original.read_bytes().startswith(prefix)
+        assert json.loads(original.read_bytes().splitlines()[-1])["kind"] == "end"
+        start = json.loads(restored.read_bytes().splitlines()[0])
+        assert start["restored_from_sha256"] == restored_hash
+        assert start["world_sha256"] == rows[0]["world_sha256"]
+        assert start["dependencies_sha256"] == rows[0]["dependencies_sha256"]
+        assert start["mujoco_version"] == mujoco.__version__
+        assert [row["sequence"] for row in rows] == list(range(len(rows)))
+        assert all(row["run_id"] == rows[0]["run_id"] for row in rows)
+        assert rows[-1]["boats"][0]["configuration"]["geometry_sha256"]
+    finally:
+        session.close()
 
 
 def test_checkpoint_codec_preserves_original_water_values_and_accepts_legacy_json():

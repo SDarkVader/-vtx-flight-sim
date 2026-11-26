@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
+from datetime import datetime, timezone
 from functools import partial
 import gzip
 import hashlib
@@ -24,6 +25,8 @@ ARRAY_CAPTURE_FLEET_DEPENDENCIES = "fd3d0ce1a15884be8ac58ef529111a181920cfed95db
 SAMPLE_REUSE_FLEET_DEPENDENCIES = "775b90acbd6315599e63b176c5de80cc2392cc81875496a258958469cda42ef6"
 # Sparse changed-cell SWE kernel: bitwise the stock stencil, same cadence and stored state.
 SHARED_WATER_FLEET_DEPENDENCIES = "89f2cb34dcc52c7e41d9ad388fb11dce67d1844fa72f51e4e1b93a0544c0fbb2"
+# Adds observational capsize state. The shared force laws and water cadence are unchanged.
+CAPSIZE_FLEET_DEPENDENCIES = "737844d9236df07391d4062a375c56c076e2949964fe6b1f325d693768a86015"
 WATER_ARRAY_ENCODING = "float64-le-base64"
 WATER_ARRAY_KEYS = ("h", "hu", "hv")
 
@@ -34,11 +37,16 @@ def _restore_worker_fleet(world, state):
 
     # These pinned changes preserve the force law, step cadence and stored state.
     # Leave the original save and the world, model, and solver cadence checks intact.
-    if (isinstance(state, dict) and state.get("dependencies_sha256") in
-            (PREVIOUS_FLEET_DEPENDENCIES, SINGLE_PASS_FLEET_DEPENDENCIES,
-             ARRAY_CAPTURE_FLEET_DEPENDENCIES, SAMPLE_REUSE_FLEET_DEPENDENCIES)
-            and dependency_fingerprint() == SHARED_WATER_FLEET_DEPENDENCIES):
-        state = {**state, "dependencies_sha256": SHARED_WATER_FLEET_DEPENDENCIES}
+    dependencies = dependency_fingerprint()
+    known_equivalents = ()
+    if dependencies in (SHARED_WATER_FLEET_DEPENDENCIES, CAPSIZE_FLEET_DEPENDENCIES):
+        known_equivalents = (
+            PREVIOUS_FLEET_DEPENDENCIES, SINGLE_PASS_FLEET_DEPENDENCIES,
+            ARRAY_CAPTURE_FLEET_DEPENDENCIES, SAMPLE_REUSE_FLEET_DEPENDENCIES,
+            SHARED_WATER_FLEET_DEPENDENCIES,
+        )
+    if isinstance(state, dict) and state.get("dependencies_sha256") in known_equivalents:
+        state = {**state, "dependencies_sha256": dependencies}
     return fleet_type(world).restore(world, state)
 
 
@@ -173,6 +181,41 @@ def _publish(path, payload):
         temporary.unlink(missing_ok=True)
 
 
+class _MarineJournal:
+    """An exclusive file for each worker attachment, with one writer and ordered records."""
+
+    def __init__(self, directory):
+        directory.mkdir(parents=True, exist_ok=True)
+        self.run_id = uuid.uuid4().hex
+        self.stream = (directory / (self.run_id + ".jsonl")).open("xb")
+        self.sequence = 0
+        self.failed = False
+
+    def append(self, kind, fleet, *, durable=True, **values):
+        record = dict(schema="vtx-marine-journal-1", run_id=self.run_id,
+                      sequence=self.sequence, kind=kind, step=fleet.step_count,
+                      t_s=float(fleet.data.time), utc=datetime.now(timezone.utc).isoformat(),
+                      **values)
+        try:
+            raw = json.dumps(record, allow_nan=False, separators=(",", ":")).encode("utf-8")
+            self.stream.write(raw + b"\n")
+            self.stream.flush()
+            self.sequence += 1
+            if durable:
+                os.fsync(self.stream.fileno())
+        except (ValueError, OSError):
+            self.failed = True
+            raise
+
+    def sample(self, fleet):
+        state = fleet.public()
+        self.append("sample", fleet, boats=state["boats"], selected_id=state["selectedId"],
+                    water_level_m=state["water_level_m"], events=state["events"])
+
+    def close(self):
+        self.stream.close()
+
+
 def _restart_boat(world, fleet, body):
     """Stage a fresh selected vessel while retaining the fleet and water clock."""
     from .ricochet.plant import RicochetCraft
@@ -259,6 +302,8 @@ def _run(connection, rate, seed, snapshot, environment):
 def _serve_fleet(connection, rate, seed, snapshot, environment, water_workers):
     """Only this process mutates the fleet. Commands and snapshots run between solver steps."""
     try:
+        import mujoco as mj
+
         from .world import make_world
         from .harbour_fleet import DT
         from .harbour_trial import fleet_type
@@ -277,6 +322,9 @@ def _serve_fleet(connection, rate, seed, snapshot, environment, water_workers):
         connection.close()
         return
     current = None
+    journal = None
+    last_sample_step = fleet.step_count
+    sample_steps = round(1.0 / DT)
     fault = None
     last = time.monotonic()
     due = 0.0
@@ -289,16 +337,38 @@ def _serve_fleet(connection, rate, seed, snapshot, environment, water_workers):
                 action, body = connection.recv()
                 try:
                     if action == "close":
+                        if journal and not journal.failed:
+                            journal.sample(fleet)
+                            journal.append("end", fleet, fault=fault)
                         connection.send((True, None))
                         return
                     if action == "attach":
+                        if journal:
+                            raise ValueError("The harbour worker is already attached")
                         path = Path(body)
-                        _publish(path, _encode(fleet))
+                        payload = _encode(fleet)
+                        incoming = _MarineJournal(path.parent / "harbour-journal")
+                        try:
+                            incoming.append(
+                                "start", fleet, environment=environment, seed=seed,
+                                dependencies_sha256=fleet.dependencies_sha256,
+                                world_sha256=fleet.world_sha256, model_xml_sha256=fleet.model_xml_sha256,
+                                mujoco_version=mj.__version__,
+                                dynamics_id=fleet.dynamics_id, vessels=fleet.definitions,
+                                sample_interval_steps=sample_steps,
+                                checkpoint_sha256=hashlib.sha256(payload).hexdigest(),
+                                restored_from_sha256=hashlib.sha256(snapshot).hexdigest() if snapshot else None,
+                            )
+                            incoming.sample(fleet)
+                            _publish(path, payload)
+                        except BaseException:
+                            incoming.close()
+                            raise
+                        journal = incoming
                         current = path
                         last = published = time.monotonic()
                         result = None
                     elif action == "iris":
-                        import mujoco as mj
                         fleet.scenery.command(fleet.data,body['door'],body['open'],body['snap'])
                         mj.mj_forward(fleet.model,fleet.data)
                         if current:_publish(current,_encode(fleet))
@@ -317,9 +387,14 @@ def _serve_fleet(connection, rate, seed, snapshot, environment, water_workers):
                         _partition_harbour_water(candidate, water_workers)
                         payload = _encode(candidate)
                         history = current.parent / "harbour-history" / (uuid.uuid4().hex + ".json.gz")
-                        _publish(history, _encode(fleet))
+                        prior = _encode(fleet)
+                        journal.sample(fleet)
+                        _publish(history, prior)
                         _publish(current, payload)
                         fleet = candidate
+                        journal.append("restart", fleet, request=body, vessels=fleet.definitions,
+                                       prior_checkpoint_sha256=hashlib.sha256(prior).hexdigest(),
+                                       checkpoint_sha256=hashlib.sha256(payload).hexdigest())
                         last = published = time.monotonic()
                         due = 0.
                         result = _public_fleet(fleet)
@@ -341,9 +416,13 @@ def _serve_fleet(connection, rate, seed, snapshot, environment, water_workers):
                         if action != "command" and current:
                             _publish(current, _encode(fleet))
                             published = time.monotonic()
+                        if journal:
+                            journal.append("helm", fleet, durable=action != "command", action=action, request=body)
                         result = _public_fleet(fleet)
                     connection.send((True, result))
                 except (ValueError, KeyError, TypeError, IndexError, OSError) as exc:
+                    if journal and journal.failed:
+                        fault = str(exc)
                     connection.send((False, str(exc)))
             now = time.monotonic()
             speed = rate.value
@@ -358,6 +437,9 @@ def _serve_fleet(connection, rate, seed, snapshot, environment, water_workers):
                 if due >= DT:
                     fleet.step()
                     due -= DT
+                    if fleet.step_count - last_sample_step >= sample_steps:
+                        journal.sample(fleet)
+                        last_sample_step = fleet.step_count
                 else:
                     time.sleep(min((DT - due) / speed, 0.01))
                 if now - published >= 2.0:
@@ -365,9 +447,16 @@ def _serve_fleet(connection, rate, seed, snapshot, environment, water_workers):
                     published = now
             except Exception as exc:
                 fault = str(exc)
+                if journal and not journal.failed:
+                    try:
+                        journal.append("fault", fleet, error=fault)
+                    except (ValueError, OSError):
+                        pass  # The worker status still reports the durable-write failure.
     except (EOFError, BrokenPipeError):
         pass
     finally:
+        if journal:
+            journal.close()
         connection.close()
 
 
