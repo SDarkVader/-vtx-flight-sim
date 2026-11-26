@@ -594,6 +594,8 @@ class HarbourFleet:
             masses_changed = False
             for boat_id, craft in self.crafts.items():
                 self._sync_adapter(boat_id)
+                if craft.record_capsize():
+                    self._event("capsize", craft_id=boat_id, body_up_z=craft.events[-1]["body_up_z"])
                 craft.step_count += 1
                 power = float(craft.power.get("total_w", 0))
                 burn = power * 1.15e-7
@@ -709,6 +711,7 @@ class HarbourFleet:
                             model_xml_sha256=craft.provenance["model_xml_sha256"],
                         ),
                         crashed=craft.crashed,
+                        capsized=craft.capsized,
                         flags=sorted(craft.flags),
                         fuel_kg=float(craft.fuel[0]),
                     )

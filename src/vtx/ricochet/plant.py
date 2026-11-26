@@ -741,6 +741,7 @@ class RicochetCraft:
         self.events: list[dict[str, Any]] = []
         self.flags: set[str] = set()
         self.crashed = False
+        self.capsized = False
         self.max_alt = 0.0
         self.max_impact_n = 0.0
         self.max_gear_load_n = 0.0
@@ -994,6 +995,7 @@ class RicochetCraft:
         self._last_servo_saturated.clear()
         self.step_count = 0
         self.crashed = False
+        self.capsized = False
         self.max_impact_n = 0.0
         self.events.clear()
         self.flags.clear()
@@ -1782,6 +1784,7 @@ class RicochetCraft:
             self.max_impact_n = max(self.max_impact_n, n_force)
             self.max_gear_load_n = self.max_impact_n
         mj.mj_forward(self.model, d)
+        self.record_capsize()
         alt = float(d.xpos[bid_af, 2])
         self.max_alt = max(self.max_alt, alt)
 
@@ -1971,6 +1974,16 @@ class RicochetCraft:
                 'bbox_max_err_m': round(max(vmin_err, vmax_err), 6),
             }
         return checks
+
+    def record_capsize(self) -> bool:
+        """Latch inversion from the solver's body-up axis without changing the plant."""
+        up_z = float(self.data.xmat[self.bids['airframe']].reshape(3, 3)[2, 2])
+        if self.capsized or up_z >= 0.0:
+            return False
+        self.capsized = True
+        self.flags.add('CAPSIZED')
+        self.events.append(dict(event='capsize', t_s=float(self.data.time), body_up_z=up_z))
+        return True
 
     def visual_geometry(self) -> dict[str, Any]:
         """Export the exact physics-pinned mesh triangles + structural appendages for Three.js rendering."""
@@ -2165,6 +2178,7 @@ class RicochetCraft:
             },
             'flags': sorted(self.flags),
             'crashed': self.crashed,
+            'capsized': self.capsized,
             'mechanical_energy_j': round(float(d.energy[0] + d.energy[1]), 3),
             # Ricochet marine/amphibious telemetry fields
             'ricochet': True,
@@ -2235,6 +2249,7 @@ class RicochetCraft:
             'events': copy.deepcopy(self.events),
             'flags': sorted(self.flags),
             'crashed': bool(self.crashed),
+            'capsized': self.capsized,
             'max_alt': float(self.max_alt),
             'max_impact_n': float(self.max_impact_n),
             'max_gear_load_n': float(self.max_gear_load_n),
@@ -2370,6 +2385,7 @@ class RicochetCraft:
             self.events = copy.deepcopy(list(st['events']))
         self.flags = set(st.get('flags', ()))
         self.crashed = bool(st.get('crashed', False))
+        self.capsized = bool(st.get('capsized', False))
         self.max_alt = float(st.get('max_alt', 0.0))
         self.max_impact_n = float(st.get('max_impact_n', 0.0))
         self.max_gear_load_n = float(st.get('max_gear_load_n', 0.0))
