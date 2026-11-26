@@ -94,6 +94,7 @@ $env:VTX_DEFAULT_ENVIRONMENT = "vaderland-33"
 - [Cockpit gallery](docs/COCKPIT_GALLERY.md) and [vehicle controls](docs/VEHICLE_CONTROLS_20261117.md)
 - [Main vehicle test checklist](docs/MAIN_VEHICLE_TESTING.md) and [unified runtime](docs/UNIFIED_RUNTIME.md)
 - [Phantom A10-D air-brake development](docs/phantom/A10C_AIRBRAKE_ECU_TEST_20261118.md#10-a10-d-test-aircraft) and [revision registry](inputs/flight_revisions.json)
+- [Phantom A10-C manual flight record](docs/phantom/A10C_OPERATOR_FLIGHTS_20261112.md) and [Phantom A10-B engineering record](reference/phantom_a10b_20261109/VTX_Phantom_A10-B_Flight_and_Engineering_Record_2026-11-09.pdf)
 - [Physics baseline](docs/PHYSICS_AND_RESEARCH_BASELINE.md), [AI pilot contract](docs/LIVE_FLY_BY_WIRE_PILOT_CONTRACT.md) and [voice controls](docs/VOICE_PILOT.md)
 
 ## License
