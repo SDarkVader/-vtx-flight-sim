@@ -90,7 +90,7 @@ let departure=[-700,0],destination=[-50,20],track=[],lastDecision='',lastRun=nul
 let departureExplicit=false,inspectionDepartureSynced=false,missionTransition=null,visualOnlyOffline=false;
 let renderedParkedAircraft=null;
 let trackRun=null;
-const bodyNodes={},pitchMeshes=[];
+const bodyNodes={},pitchMeshes=[],shaftSpinNodes=[];
 const rotorSpinAxis=new THREE.Vector3(0,0,1),rotorSpinQ=new THREE.Quaternion();
 let latestTruthReceivedMs=0,lastHudUpdateMs=0,panelWasStale=false;
 const command={engine:1,collective_deg:[0,0,0,0],tilt_deg:[[0,0],[0,0],[0,0],[0,0]],cabin_deg:[0,0,0],cabin_level:true};
@@ -805,7 +805,10 @@ suspensionSchematicToggle.onclick=()=>{
  suspensionSchematicToggle.setAttribute('aria-pressed',String(suspensionSchematicEnabled));
 };
 // Render the asset identified by the physical snapshot, including during replay.
-function visualAsset(a){return typeof a==='string'&&a.startsWith('/assets/')?a:null;}
+// The flown R6 physics record names /assets/airframe-r6.glb; the owner-confirmed connected assembly of that
+// aircraft is the Blendstra rig, cleaned as r2 (same 20 body frames). Explicit and pinned: see docs/R6_UNIFIED.md.
+const R6_DISPLAY={'/assets/airframe-r6.glb':'/assets/airframe-r6-connected-r2.glb'};
+function visualAsset(a){return typeof a==='string'&&a.startsWith('/assets/')?(R6_DISPLAY[a]||a):null;}
 function loadAirframe(asset){
  if(asset===loadedAsset||performance.now()<assetRetryAfter)return;loadedAsset=asset;
  modelReady=false;if(model)model.visible=false;
@@ -813,7 +816,7 @@ function loadAirframe(asset){
  loadPinnedGltf(new GLTFLoader(),asset).then(async g=>{
  if(asset!==loadedAsset){disposeModel(g.scene);return;}
  if(model){suspensionSchematic.clear();detachPhantomEffects(phantomRig);scene.remove(model);disposeModel(model);}
- for(const key of Object.keys(bodyNodes))delete bodyNodes[key];pitchMeshes.length=0;
+ for(const key of Object.keys(bodyNodes))delete bodyNodes[key];pitchMeshes.length=0;shaftSpinNodes.length=0;
  model=g.scene;
  // Prepared Blendstra GLBs are visual-only: they do not contain the CAD airframe pose node.
  // Bind the complete visual scene to the MuJoCo free body's world pose rather than leaving it at world origin.
@@ -826,6 +829,9 @@ function loadAirframe(asset){
  modelReady=false;model.visible=false;scene.add(model);if(!quality.glow)model.traverse(n=>{if(n.isLight)n.visible=false;});model.traverse(n=>{if(n.userData.physical_body&&n.type==='Object3D')bodyNodes[n.userData.physical_body]=n;if(n.isMesh){n.castShadow=true;n.receiveShadow=true;if(n.userData.pitch_axis)pitchMeshes.push(n);if(n.material){n.material.side=THREE.DoubleSide;}}});
  // Blender exports empty groups as Object3D or Group depending on loader.
  for(const name of ['airframe','cabin',...Array.from({length:4},(_,i)=>`nacelle${i+1}`),...Array.from({length:4},(_,i)=>`rotor${i+1}`),...Array.from({length:6},(_,i)=>`gear${i+1}`),...Array.from({length:4},(_,i)=>`shaft${i+1}`)]){const n=model.getObjectByName(name);if(n)bodyNodes[name]=n;}
+ // A shaft container with extras.vtx_spin_centre (its drawn centreline, container-local) keeps the physics rotation but turns
+ // about that centreline: the physics spin axis sits 155-210 mm off the drawn shaft (docs/R6_UNIFIED.md).
+ if(bodyNodes.airframe)for(const [name,n] of Object.entries(bodyNodes)){const c=n.userData.vtx_spin_centre;if(Array.isArray(c)&&c.length===3)shaftSpinNodes.push({name,node:n,c:new THREE.Vector3(...c),restRel:bodyNodes.airframe.quaternion.clone().invert().multiply(n.quaternion)});}
   aircraftFx=enhanceAircraft(model,scene.environment,{phantom:asset.includes('phantom')});phantomRig=asset.includes('phantom')?attachPhantom(model):null;
  aircraftFx?.setCockpitMode?.(!rideEnabled&&!boatViewId&&cameraMode==='cockpit');aircraftFx?.updateAvionics?.(replayFrames?null:last?.observation,!!replayFrames);
  setCockpitVisibility(model,!rideEnabled&&!boatViewId&&cameraMode==='cockpit');
@@ -1635,7 +1641,7 @@ function animate(){
     const angle=rotorVisualOffset(truth.rotor_spin_rad_s?.[i],now-latestTruthReceivedMs,last?.time_scale,last?.active,last?.paused);
     if(angle)n.quaternion.multiply(rotorSpinQ.setFromAxisAngle(rotorSpinAxis,angle));
    }
-  }if(phantomRig){
+  }for(const s of shaftSpinNodes){const pose=truth.body_poses[s.name],af=bodyNodes.airframe;if(!pose||!af)continue;const centre=s.c.clone().applyQuaternion(af.quaternion.clone().multiply(s.restRel)).add(new THREE.Vector3(...pose.position));s.node.position.copy(centre.sub(s.c.clone().applyQuaternion(s.node.quaternion)));}if(phantomRig){
    const offsets=(truth.phantom?.wheel_rad_s||[]).map(omega=>rotorVisualOffset(omega,now-latestTruthReceivedMs,last?.time_scale,!!last?.active&&!replayFrames,last?.paused));
    updatePhantom(phantomRig,truth,false,offsets,true,measuredTruth);
   }if(truth.pitch_deg)for(const mesh of pitchMeshes){const i=Number(mesh.userData.physical_body?.slice(-1))-1;if(i>=0&&i<4)mesh.quaternion.setFromAxisAngle(new THREE.Vector3(...mesh.userData.pitch_axis).normalize(),THREE.MathUtils.degToRad(truth.pitch_deg[i]));}

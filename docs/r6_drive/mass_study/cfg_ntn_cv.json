@@ -1,0 +1,55 @@
+{
+  "fan_edits": [
+    {
+      "body": "airframe",
+      "at_F1": [
+        2.6,
+        0,
+        1.98
+      ],
+      "part": "remove ledger: torque transfer spherical CV primary",
+      "kg": -0.401
+    },
+    {
+      "body": "airframe",
+      "at_F1": [
+        2.6,
+        0,
+        1.94
+      ],
+      "part": "remove ledger: CV joint outer yoke",
+      "kg": -0.329
+    },
+    {
+      "body": "nacelle",
+      "at_F1": [
+        2.6,
+        0,
+        2.05
+      ],
+      "part": "remove ledger: CV boot envelope",
+      "kg": -0.319
+    },
+    {
+      "body": "airframe",
+      "at_F1": [
+        2.6,
+        0,
+        1.93
+      ],
+      "part": "NTN BJ150 fixed disc CVJ, fixed half (16.3 kg/joint from DFB L=500 40.2 kg less 5x1.54 kg tube)",
+      "kg": 8.15
+    },
+    {
+      "body": "nacelle",
+      "at_F1": [
+        2.6,
+        0,
+        2.03
+      ],
+      "part": "NTN BJ150 fixed disc CVJ, nacelle half",
+      "kg": 8.15
+    }
+  ],
+  "name": "ntn_cv_bj150"
+}
