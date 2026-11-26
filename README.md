@@ -47,15 +47,26 @@ Ray’s design rule is that the world rewards skill, exploration and experimenta
 
 ## Builds and verification
 
-- **Vaderland 33** is the current build, in [PR #70](https://github.com/SDarkVader/-vtx-flight-sim/pull/70). It is the default world, first in the environment list. It adds the Meridian Rooftop Quarter, the Lantern Race, the Brake Line, the Falls Gorge waterfalls and the alpine trails.
+- **Vaderland 33.1** is the Phase II engineering candidate. It extends the [Vaderland 33 source in PR #70](https://github.com/SDarkVader/-vtx-flight-sim/pull/70) with the reviewed road, ground placement and city changes. V33 adds the Meridian Rooftop Quarter, the Lantern Race, the Brake Line, Falls Gorge and the alpine trails.
   - **Drawing:** the browser draws every display frame on desktop. Aircraft and boats glide between their true physics poses, and night lights bloom with round halos.
   - **Free camera:** it crosses the world in seconds, and its **Go to…** list flies to any of 34 named places.
   - **Harbour performance:** the harbour runs its rigid bodies at 100 Hz, hull hydrodynamics at 20 Hz and shallow water at 10 Hz. Its water solver recomputes only the cells that change, with results bit-identical to the full stencil.
-  - **CI:** the full suite passes on Linux CI (626 Python and 103 browser tests). World and runtime identities match on Windows and Linux.
+  - **Source reference** `7606985` passed 626 Python and 103 JavaScript checks on Linux.
 - **Vaderland 32** is the reviewed [environment snapshot](https://github.com/SDarkVader/-vtx-flight-sim/tree/codex/vaderland-v32) used for the earlier field check. The A10-D took off vertically, approached Meridian and eventually struck terrain. The Shore Link drive and Islet Trial also have recorded checks.
 - **Main Airport and harbour** remain selectable as the earlier prototype. **Choose vehicle** offers the Phantom A10-C, Argon R6 and Ricochet, and also lists the experimental A10-D and historical variants.
+- **V32 frame pacing** was reviewed in [PR #67](https://github.com/SDarkVader/-vtx-flight-sim/pull/67). The short replay views reached approximately 60 FPS on the test PC. A display rate measures a different clock from solver advancement.
 
 MuJoCo supplies the aircraft and contact dynamics. The browser draws the simulated state and provides cockpit, chase and map views. For the Phantom, the 400 Hz physics clock runs independently of video frame rate and telemetry delivery. Flight Records retains outcomes, including missed approaches, collisions and successful landings. The field report publishes selected findings. The primary flight telemetry, pilot inputs and crash recording stay on the test PC.
+
+## Windows prototype, cockpit radio and vehicle sound
+
+| Work | For | Where |
+| --- | --- | --- |
+| **Native Windows prototype** of the Phantom A10-D, with cockpit radio | Phase II candidate | [Build and controls](native/README.md) |
+| **Browser cockpit radio** | Phase II candidate | [Source](public/vtx-env/cockpit-radio.js) |
+| **Sound Studio:** vehicle sound designs replayed against a recorded flight | Local development | [Tools and guide](https://github.com/SDarkVader/-vtx-flight-sim/tree/claude/sound-studio-dev-20261125/tools/sound-studio) |
+
+The radios play your own music; none is included. Details are in the [development log](docs/VADERLAND_DEVELOPMENT_LOG.md).
 
 ## Run VTX locally
 
