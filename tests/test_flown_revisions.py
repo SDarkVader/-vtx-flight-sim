@@ -2,6 +2,7 @@
 import asyncio
 import json
 
+import numpy as np
 import pytest
 from fastapi import HTTPException
 from vtx import live_server
@@ -35,6 +36,9 @@ def test_selecting_and_checkpointing_candidate_retains_identity(tmp_path, monkey
     assert view['observation']['configuration']['identity']['verified']
     lab.start(live_server.Mission(airframe_variant=variant, environment='airport',
                                   departure=[-700, 0], phantom={'start_configuration': 'road'}))
+    historical = PhantomAircraft(lab.world, variant, start_configuration='road')
+    historical.spawn(-700, 0, lab.world.surface_z(-700, 0))
+    np.testing.assert_array_equal(lab.aircraft.data.qpos, historical.data.qpos)
     lab.checkpoint(force=True)
     checkpoint = json.loads(lab.checkpoint_path.read_text(encoding='utf-8'))
     assert checkpoint['flight_revision_registry_sha256'] == lab.aircraft.provenance['flight_revision']['registry_sha256']

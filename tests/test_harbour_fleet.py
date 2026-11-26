@@ -109,9 +109,10 @@ def test_worker_journal_runs_without_polling_and_preserves_previous_segment(tmp_
         session.set_rate(4.0)
         deadline = time.monotonic() + 20
         while time.monotonic() < deadline:
-            prefix = original.read_bytes()
-            rows = [json.loads(line) for line in prefix.splitlines() if line]
-            if any(row["kind"] == "sample" and row["t_s"] >= 1.0 for row in rows):
+            contents = original.read_bytes()
+            prefix = contents[:contents.rfind(b"\n") + 1]
+            rows = [json.loads(line) for line in prefix.splitlines()]
+            if any(row["kind"] == "sample" and row["step"] >= 100 for row in rows):
                 break
             time.sleep(0.02)
         else:

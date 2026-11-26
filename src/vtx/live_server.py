@@ -122,6 +122,10 @@ def landing_support(world,point,purpose,variant):
 
 def place_at_departure(aircraft, request, terrain_z):
     if phantom_live.is_phantom_variant(request.airframe_variant):
+        # An as-flown preset with no new heading retains its recorded spawn convention.
+        if request.departure_heading_deg is None and aircraft.provenance.get('flight_revision'):
+            aircraft.spawn(*request.departure, terrain_z)
+            return
         heading = 90.0 if request.departure_heading_deg is None else request.departure_heading_deg
         aircraft.spawn_on_surface(*request.departure, terrain_z, heading_deg=90.0 - heading)
         aircraft.departure_heading_deg = heading % 360.0

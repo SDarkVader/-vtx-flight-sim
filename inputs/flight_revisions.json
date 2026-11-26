@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "integrated_runtime_sha256": "25a4f40ec45743c887b541c4fd4079a67d0d0dee85d883160844fcdea441b0b9",
+  "integrated_runtime_sha256": "f8d72ab7215faab5d3e22b926d65c1a902314f3ba582ca3e40375e7e1566e078",
   "previous_integrated_runtimes": [
     {
       "sha256": "e861234423ec2110e63f9e27779743fe58baeeb7c3553d88618713e6c150abb7",
@@ -82,6 +82,13 @@
       "commit": "77d9d452285cdb2faa1faf3669f46a2aa5749856",
       "superseded": "2026-11-21",
       "reason": "Vaderland 33 harbour throughput and scenery. Harbour timing, packed checkpoints, two-thread and changed-cell shallow-water stencils, exact water-query reuse and bounded Phantom terrain rays, each reproducing its predecessor bit for bit; the Lantern Race, Rooftop Quarter, alpine routes and Meridian streets; explicit LF rules for 14 runtime files so Windows and Linux hash the same bytes. Repin authorised by the owner on 21 Nov 2026 so CI verifies the current runtime."
+    },
+    {
+      "sha256": "25a4f40ec45743c887b541c4fd4079a67d0d0dee85d883160844fcdea441b0b9",
+      "commit": "760698508c7f00865553ac4d81eb1da6900d39c5",
+      "superseded": "2026-11-26",
+      "reason": "Retained V33 baseline for the isolated Phase II engineering candidate. The historical presets keep their prior default spawn convention. Offline comparisons matched all 1,601 runway and 2,001 VTOL integration states, checkpoint vectors, model XML and configuration hashes with the V33 source. Both cases continued for 400 steps with identical qpos after same-runtime restore.",
+      "previous_model": "The V33 registry, runtime and replay configuration remain available at the named commit. Checkpoint recovery continues to require the original runtime and registry fingerprints."
     }
   ],
   "text_dependencies_sha256_lf": {
